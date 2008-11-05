@@ -336,7 +336,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe  -D__DJGPP__ -f win32 -o $(OutDir)\$(InputName).obj $(InputPath)&#x0D;&#x0A;"
+						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
 						Outputs="$(OutDir)\$(InputName).obj"
 					/>
 				</FileConfiguration>
@@ -345,7 +345,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o $(OutDir)\$(InputName).obj $(InputPath)&#x0D;&#x0A;"
+						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
 						Outputs="$(OutDir)\$(InputName).obj"
 					/>
 				</FileConfiguration>
@@ -354,7 +354,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe  -D__DJGPP__ -f win32 -o $(OutDir)\$(InputName).obj $(InputPath)&#x0D;&#x0A;"
+						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
 						Outputs="$(OutDir)\$(InputName).obj"
 					/>
 				</FileConfiguration>
@@ -1112,11 +1112,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
