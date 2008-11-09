@@ -624,11 +624,11 @@ void gbDoHdma()
 	gbHdmaDestination += 0x10;
 	gbHdmaSource += 0x10;
 
-	register_HDMA2 += 0x10;
+	register_HDMA2 = (register_HDMA2 + 0x10) & 0xFF;
 	if(register_HDMA2 == 0x00)
 		register_HDMA1++;
 
-	register_HDMA4 += 0x10;
+	register_HDMA4 = (register_HDMA4 + 0x10) & 0xFF;
 	if(register_HDMA4 == 0x00)
 		register_HDMA3++;
 

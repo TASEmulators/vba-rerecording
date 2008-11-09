@@ -20,87 +20,87 @@
  case 0x00:
    // RLC B
    AF.B.B0 = (BC.B.B1 & 0x80)?C_FLAG:0;
-   BC.B.B1 = (BC.B.B1<<1) | (BC.B.B1>>7);
+   BC.B.B1 = ((BC.B.B1<<1) | (BC.B.B1>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[BC.B.B1];
    break;
  case 0x01:
    // RLC C
    AF.B.B0 = (BC.B.B0 & 0x80)?C_FLAG:0;
-   BC.B.B0 = (BC.B.B0<<1) | (BC.B.B0>>7);
+   BC.B.B0 = ((BC.B.B0<<1) | (BC.B.B0>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[BC.B.B0];
    break;
  case 0x02:
    // RLC D
    AF.B.B0 = (DE.B.B1 & 0x80)?C_FLAG:0;
-   DE.B.B1 = (DE.B.B1<<1) | (DE.B.B1>>7);
+   DE.B.B1 = ((DE.B.B1<<1) | (DE.B.B1>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[DE.B.B1];
    break;
  case 0x03:
    // RLC E
    AF.B.B0 = (DE.B.B0 & 0x80)?C_FLAG:0;
-   DE.B.B0 = (DE.B.B0<<1) | (DE.B.B0>>7);
+   DE.B.B0 = ((DE.B.B0<<1) | (DE.B.B0>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[DE.B.B0];
    break;
  case 0x04:
    // RLC H
    AF.B.B0 = (HL.B.B1 & 0x80)?C_FLAG:0;
-   HL.B.B1 = (HL.B.B1<<1) | (HL.B.B1>>7);
+   HL.B.B1 = ((HL.B.B1<<1) | (HL.B.B1>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[HL.B.B1];
    break;
  case 0x05:
    // RLC L
    AF.B.B0 = (HL.B.B0 & 0x80)?C_FLAG:0;
-   HL.B.B0 = (HL.B.B0<<1) | (HL.B.B0>>7);
+   HL.B.B0 = ((HL.B.B0<<1) | (HL.B.B0>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[HL.B.B0];
    break;
  case 0x06:
    // RLC (HL)
    tempValue=gbReadMemory(HL.W);
    AF.B.B0 = (tempValue & 0x80)?C_FLAG:0;
-   tempValue = (tempValue<<1) | (tempValue>>7);
+   tempValue = ((tempValue<<1) | (tempValue>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[tempValue];
    gbWriteMemory(HL.W,tempValue);
    break;
  case 0x07:
    // RLC A
    AF.B.B0 = (AF.B.B1 & 0x80)?C_FLAG:0;
-   AF.B.B1 = (AF.B.B1<<1) | (AF.B.B1>>7);
+   AF.B.B1 = ((AF.B.B1<<1) | (AF.B.B1>>7)) & 0xFF;
    AF.B.B0 |= ZeroTable[AF.B.B1];
    break;
  case 0x08:
    // RRC B
    AF.B.B0=(BC.B.B1&0x01 ? C_FLAG : 0);
-   BC.B.B1=(BC.B.B1>>1)|(BC.B.B1<<7);
+   BC.B.B1=((BC.B.B1>>1)|(BC.B.B1<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[BC.B.B1];
    break;
  case 0x09:
    // RRC C
    AF.B.B0=(BC.B.B0&0x01 ? C_FLAG : 0);
-   BC.B.B0=(BC.B.B0>>1)|(BC.B.B0<<7);
+   BC.B.B0=((BC.B.B0>>1)|(BC.B.B0<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[BC.B.B0];
    break;
  case 0x0a:
    // RRC D
    AF.B.B0=(DE.B.B1&0x01 ? C_FLAG : 0);
-   DE.B.B1=(DE.B.B1>>1)|(DE.B.B1<<7);
+   DE.B.B1=((DE.B.B1>>1)|(DE.B.B1<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[DE.B.B1];
    break;
  case 0x0b:
    // RRC E
    AF.B.B0=(DE.B.B0&0x01 ? C_FLAG : 0);
-   DE.B.B0=(DE.B.B0>>1)|(DE.B.B0<<7);
+   DE.B.B0=((DE.B.B0>>1)|(DE.B.B0<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[DE.B.B0];
    break;
  case 0x0c:
    // RRC H
    AF.B.B0=(HL.B.B1&0x01 ? C_FLAG : 0);
-   HL.B.B1=(HL.B.B1>>1)|(HL.B.B1<<7);
+   HL.B.B1=((HL.B.B1>>1)|(HL.B.B1<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[HL.B.B1];
    break;
  case 0x0d:
    // RRC L
    AF.B.B0=(HL.B.B0&0x01 ? C_FLAG : 0);
-   HL.B.B0=(HL.B.B0>>1)|(HL.B.B0<<7);
+   HL.B.B0=((HL.B.B0>>1)|(HL.B.B0<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[HL.B.B0];
    break;
  case 0x0e:
@@ -114,66 +114,66 @@
  case 0x0f:
    // RRC A
    AF.B.B0=(AF.B.B1&0x01 ? C_FLAG : 0);
-   AF.B.B1=(AF.B.B1>>1)|(AF.B.B1<<7);
+   AF.B.B1=((AF.B.B1>>1)|(AF.B.B1<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[AF.B.B1];
    break;
  case 0x10:
    // RL B
    if(BC.B.B1&0x80) {
-     BC.B.B1=(BC.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     BC.B.B1=((BC.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[BC.B.B1]|C_FLAG;
    } else {
-     BC.B.B1=(BC.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     BC.B.B1=((BC.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[BC.B.B1];
    }
    break;
  case 0x11:
    // RL C
    if(BC.B.B0&0x80) {
-     BC.B.B0=(BC.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     BC.B.B0=((BC.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[BC.B.B0]|C_FLAG;
    } else {
-     BC.B.B0=(BC.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     BC.B.B0=((BC.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[BC.B.B0];
    }
    break;
  case 0x12:
    // RL D
    if(DE.B.B1&0x80) {
-     DE.B.B1=(DE.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     DE.B.B1=((DE.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[DE.B.B1]|C_FLAG;
    } else {
-     DE.B.B1=(DE.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     DE.B.B1=((DE.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[DE.B.B1];
    }
    break;
  case 0x13:
    // RL E
    if(DE.B.B0&0x80) {
-     DE.B.B0=(DE.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     DE.B.B0=((DE.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[DE.B.B0]|C_FLAG;
    } else {
-     DE.B.B0=(DE.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     DE.B.B0=((DE.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[DE.B.B0];
    }
    break;
  case 0x14:
    // RL H
    if(HL.B.B1&0x80) {
-     HL.B.B1=(HL.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     HL.B.B1=((HL.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[HL.B.B1]|C_FLAG;
    } else {
-     HL.B.B1=(HL.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     HL.B.B1=((HL.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[HL.B.B1];
    }
    break;
  case 0x15:
    // RL L
    if(HL.B.B0&0x80) {
-     HL.B.B0=(HL.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     HL.B.B0=((HL.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[HL.B.B0]|C_FLAG;
    } else {
-     HL.B.B0=(HL.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     HL.B.B0=((HL.B.B0<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[HL.B.B0];
    }
    break;
@@ -181,10 +181,10 @@
    // RL (HL)
    tempValue=gbReadMemory(HL.W);
    if(tempValue&0x80) {
-     tempValue=(tempValue<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     tempValue=((tempValue<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[tempValue]|C_FLAG;
    } else {
-     tempValue=(tempValue<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     tempValue=((tempValue<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[tempValue];
    }
    gbWriteMemory(HL.W,tempValue);
@@ -192,10 +192,10 @@
  case 0x17:
    // RL A
    if(AF.B.B1&0x80) {
-     AF.B.B1=(AF.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     AF.B.B1=((AF.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[AF.B.B1]|C_FLAG;
    } else {
-     AF.B.B1=(AF.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0);
+     AF.B.B1=((AF.B.B1<<1)|(AF.B.B0&C_FLAG ? 1 : 0)) & 0xFF;
      AF.B.B0=ZeroTable[AF.B.B1];
    }
    break;
