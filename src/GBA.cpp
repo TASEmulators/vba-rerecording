@@ -2984,13 +2984,13 @@ void CPUWriteHalfWord(u32 address, u16 value)
     break;
   case 13:
     if(cpuEEPROMEnabled) {
-      eepromWrite(address, (u8)value);
+      eepromWrite(address, (u8)(value & 0xFF));
       break;
     }
     goto unwritable;
   case 14:
     if(!eepromInUse | cpuSramEnabled | cpuFlashEnabled) {
-      (*cpuSaveGameFunc)(address, (u8)value);
+      (*cpuSaveGameFunc)(address, (u8)(value & 0xFF));
       break;
     }
     goto unwritable;
@@ -3985,7 +3985,7 @@ void CPULoop(int ticks)
                 UPDATE_REG(0x202, IF);
               }
             }
-            TM0D = tm0d;
+            TM0D = tm0d & 0xFFFF;
             timer0Ticks = 0x10000 - TM0D;
             UPDATE_REG(0x100, TM0D);            
           } else {
@@ -4034,7 +4034,7 @@ void CPULoop(int ticks)
                   UPDATE_REG(0x202, IF);
                 }
               }
-              TM1D = tm1d;
+              TM1D = tm1d & 0xFFFF;
               timer1Ticks = 0x10000 - TM1D;
               UPDATE_REG(0x104, TM1D);                    
             } else {
@@ -4083,7 +4083,7 @@ void CPULoop(int ticks)
                   UPDATE_REG(0x202, IF);
                 }
               }
-              TM2D = tm2d;
+              TM2D = tm2d & 0xFFFF;
               timer2Ticks = 0x10000 - TM2D;
               UPDATE_REG(0x108, TM2D);                    
             } else {

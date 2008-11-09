@@ -2947,7 +2947,7 @@ if(cond_res) {
       int destLo = (opcode >> 12) & 0x0F;         
       int destHi = (opcode >> 16) & 0x0F;
       u64 uTemp = ((u64)umult)*((u64)usource);
-      reg[destLo].I = (u32)uTemp;
+      reg[destLo].I = (u32)(uTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(uTemp >> 32);
       if ((usource & 0xFFFFFF00) == 0)
         clockTicks += 2;
@@ -2967,7 +2967,7 @@ if(cond_res) {
       int destLo = (opcode >> 12) & 0x0F;         
       int destHi = (opcode >> 16) & 0x0F;
       u64 uTemp = ((u64)umult)*((u64)usource);
-      reg[destLo].I = (u32)uTemp;
+      reg[destLo].I = (u32)(uTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(uTemp >> 32);
       Z_FLAG = (uTemp) ? false : true;
       N_FLAG = (reg[destHi].I & 0x80000000) ? true : false;
@@ -2994,7 +2994,7 @@ if(cond_res) {
       uTemp <<= 32;
       uTemp |= (u64)reg[destLo].I;
       uTemp += ((u64)umult)*((u64)usource);
-      reg[destLo].I = (u32)uTemp;
+      reg[destLo].I = (u32)(uTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(uTemp >> 32);
       if ((usource & 0xFFFFFF00) == 0)
         clockTicks += 3;
@@ -3017,7 +3017,7 @@ if(cond_res) {
       uTemp <<= 32;
       uTemp |= (u64)reg[destLo].I;
       uTemp += ((u64)umult)*((u64)usource);
-      reg[destLo].I = (u32)uTemp;
+      reg[destLo].I = (u32)(uTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(uTemp >> 32);
       Z_FLAG = (uTemp) ? false : true;
       N_FLAG = (reg[destHi].I & 0x80000000) ? true : false;
@@ -3042,7 +3042,7 @@ if(cond_res) {
       s64 m = (s32)reg[(opcode & 0x0F)].I;
       s64 s = (s32)rs;
       s64 sTemp = m*s;
-      reg[destLo].I = (u32)sTemp;
+      reg[destLo].I = (u32)(sTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(sTemp >> 32);
       if(((s32)rs) < 0)
         rs = ~rs;
@@ -3065,7 +3065,7 @@ if(cond_res) {
       s64 m = (s32)reg[(opcode & 0x0F)].I;
       s64 s = (s32)rs;
       s64 sTemp = m*s;
-      reg[destLo].I = (u32)sTemp;
+      reg[destLo].I = (u32)(sTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(sTemp >> 32);
       Z_FLAG = (sTemp) ? false : true;
       N_FLAG = (sTemp < 0) ? true : false;
@@ -3095,7 +3095,7 @@ if(cond_res) {
       sTemp <<= 32;
       sTemp |= (u64)reg[destLo].I;
       sTemp += m*s;
-      reg[destLo].I = (u32)sTemp;
+      reg[destLo].I = (u32)(sTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(sTemp >> 32);
       if(((s32)rs) < 0)
         rs = ~rs;
@@ -3121,7 +3121,7 @@ if(cond_res) {
       sTemp <<= 32;
       sTemp |= (u64)reg[destLo].I;
       sTemp += m*s;
-      reg[destLo].I = (u32)sTemp;
+      reg[destLo].I = (u32)(sTemp & 0xFFFFFFFF);
       reg[destHi].I = (u32)(sTemp >> 32);
       Z_FLAG = (sTemp) ? false : true;
       N_FLAG = (sTemp < 0) ? true : false;

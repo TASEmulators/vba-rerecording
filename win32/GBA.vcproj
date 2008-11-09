@@ -23,6 +23,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -46,18 +47,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="include\zlib,include\png,include\cxImage,directx"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;DEV_VERSION;BKPT_SUPPORT;FINAL_VERSION"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
-				StructMemberAlignment="5"
-				BufferSecurityCheck="true"
-				EnableFunctionLevelLinking="true"
+				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/GBA.pch"
 				AssemblerListingLocation=".\Release/"
@@ -153,10 +151,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="include\zlib,include\png,include\cxImage,directx"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;DEV_VERSION;BKPT_SUPPORT"
-				BasicRuntimeChecks="0"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;DEV_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
+				BasicRuntimeChecks="3"
+				SmallerTypeCheck="true"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="false"
+				BufferSecurityCheck="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/GBA.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -185,112 +184,11 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="lib\win32"
-				IgnoreDefaultLibraryNames="libci.lib"
+				IgnoreDefaultLibraryNames="libci.lib;msvcrt.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/VisualBoyAdvance.pdb"
 				GenerateMapFile="true"
 				MapFileName=".\Debug/VisualBoyAdvance.map"
-				SubSystem="2"
-				OptimizeReferences="2"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseNoDev|Win32"
-			OutputDirectory=".\ReleaseNoDev"
-			IntermediateDirectory=".\ReleaseNoDev"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\ReleaseNoDev/GBA.tlb"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="include\zlib,include\png,include\cxImage,directx"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\ReleaseNoDev/GBA.pch"
-				AssemblerListingLocation=".\ReleaseNoDev/"
-				ObjectFile=".\ReleaseNoDev/"
-				ProgramDataBaseFileName=".\ReleaseNoDev/"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMD.lib zlibMD.lib CxImage.lib jpeg.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
-				OutputFile="ReleaseNoDev/VisualBoyAdvance.exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="lib\win32"
-				IgnoreDefaultLibraryNames="libci.lib"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\ReleaseNoDev/VisualBoyAdvance.pdb"
-				GenerateMapFile="true"
-				MapFileName=".\ReleaseNoDev/VisualBoyAdvance.map"
 				SubSystem="2"
 				OptimizeReferences="2"
 				TargetMachine="1"
@@ -336,7 +234,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 						Outputs="$(OutDir)\$(InputName).obj"
 					/>
 				</FileConfiguration>
@@ -345,16 +243,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
-						Outputs="$(OutDir)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseNoDev|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 						Outputs="$(OutDir)\$(InputName).obj"
 					/>
 				</FileConfiguration>
@@ -486,14 +375,6 @@
 						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseNoDev|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\win32\WavWriter.cpp"
@@ -553,25 +434,6 @@
 				<File
 					RelativePath="..\src\GBA.cpp"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							InlineFunctionExpansion="0"
-							FavorSizeOrSpeed="0"
-							StringPooling="false"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="ReleaseNoDev|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\src\Gfx.cpp"
@@ -684,22 +546,6 @@
 				<File
 					RelativePath="..\src\gb\GB.cpp"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\src\gb\gbCheats.cpp"
@@ -732,22 +578,6 @@
 				<File
 					RelativePath="..\src\gb\gbSound.cpp"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-						/>
-					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -1390,14 +1220,6 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseNoDev|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool

@@ -51,7 +51,7 @@
  case 0x07:
    // RLCA
    tempValue=AF.B.B1&0x80? C_FLAG:0;
-   AF.B.B1=(AF.B.B1<<1)|(AF.B.B1>>7);
+   AF.B.B1=((AF.B.B1<<1)|(AF.B.B1>>7)) & 0xFF;
    AF.B.B0=tempValue;
    break;
  case 0x08:
@@ -142,7 +142,7 @@
  case 0x17:
    // RLA
    tempValue=AF.B.B1&0x80? C_FLAG:0;
-   AF.B.B1=(AF.B.B1<<1)|((AF.B.B0&C_FLAG)>>4);
+   AF.B.B1=((AF.B.B1<<1)|((AF.B.B0&C_FLAG)>>4)) & 0xFF;
    AF.B.B0=tempValue;
    break;
  case 0x18:
@@ -297,13 +297,13 @@
    break;
  case 0x34:
    // INC (HL)
-   tempValue=gbReadMemory(HL.W)+1;
+   tempValue=(gbReadMemory(HL.W)+1) & 0xFF;
    AF.B.B0= (AF.B.B0 & C_FLAG)|ZeroTable[tempValue]| (tempValue&0x0F? 0:H_FLAG);
    gbWriteMemory(HL.W,tempValue);
    break;
  case 0x35:
    // DEC (HL)
-   tempValue=gbReadMemory(HL.W)-1;
+   tempValue=(gbReadMemory(HL.W)-1) & 0xFF;
    AF.B.B0= N_FLAG|(AF.B.B0 & C_FLAG)|ZeroTable[tempValue]|
      ((tempValue&0x0F)==0x0F? H_FLAG:0);gbWriteMemory(HL.W,tempValue);
    break;
