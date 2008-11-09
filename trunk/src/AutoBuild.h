@@ -20,7 +20,7 @@
 #ifndef __AUTOBUILD_H__
 #define __AUTOBUILD_H__
 #ifndef VERSION
-#define VERSION       "1.7.2 re-recording v19.4"
+#define VERSION       "1.7.2 re-recording v19.5"
 #endif
 //change the FALSE to TRUE for autoincrement of build number
 #define INCREMENT_VERSION FALSE

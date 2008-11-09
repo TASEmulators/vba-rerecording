@@ -573,7 +573,7 @@ static void HardResetAndSRAMClear ()
 		CString filename;
 		GetBatterySaveName(filename);
 		remove(filename); // delete the damn SRAM file
-		theEmulator.emuCleanUp(); // keep it from being resurrected from RAM
+		extern bool noWriteNextBatteryFile; noWriteNextBatteryFile = false; // keep it from being resurrected from RAM
 		((MainWnd *)theApp.m_pMainWnd)->FileRun(); // start running the game
 #	else
 		char fname [1024];
