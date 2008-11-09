@@ -1519,18 +1519,14 @@ int CPULoadRom(const char *szFile)
     if(!f) {
       systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"),
                     szFile);
-      free(rom);
-      rom = NULL;
-      free(workRAM);
-      workRAM = NULL;
+      FreeMappedMem(rom, mapROM, 0);
+      FreeMappedMem(workRAM, mapWORKRAM, 0);
       return 0;
     }
     bool res = elfRead(szFile, size, f);
     if(!res || size == 0) {
-      free(rom);
-      rom = NULL;
-      free(workRAM);
-      workRAM = NULL;
+      FreeMappedMem(rom, mapROM, 0);
+      FreeMappedMem(workRAM, mapWORKRAM, 0);
       elfCleanUp();
       return 0;
     }
@@ -1538,10 +1534,8 @@ int CPULoadRom(const char *szFile)
                       utilIsGBAImage,
                       whereToLoad,
                       size)) {
-    free(rom);
-    rom = NULL;
-    free(workRAM);
-    workRAM = NULL;
+    FreeMappedMem(rom, mapROM, 0);
+    FreeMappedMem(workRAM, mapWORKRAM, 0);
     return 0;
   }
 
