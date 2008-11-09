@@ -507,6 +507,7 @@ void MainWnd::OnClose()
   delete this;
 }
 
+bool noWriteNextBatteryFile = false;
 bool MainWnd::FileRun()
 {
   int prevCartridgeType = theApp.cartridgeType;
@@ -515,7 +516,8 @@ bool MainWnd::FileRun()
   if(rom != NULL || gbRom != NULL) {
     if(theApp.autoSaveLoadCheatList)
       winSaveCheatListDefault();
-    writeBatteryFile();
+	if(!noWriteNextBatteryFile)
+      writeBatteryFile();
     cheatSearchCleanup(&cheatSearchData);
     theApp.emulator.emuCleanUp();
     remoteCleanUp();
@@ -525,6 +527,7 @@ bool MainWnd::FileRun()
 	theApp.frameSearching = false;
 	theApp.frameSearchSkipping = false;
   }
+  noWriteNextBatteryFile = false;
   char tempName[2048];
   char file[2048];
   

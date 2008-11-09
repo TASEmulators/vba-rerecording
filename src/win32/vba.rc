@@ -242,7 +242,7 @@ BEGIN
                     47,10
     CONTROL         "Le&ss or equal",IDC_LE,"Button",BS_AUTORADIOBUTTON,100,
                     164,58,10
-    CONTROL         "&Greather than",IDC_GT,"Button",BS_AUTORADIOBUTTON,100,
+    CONTROL         "&Greater than",IDC_GT,"Button",BS_AUTORADIOBUTTON,100,
                     176,59,10
     CONTROL         "G&reater or equal",IDC_GE,"Button",BS_AUTORADIOBUTTON,
                     100,188,67,10
