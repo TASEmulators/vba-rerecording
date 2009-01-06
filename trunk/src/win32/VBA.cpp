@@ -1186,6 +1186,9 @@ void systemDrawScreen()
     }
   }
 
+/* // This piece was moved from src/win32/DirectDraw.cpp.
+    // However, it is redundant from those in such as Direct3D.cpp.
+	// So, tentatively reverted to v19.3
   // "in-game" text rendering
 	if(textMethod == 0)
 	{
@@ -1196,7 +1199,7 @@ void systemDrawScreen()
 
 		DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
 	}
-
+//*/
 
   if(!theApp.painting)
   {
