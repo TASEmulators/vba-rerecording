@@ -1930,19 +1930,24 @@ void VBA::updateFrameSkip()
 void VBA::updateVideoSize(UINT id)
 {
   int value = 0;
+  bool forceUpdate = false;
 
   switch(id) {
   case ID_OPTIONS_VIDEO_X1:
     value = VIDEO_1X;
+	forceUpdate = true;
     break;
   case ID_OPTIONS_VIDEO_X2:
     value = VIDEO_2X;
+	forceUpdate = true;
     break;
   case ID_OPTIONS_VIDEO_X3:
     value = VIDEO_3X;
+	forceUpdate = true;
     break;
   case ID_OPTIONS_VIDEO_X4:
     value = VIDEO_4X;
+	forceUpdate = true;
     break;
   case ID_OPTIONS_VIDEO_FULLSCREEN320X240:
     value = VIDEO_320x240;
@@ -1964,13 +1969,12 @@ void VBA::updateVideoSize(UINT id)
     break;
   case ID_OPTIONS_VIDEO_FULLSCREEN:
     value = VIDEO_OTHER;
+	forceUpdate = true;
     break;
   }
 
-  if(videoOption == value && value != VIDEO_OTHER)
-    return;
-
-  updateWindowSize(value);
+  if (videoOption != value || forceUpdate)
+	 updateWindowSize(value);
 }
 
 typedef BOOL (WINAPI *GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
