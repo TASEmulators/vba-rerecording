@@ -703,19 +703,18 @@ void DirectDrawDisplay::render()
     
   if(hret == DD_OK) {
 
-	  //if(textMethod == 0)
-	  //{
-			//int copyX = 240, copyY = 160;
-			//if(theApp.cartridgeType == 1)
-			//	if(gbBorderOn) copyX = 256, copyY = 224;
-			//	else           copyX = 160, copyY = 144;
+	  if(textMethod == 0)
+	  {
+			int copyX = 240, copyY = 160;
+			if(theApp.cartridgeType == 1)
+				if(gbBorderOn) copyX = 256, copyY = 224;
+				else           copyX = 160, copyY = 144;
 
-			//DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
-	  //}
+			DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
+	  }
   
 	  if(theApp.filterFunction) {
       if(systemColorDepth == 16)
-///        (*theApp.filterFunction)(pix+theApp.filterWidth*2+4,
         (*theApp.filterFunction)(pix+theApp.filterWidth*2+4,
                                  theApp.filterWidth*2+4,
                                  (u8*)theApp.delta,
@@ -724,7 +723,6 @@ void DirectDrawDisplay::render()
                                  theApp.filterWidth,
                                  theApp.filterHeight);
       else
-///        (*theApp.filterFunction)(pix+theApp.filterWidth*4+4,
         (*theApp.filterFunction)(pix+theApp.filterWidth*4+4,
                                  theApp.filterWidth*4+4,
                                  (u8*)theApp.delta,
