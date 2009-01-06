@@ -755,9 +755,11 @@ static void SetRecordEmuSettings ()
 		Movie.header.saveType = saveType;
 		Movie.header.flashSize = sdlFlashSize;
 #	endif
+/* // This piece caused THE mysterious desync in GBA movie recording
 #if (defined(WIN32) && !defined(SDL))
 		if(GetAsyncKeyState(VK_CONTROL) == 0)
 #endif
+*/
 		if(!memLagTempEnabled)		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
 		Movie.header.gbEmulatorType = gbEmulatorType;
 
