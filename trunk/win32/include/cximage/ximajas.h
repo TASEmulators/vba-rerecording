@@ -2,27 +2,11 @@
  * File:	ximajas.h
  * Purpose:	Jasper Image Class Loader and Writer
  */
-/* === C R E D I T S  &  D I S C L A I M E R S ==============
+/* ==========================================================
  * CxImageJAS (c) 12/Apr/2003 Davide Pizzolato - www.xdp.it
- * Permission is given by the author to freely redistribute and include
- * this code in any program as long as this credit is given where due.
- *
- * CxImage version 5.99a 08/Feb/2004
- * See the file history.htm for the complete bugfix and news report.
+ * For conditions of distribution and use, see copyright notice in ximage.h
  *
  * based on JasPer Copyright (c) 2001-2003 Michael David Adams - All rights reserved.
- *
- * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY
- * OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
- * THAT THE COVERED CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE
- * OR NON-INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED
- * CODE IS WITH YOU. SHOULD ANY COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT
- * THE INITIAL DEVELOPER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY
- * SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL
- * PART OF THIS LICENSE. NO USE OF ANY COVERED CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER
- * THIS DISCLAIMER.
- *
- * Use at your own risk!
  * ==========================================================
  */
 #if !defined(__ximaJAS_h)
@@ -32,12 +16,12 @@
 
 #if CXIMAGE_SUPPORT_JASPER
 
-#include "..\jasper\include\jasper\jasper.h"
+#include "../jasper/include/jasper/jasper.h"
 
 class CxImageJAS: public CxImage
 {
 public:
-	CxImageJAS(): CxImage(0) {}
+	CxImageJAS(): CxImage((DWORD)0) {}	// <vho> cast to DWORD
 
 //	bool Load(const char * imageFileName){ return CxImage::Load(imageFileName,0);}
 //	bool Save(const char * imageFileName){ return CxImage::Save(imageFileName,0);}
@@ -57,10 +41,25 @@ protected:
 		{
 			if (stream->obj_) jas_free(stream->obj_);
 			stream->obj_ = pFile;
-			stream->ops_->close_ = JasClose;
-			stream->ops_->read_  = JasRead;
-			stream->ops_->seek_  = JasSeek;
-			stream->ops_->write_ = JasWrite;
+
+			// <vho> - cannot set the stream->ops_->functions here,
+			// because this overwrites a static structure in the Jasper library.
+			// This structure is used by Jasper for internal operations too, e.g. tempfile.
+			// However the ops_ pointer in the stream can be overwritten.
+
+			//stream->ops_->close_ = JasClose;
+			//stream->ops_->read_  = JasRead;
+			//stream->ops_->seek_  = JasSeek;
+			//stream->ops_->write_ = JasWrite;
+
+			jas_stream_CxFile.close_ = JasClose;
+			jas_stream_CxFile.read_  = JasRead;
+			jas_stream_CxFile.seek_  = JasSeek;
+			jas_stream_CxFile.write_ = JasWrite;
+
+			stream->ops_ = &jas_stream_CxFile;
+
+			// <vho> - end
 		}
 		static int JasRead(jas_stream_obj_t *obj, char *buf, int cnt)
 		{		return ((CxFile*)obj)->Read(buf,1,cnt); }
@@ -70,6 +69,12 @@ protected:
 		{		return ((CxFile*)obj)->Seek(offset,origin); }
 		static int JasClose(jas_stream_obj_t *obj)
 		{		return 1; }
+
+	// <vho>
+	private:
+		jas_stream_ops_t jas_stream_CxFile;
+	// <vho> - end
+
 	};
 
 };

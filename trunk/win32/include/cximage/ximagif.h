@@ -2,13 +2,9 @@
  * File:	ximagif.h
  * Purpose:	GIF Image Class Loader and Writer
  */
-/* === C R E D I T S  &  D I S C L A I M E R S ==============
+/* ==========================================================
  * CxImageGIF (c) 07/Aug/2001 Davide Pizzolato - www.xdp.it
- * Permission is given by the author to freely redistribute and include
- * this code in any program as long as this credit is given where due.
- *
- * CxImage version 5.99a 08/Feb/2004
- * See the file history.htm for the complete bugfix and news report.
+ * For conditions of distribution and use, see copyright notice in ximage.h
  *
  * Special thanks to Troels Knakkergaard for new features, enhancements and bugfixes
  *
@@ -32,17 +28,6 @@
  * which is similar, structurally, to the original routine by Steve Wilhite.
  * It is, however, somewhat noticably faster in most cases.
  *
- * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY
- * OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
- * THAT THE COVERED CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE
- * OR NON-INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED
- * CODE IS WITH YOU. SHOULD ANY COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT
- * THE INITIAL DEVELOPER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY
- * SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL
- * PART OF THIS LICENSE. NO USE OF ANY COVERED CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER
- * THIS DISCLAIMER.
- *
- * Use at your own risk!
  * ==========================================================
  */
 
@@ -63,7 +48,7 @@ typedef short int       code_int;
 #define OPEN_ERROR -3
 #define CREATE_ERROR -4
 #define MAX_CODES   4095
-#define GIFBUFTAM 16384
+#define GIFBUFTAM 16383
 #define TRANSPARENCY_CODE 0xF9
 
 //LZW GIF Image compression
@@ -167,7 +152,7 @@ protected:
 	void EncodeBody(CxFile *fp, bool bLocalColorMap = false);
 	void EncodeComment(CxFile *fp);
 	bool EncodeRGB(CxFile *fp);
-	void GifMix(CxImage & imgsrc2, long lxOffset, long lyOffset);
+	void GifMix(CxImage & imgsrc2, struct_image & imgdesc);
 	
 	struct_gifgce gifgce;
 
@@ -193,7 +178,8 @@ protected:
 	short decoder(CxFile*, CImageIterator* iter, short linewidth, int &bad_code_count);
 	int get_byte(CxFile*);
 	int out_line(CImageIterator* iter, unsigned char *pixels, int linelen);
-	int get_num_frames(CxFile *f,struct_TabCol* TabColSrc);
+	int get_num_frames(CxFile *f,struct_TabCol* TabColSrc,struct_dscgif* dscgif);
+	long seek_next_image(CxFile* fp, long position);
 
 	short curr_size;                     /* The current code size */
 	short clear;                         /* Value for a clear code */

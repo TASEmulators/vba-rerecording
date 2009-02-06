@@ -713,7 +713,7 @@ DirectInput::~DirectInput()
   }
 
   if(dinputDLL) {
-    /**/AfxFreeLibrary(dinputDLL);
+	  /**/::FreeLibrary(dinputDLL);
     dinputDLL = NULL;
   }
 }
@@ -724,7 +724,7 @@ bool DirectInput::initialize()
                                   "joyDebug",
                                   0,
                                   "VBA.ini");
-  dinputDLL = /**/AfxLoadLibrary("DINPUT.DLL");
+  dinputDLL = /**/::LoadLibrary("DINPUT.DLL");
   HRESULT (WINAPI *DInputCreate)(HINSTANCE,DWORD,LPDIRECTINPUT *,IUnknown *);  
   if(dinputDLL != NULL) {    
     DInputCreate = (HRESULT (WINAPI *)(HINSTANCE,DWORD,LPDIRECTINPUT *,IUnknown *))

@@ -30,7 +30,7 @@
 #define __ImaIter_h
 
 #include "ximage.h"
-#include "ximadefs.h"
+#include "ximadef.h"
 
 class CImageIterator
 {
@@ -142,12 +142,12 @@ inline void CImageIterator::SetRow(BYTE *buf, int n)
 	if (n<0) n = (int)ima->GetEffWidth();
 	else n = min(n,(int)ima->GetEffWidth());
 
-	if (IterImage) memcpy(IterImage,buf,n);
+	if ((IterImage!=NULL)&&(buf!=NULL)&&(n>0)) memcpy(IterImage,buf,n);
 }
 /////////////////////////////////////////////////////////////////////
 inline void CImageIterator::GetRow(BYTE *buf, int n)
 {
-	if ((buf!=NULL)&&(n>0)) memcpy(buf,IterImage,n);
+	if ((IterImage!=NULL)&&(buf!=NULL)&&(n>0)) memcpy(buf,IterImage,n);
 }
 /////////////////////////////////////////////////////////////////////
 inline BYTE* CImageIterator::GetRow()
@@ -220,7 +220,7 @@ inline BOOL CImageIterator::GetCol(BYTE* pCol, DWORD x)
 	if ((pCol==0)||(ima->GetBpp()<8)||(x>=ima->GetWidth()))
 		return 0;
 	DWORD h = ima->GetHeight();
-	DWORD line = ima->GetEffWidth();
+	//DWORD line = ima->GetEffWidth();
 	BYTE bytes = ima->GetBpp()>>3;
 	BYTE* pSrc;
 	for (DWORD y=0;y<h;y++){
@@ -237,7 +237,7 @@ inline BOOL CImageIterator::SetCol(BYTE* pCol, DWORD x)
 	if ((pCol==0)||(ima->GetBpp()<8)||(x>=ima->GetWidth()))
 		return 0;
 	DWORD h = ima->GetHeight();
-	DWORD line = ima->GetEffWidth();
+	//DWORD line = ima->GetEffWidth();
 	BYTE bytes = ima->GetBpp()>>3;
 	BYTE* pSrc;
 	for (DWORD y=0;y<h;y++){

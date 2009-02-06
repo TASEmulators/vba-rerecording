@@ -2,28 +2,40 @@
  * File:	xfile.h
  * Purpose:	General Purpose File Class 
  */
-/* === C R E D I T S  &  D I S C L A I M E R S ==============
- * Permission is given by the author to freely redistribute and include
- * this code in any program as long as this credit is given where due.
- *
- * CxFile (c)  11/May/2002 Davide Pizzolato - www.xdp.it
- * CxFile version 2.00 23/Aug/2002
- * See the file history.htm for the complete bugfix and news report.
- *
- * Special thanks to Chris Shearer Cooper for new features, enhancements and bugfixes
- *
- * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY
- * OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
- * THAT THE COVERED CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE
- * OR NON-INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED
- * CODE IS WITH YOU. SHOULD ANY COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT
- * THE INITIAL DEVELOPER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY
- * SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL
- * PART OF THIS LICENSE. NO USE OF ANY COVERED CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER
- * THIS DISCLAIMER.
- *
- * Use at your own risk!
- * ==========================================================
+/*
+  --------------------------------------------------------------------------------
+
+	COPYRIGHT NOTICE, DISCLAIMER, and LICENSE:
+
+	CxFile (c)  11/May/2002 Davide Pizzolato - www.xdp.it
+	CxFile version 2.00 23/Aug/2002
+	
+	Special thanks to Chris Shearer Cooper for new features, enhancements and bugfixes
+
+	Covered code is provided under this license on an "as is" basis, without warranty
+	of any kind, either expressed or implied, including, without limitation, warranties
+	that the covered code is free of defects, merchantable, fit for a particular purpose
+	or non-infringing. The entire risk as to the quality and performance of the covered
+	code is with you. Should any covered code prove defective in any respect, you (not
+	the initial developer or any other contributor) assume the cost of any necessary
+	servicing, repair or correction. This disclaimer of warranty constitutes an essential
+	part of this license. No use of any covered code is authorized hereunder except under
+	this disclaimer.
+
+	Permission is hereby granted to use, copy, modify, and distribute this
+	source code, or portions hereof, for any purpose, including commercial applications,
+	freely and without fee, subject to the following restrictions: 
+
+	1. The origin of this software must not be misrepresented; you must not
+	claim that you wrote the original software. If you use this software
+	in a product, an acknowledgment in the product documentation would be
+	appreciated but is not required.
+
+	2. Altered source versions must be plainly marked as such, and must not be
+	misrepresented as being the original software.
+
+	3. This notice may not be removed or altered from any source distribution.
+  --------------------------------------------------------------------------------
  */
 #if !defined(__xfile_h)
 #define __xfile_h
@@ -35,7 +47,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ximadefs.h"
+#include "ximadef.h"
 
 class DLL_EXP CxFile
 {

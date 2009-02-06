@@ -21,7 +21,7 @@
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			WholeProgramOptimization="1"
 			>
@@ -54,7 +54,7 @@
 				AdditionalIncludeDirectories="include\zlib,include\png,include\cxImage,directx"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/GBA.pch"
@@ -79,18 +79,19 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMD.lib zlibMD.lib CxImage.lib jpeg.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
 				OutputFile="Release/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="lib\win32"
 				IgnoreDefaultLibraryNames="libci.lib"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				ProgramDatabaseFile=".\Release/VisualBoyAdvance.pdb"
 				GenerateMapFile="true"
 				MapFileName=".\Release/VisualBoyAdvance.map"
 				SubSystem="2"
 				OptimizeReferences="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -125,7 +126,7 @@
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
@@ -155,7 +156,7 @@
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;DEV_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="1"
 				BufferSecurityCheck="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/GBA.pch"
@@ -180,12 +181,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMD.lib zlibMD.lib CxImage.lib jpeg.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
 				OutputFile="Debug/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="lib\win32"
-				IgnoreDefaultLibraryNames="libci.lib;msvcrt.lib"
+				IgnoreDefaultLibraryNames="libci.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/VisualBoyAdvance.pdb"
 				GenerateMapFile="true"
@@ -944,11 +945,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
@@ -1198,18 +1199,6 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\lib\win32\CxImage.lib"
-			>
-		</File>
-		<File
-			RelativePath=".\lib\win32\jpeg.lib"
-			>
-		</File>
-		<File
-			RelativePath=".\lib\win32\libpngMD.lib"
-			>
-		</File>
-		<File
 			RelativePath="..\src\win32\VisualBoyAdvance.exe.manifest"
 			>
 			<FileConfiguration
@@ -1228,10 +1217,6 @@
 					Name="VCCustomBuildTool"
 				/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\lib\win32\zlibMD.lib"
-			>
 		</File>
 	</Files>
 	<Globals>

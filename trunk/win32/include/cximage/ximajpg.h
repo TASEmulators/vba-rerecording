@@ -2,13 +2,9 @@
  * File:	ximajpg.h
  * Purpose:	JPG Image Class Loader and Writer
  */
-/* === C R E D I T S  &  D I S C L A I M E R S ==============
+/* ==========================================================
  * CxImageJPG (c) 07/Aug/2001 Davide Pizzolato - www.xdp.it
- * Permission is given by the author to freely redistribute and include
- * this code in any program as long as this credit is given where due.
- *
- * CxImage version 5.99a 08/Feb/2004
- * See the file history.htm for the complete bugfix and news report.
+ * For conditions of distribution and use, see copyright notice in ximage.h
  *
  * Special thanks to Troels Knakkergaard for new features, enhancements and bugfixes
  *
@@ -21,18 +17,6 @@
  *
  * This software is based in part on the work of the Independent JPEG Group.
  * Copyright (C) 1991-1998, Thomas G. Lane.
- *
- * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY
- * OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
- * THAT THE COVERED CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE
- * OR NON-INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED
- * CODE IS WITH YOU. SHOULD ANY COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT
- * THE INITIAL DEVELOPER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY
- * SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL
- * PART OF THIS LICENSE. NO USE OF ANY COVERED CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER
- * THIS DISCLAIMER.
- *
- * Use at your own risk!
  * ==========================================================
  */
 #if !defined(__ximaJPEG_h)
@@ -53,7 +37,7 @@ class DLL_EXP CxImageJPG: public CxImage
 {
 public:
 	CxImageJPG();
-	~CxImageJPG() {};
+	~CxImageJPG();
 
 //	bool Load(const char * imageFileName){ return CxImage::Load(imageFileName,CXIMAGE_FORMAT_JPG);}
 //	bool Save(const char * imageFileName){ return CxImage::Save(imageFileName,CXIMAGE_FORMAT_JPG);}
@@ -136,7 +120,13 @@ typedef struct tag_ExifInfo {
 #define M_EXIF  0xE1            // Exif marker
 #define M_COM   0xFE            // COMment 
 
-class CxExifInfo
+#define PSEUDO_IMAGE_MARKER 0x123; // Extra value.
+
+#define EXIF_READ_EXIF  0x01
+#define EXIF_READ_IMAGE 0x02
+#define EXIF_READ_ALL   0x03
+
+class DLL_EXP CxExifInfo
 {
 
 typedef struct tag_Section_t{
@@ -150,7 +140,9 @@ public:
 	char m_szLastError[256];
 	CxExifInfo(EXIFINFO* info = NULL);
 	~CxExifInfo();
-	bool DecodeExif(CxFile * hFile);
+	bool DecodeExif(CxFile * hFile, int nReadMode = EXIF_READ_EXIF);
+	bool EncodeExif(CxFile * hFile);
+	void DiscardAllButExif();
 protected:
 	bool process_EXIF(unsigned char * CharBuf, unsigned int length);
 	void process_COM (const BYTE * Data, int length);
@@ -160,6 +152,7 @@ protected:
 	long Get32s(void * Long);
 	unsigned long Get32u(void * Long);
 	double ConvertAnyFormat(void * ValuePtr, int Format);
+	void* FindSection(int SectionType);
 	bool ProcessExifDir(unsigned char * DirStart, unsigned char * OffsetBase, unsigned ExifLength,
                            EXIFINFO * const pInfo, unsigned char ** const LastExifRefdP);
 	int ExifImageWidth;
@@ -169,6 +162,7 @@ protected:
 	bool freeinfo;
 };
 
+	CxExifInfo* m_exif;
 	EXIFINFO m_exifinfo;
 	bool DecodeExif(CxFile * hFile);
 	bool DecodeExif(FILE * hFile) { CxIOFile file(hFile); return DecodeExif(&file); }
