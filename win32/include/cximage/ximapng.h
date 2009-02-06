@@ -2,33 +2,16 @@
  * File:	ximapng.h
  * Purpose:	PNG Image Class Loader and Writer
  */
-/* === C R E D I T S  &  D I S C L A I M E R S ==============
+/* ==========================================================
  * CxImagePNG (c) 07/Aug/2001 Davide Pizzolato - www.xdp.it
- * Permission is given by the author to freely redistribute and include
- * this code in any program as long as this credit is given where due.
- *
- * CxImage version 5.99a 08/Feb/2004
- * See the file history.htm for the complete bugfix and news report.
+ * For conditions of distribution and use, see copyright notice in ximage.h
  *
  * Special thanks to Troels Knakkergaard for new features, enhancements and bugfixes
  *
  * original CImagePNG  and CImageIterator implementation are:
  * Copyright:	(c) 1995, Alejandro Aguilar Sierra <asierra(at)servidor(dot)unam(dot)mx>
  *
- * libpng version 1.2.1 - December 12, 2001
- * Copyright (c) 1998-2001 Glenn Randers-Pehrson
- *
- * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY
- * OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
- * THAT THE COVERED CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE
- * OR NON-INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED
- * CODE IS WITH YOU. SHOULD ANY COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT
- * THE INITIAL DEVELOPER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY
- * SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL
- * PART OF THIS LICENSE. NO USE OF ANY COVERED CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER
- * THIS DISCLAIMER.
- *
- * Use at your own risk!
+ * libpng Copyright (c) 1998-2003 Glenn Randers-Pehrson
  * ==========================================================
  */
 #if !defined(__ximaPNG_h)

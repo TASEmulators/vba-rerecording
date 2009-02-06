@@ -2026,7 +2026,7 @@ static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
   HINSTANCE hinstDll;
   DWORD dwVersion = 0;
   
-  hinstDll = /**/AfxLoadLibrary("USER32.DLL");
+  hinstDll = /**/::LoadLibrary("USER32.DLL");
   
   if(hinstDll) {
     GETMENUBARINFO func = (GETMENUBARINFO)GetProcAddress(hinstDll,
@@ -2051,7 +2051,7 @@ static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
                                         SWP_NOMOVE | SWP_SHOWWINDOW);
       }
     }
-    /**/AfxFreeLibrary(hinstDll);
+	/**/::FreeLibrary(hinstDll);
   }
 }
 
@@ -2448,7 +2448,7 @@ void VBA::winSetLanguageOption(int option, bool force)
         }
         AfxSetResourceHandle(l);
         if(languageModule != NULL)
-          /**/AfxFreeLibrary(languageModule);
+			/**/::FreeLibrary(languageModule);
         languageModule = l;
       } else {
         systemMessage(IDS_FAILED_TO_GET_LOCINFO,
@@ -2459,7 +2459,7 @@ void VBA::winSetLanguageOption(int option, bool force)
     break;
   case 1:
     if(languageModule != NULL)
-      /**/AfxFreeLibrary(languageModule);
+		/**/::FreeLibrary(languageModule);
     languageModule = NULL;
     AfxSetResourceHandle(AfxGetInstanceHandle());
     break;
@@ -2477,7 +2477,7 @@ void VBA::winSetLanguageOption(int option, bool force)
           }
           AfxSetResourceHandle(l);
           if(languageModule != NULL)
-            /**/AfxFreeLibrary(languageModule);
+			  /**/::FreeLibrary(languageModule);
           languageModule = l;
         }
       } else {
@@ -2508,7 +2508,7 @@ HINSTANCE VBA::winLoadLanguage(const char *name)
   
   buffer.Format("vba_%s.dll", name);
 
-  HINSTANCE l = /**/AfxLoadLibrary(buffer);
+  HINSTANCE l = /**/::LoadLibrary(buffer);
   
   if(l == NULL) {
     if(strlen(name) == 3) {
@@ -2518,7 +2518,7 @@ HINSTANCE VBA::winLoadLanguage(const char *name)
       buffer2[2] = 0;
       buffer.Format("vba_%s.dll", buffer2);
 
-      return /**/AfxLoadLibrary(buffer);
+	  return /**/::LoadLibrary(buffer);
     }
   }
   return l;
