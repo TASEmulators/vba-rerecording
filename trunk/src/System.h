@@ -95,6 +95,7 @@ extern void systemDrawScreen();
 extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick... the bool is for if motion sensor should be handled too
 extern u32 systemReadJoypad(int,bool);
+extern void systemNotifyJoypadRead();
 extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
 extern void systemSetTitle(const char *);

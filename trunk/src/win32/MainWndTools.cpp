@@ -314,6 +314,15 @@ void MainWnd::OnUpdateToolsFrameCounter(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(theApp.frameCounter);  
 }
 
+void MainWnd::OnToolsLagCounter() 
+{
+	theApp.lagCounter = !theApp.lagCounter;
+}
+void MainWnd::OnUpdateToolsLagCounter(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(theApp.lagCounter);  
+}
+
 void MainWnd::OnToolsInputDisplay() 
 {
 	theApp.inputDisplay = !theApp.inputDisplay;
@@ -670,4 +679,76 @@ void MainWnd::OnToolsCustomizeCommon()
 void MainWnd::OnUpdateToolsCustomizeCommon(CCmdUI* pCmdUI) 
 {
   pCmdUI->Enable(theApp.videoOption != VIDEO_320x240);
+}
+
+static BOOL SetClipboardText(LPCTSTR str)
+{
+	size_t bufSize;
+	LPTSTR buf;
+	HANDLE hMem;
+
+	bufSize = (lstrlen(str) + 1) * sizeof(TCHAR);
+	hMem = GlobalAlloc(GMEM_SHARE | GMEM_MOVEABLE, bufSize);
+	if (!hMem) return FALSE;
+
+	buf = (LPTSTR) GlobalLock(hMem);
+	if (buf)
+	{
+		lstrcpy(buf, str);
+		GlobalUnlock(hMem);
+		if (OpenClipboard(NULL))
+		{
+			EmptyClipboard();
+			SetClipboardData(CF_TEXT, hMem);
+			CloseClipboard();
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+void MainWnd::OnToolsCopyVBAWatchSetting() 
+{
+	static TCHAR buf[MAX_PATH + 256];
+	static TCHAR exe_path [MAX_PATH];
+	static TCHAR exe_fname [MAX_PATH];
+	static TCHAR exe_ext [MAX_PATH];
+
+	GetModuleFileName(NULL, exe_path, MAX_PATH);
+	_tsplitpath(exe_path, NULL, NULL, exe_fname, exe_ext);
+
+	// ;target:filename:vbaBIOS:vbaWORKRAM:vbaIRAM:vbaIOMEM:vbaPALETTERAM:vbaVRAM:vbaOAM:vbaROM
+	// (v2 beta)
+	wsprintf(buf, ":target:%s%s:%X:%X:%X:%X:%X:%X:%X:%X\n", exe_fname, exe_ext, 
+		&bios, 
+		&workRAM, 
+		&internalRAM, 
+		&ioMem, 
+		&paletteRAM, 
+		&vram, 
+		&oam, 
+		&rom
+	);
+
+	SetClipboardText(buf);
+}
+
+void MainWnd::OnToolsCopyVBxWatchSetting() 
+{
+	static TCHAR buf[MAX_PATH + 256];
+	static TCHAR exe_path [MAX_PATH];
+	static TCHAR exe_fname [MAX_PATH];
+	static TCHAR exe_ext [MAX_PATH];
+
+	GetModuleFileName(NULL, exe_path, MAX_PATH);
+	_tsplitpath(exe_path, NULL, NULL, exe_fname, exe_ext);
+
+	// ;target:filename:gbMemoryMap
+	// (v2 beta)
+	extern u8 *gbMemoryMap[16];
+	wsprintf(buf, ":target:%s%s:%X\n", exe_fname, exe_ext, 
+		gbMemoryMap
+	);
+
+	SetClipboardText(buf);
 }

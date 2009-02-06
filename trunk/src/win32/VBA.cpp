@@ -132,7 +132,7 @@ int systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
 #define BMP_BUFFER_MAX_WIDTH (256)
 #define BMP_BUFFER_MAX_HEIGHT (224)
-#define BMP_BUFFER_MAX_DEPTH (3)
+#define BMP_BUFFER_MAX_DEPTH (4)
 static char bmpBuffer [BMP_BUFFER_MAX_WIDTH*BMP_BUFFER_MAX_HEIGHT*BMP_BUFFER_MAX_DEPTH];
 
 char movieFileToPlay [1024];
@@ -160,6 +160,28 @@ void directXMessage(const char *msg)
   systemMessage(IDS_DIRECTX_7_REQUIRED,
                 "DirectX 7.0 or greater is required to run.\nDownload at http://www.microsoft.com/directx.\n\nError found at: %s",
                 msg);
+}
+
+void DrawTextMessages(u8 * dest, int pitch, int left, int bottom)
+{
+	for(int slot = 0 ; slot < SCREEN_MESSAGE_SLOTS ; slot++)
+	{
+		if(theApp.screenMessage[slot]) {
+			if(((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+			(!theApp.disableStatusMessage || slot == 1 || slot == 2)) {
+
+				drawText(dest,
+						pitch,
+						left,
+						bottom - 10*(slot+1),
+						theApp.screenMessageBuffer[slot],
+						theApp.screenMessageColorBuffer[slot]);  
+
+			} else {
+				theApp.screenMessage[slot] = false;
+			}
+		}  
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -264,6 +286,9 @@ VBA::VBA()
   regEnabled = false;
   pauseWhenInactive = true;
   frameCounter = false;
+  lagCounter = false;
+  lagFrame = false;
+  lagFrameLast = false;
   inputDisplay = false;
   movieReadOnly = true;
   speedupToggle = false;
@@ -316,6 +341,7 @@ VBA::VBA()
   updateCount = 0;
 
   globalFrameCount = 0;
+  globalLagFrameCount = 0;
 
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
@@ -1141,6 +1167,11 @@ u32 systemReadJoypad(int which, bool sensor)
   return 0;
 }
 
+void systemNotifyJoypadRead()
+{
+  theApp.lagFrame = false;
+}
+
 extern bool vbaShuttingDown;
 extern long linearSoundFrameCount;
 long linearFrameCount = 0;
@@ -1186,10 +1217,14 @@ void systemDrawScreen()
     }
   }
 
-/* // This piece was moved from src/win32/DirectDraw.cpp.
-    // However, it is redundant from those in such as Direct3D.cpp.
+	// This piece was moved from src/win32/DirectDraw.cpp.
+	// However, it is redundant from those in such as Direct3D.cpp.
 	// So, tentatively reverted to v19.3
-  // "in-game" text rendering
+	//
+	// theApp.display->render() is called after video logging,
+	// text messages cannot be recorded to the video, of course.
+	//
+	// "in-game" text rendering
 	if(textMethod == 0)
 	{
 		int copyX = 240, copyY = 160;
@@ -1199,7 +1234,6 @@ void systemDrawScreen()
 
 		DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
 	}
-//*/
 
   if(!theApp.painting)
   {
@@ -1352,7 +1386,11 @@ void systemFrame(int rate)
   }
 
   theApp.globalFrameCount++;
-
+  if (theApp.lagFrame) {
+    theApp.globalLagFrameCount++;
+  }
+  theApp.lagFrameLast = theApp.lagFrame;
+  theApp.lagFrame = true;
 
   u32 time = systemGetClock();  
 
@@ -1777,6 +1815,7 @@ void VBA::loadSettings()
     true : false;
 
   frameCounter = regQueryDwordValue("frameCounter", false) ? true : false;
+  lagCounter = regQueryDwordValue("lagCounter", false) ? true : false;
   inputDisplay = regQueryDwordValue("inputDisplay", false) ? true : false;
   movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
 
@@ -2612,6 +2651,7 @@ void VBA::saveSettings()
   regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
 
   regSetDwordValue("frameCounter", frameCounter);
+  regSetDwordValue("lagCounter", lagCounter);
   regSetDwordValue("inputDisplay", inputDisplay);
   regSetDwordValue("movieReadOnly", movieReadOnly);
 

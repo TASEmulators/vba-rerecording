@@ -703,6 +703,8 @@ void DirectDrawDisplay::render()
     
   if(hret == DD_OK) {
 
+	// moved to VBA.cpp
+	/*
 	  if(textMethod == 0)
 	  {
 			int copyX = 240, copyY = 160;
@@ -712,7 +714,8 @@ void DirectDrawDisplay::render()
 
 			DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
 	  }
-  
+	*/
+
 	  if(theApp.filterFunction) {
       if(systemColorDepth == 16)
         (*theApp.filterFunction)(pix+theApp.filterWidth*2+4,
@@ -953,26 +956,4 @@ int DirectDrawDisplay::selectFullScreenMode(GUID **pGUID)
 IDisplay *newDirectDrawDisplay()
 {
   return new DirectDrawDisplay();
-}
-
-void DrawTextMessages(u8 * dest, int pitch, int left, int bottom)
-{
-	for(int slot = 0 ; slot < SCREEN_MESSAGE_SLOTS ; slot++)
-	{
-		if(theApp.screenMessage[slot]) {
-			if(((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
-			(!theApp.disableStatusMessage || slot == 1 || slot == 2)) {
-
-				drawText(dest,
-						pitch,
-						left,
-						bottom - 10*(slot+1),
-						theApp.screenMessageBuffer[slot],
-						theApp.screenMessageColorBuffer[slot]);  
-
-			} else {
-				theApp.screenMessage[slot] = false;
-			}
-		}  
-	}
 }

@@ -2345,6 +2345,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Frame Counter",               ID_TOOLS_FRAMECOUNTER
+        MENUITEM "Lag Counter",                 ID_TOOLS_LAGCOUNTER
         MENUITEM "Input Display",               ID_TOOLS_INPUTDISPLAY
         MENUITEM SEPARATOR
         MENUITEM "&Frame Advance",              ID_DEBUG_NEXTFRAME
@@ -2385,6 +2386,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Customize All Commands...",   ID_TOOLS_CUSTOMIZE
         MENUITEM "Customize Common Hotkeys...", ID_TOOLS_CUSTOMIZE_COMMON
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Settings for VBAWatch",  ID_TOOLS_VBAWATCH_SETTING
+        MENUITEM "Copy Settings for VBxWatch",  ID_TOOLS_VBXWATCH_SETTING
     END
     POPUP "&Help"
     BEGIN

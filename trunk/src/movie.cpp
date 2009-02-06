@@ -999,6 +999,7 @@ void DisplayPressedKeys ()
 void VBAUpdateFrameCountDisplay ()
 {
 	char frameDisplayString [64];
+	char lagFrameDisplayString [64];
 
 	switch(Movie.state)
 	{
@@ -1011,6 +1012,9 @@ void VBAUpdateFrameCountDisplay ()
 #			endif
 				{
 					sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
+					sprintf(lagFrameDisplayString, " | %d%s", theApp.globalLagFrameCount, theApp.lagFrameLast ? " *" : "");
+					if (theApp.lagCounter)
+						strcat(frameDisplayString, lagFrameDisplayString);
 					systemScreenMessage(frameDisplayString,1,600);
 				}
 		}
@@ -1025,6 +1029,9 @@ void VBAUpdateFrameCountDisplay ()
 #		endif
 			{
 				sprintf(frameDisplayString, "%d", Movie.currentFrame);
+				sprintf(lagFrameDisplayString, " | %d%s", theApp.globalLagFrameCount, theApp.lagFrameLast ? " *" : "");
+				if (theApp.lagCounter)
+					strcat(frameDisplayString, lagFrameDisplayString);
 				systemScreenMessage(frameDisplayString,1,600);
 			}
 		}
@@ -1035,7 +1042,11 @@ void VBAUpdateFrameCountDisplay ()
 #		if (defined(WIN32) && !defined(SDL))
 			if(theApp.frameCounter)
 			{
-				sprintf(frameDisplayString, "%d (no movie)", theApp.globalFrameCount);
+				sprintf(frameDisplayString, "%d", theApp.globalFrameCount);
+				sprintf(lagFrameDisplayString, " | %d%s", theApp.globalLagFrameCount, theApp.lagFrameLast ? " *" : "");
+				if (theApp.lagCounter)
+					strcat(frameDisplayString, lagFrameDisplayString);
+				strcat(frameDisplayString, " (no movie)");
 				systemScreenMessage(frameDisplayString,1,600);
 			}
 #		else

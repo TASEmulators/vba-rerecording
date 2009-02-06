@@ -172,7 +172,11 @@ class VBA : public CWinApp
   bool autoFireToggle;
   bool winPauseNextFrame;
   bool frameCounter;
+  bool lagCounter;
+  bool lagFrame;
+  bool lagFrameLast;
   int globalFrameCount;
+  int globalLagFrameCount;
   bool inputDisplay;
   bool movieReadOnly;
   bool soundRecording;

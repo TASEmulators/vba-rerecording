@@ -1428,6 +1428,7 @@ void CPUCleanUp()
 {
 #if (defined(WIN32) && !defined(SDL))
 	theApp.globalFrameCount = 0;
+	theApp.globalLagFrameCount = 0;
 #endif
 
 #ifdef PROFILING
@@ -3233,6 +3234,7 @@ void CPUReset()
 {
 #if (defined(WIN32) && !defined(SDL))
 	theApp.globalFrameCount = 0;
+	theApp.globalLagFrameCount = 0;
 #endif
 	VBAMovieSignalReset();
 

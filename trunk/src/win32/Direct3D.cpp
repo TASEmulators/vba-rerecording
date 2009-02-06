@@ -557,6 +557,8 @@ void Direct3DDisplay::render()
     if(pTexture && SUCCEEDED(pTexture->LockRect(0, &locked, NULL, 0)))
 	{
 
+	// moved to VBA.cpp
+	/*
 	  if(textMethod == 0)
 	  {
 			int copyX = 240, copyY = 160;
@@ -566,7 +568,7 @@ void Direct3DDisplay::render()
 
 			DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
 	  }
-
+	*/
 
       if(theApp.filterFunction) {
         if(systemColorDepth == 16)
