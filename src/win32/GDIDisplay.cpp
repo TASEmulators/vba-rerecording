@@ -319,6 +319,8 @@ void GDIDisplay::render()
 	  systemMessage(0,"The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
   }
 
+	// moved to VBA.cpp
+	/*
 	  if(textMethod == 0)
 	  {
 			int copyX = 240, copyY = 160;
@@ -328,6 +330,7 @@ void GDIDisplay::render()
 
 			DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
 	  }
+	*/
 
   if(filterFunction) {
     bi->bmiHeader.biWidth = filterWidth * 2;

@@ -1429,6 +1429,7 @@ u8 gbReadMemory(register u16 address)
 					}
 				}
 			}
+			systemNotifyJoypadRead();
 			return gbMemory[0xff00];
 			break;
 		case 0x01:
@@ -1625,6 +1626,7 @@ void gbReset()
 {
 #if (defined(WIN32) && !defined(SDL))
 	theApp.globalFrameCount = 0;
+	theApp.globalLagFrameCount = 0;
 #endif
 	VBAMovieSignalReset();
 
@@ -2812,6 +2814,7 @@ void gbCleanUp()
 
 #if (defined(WIN32) && !defined(SDL))
 	theApp.globalFrameCount = 0;
+	theApp.globalLagFrameCount = 0;
 #endif
 
 	if(gbRam != NULL) 

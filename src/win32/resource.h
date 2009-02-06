@@ -895,13 +895,16 @@
 #define ID_SETSPEED_BLA                 40458
 #define ID_SOUND_SOUNDCHANNELS          40459
 #define ID_CHEATS_PAUSEDURINGCHEATSEARCH 40463
+#define ID_TOOLS_LAGCOUNTER             40464
+#define ID_TOOLS_VBAWATCH_SETTING       40465
+#define ID_TOOLS_VBXWATCH_SETTING       40466
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        159
-#define _APS_NEXT_COMMAND_VALUE         40464
+#define _APS_NEXT_COMMAND_VALUE         40467
 #define _APS_NEXT_CONTROL_VALUE         1285
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

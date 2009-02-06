@@ -98,6 +98,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AdditionalManifestFiles="$(ProjectDir)\..\src\win32\VisualBoyAdvance.exe.manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -198,6 +199,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AdditionalManifestFiles="$(ProjectDir)\..\src\win32\VisualBoyAdvance.exe.manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -942,11 +944,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
