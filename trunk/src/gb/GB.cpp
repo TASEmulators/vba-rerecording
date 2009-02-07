@@ -1429,7 +1429,9 @@ u8 gbReadMemory(register u16 address)
 					}
 				}
 			}
-			systemNotifyJoypadRead();
+			#if (defined(WIN32) && !defined(SDL))
+				systemNotifyJoypadRead();
+			#endif
 			return gbMemory[0xff00];
 			break;
 		case 0x01:
