@@ -97,7 +97,7 @@ void mapperMBC1RAM(u16 address, u8 value)
 {
   if(gbDataMBC1.mapperRAMEnable) {
     if(gbRamSize) {
-      gbMemoryMap[address >> 12][address & 0x0fff] = value;
+      gbWriteMemoryQuick(address, value);
       systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
     }
   }
@@ -167,7 +167,7 @@ void mapperMBC2RAM(u16 address, u8 value)
 {
   if(gbDataMBC2.mapperRAMEnable) {
     if(gbRamSize && address < 0xa200) {
-      gbMemoryMap[address >> 12][address & 0x0fff] = value;
+      gbWriteMemoryQuick(address, value);
       systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
     }
   }
@@ -318,7 +318,7 @@ void mapperMBC3RAM(u16 address, u8 value)
   if(gbDataMBC3.mapperRAMEnable) {
     if(gbDataMBC3.mapperRAMBank != -1) {
       if(gbRamSize) {
-        gbMemoryMap[address>>12][address & 0x0fff] = value;
+        gbWriteMemoryQuick(address, value);
         systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
       }
     } else {
@@ -357,7 +357,7 @@ u8 mapperMBC3ReadRAM(u16 address)
 {
   if(gbDataMBC3.mapperRAMEnable) {
     if(gbDataMBC3.mapperRAMBank != -1) {
-      return gbMemoryMap[address>>12][address & 0x0fff];
+      return gbReadMemoryQuick(address);
     }
 
     switch(gbDataMBC3.mapperClockRegister) {
@@ -472,7 +472,7 @@ void mapperMBC5RAM(u16 address, u8 value)
 {
   if(gbDataMBC5.mapperRAMEnable) {
     if(gbRamSize) {
-      gbMemoryMap[address >> 12][address & 0x0fff] = value;
+      gbWriteMemoryQuick(address, value);
       systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
     }
   }
@@ -596,8 +596,8 @@ void mapperMBC7RAM(u16 address, u8 value)
     if(!oldCs && gbDataMBC7.cs) {
       if(gbDataMBC7.state==5) {
         if(gbDataMBC7.writeEnable) {
-          gbMemory[0xa000+gbDataMBC7.address*2]=gbDataMBC7.buffer>>8;
-          gbMemory[0xa000+gbDataMBC7.address*2+1]=gbDataMBC7.buffer&0xff;
+          gbWriteMemoryQuick(0xa000+gbDataMBC7.address*2, gbDataMBC7.buffer>>8);
+          gbWriteMemoryQuick(0xa000+gbDataMBC7.address*2+1, gbDataMBC7.buffer&0xff);
           systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
         }
         gbDataMBC7.state=0;
@@ -664,8 +664,8 @@ void mapperMBC7RAM(u16 address, u8 value)
               } else if((gbDataMBC7.address>>6)==1) {
                 if (gbDataMBC7.writeEnable) {
                   for(int i=0;i<256;i++) {
-                    gbMemory[0xa000+i*2] = gbDataMBC7.buffer >> 8;
-                    gbMemory[0xa000+i*2+1] = gbDataMBC7.buffer & 0xff;
+                    gbWriteMemoryQuick(0xa000+i*2, gbDataMBC7.buffer >> 8);
+                    gbWriteMemoryQuick(0xa000+i*2+1, gbDataMBC7.buffer & 0xff);
                     systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
                   }
                 }
@@ -695,8 +695,8 @@ void mapperMBC7RAM(u16 address, u8 value)
             if(gbDataMBC7.count==1) {
               gbDataMBC7.state=4;
               gbDataMBC7.count=0;
-              gbDataMBC7.buffer = (gbMemory[0xa000+gbDataMBC7.address*2]<<8)|
-                (gbMemory[0xa000+gbDataMBC7.address*2+1]);              
+              gbDataMBC7.buffer = (gbReadMemoryQuick(0xa000+gbDataMBC7.address*2)<<8)|
+                (gbReadMemoryQuick(0xa000+gbDataMBC7.address*2+1));              
             }
             break;
           case 3:
@@ -807,7 +807,7 @@ void mapperHuC1RAM(u16 address, u8 value)
 {
   if(gbDataHuC1.mapperRAMEnable) {
     if(gbRamSize) {
-      gbMemoryMap[address >> 12][address & 0x0fff] = value;
+      gbWriteMemoryQuick(address, value);
       systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
     }
   }
@@ -895,7 +895,7 @@ u8 mapperHuC3ReadRAM(u16 address)
       return 1;
     return gbDataHuC3.mapperRAMValue;
   } else
-    return gbMemoryMap[address >> 12][address & 0x0fff];
+    return gbReadMemoryQuick(address);
 }
 
 // HuC3 RAM write
@@ -907,7 +907,7 @@ void mapperHuC3RAM(u16 address, u8 value)
      gbDataHuC3.mapperRAMFlag > 0x0e) {
     if(gbDataHuC3.mapperRAMEnable) {
       if(gbRamSize) {
-        gbMemoryMap[address >> 12][address & 0x0fff] = value;
+        gbWriteMemoryQuick(address, value);
         systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
       }
     }

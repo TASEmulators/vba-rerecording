@@ -428,13 +428,13 @@ bool gbCheatReadGSCodeFile(const char *fileName)
 u8 gbCheatRead(u16 address)
 {
   if(!cheatsEnabled)
-    return gbMemoryMap[address>>12][address & 0xFFF];
+    return gbReadMemoryQuick(address);
 
   for(int i = 0; i < gbCheatNumber; i++) {
     if(gbCheatList[i].enabled && gbCheatList[i].address == address) {
       switch(gbCheatList[i].code) {
       case 0x100: // GameGenie support
-        if(gbMemoryMap[address>>12][address&0xFFF] == gbCheatList[i].compare)
+        if(gbReadMemoryQuick(address) == gbCheatList[i].compare)
           return gbCheatList[i].value;
         break;
       case 0x00:
@@ -458,5 +458,5 @@ u8 gbCheatRead(u16 address)
       }
     }
   }
-  return gbMemoryMap[address>>12][address&0xFFF];
+  return gbReadMemoryQuick(address);
 }

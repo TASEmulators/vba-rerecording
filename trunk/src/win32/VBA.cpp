@@ -248,6 +248,7 @@ VBA::VBA()
   removeIntros = false;
   autoIPS = true;
   winGbBorderOn = 0;
+  winGbEchoRAMFixOn = false;
   hideMovieBorder = false;
   winFlashSize = 0x10000;
   winRtcEnable = false;
@@ -1804,6 +1805,9 @@ void VBA::loadSettings()
   showSpeedTransparent = regQueryDwordValue("showSpeedTransparent", TRUE) ?
     TRUE : FALSE;
 
+  winGbEchoRAMFixOn = regQueryDwordValue("gbEchoRAMFix", false) ? true : false;
+  gbEchoRAMFixOn = winGbEchoRAMFixOn ? 1 : 0;
+
   winGbPrinterEnabled = regQueryDwordValue("gbPrinter", false) ? true : false;
 
   if(winGbPrinterEnabled)
@@ -2647,6 +2651,8 @@ void VBA::saveSettings()
   regSetDwordValue("showSpeedTransparent", showSpeedTransparent);
 
   regSetDwordValue("gbPrinter", winGbPrinterEnabled);
+
+  regSetDwordValue("gbEchoRAMFix", winGbEchoRAMFixOn);
 
   regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
 

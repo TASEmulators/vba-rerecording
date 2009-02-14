@@ -512,7 +512,7 @@ LRESULT GBMapView::OnMapInfo(WPARAM wParam, LPARAM lParam)
 
   u8 attrs = 0;
 
-  u8 tile = gbMemoryMap[9][address & 0xfff];
+  u8 tile = gbReadMemoryQuick(0x9000 | (address & 0xfff));
   if(gbCgbMode) {
     attrs = gbVram[0x2000 + address - 0x8000];
     tile = gbVram[address & 0x1fff];

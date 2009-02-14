@@ -116,6 +116,7 @@ class VBA : public CWinApp
   bool removeIntros;
   bool autoIPS;
   int winGbBorderOn;
+  bool winGbEchoRAMFixOn;
   bool hideMovieBorder;
   int winFlashSize;
   bool winRtcEnable;

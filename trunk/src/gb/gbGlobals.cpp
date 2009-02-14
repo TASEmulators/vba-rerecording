@@ -19,6 +19,7 @@
 #include "../GBA.h"
 
 u8 *gbMemoryMap[16];
+int gbEchoRAMFixOn = 0;
 
 int gbRomSizeMask = 0;
 int gbRomSize = 0;

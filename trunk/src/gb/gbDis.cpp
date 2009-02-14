@@ -28,8 +28,6 @@ typedef struct {
   char *mnen;
 } GBOPCODE;
 
-#define GB_READ(x) gbMemoryMap[(x)>>12][(x)&0xfff]
-
 static char *registers[] =
   { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
 
@@ -161,12 +159,12 @@ int gbDis(char *buffer, u16 address)
   sprintf(p, "%04x        ", address);
   p += 12;
   
-  u8 opcode = GB_READ(address);
+  u8 opcode = gbReadMemoryQuick(address);
   address++;
   char *mnen;
   GBOPCODE *op;
   if(opcode == 0xcb) {
-    opcode = GB_READ(address);
+    opcode = gbReadMemoryQuick(address);
     address++;
     instr++;
     op = cbOpcodes;
@@ -185,29 +183,29 @@ int gbDis(char *buffer, u16 address)
       mnen++;
       switch(*mnen++) {
       case 'W':
-        b0 = GB_READ(address);
+        b0 = gbReadMemoryQuick(address);
         address++;
-        b1 = GB_READ(address);
+        b1 = gbReadMemoryQuick(address);
         address++;
         p = addHex16(p, b0|b1<<8);
         instr += 2;
         *p++ = 'h';
         break;
       case 'B':
-        p = addHex(p, GB_READ(address));
+        p = addHex(p, gbReadMemoryQuick(address));
         *p++ = 'h';
         address++;
         instr++;
         break;
       case 'D':
-        disp = GB_READ(address);
+        disp = gbReadMemoryQuick(address);
         if(disp >= 0)
           *p++ = '+';
         p += sprintf(p, "%d", disp);
         instr++;
         break;
       case 'd':
-        disp = GB_READ(address);
+        disp = gbReadMemoryQuick(address);
         address++;
         p = addHex16(p, address+disp);
         *p++ = 'h';
@@ -242,7 +240,7 @@ int gbDis(char *buffer, u16 address)
   }
   for(int i = 0; i < instr; i++) {
     u16 a = addr + i;
-    addHex(buffer+5+i*2, GB_READ(a));
+    addHex(buffer+5+i*2, gbReadMemoryQuick(a));
   }
   *p = 0;
   return instr;
