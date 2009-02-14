@@ -156,8 +156,6 @@ void gbSgbFillScreen(u16 color)
   }
 }
 
-#define getmem(x) gbMemoryMap[(x) >> 12][(x) & 0xfff]
-
 void gbSgbRenderScreenToBuffer()
 {
   u16 mapAddress = 0x9800;
@@ -178,7 +176,7 @@ void gbSgbRenderScreenToBuffer()
 
   for(int i = 0; i < 13; i++) {
     for(int j = 0; j < 20; j++) {
-      int tile = getmem(mapAddress);
+      int tile = gbReadMemoryQuick(mapAddress);
       mapAddress++;
 
       if(flag) {
@@ -188,7 +186,7 @@ void gbSgbRenderScreenToBuffer()
           tile += 128;
       }
       for(int k = 0; k < 16; k++)
-        *toAddress++ = getmem(patternAddress + tile*16 + k);
+        *toAddress++ = gbReadMemoryQuick(patternAddress + tile*16 + k);
     }
     mapAddress += 12;
   }

@@ -30,6 +30,31 @@ extern u8 *gbMemory;
 extern u16 *gbLineBuffer;
 
 extern u8 *gbMemoryMap[16];
+extern int gbEchoRAMFixOn;
+
+inline u8 gbReadMemoryQuick(u16 address)
+{
+	if (gbEchoRAMFixOn)
+	{
+		if (address>=0xe000 && address<0xfe00)
+		{
+			address -= 0x2000;
+		}
+	}
+	return gbMemoryMap[address>>12][address&0xfff];
+}
+
+inline void gbWriteMemoryQuick(u16 address, u8 value)
+{
+	if (gbEchoRAMFixOn)
+	{
+		if (address>=0xe000 && address<0xfe00)
+		{
+			address -= 0x2000;
+		}
+	}
+	gbMemoryMap[address>>12][address&0xfff] = value;
+}
 
 extern int gbFrameSkip;
 extern u16 gbColorFilter[32768];

@@ -608,7 +608,7 @@ void gbCopyMemory(u16 d, u16 s, int count)
 {
 	while(count) 
 	{
-		gbMemoryMap[d>>12][d & 0x0fff] = gbMemoryMap[s>>12][s & 0x0fff];
+		gbWriteMemoryQuick(d, gbReadMemoryQuick(s));
 		s++;
 		d++;
 		count--;
@@ -655,7 +655,7 @@ void gbCompareLYToLYC()
 		register_STAT &= 0xfb;
 }
 
-void  gbWriteMemory(register u16 address, register u8 value)
+void gbWriteMemory(register u16 address, register u8 value)
 {
 	if(address < 0x8000) 
 	{
@@ -675,7 +675,7 @@ void  gbWriteMemory(register u16 address, register u8 value)
 
 	if(address < 0xa000) 
 	{
-		gbMemoryMap[address>>12][address&0x0fff] = value;
+		gbWriteMemoryQuick(address, value);
 		return;
 	}
 
@@ -698,7 +698,7 @@ void  gbWriteMemory(register u16 address, register u8 value)
 
 	if(address < 0xfe00) 
 	{
-		gbMemoryMap[address>>12][address & 0x0fff] = value;
+		gbWriteMemoryQuick(address, value);
 		return;
 	}
 
@@ -1237,7 +1237,7 @@ void  gbWriteMemory(register u16 address, register u8 value)
 		}
 	}
 
-	gbMemory[address] = value;
+	gbWriteMemoryQuick(address, value);
 }
 
 u8 gbReadOpcode(register u16 address)
@@ -1245,7 +1245,8 @@ u8 gbReadOpcode(register u16 address)
 	if(gbCheatMap[address])
 		return gbCheatRead(address);
 
-	switch(address & 0xf000) 
+	// the following fix does more than Echo RAM fix, anyway...
+	switch(gbEchoRAMFixOn ? (address>>12) & 0x000f : address & 0xf000)
 	{
 	case 0x0a:
 	case 0x0b:
@@ -1305,7 +1306,7 @@ u8 gbReadOpcode(register u16 address)
 		}
 		break;
 	}
-	return gbMemoryMap[address>>12][address & 0x0fff];
+	return gbReadMemoryQuick(address);
 }
 
 u8 gbReadMemory(register u16 address)
@@ -1314,7 +1315,7 @@ u8 gbReadMemory(register u16 address)
 		return gbCheatRead(address);
 
 	if(address < 0xa000)
-		return gbMemoryMap[address>>12][address&0x0fff];
+		return gbReadMemoryQuick(address);
 
 	if(address < 0xc000) 
 	{
@@ -1329,7 +1330,7 @@ u8 gbReadMemory(register u16 address)
 
 		if(mapperReadRAM)
 			return mapperReadRAM(address);
-		return gbMemoryMap[address>>12][address & 0x0fff];
+		return gbReadMemoryQuick(address);
 	}
 
 	if(address >= 0xff00) 
@@ -1483,7 +1484,7 @@ u8 gbReadMemory(register u16 address)
 		}
 	}
 
-	return gbMemoryMap[address>>12][address & 0x0fff];
+	return gbReadMemoryQuick(address);
 }
 
 void gbVblank_interrupt()
@@ -2051,7 +2052,7 @@ void gbInit()
 	gbSgbInit();
 
 	gbMemory = (u8 *)malloc(65536);
-	memset(gbMemory,0, 65536);
+	memset(gbMemory, 0, 65536);
 
 	// HACK: +4 at start to accomodate the 2xSaI filter reading out of bounds of the leftmost pixel
 	origPix = (u8 *)calloc(1,4*257*226 +4);

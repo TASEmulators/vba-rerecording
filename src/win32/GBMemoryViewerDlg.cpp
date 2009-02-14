@@ -47,7 +47,7 @@ void GBMemoryViewer::readData(u32 address, int len, u8 *data)
   u16 addr = address & 0xffff;
   if(emulating && gbRom != NULL) {
     for(int i = 0; i < len; i++) {
-      *data++ = gbMemoryMap[addr >> 12][addr & 0xfff];
+      *data++ = gbReadMemoryQuick(addr);
       addr++;
     }
   } else {
@@ -58,42 +58,36 @@ void GBMemoryViewer::readData(u32 address, int len, u8 *data)
   }
 }
 
-#define GB_READBYTE_QUICK(addr) \
-  gbMemoryMap[(addr) >> 12][(addr) & 0xfff]
-
-#define GB_WRITEBYTE_QUICK(addr,v) \
-  gbMemoryMap[(addr) >> 12][(addr) & 0xfff] = (v)
-
 void GBMemoryViewer::editData(u32 address, int size, int mask, u32 value)
 {
   u32 oldValue;
   u16 addr = (u16)address & 0xffff;
   switch(size) {
   case 8:
-    oldValue = GB_READBYTE_QUICK(addr);
+    oldValue = gbReadMemoryQuick(addr);
     oldValue &= mask;
     oldValue |= (u8)value;
-    GB_WRITEBYTE_QUICK(addr, oldValue);
+    gbWriteMemoryQuick(addr, oldValue);
     break;
   case 16:
-    oldValue = GB_READBYTE_QUICK(addr) |
-      (GB_READBYTE_QUICK(addr + 1) << 8);
+    oldValue = gbReadMemoryQuick(addr) |
+      (gbReadMemoryQuick(addr + 1) << 8);
     oldValue &= mask;
     oldValue |= (u16)value;
-    GB_WRITEBYTE_QUICK(addr, (oldValue & 255));
-    GB_WRITEBYTE_QUICK(addr+1, (oldValue >> 8));
+    gbWriteMemoryQuick(addr, (oldValue & 255));
+    gbWriteMemoryQuick(addr+1, (oldValue >> 8));
     break;
   case 32:
-    oldValue = GB_READBYTE_QUICK(addr) |
-      (GB_READBYTE_QUICK(addr + 1) << 8) |
-      (GB_READBYTE_QUICK(addr + 2) << 16) |
-      (GB_READBYTE_QUICK(addr + 3) << 24);
+    oldValue = gbReadMemoryQuick(addr) |
+      (gbReadMemoryQuick(addr + 1) << 8) |
+      (gbReadMemoryQuick(addr + 2) << 16) |
+      (gbReadMemoryQuick(addr + 3) << 24);
     oldValue &= mask;
     oldValue |= (u32)value;
-    GB_WRITEBYTE_QUICK(addr, (oldValue & 255));
-    GB_WRITEBYTE_QUICK(addr+1, (oldValue >> 8));
-    GB_WRITEBYTE_QUICK(addr+2, (oldValue >> 16));
-    GB_WRITEBYTE_QUICK(addr+3, (oldValue >> 24));
+    gbWriteMemoryQuick(addr, (oldValue & 255));
+    gbWriteMemoryQuick(addr+1, (oldValue >> 8));
+    gbWriteMemoryQuick(addr+2, (oldValue >> 16));
+    gbWriteMemoryQuick(addr+3, (oldValue >> 24));
     break;
   }    
 }
@@ -373,7 +367,7 @@ void GBMemoryViewerDlg::OnSave()
       u16 addr = dlg.getAddress() & 0xffff;
 
       for(int i = 0; i < size; i++) {
-        fputc(gbMemoryMap[addr >> 12][addr & 0xfff], f);
+        fputc(gbReadMemoryQuick(addr), f);
         addr++;
       }
 
@@ -427,7 +421,7 @@ void GBMemoryViewerDlg::OnLoad()
         int c = fgetc(f);
         if(c == -1)
           break;
-        gbMemoryMap[addr >> 12][addr & 0xfff] = c;
+        gbWriteMemoryQuick(addr, c);
         addr++;
       }
       OnRefresh();

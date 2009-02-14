@@ -107,7 +107,7 @@
    // RRC (HL)
    tempValue=gbReadMemory(HL.W);
    AF.B.B0=(tempValue&0x01 ? C_FLAG : 0);
-   tempValue=(tempValue>>1)|(tempValue<<7);
+   tempValue=((tempValue>>1)|(tempValue<<7)) & 0xFF;
    AF.B.B0|=ZeroTable[tempValue];
    gbWriteMemory(HL.W,tempValue);
    break;

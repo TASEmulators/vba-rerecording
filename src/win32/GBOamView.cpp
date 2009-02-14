@@ -172,12 +172,12 @@ void GBOamView::render()
 
   int size = register_LCDC & 4;
   
-  u8 y = gbMemory[addr++];
-  u8 x = gbMemory[addr++];
-  u8 tile = gbMemory[addr++];
+  u8 y = gbReadMemoryQuick(addr++);
+  u8 x = gbReadMemoryQuick(addr++);
+  u8 tile = gbReadMemoryQuick(addr++);
   if(size)
     tile &= 254;
-  u8 flags = gbMemory[addr++];
+  u8 flags = gbReadMemoryQuick(addr++);
   
   u8 *bmp = data;
   

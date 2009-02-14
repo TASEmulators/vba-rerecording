@@ -101,13 +101,13 @@
    // STOP
    opcode = gbReadOpcode(PC.W++);
    if(gbCgbMode) {
-     if(gbMemory[0xff4d] & 1) {
+     if(gbReadMemoryQuick(0xff4d) & 1) {
        gbSpeedSwitch();
        
        if(gbSpeed == 0)
-         gbMemory[0xff4d] = 0x00;
+         gbWriteMemoryQuick(0xff4d, 0x00);
        else
-         gbMemory[0xff4d] = 0x80;
+         gbWriteMemoryQuick(0xff4d, 0x80);
      }
    }
    break;
