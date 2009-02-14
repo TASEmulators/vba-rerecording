@@ -1325,21 +1325,179 @@ void MainWnd::OnActivateApp(BOOL bActive, DWORD hTask)
 void MainWnd::OnDropFiles(HDROP hDropInfo) 
 {
   char szFile[1024];
+  char ext[1024];
 
   if(DragQueryFile(hDropInfo,
                    0,
                    szFile,
                    1024)) {
-    theApp.szFile = szFile;
-    if(FileRun()) {
-      SetForegroundWindow();
-      emulating = TRUE;
-    } else {
-      emulating = FALSE;
-      soundPause();
+    DragFinish(hDropInfo);
+
+    _splitpath(szFile, NULL, NULL, NULL, ext);
+    if(strcmp(ext, ".vbm") == 0) {
+      SMovie movieInfo;
+      char *movieName = szFile;
+      char romTitle [12];
+      uint32 romGameCode;
+      uint16 checksum;
+      uint8 crc;
+
+      if(VBAMovieGetInfo(movieName, &movieInfo) != SUCCESS) {
+        return;
+      }
+
+      extern void fillRomInfo(const SMovie & movieInfo, char romTitle [12],
+        uint32 & romGameCode, uint16 & checksum, uint8 & crc); // from MovieOpen.cpp
+
+      if (!emulating) {
+        theApp.winCheckFullscreen();
+        if(fileOpenSelect()) {
+          if(VBAMovieActive())
+            VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
+          FileRun();
+        }
+        else
+          return;
+      }
+      fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
+
+      while(movieInfo.header.romCRC != crc
+        || strncmp(movieInfo.header.romTitle,romTitle,12) != 0
+        || movieInfo.header.romOrBiosChecksum != checksum
+        && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) == 0 && checksum==0))
+      {
+        char msg [1024], warning1 [1024], warning2 [1024], buffer [1024];
+
+        strcpy(warning1, "");
+        strcpy(warning2, "");
+        {
+          char str [13];
+          strncpy(str, movieInfo.header.romTitle, 12);
+          str[12] = '\0';
+          sprintf(buffer, "title=%s  ", str);
+          strcat(warning1, buffer);
+
+          strncpy(str, romTitle, 12);
+          str[12] = '\0';
+          sprintf(buffer, "title=%s  ", str);
+          strcat(warning2, buffer);
+        }
+        {
+          sprintf(buffer, "type=%s  ", (movieInfo.header.typeFlags&MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags&MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.typeFlags&MOVIE_TYPE_SGB) ? "SGB" : "GB");
+          strcat(warning1, buffer);
+
+          sprintf(buffer, "type=%s  ", theApp.cartridgeType == 0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")) );
+          strcat(warning2, buffer);
+        }
+        {
+          sprintf(buffer, "crc=%02d  ", movieInfo.header.romCRC);
+          strcat(warning1, buffer);
+
+          sprintf(buffer, "crc=%02d  ", crc);
+          strcat(warning2, buffer);
+        }
+        {
+          char code [5];
+          if(movieInfo.header.typeFlags&MOVIE_TYPE_GBA)
+          {
+            memcpy(code, &movieInfo.header.romGameCode, 4);
+            code[4] = '\0';
+            sprintf(buffer, "code=%s  ", code);
+            strcat(warning1, buffer);
+          }
+
+          if(theApp.cartridgeType == 0)
+          {
+            memcpy(code, &romGameCode, 4);
+            code[4] = '\0';
+            sprintf(buffer, "code=%s  ", code);
+            strcat(warning2, buffer);
+          }
+        }
+        {
+          sprintf(buffer, movieInfo.header.typeFlags&MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0 ? "(bios=none)  " :  "(bios=%d)  ") : "check=%d  ", movieInfo.header.romOrBiosChecksum);
+          strcat(warning1, buffer);
+
+          sprintf(buffer, checksum==0 ? "(bios=none)  " : theApp.cartridgeType == 0 ? "(bios=%d)  " : "check=%d  ", checksum);
+          strcat(warning2, buffer);
+        }
+
+        strcpy(msg, "");
+        sprintf(buffer, "Movie ROM: %s\n", warning1);
+        strcat(msg, buffer);
+        sprintf(buffer, "Your ROM: %s\n", warning2);
+        strcat(msg, buffer);
+        strcat(msg, "still want to play the movie?");
+
+        int sel = MessageBox(msg, TEXT("ROM Mismatch"), MB_ABORTRETRYIGNORE|MB_ICONQUESTION);
+        switch (sel) {
+        case IDABORT:
+          return;
+        case IDRETRY:
+          theApp.winCheckFullscreen();
+          if(fileOpenSelect()) {
+            if(VBAMovieActive())
+              VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
+            FileRun();
+            fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
+          }
+          else
+            return;
+          break;
+        default:
+          goto romcheck_exit;
+        }
+      }
+      romcheck_exit:
+
+      theApp.useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+      if(theApp.useBiosFile)
+      {
+        extern bool checkBIOS(CString & biosFileName); // from MovieCreate.cpp
+        if(!checkBIOS(theApp.biosFileName))
+        {
+          systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");  
+          ((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
+          if(!checkBIOS(theApp.biosFileName))
+          {
+            systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
+            return;
+          }
+        }
+      }
+      extern void loadBIOS();
+      loadBIOS();
+
+
+      int code = VBAMovieOpen(movieName, theApp.movieReadOnly);
+
+
+      if(code != SUCCESS)
+      {
+        if(code == FILE_NOT_FOUND)
+          systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieName);  
+        else if(code == WRONG_FORMAT)
+          systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieName);  
+        else if(code == WRONG_VERSION)
+          systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieName);  
+        else
+          systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieName);  
+        return;
+      }
+    }
+    else {
+      theApp.szFile = szFile;
+      if(FileRun()) {
+        SetForegroundWindow();
+        emulating = TRUE;
+      } else {
+        emulating = FALSE;
+        soundPause();
+      }
     }
   }
-  DragFinish(hDropInfo);
+  else
+    DragFinish(hDropInfo);
 }
 
 LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
