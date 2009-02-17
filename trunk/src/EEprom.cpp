@@ -23,21 +23,21 @@
 
 extern int cpuDmaCount;
 
-int eepromMode = EEPROM_IDLE;
-int eepromByte = 0;
-int eepromBits = 0;
-int eepromAddress = 0;
+int32 eepromMode = EEPROM_IDLE;
+int32 eepromByte = 0;
+int32 eepromBits = 0;
+int32 eepromAddress = 0;
 u8 eepromData[0x2000];
 u8 eepromBuffer[16];
-bool eepromInUse = false;
-int eepromSize = 512;
+bool8 eepromInUse = false;
+int32 eepromSize = 512;
 
 variable_desc eepromSaveData[] = {
-  { &eepromMode, sizeof(int) },
-  { &eepromByte, sizeof(int) },
-  { &eepromBits , sizeof(int) },
-  { &eepromAddress , sizeof(int) },
-  { &eepromInUse, sizeof(bool) },
+  { &eepromMode, sizeof(int32) },
+  { &eepromByte, sizeof(int32) },
+  { &eepromBits , sizeof(int32) },
+  { &eepromAddress , sizeof(int32) },
+  { &eepromInUse, sizeof(bool8) },
   { &eepromData[0], 512 },
   { &eepromBuffer[0], 16 },
   { NULL, 0 }

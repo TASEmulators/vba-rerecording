@@ -36,19 +36,19 @@ extern bool speedup;
 u8 gbSgbBorderChar [32 * 256];
 u8 gbSgbBorder [2048];
 
-int gbSgbCGBSupport        = 0;
-int gbSgbMask              = 0;
-int gbSgbMode              = 0;
-int gbSgbPacketState       = GBSGB_NONE;
-int gbSgbBit               = 0;
-int gbSgbPacketTimeout     = 0;
-int GBSGB_PACKET_TIMEOUT   = 66666;
+int32 gbSgbCGBSupport        = 0;
+int32 gbSgbMask              = 0;
+int32 gbSgbMode              = 0;
+int32 gbSgbPacketState       = GBSGB_NONE;
+int32 gbSgbBit               = 0;
+int32 gbSgbPacketTimeout     = 0;
+int32 GBSGB_PACKET_TIMEOUT   = 66666;
 u8  gbSgbPacket[16*7];
-int gbSgbPacketNBits       = 0;
-int gbSgbPacketByte        = 0;
-int gbSgbPacketNumber      = 0;
-int gbSgbMultiplayer       = 0;
-int gbSgbFourPlayers       = 0;
+int32 gbSgbPacketNBits       = 0;
+int32 gbSgbPacketByte        = 0;
+int32 gbSgbPacketNumber      = 0;
+int32 gbSgbMultiplayer       = 0;
+int32 gbSgbFourPlayers       = 0;
 u8  gbSgbNextController    = 0x0f;
 u8  gbSgbReadingController = 0;
 u16 gbSgbSCPPalette[4*512];
@@ -841,29 +841,29 @@ void gbSgbDoBitTransfer(u8 value)
 }
 
 variable_desc gbSgbSaveStruct[] = {
-  { &gbSgbMask, sizeof(int) },
-  { &gbSgbPacketState, sizeof(int) },
-  { &gbSgbBit, sizeof(int) },
-  { &gbSgbPacketNBits, sizeof(int) },
-  { &gbSgbPacketByte, sizeof(int) },
-  { &gbSgbPacketNumber, sizeof(int) },
-  { &gbSgbMultiplayer, sizeof(int) },
+  { &gbSgbMask, sizeof(int32) },
+  { &gbSgbPacketState, sizeof(int32) },
+  { &gbSgbBit, sizeof(int32) },
+  { &gbSgbPacketNBits, sizeof(int32) },
+  { &gbSgbPacketByte, sizeof(int32) },
+  { &gbSgbPacketNumber, sizeof(int32) },
+  { &gbSgbMultiplayer, sizeof(int32) },
   { &gbSgbNextController, sizeof(u8) },
   { &gbSgbReadingController, sizeof(u8) },
   { NULL, 0 }
 };
 
 variable_desc gbSgbSaveStructV3[] = {
-  { &gbSgbMask, sizeof(int) },
-  { &gbSgbPacketState, sizeof(int) },
-  { &gbSgbBit, sizeof(int) },
-  { &gbSgbPacketNBits, sizeof(int) },
-  { &gbSgbPacketByte, sizeof(int) },
-  { &gbSgbPacketNumber, sizeof(int) },
-  { &gbSgbMultiplayer, sizeof(int) },
+  { &gbSgbMask, sizeof(int32) },
+  { &gbSgbPacketState, sizeof(int32) },
+  { &gbSgbBit, sizeof(int32) },
+  { &gbSgbPacketNBits, sizeof(int32) },
+  { &gbSgbPacketByte, sizeof(int32) },
+  { &gbSgbPacketNumber, sizeof(int32) },
+  { &gbSgbMultiplayer, sizeof(int32) },
   { &gbSgbNextController, sizeof(u8) },
   { &gbSgbReadingController, sizeof(u8) },
-  { &gbSgbFourPlayers, sizeof(int) },
+  { &gbSgbFourPlayers, sizeof(int32) },
   { NULL, 0 }
 };
 

@@ -33,7 +33,7 @@
 #define SOUND_MAGIC_2 0x30000000
 #define NOISE_MAGIC 5
 
-extern bool stopState;
+extern bool8 stopState;
 
 u8 soundWavePattern[4][32] = {
   {0x01,0x01,0x01,0x01,
@@ -70,7 +70,7 @@ u8 soundWavePattern[4][32] = {
    0xff,0xff,0xff,0xff}
 };
 
-int soundFreqRatio[8] = {
+int32 soundFreqRatio[8] = {
   1048576, // 0
   524288,  // 1
   262144,  // 2
@@ -81,7 +81,7 @@ int soundFreqRatio[8] = {
   74898    // 7
 };
 
-int soundShiftClock[16]= {
+int32 soundShiftClock[16]= {
       2, // 0
       4, // 1
       8, // 2
@@ -100,182 +100,182 @@ int soundShiftClock[16]= {
   1      // 15
 };
 
-int soundVolume = 0;
+int32 soundVolume = 0;
 
 u8 soundBuffer[6][735];
 u16 soundFinalWave[1470];
 
-int soundBufferLen = 1470;
-int soundBufferTotalLen = 14700;
-int soundQuality = 2;
-int soundPaused = 1;
-int soundPlay = 0;
-int soundTicks = soundQuality * USE_TICKS_AS;
-int SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
+int32 soundBufferLen = 1470;
+int32 soundBufferTotalLen = 14700;
+int32 soundQuality = 2;
+int32 soundPaused = 1;
+int32 soundPlay = 0;
+int32 soundTicks = soundQuality * USE_TICKS_AS;
+int32 SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
 u32 soundNextPosition = 0;
 
-int soundLevel1 = 0;
-int soundLevel2 = 0;
-int soundBalance = 0;
-int soundMasterOn = 0;
-int soundIndex = 0;
-int soundBufferIndex = 0;
-int soundDebug = 0;
-bool soundOffFlag = false;
+int32 soundLevel1 = 0;
+int32 soundLevel2 = 0;
+int32 soundBalance = 0;
+int32 soundMasterOn = 0;
+int32 soundIndex = 0;
+int32 soundBufferIndex = 0;
+int32 soundDebug = 0;
+bool8 soundOffFlag = false;
 
-int sound1On = 0;
-int sound1ATL = 0;
-int sound1Skip = 0;
-int sound1Index = 0;
-int sound1Continue = 0;
-int sound1EnvelopeVolume =  0;
-int sound1EnvelopeATL = 0;
-int sound1EnvelopeUpDown = 0;
-int sound1EnvelopeATLReload = 0;
-int sound1SweepATL = 0;
-int sound1SweepATLReload = 0;
-int sound1SweepSteps = 0;
-int sound1SweepUpDown = 0;
-int sound1SweepStep = 0;
+int32 sound1On = 0;
+int32 sound1ATL = 0;
+int32 sound1Skip = 0;
+int32 sound1Index = 0;
+int32 sound1Continue = 0;
+int32 sound1EnvelopeVolume =  0;
+int32 sound1EnvelopeATL = 0;
+int32 sound1EnvelopeUpDown = 0;
+int32 sound1EnvelopeATLReload = 0;
+int32 sound1SweepATL = 0;
+int32 sound1SweepATLReload = 0;
+int32 sound1SweepSteps = 0;
+int32 sound1SweepUpDown = 0;
+int32 sound1SweepStep = 0;
 u8 *sound1Wave = soundWavePattern[2];
 
-int sound2On = 0;
-int sound2ATL = 0;
-int sound2Skip = 0;
-int sound2Index = 0;
-int sound2Continue = 0;
-int sound2EnvelopeVolume =  0;
-int sound2EnvelopeATL = 0;
-int sound2EnvelopeUpDown = 0;
-int sound2EnvelopeATLReload = 0;
+int32 sound2On = 0;
+int32 sound2ATL = 0;
+int32 sound2Skip = 0;
+int32 sound2Index = 0;
+int32 sound2Continue = 0;
+int32 sound2EnvelopeVolume =  0;
+int32 sound2EnvelopeATL = 0;
+int32 sound2EnvelopeUpDown = 0;
+int32 sound2EnvelopeATLReload = 0;
 u8 *sound2Wave = soundWavePattern[2];
 
-int sound3On = 0;
-int sound3ATL = 0;
-int sound3Skip = 0;
-int sound3Index = 0;
-int sound3Continue = 0;
-int sound3OutputLevel = 0;
-int sound3Last = 0;
+int32 sound3On = 0;
+int32 sound3ATL = 0;
+int32 sound3Skip = 0;
+int32 sound3Index = 0;
+int32 sound3Continue = 0;
+int32 sound3OutputLevel = 0;
+int32 sound3Last = 0;
 u8 sound3WaveRam[0x20];
-int sound3Bank = 0;
-int sound3DataSize = 0;
-int sound3ForcedOutput = 0;
+int32 sound3Bank = 0;
+int32 sound3DataSize = 0;
+int32 sound3ForcedOutput = 0;
 
-int sound4On = 0;
-int sound4Clock = 0;
-int sound4ATL = 0;
-int sound4Skip = 0;
-int sound4Index = 0;
-int sound4ShiftRight = 0x7f;
-int sound4ShiftSkip = 0;
-int sound4ShiftIndex = 0;
-int sound4NSteps = 0;
-int sound4CountDown = 0;
-int sound4Continue = 0;
-int sound4EnvelopeVolume =  0;
-int sound4EnvelopeATL = 0;
-int sound4EnvelopeUpDown = 0;
-int sound4EnvelopeATLReload = 0;
+int32 sound4On = 0;
+int32 sound4Clock = 0;
+int32 sound4ATL = 0;
+int32 sound4Skip = 0;
+int32 sound4Index = 0;
+int32 sound4ShiftRight = 0x7f;
+int32 sound4ShiftSkip = 0;
+int32 sound4ShiftIndex = 0;
+int32 sound4NSteps = 0;
+int32 sound4CountDown = 0;
+int32 sound4Continue = 0;
+int32 sound4EnvelopeVolume =  0;
+int32 sound4EnvelopeATL = 0;
+int32 sound4EnvelopeUpDown = 0;
+int32 sound4EnvelopeATLReload = 0;
 
-int soundControl = 0;
+int32 soundControl = 0;
 
-int soundDSFifoAIndex = 0;
-int soundDSFifoACount = 0;
-int soundDSFifoAWriteIndex = 0;
-bool soundDSAEnabled = false;
-int soundDSATimer = 0;
+int32 soundDSFifoAIndex = 0;
+int32 soundDSFifoACount = 0;
+int32 soundDSFifoAWriteIndex = 0;
+bool8 soundDSAEnabled = false;
+int32 soundDSATimer = 0;
 u8  soundDSFifoA[32];
 u8 soundDSAValue = 0;
 
-int soundDSFifoBIndex = 0;
-int soundDSFifoBCount = 0;
-int soundDSFifoBWriteIndex = 0;
-bool soundDSBEnabled = false;
-int soundDSBTimer = 0;
+int32 soundDSFifoBIndex = 0;
+int32 soundDSFifoBCount = 0;
+int32 soundDSFifoBWriteIndex = 0;
+bool8 soundDSBEnabled = false;
+int32 soundDSBTimer = 0;
 u8  soundDSFifoB[32];
 u8 soundDSBValue = 0;
 
-int soundEnableFlag = 0x3ff;
+int32 soundEnableFlag = 0x3ff;
 
 s16 soundFilter[4000];
 s16 soundRight[5] = { 0, 0, 0, 0, 0 };
 s16 soundLeft[5] = { 0, 0, 0, 0, 0 };
-int soundEchoIndex = 0;
-bool soundEcho = false;
-bool soundLowPass = false;
-bool soundReverse = false;
+int32 soundEchoIndex = 0;
+bool8 soundEcho = false;
+bool8 soundLowPass = false;
+bool8 soundReverse = false;
 
 variable_desc soundSaveStruct[] = {
-  { &soundPaused, sizeof(int) },
-  { &soundPlay, sizeof(int) },
-  { &soundTicks, sizeof(int) },
-  { &SOUND_CLOCK_TICKS, sizeof(int) },
-  { &soundLevel1, sizeof(int) },
-  { &soundLevel2, sizeof(int) },
-  { &soundBalance, sizeof(int) },
-  { &soundMasterOn, sizeof(int) },
-  { &soundIndex, sizeof(int) },
-  { &sound1On, sizeof(int) },
-  { &sound1ATL, sizeof(int) },
-  { &sound1Skip, sizeof(int) },
-  { &sound1Index, sizeof(int) },
-  { &sound1Continue, sizeof(int) },
-  { &sound1EnvelopeVolume, sizeof(int) },
-  { &sound1EnvelopeATL, sizeof(int) },
-  { &sound1EnvelopeATLReload, sizeof(int) },
-  { &sound1EnvelopeUpDown, sizeof(int) },
-  { &sound1SweepATL, sizeof(int) },
-  { &sound1SweepATLReload, sizeof(int) },
-  { &sound1SweepSteps, sizeof(int) },
-  { &sound1SweepUpDown, sizeof(int) },
-  { &sound1SweepStep, sizeof(int) },
-  { &sound2On, sizeof(int) },
-  { &sound2ATL, sizeof(int) },
-  { &sound2Skip, sizeof(int) },
-  { &sound2Index, sizeof(int) },
-  { &sound2Continue, sizeof(int) },
-  { &sound2EnvelopeVolume, sizeof(int) },
-  { &sound2EnvelopeATL, sizeof(int) },
-  { &sound2EnvelopeATLReload, sizeof(int) },
-  { &sound2EnvelopeUpDown, sizeof(int) },
-  { &sound3On, sizeof(int) },
-  { &sound3ATL, sizeof(int) },
-  { &sound3Skip, sizeof(int) },
-  { &sound3Index, sizeof(int) },
-  { &sound3Continue, sizeof(int) },
-  { &sound3OutputLevel, sizeof(int) },
-  { &sound4On, sizeof(int) },
-  { &sound4ATL, sizeof(int) },
-  { &sound4Skip, sizeof(int) },
-  { &sound4Index, sizeof(int) },
-  { &sound4Clock, sizeof(int) },
-  { &sound4ShiftRight, sizeof(int) },
-  { &sound4ShiftSkip, sizeof(int) },
-  { &sound4ShiftIndex, sizeof(int) },
-  { &sound4NSteps, sizeof(int) },
-  { &sound4CountDown, sizeof(int) },
-  { &sound4Continue, sizeof(int) },
-  { &sound4EnvelopeVolume, sizeof(int) },
-  { &sound4EnvelopeATL, sizeof(int) },
-  { &sound4EnvelopeATLReload, sizeof(int) },
-  { &sound4EnvelopeUpDown, sizeof(int) },
-  { &soundEnableFlag, sizeof(int) },
-  { &soundControl, sizeof(int) },
-  { &soundDSFifoAIndex, sizeof(int) },
-  { &soundDSFifoACount, sizeof(int) },
-  { &soundDSFifoAWriteIndex, sizeof(int) },
-  { &soundDSAEnabled, sizeof(bool) },
-  { &soundDSATimer, sizeof(int) },
+  { &soundPaused, sizeof(int32) },
+  { &soundPlay, sizeof(int32) },
+  { &soundTicks, sizeof(int32) },
+  { &SOUND_CLOCK_TICKS, sizeof(int32) },
+  { &soundLevel1, sizeof(int32) },
+  { &soundLevel2, sizeof(int32) },
+  { &soundBalance, sizeof(int32) },
+  { &soundMasterOn, sizeof(int32) },
+  { &soundIndex, sizeof(int32) },
+  { &sound1On, sizeof(int32) },
+  { &sound1ATL, sizeof(int32) },
+  { &sound1Skip, sizeof(int32) },
+  { &sound1Index, sizeof(int32) },
+  { &sound1Continue, sizeof(int32) },
+  { &sound1EnvelopeVolume, sizeof(int32) },
+  { &sound1EnvelopeATL, sizeof(int32) },
+  { &sound1EnvelopeATLReload, sizeof(int32) },
+  { &sound1EnvelopeUpDown, sizeof(int32) },
+  { &sound1SweepATL, sizeof(int32) },
+  { &sound1SweepATLReload, sizeof(int32) },
+  { &sound1SweepSteps, sizeof(int32) },
+  { &sound1SweepUpDown, sizeof(int32) },
+  { &sound1SweepStep, sizeof(int32) },
+  { &sound2On, sizeof(int32) },
+  { &sound2ATL, sizeof(int32) },
+  { &sound2Skip, sizeof(int32) },
+  { &sound2Index, sizeof(int32) },
+  { &sound2Continue, sizeof(int32) },
+  { &sound2EnvelopeVolume, sizeof(int32) },
+  { &sound2EnvelopeATL, sizeof(int32) },
+  { &sound2EnvelopeATLReload, sizeof(int32) },
+  { &sound2EnvelopeUpDown, sizeof(int32) },
+  { &sound3On, sizeof(int32) },
+  { &sound3ATL, sizeof(int32) },
+  { &sound3Skip, sizeof(int32) },
+  { &sound3Index, sizeof(int32) },
+  { &sound3Continue, sizeof(int32) },
+  { &sound3OutputLevel, sizeof(int32) },
+  { &sound4On, sizeof(int32) },
+  { &sound4ATL, sizeof(int32) },
+  { &sound4Skip, sizeof(int32) },
+  { &sound4Index, sizeof(int32) },
+  { &sound4Clock, sizeof(int32) },
+  { &sound4ShiftRight, sizeof(int32) },
+  { &sound4ShiftSkip, sizeof(int32) },
+  { &sound4ShiftIndex, sizeof(int32) },
+  { &sound4NSteps, sizeof(int32) },
+  { &sound4CountDown, sizeof(int32) },
+  { &sound4Continue, sizeof(int32) },
+  { &sound4EnvelopeVolume, sizeof(int32) },
+  { &sound4EnvelopeATL, sizeof(int32) },
+  { &sound4EnvelopeATLReload, sizeof(int32) },
+  { &sound4EnvelopeUpDown, sizeof(int32) },
+  { &soundEnableFlag, sizeof(int32) },
+  { &soundControl, sizeof(int32) },
+  { &soundDSFifoAIndex, sizeof(int32) },
+  { &soundDSFifoACount, sizeof(int32) },
+  { &soundDSFifoAWriteIndex, sizeof(int32) },
+  { &soundDSAEnabled, sizeof(bool8) },
+  { &soundDSATimer, sizeof(int32) },
   { &soundDSFifoA[0], 32 },
   { &soundDSAValue, sizeof(u8) },
-  { &soundDSFifoBIndex, sizeof(int) },
-  { &soundDSFifoBCount, sizeof(int) },
-  { &soundDSFifoBWriteIndex, sizeof(int) },
-  { &soundDSBEnabled, sizeof(int) },
-  { &soundDSBTimer, sizeof(int) },
+  { &soundDSFifoBIndex, sizeof(int32) },
+  { &soundDSFifoBCount, sizeof(int32) },
+  { &soundDSFifoBWriteIndex, sizeof(int32) },
+  { &soundDSBEnabled, sizeof(int32) },
+  { &soundDSBTimer, sizeof(int32) },
   { &soundDSFifoB[0], 32 },
-  { &soundDSBValue, sizeof(int) },
+  { &soundDSBValue, sizeof(int32) },
   { &soundBuffer[0][0], 6*735 },
   { &soundFinalWave[0], 2*735 },
   { NULL, 0 }
@@ -283,9 +283,9 @@ variable_desc soundSaveStruct[] = {
 
 variable_desc soundSaveStructV2[] = {
   { &sound3WaveRam[0], 0x20 },
-  { &sound3Bank, sizeof(int) },
-  { &sound3DataSize, sizeof(int) },
-  { &sound3ForcedOutput, sizeof(int) },
+  { &sound3Bank, sizeof(int32) },
+  { &sound3DataSize, sizeof(int32) },
+  { &sound3ForcedOutput, sizeof(int32) },
   { NULL, 0 }
 };
 
@@ -1321,7 +1321,7 @@ void soundSaveGame(gzFile gzFile)
   utilWriteData(gzFile, soundSaveStruct);
   utilWriteData(gzFile, soundSaveStructV2);
   
-  utilGzWrite(gzFile, &soundQuality, sizeof(int));
+  utilGzWrite(gzFile, &soundQuality, sizeof(int32));
 }
 
 void soundReadGame(gzFile gzFile, int version)
@@ -1340,7 +1340,7 @@ void soundReadGame(gzFile gzFile, int version)
   soundBufferIndex = soundIndex * 2;
   
   int quality = 1;
-  utilGzRead(gzFile, &quality, sizeof(int));
+  utilGzRead(gzFile, &quality, sizeof(int32));
   soundSetQuality(quality);
   
   sound1Wave = soundWavePattern[ioMem[NR11] >> 6];

@@ -279,7 +279,7 @@ void Disassemble::refresh()
   if(rom == NULL)
     return;
   
-  bool arm = armState;
+  bool8 arm = armState;
   
   if(mode != 0) {
     if(mode == 1)

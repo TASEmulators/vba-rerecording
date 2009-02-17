@@ -24,10 +24,10 @@
 #include "Port.h"
 #include "RTC.h"
 
-extern bool cpuSramEnabled;
-extern bool cpuFlashEnabled;
-extern bool cpuEEPROMEnabled;
-extern bool cpuEEPROMSensorEnabled;
+extern bool8 cpuSramEnabled;
+extern bool8 cpuFlashEnabled;
+extern bool8 cpuEEPROMEnabled;
+extern bool8 cpuEEPROMSensorEnabled;
 
 #define CPUReadByteQuick(addr) \
   map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
@@ -254,9 +254,9 @@ inline u32 CPUReadHalfWord(u32 address)
           armNextPC - 4 : armNextPC - 2);
     }
 #endif
-    extern bool cpuDmaHack;
+    extern bool8 cpuDmaHack;
     extern u32 cpuDmaLast;
-    extern int cpuDmaCount;
+    extern int32 cpuDmaCount;
     if(cpuDmaHack && cpuDmaCount) {
       value = (u16)cpuDmaLast;
     } else {

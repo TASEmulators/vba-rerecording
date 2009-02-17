@@ -20,6 +20,86 @@
 #ifndef VBA_PORT_H
 #define VBA_PORT_H
 
+#include <time.h>
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+typedef unsigned char bool8;
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+
+typedef int8_t int8;
+typedef uint8_t uint8;
+typedef int16_t int16;
+typedef uint16_t uint16;
+typedef int32_t int32;
+typedef uint32_t uint32;
+typedef int64_t int64;
+typedef uint64_t uint64;
+typedef intptr_t pint;
+
+#else /* Don't have stdint.h */
+
+#ifdef PTR_NOT_INT
+typedef long pint;
+#else /* pointer is int */
+typedef int pint;
+#endif /* PTR_NOT_INT */
+
+/* FIXME: Refactor this by moving out the BORLAND part and unifying typedefs */
+#ifndef __WIN32__
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef signed char int8;
+typedef short int16;
+typedef int int32;
+typedef unsigned int uint32;
+# ifdef __GNUC__  /* long long is not part of ISO C++ */
+__extension__ typedef long long int64;
+__extension__ typedef unsigned long long uint64;
+# else
+typedef long long int64;
+typedef unsigned long long uint64;
+# endif
+#else /* __WIN32__ */
+
+# ifdef __BORLANDC__
+#   include <systypes.h>
+# else
+
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef signed char int8;
+typedef short int16;
+
+# ifndef WSAAPI
+/* winsock2.h typedefs int32 as well. */
+typedef long int32;
+# endif
+
+typedef unsigned int uint32;
+
+# endif /* __BORLANDC__ */
+
+typedef __int64 int64;
+typedef unsigned __int64 uint64;
+
+#endif /* __WIN32__ */
+#endif /* HAVE_STDINT_H */
+
+
+typedef uint8  u8;
+typedef uint16 u16;
+typedef uint32 u32;
+typedef uint64 u64;
+typedef int8   s8;
+typedef int16  s16;
+typedef int32  s32;
+typedef int64  s64;
+
 // swaps a 16-bit value
 static inline u16 swap16(u16 v)
 {

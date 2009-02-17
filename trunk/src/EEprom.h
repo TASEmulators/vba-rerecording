@@ -27,8 +27,8 @@ extern void eepromWrite(u32 address, u8 value);
 extern void eepromReset();
 extern void eepromErase();
 extern u8 eepromData[0x2000];
-extern bool eepromInUse;
-extern int eepromSize;
+extern bool8 eepromInUse;
+extern int32 eepromSize;
 
 #define EEPROM_IDLE           0
 #define EEPROM_READADDRESS    1

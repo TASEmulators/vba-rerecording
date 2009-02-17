@@ -65,15 +65,15 @@
 
 extern int emulating;
 
-int cpuDmaTicksToUpdate = 0;
-int cpuDmaCount = 0;
-bool cpuDmaHack = 0;
+int32 cpuDmaTicksToUpdate = 0;
+int32 cpuDmaCount = 0;
+bool8 cpuDmaHack = 0;
 u32 cpuDmaLast = 0;
-int dummyAddress = 0;
+int32 dummyAddress = 0;
 
-int *extCpuLoopTicks = NULL;
-int *extClockTicks = NULL;
-int *extTicks = NULL;
+int32 *extCpuLoopTicks = NULL;
+int32 *extClockTicks = NULL;
+int32 *extTicks = NULL;
 
 #if (defined(WIN32) && !defined(SDL))
 HANDLE mapROM;        // shared memory handles
@@ -87,15 +87,15 @@ HANDLE mapPIX;
 HANDLE mapIOMEM;
 #endif
 
-int gbaSaveType = 0; // used to remember the save type on reset
-bool intState = false;
-bool stopState = false;
-bool holdState = false;
-int holdType = 0;
-bool cpuSramEnabled = true;
-bool cpuFlashEnabled = true;
-bool cpuEEPROMEnabled = true;
-bool cpuEEPROMSensorEnabled = false;
+int32 gbaSaveType = 0; // used to remember the save type on reset
+bool8 intState = false;
+bool8 stopState = false;
+bool8 holdState = false;
+int32 holdType = 0;
+bool8 cpuSramEnabled = true;
+bool8 cpuFlashEnabled = true;
+bool8 cpuEEPROMEnabled = true;
+bool8 cpuEEPROMSensorEnabled = false;
 
 #ifdef PROFILING
 int profilingTicks = 0;
@@ -105,25 +105,25 @@ static int profilSize = 0;
 static u32 profilLowPC = 0;
 static int profilScale = 0;
 #endif
-bool freezeWorkRAM[0x40000];
-bool freezeInternalRAM[0x8000];
-int lcdTicks = 960;
-bool timer0On = false;
-int timer0Ticks = 0;
-int timer0Reload = 0;
-int timer0ClockReload  = 0;
-bool timer1On = false;
-int timer1Ticks = 0;
-int timer1Reload = 0;
-int timer1ClockReload  = 0;
-bool timer2On = false;
-int timer2Ticks = 0;
-int timer2Reload = 0;
-int timer2ClockReload  = 0;
-bool timer3On = false;
-int timer3Ticks = 0;
-int timer3Reload = 0;
-int timer3ClockReload  = 0;
+bool8 freezeWorkRAM[0x40000];
+bool8 freezeInternalRAM[0x8000];
+int32 lcdTicks = 960;
+bool8 timer0On = false;
+int32 timer0Ticks = 0;
+int32 timer0Reload = 0;
+int32 timer0ClockReload  = 0;
+bool8 timer1On = false;
+int32 timer1Ticks = 0;
+int32 timer1Reload = 0;
+int32 timer1ClockReload  = 0;
+bool8 timer2On = false;
+int32 timer2Ticks = 0;
+int32 timer2Reload = 0;
+int32 timer2ClockReload  = 0;
+bool8 timer3On = false;
+int32 timer3Ticks = 0;
+int32 timer3Reload = 0;
+int32 timer3ClockReload  = 0;
 u32 dma0Source = 0;
 u32 dma0Dest = 0;
 u32 dma1Source = 0;
@@ -134,29 +134,29 @@ u32 dma3Source = 0;
 u32 dma3Dest = 0;
 void (*cpuSaveGameFunc)(u32,u8) = flashSaveDecide;
 void (*renderLine)() = mode0RenderLine;
-bool fxOn = false;
-bool windowOn = false;
-int frameCount = 0;
+bool8 fxOn = false;
+bool8 windowOn = false;
+int32 frameCount = 0;
 char buffer[1024];
 FILE *out = NULL;
 u32 lastTime = 0;
-int count = 0;
-bool prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
+int32 count = 0;
+bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
 
-static bool pauseAfterFrameAdvance = false;
+static bool8 pauseAfterFrameAdvance = false;
 
-int capture = 0;
-int capturePrevious = 0;
-int captureNumber = 0;
+int32 capture = 0;
+int32 capturePrevious = 0;
+int32 captureNumber = 0;
 
-const int TIMER_TICKS[4] = {
+const int32 TIMER_TICKS[4] = {
   1,
   64,
   256,
   1024
 };
 
-const int thumbCycles[] = {
+const int32 thumbCycles[] = {
 //  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 0
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 1
@@ -176,41 +176,41 @@ const int thumbCycles[] = {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2   // f
 };
 
-const int gamepakRamWaitState[4] = { 4, 3, 2, 8 };
-const int gamepakWaitState[8] =  { 4, 3, 2, 8, 4, 3, 2, 8 };
-const int gamepakWaitState0[8] = { 2, 2, 2, 2, 1, 1, 1, 1 };
-const int gamepakWaitState1[8] = { 4, 4, 4, 4, 1, 1, 1, 1 };
-const int gamepakWaitState2[8] = { 8, 8, 8, 8, 1, 1, 1, 1 };
+const int32 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
+const int32 gamepakWaitState[8] =  { 4, 3, 2, 8, 4, 3, 2, 8 };
+const int32 gamepakWaitState0[8] = { 2, 2, 2, 2, 1, 1, 1, 1 };
+const int32 gamepakWaitState1[8] = { 4, 4, 4, 4, 1, 1, 1, 1 };
+const int32 gamepakWaitState2[8] = { 8, 8, 8, 8, 1, 1, 1, 1 };
 
-int memoryWait[16] =
+int32 memoryWait[16] =
   { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
-int memoryWait32[16] =
+int32 memoryWait32[16] =
   { 0, 0, 9, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 0 };
-int memoryWaitSeq[16] =
+int32 memoryWaitSeq[16] =
   { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4, 0 };
-int memoryWaitSeq32[16] =
+int32 memoryWaitSeq32[16] =
   { 2, 0, 3, 0, 0, 2, 2, 0, 4, 4, 8, 8, 16, 16, 8, 0 };
-int memoryWaitFetch[16] =
+int32 memoryWaitFetch[16] =
   { 3, 0, 3, 0, 0, 1, 1, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
-int memoryWaitFetch32[16] =
+int32 memoryWaitFetch32[16] =
   { 6, 0, 6, 0, 0, 2, 2, 0, 8, 8, 8, 8, 8, 8, 8, 0 };
 
-const int cpuMemoryWait[16] = {
+const int32 cpuMemoryWait[16] = {
   0, 0, 2, 0, 0, 0, 0, 0,
   2, 2, 2, 2, 2, 2, 0, 0
 };
-const int cpuMemoryWait32[16] = {
+const int32 cpuMemoryWait32[16] = {
   0, 0, 3, 0, 0, 0, 0, 0,
   3, 3, 3, 3, 3, 3, 0, 0
 };
   
-const bool memory32[16] =
+const bool8 memory32[16] =
   { true, false, false, true, true, false, false, true, false, false, false, false, false, false, true, false};
 
 u8 biosProtected[4];
 
 #ifdef WORDS_BIGENDIAN
-bool cpuBiosSwapped = false;
+bool8 cpuBiosSwapped = false;
 #endif
 
 u32 myROM[] = {
@@ -467,25 +467,25 @@ variable_desc saveGameStruct[] = {
   { &IE       , sizeof(u16) },
   { &IF       , sizeof(u16) },
   { &IME      , sizeof(u16) },
-  { &holdState, sizeof(bool) },
-  { &holdType, sizeof(int) },
-  { &lcdTicks, sizeof(int) },
-  { &timer0On , sizeof(bool) },
-  { &timer0Ticks , sizeof(int) },
-  { &timer0Reload , sizeof(int) },
-  { &timer0ClockReload  , sizeof(int) },
-  { &timer1On , sizeof(bool) },
-  { &timer1Ticks , sizeof(int) },
-  { &timer1Reload , sizeof(int) },
-  { &timer1ClockReload  , sizeof(int) },
-  { &timer2On , sizeof(bool) },
-  { &timer2Ticks , sizeof(int) },
-  { &timer2Reload , sizeof(int) },
-  { &timer2ClockReload  , sizeof(int) },
-  { &timer3On , sizeof(bool) },
-  { &timer3Ticks , sizeof(int) },
-  { &timer3Reload , sizeof(int) },
-  { &timer3ClockReload  , sizeof(int) },
+  { &holdState, sizeof(bool8) },
+  { &holdType, sizeof(int32) },
+  { &lcdTicks, sizeof(int32) },
+  { &timer0On , sizeof(bool8) },
+  { &timer0Ticks , sizeof(int32) },
+  { &timer0Reload , sizeof(int32) },
+  { &timer0ClockReload  , sizeof(int32) },
+  { &timer1On , sizeof(bool8) },
+  { &timer1Ticks , sizeof(int32) },
+  { &timer1Reload , sizeof(int32) },
+  { &timer1ClockReload  , sizeof(int32) },
+  { &timer2On , sizeof(bool8) },
+  { &timer2Ticks , sizeof(int32) },
+  { &timer2Reload , sizeof(int32) },
+  { &timer2ClockReload  , sizeof(int32) },
+  { &timer3On , sizeof(bool8) },
+  { &timer3Ticks , sizeof(int32) },
+  { &timer3Reload , sizeof(int32) },
+  { &timer3ClockReload  , sizeof(int32) },
   { &dma0Source , sizeof(u32) },
   { &dma0Dest , sizeof(u32) },
   { &dma1Source , sizeof(u32) },
@@ -494,17 +494,17 @@ variable_desc saveGameStruct[] = {
   { &dma2Dest , sizeof(u32) },
   { &dma3Source , sizeof(u32) },
   { &dma3Dest , sizeof(u32) },
-  { &fxOn, sizeof(bool) },
-  { &windowOn, sizeof(bool) },
-  { &N_FLAG , sizeof(bool) },
-  { &C_FLAG , sizeof(bool) },
-  { &Z_FLAG , sizeof(bool) },
-  { &V_FLAG , sizeof(bool) },
-  { &armState , sizeof(bool) },
-  { &armIrqEnable , sizeof(bool) },
+  { &fxOn, sizeof(bool8) },
+  { &windowOn, sizeof(bool8) },
+  { &N_FLAG , sizeof(bool8) },
+  { &C_FLAG , sizeof(bool8) },
+  { &Z_FLAG , sizeof(bool8) },
+  { &V_FLAG , sizeof(bool8) },
+  { &armState , sizeof(bool8) },
+  { &armIrqEnable , sizeof(bool8) },
   { &armNextPC , sizeof(u32) },
-  { &armMode , sizeof(int) },
-  { &saveType , sizeof(int) },
+  { &armMode , sizeof(int32) },
+  { &saveType , sizeof(int32) },
   { NULL, 0 } 
 };
 
@@ -715,25 +715,25 @@ bool CPUWriteStateToStream(gzFile gzFile)
 
   // SAVE_GAME_VERSION_10
   {
-	utilGzWrite(gzFile, memoryWait, 16*sizeof(int));
-	utilGzWrite(gzFile, memoryWait32, 16*sizeof(int));
-	utilGzWrite(gzFile, memoryWaitSeq, 16*sizeof(int));
-	utilGzWrite(gzFile, memoryWaitSeq32, 16*sizeof(int));
-	utilGzWrite(gzFile, memoryWaitFetch, 16*sizeof(int));
-	utilGzWrite(gzFile, memoryWaitFetch32, 16*sizeof(int));
+	utilGzWrite(gzFile, memoryWait, 16*sizeof(int32));
+	utilGzWrite(gzFile, memoryWait32, 16*sizeof(int32));
+	utilGzWrite(gzFile, memoryWaitSeq, 16*sizeof(int32));
+	utilGzWrite(gzFile, memoryWaitSeq32, 16*sizeof(int32));
+	utilGzWrite(gzFile, memoryWaitFetch, 16*sizeof(int32));
+	utilGzWrite(gzFile, memoryWaitFetch32, 16*sizeof(int32));
   }
 
   // SAVE_GAME_VERSION_11
   {
-	utilGzWrite(gzFile, &prefetchActive, sizeof(bool));
-	utilGzWrite(gzFile, &prefetchPrevActive, sizeof(bool));
-	utilGzWrite(gzFile, &prefetchApplies, sizeof(bool));
+	utilGzWrite(gzFile, &prefetchActive, sizeof(bool8));
+	utilGzWrite(gzFile, &prefetchPrevActive, sizeof(bool8));
+	utilGzWrite(gzFile, &prefetchApplies, sizeof(bool8));
   }
 
   // SAVE_GAME_VERSION_12
   {
-	utilGzWrite(gzFile, &memLagTempEnabled, sizeof(bool)); // necessary
-	utilGzWrite(gzFile, &speedHack, sizeof(bool)); // just in case it's ever used...
+	utilGzWrite(gzFile, &memLagTempEnabled, sizeof(bool8)); // necessary
+	utilGzWrite(gzFile, &speedHack, sizeof(bool8)); // just in case it's ever used...
   }
 
 
@@ -968,25 +968,25 @@ bool CPUReadStateFromStream(gzFile gzFile)
   }
   if(version >= SAVE_GAME_VERSION_10)
   {
-	utilGzRead(gzFile, memoryWait, 16*sizeof(int));
-	utilGzRead(gzFile, memoryWait32, 16*sizeof(int));
-	utilGzRead(gzFile, memoryWaitSeq, 16*sizeof(int));
-	utilGzRead(gzFile, memoryWaitSeq32, 16*sizeof(int));
-	utilGzRead(gzFile, memoryWaitFetch, 16*sizeof(int));
-	utilGzRead(gzFile, memoryWaitFetch32, 16*sizeof(int));
+	utilGzRead(gzFile, memoryWait, 16*sizeof(int32));
+	utilGzRead(gzFile, memoryWait32, 16*sizeof(int32));
+	utilGzRead(gzFile, memoryWaitSeq, 16*sizeof(int32));
+	utilGzRead(gzFile, memoryWaitSeq32, 16*sizeof(int32));
+	utilGzRead(gzFile, memoryWaitFetch, 16*sizeof(int32));
+	utilGzRead(gzFile, memoryWaitFetch32, 16*sizeof(int32));
   }
   if(version >= SAVE_GAME_VERSION_11)
   {
-	utilGzRead(gzFile, &prefetchActive, sizeof(bool));
+	utilGzRead(gzFile, &prefetchActive, sizeof(bool8));
 	//if(prefetchActive && !prefetchPrevActive) systemScreenMessage("pre-fetch enabled",3,600);
 	//if(!prefetchActive && prefetchPrevActive) systemScreenMessage("pre-fetch disabled",3,600);
-	utilGzRead(gzFile, &prefetchPrevActive, sizeof(bool));
-	utilGzRead(gzFile, &prefetchApplies, sizeof(bool));
+	utilGzRead(gzFile, &prefetchPrevActive, sizeof(bool8));
+	utilGzRead(gzFile, &prefetchApplies, sizeof(bool8));
   }
   if(version >= SAVE_GAME_VERSION_12)
   {
-	utilGzRead(gzFile, &memLagTempEnabled, sizeof(bool)); // necessary
-	utilGzRead(gzFile, &speedHack, sizeof(bool)); // just in case it's ever used...
+	utilGzRead(gzFile, &memLagTempEnabled, sizeof(bool8)); // necessary
+	utilGzRead(gzFile, &speedHack, sizeof(bool8)); // just in case it's ever used...
   }
 
 
@@ -3222,10 +3222,10 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
   *((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
 
 	{
-		int origMemoryWaitFetch[16] = { 3, 0, 3, 0, 0, 1, 1, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
-		int origMemoryWaitFetch32[16] = { 6, 0, 6, 0, 0, 2, 2, 0, 8, 8, 8, 8, 8, 8, 8, 0 };
-		memcpy(memoryWaitFetch, origMemoryWaitFetch, 16*sizeof(int));
-		memcpy(memoryWaitFetch32, origMemoryWaitFetch32, 16*sizeof(int));
+		int32 origMemoryWaitFetch[16] = { 3, 0, 3, 0, 0, 1, 1, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
+		int32 origMemoryWaitFetch32[16] = { 6, 0, 6, 0, 0, 2, 2, 0, 8, 8, 8, 8, 8, 8, 8, 0 };
+		memcpy(memoryWaitFetch, origMemoryWaitFetch, 16*sizeof(int32));
+		memcpy(memoryWaitFetch32, origMemoryWaitFetch32, 16*sizeof(int32));
 	}
 
 }
@@ -3564,7 +3564,7 @@ void TogglePrefetchHack()
 
 	if(emulating)
 	{
-		extern bool prefetchActive, prefetchPrevActive, prefetchApplies;
+		extern bool8 prefetchActive, prefetchPrevActive, prefetchApplies;
 		if(prefetchApplies && prefetchActive == memLagTempEnabled)
 		{
 			prefetchActive = !prefetchActive;
