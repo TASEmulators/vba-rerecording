@@ -480,7 +480,7 @@ void utilApplyIPS(const char *ips, u8 **r, int *s)
   fclose(f);
 }
 
-extern bool cpuIsMultiBoot;
+extern bool8 cpuIsMultiBoot;
 
 bool utilIsGBAImage(const char * file)
 {
@@ -962,15 +962,15 @@ u8 *utilLoad(const char *file,
   return image;
 }
 
-void utilWriteInt(gzFile gzFile, int i)
+void utilWriteInt(gzFile gzFile, int32 i)
 {
-  utilGzWrite(gzFile, &i, sizeof(int));
+  utilGzWrite(gzFile, &i, sizeof(int32));
 }
 
-int utilReadInt(gzFile gzFile)
+int32 utilReadInt(gzFile gzFile)
 {
-  int i = 0;
-  utilGzRead(gzFile, &i, sizeof(int));
+  int32 i = 0;
+  utilGzRead(gzFile, &i, sizeof(int32));
   return i;
 }
 

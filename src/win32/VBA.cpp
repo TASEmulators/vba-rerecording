@@ -382,7 +382,7 @@ VBA::~VBA()
     if(movieFile != NULL) {
       // record the last joypad change so that the correct time can be
       // recorded
-      fwrite(&movieFrame, 1, sizeof(int), movieFile);
+      fwrite(&movieFrame, 1, sizeof(int32), movieFile);
       fwrite(&movieLastJoypad, 1, sizeof(u32), movieFile);
       fclose(movieFile);
       movieFile = NULL;

@@ -36,33 +36,33 @@
 #define FLASH_SETBANK            9
 
 u8 flashSaveMemory[0x20000];
-int flashState = FLASH_READ_ARRAY;
-int flashReadState = FLASH_READ_ARRAY;
-int flashSize = 0x10000;
-int flashDeviceID = 0x1b;
-int flashManufacturerID = 0x32;
-int flashBank = 0;
+int32 flashState = FLASH_READ_ARRAY;
+int32 flashReadState = FLASH_READ_ARRAY;
+int32 flashSize = 0x10000;
+int32 flashDeviceID = 0x1b;
+int32 flashManufacturerID = 0x32;
+int32 flashBank = 0;
 
 static variable_desc flashSaveData[] = {
-  { &flashState, sizeof(int) },
-  { &flashReadState, sizeof(int) },
+  { &flashState, sizeof(int32) },
+  { &flashReadState, sizeof(int32) },
   { &flashSaveMemory[0], 0x10000 },
   { NULL, 0 }
 };
 
 static variable_desc flashSaveData2[] = {
-  { &flashState, sizeof(int) },
-  { &flashReadState, sizeof(int) },
-  { &flashSize, sizeof(int) },  
+  { &flashState, sizeof(int32) },
+  { &flashReadState, sizeof(int32) },
+  { &flashSize, sizeof(int32) },  
   { &flashSaveMemory[0], 0x20000 },
   { NULL, 0 }
 };
 
 static variable_desc flashSaveData3[] = {
-  { &flashState, sizeof(int) },
-  { &flashReadState, sizeof(int) },
-  { &flashSize, sizeof(int) },
-  { &flashBank, sizeof(int) },
+  { &flashState, sizeof(int32) },
+  { &flashReadState, sizeof(int32) },
+  { &flashSize, sizeof(int32) },
+  { &flashBank, sizeof(int32) },
   { &flashSaveMemory[0], 0x20000 },
   { NULL, 0 }
 };

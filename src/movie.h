@@ -1,6 +1,8 @@
 #ifndef _MOVIE_H_
 #define _MOVIE_H_
 
+#include "Port.h"
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -68,19 +70,6 @@
 #define REVERT_STREAM(f,o,s)	 fseek(f,o,s)
 #define CLOSE_STREAM(s) fclose (s)
 #endif*/
-
-typedef unsigned	char  uint8;
-typedef signed		char  bool8;
-typedef				char  int8;
-
-typedef unsigned	short uint16;
-typedef				short int16;
-
-typedef unsigned	long uint32;
-typedef				long int32;
-
-typedef unsigned	long long uint64;
-typedef				long long int64;
 
 
 enum MovieState

@@ -17,93 +17,93 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <time.h>
+#include "../Port.h"
 
 struct mapperMBC1 {
-  int mapperRAMEnable;
-  int mapperROMBank;
-  int mapperRAMBank;
-  int mapperMemoryModel;
-  int mapperROMHighAddress;
-  int mapperRAMAddress;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
+  int32 mapperRAMBank;
+  int32 mapperMemoryModel;
+  int32 mapperROMHighAddress;
+  int32 mapperRAMAddress;
 };
 
 struct mapperMBC2 {
-  int mapperRAMEnable;
-  int mapperROMBank;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
 };
 
 struct mapperMBC3 {
-  int mapperRAMEnable;
-  int mapperROMBank;
-  int mapperRAMBank;
-  int mapperRAMAddress;
-  int mapperClockLatch;
-  int mapperClockRegister;
-  int mapperSeconds;
-  int mapperMinutes;
-  int mapperHours;
-  int mapperDays;
-  int mapperControl;
-  int mapperLSeconds;
-  int mapperLMinutes;
-  int mapperLHours;
-  int mapperLDays;
-  int mapperLControl;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
+  int32 mapperRAMBank;
+  int32 mapperRAMAddress;
+  int32 mapperClockLatch;
+  int32 mapperClockRegister;
+  int32 mapperSeconds;
+  int32 mapperMinutes;
+  int32 mapperHours;
+  int32 mapperDays;
+  int32 mapperControl;
+  int32 mapperLSeconds;
+  int32 mapperLMinutes;
+  int32 mapperLHours;
+  int32 mapperLDays;
+  int32 mapperLControl;
   time_t mapperLastTime;
 };
 
 struct mapperMBC5 {
-  int mapperRAMEnable;
-  int mapperROMBank;
-  int mapperRAMBank;
-  int mapperROMHighAddress;
-  int mapperRAMAddress;
-  int isRumbleCartridge;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
+  int32 mapperRAMBank;
+  int32 mapperROMHighAddress;
+  int32 mapperRAMAddress;
+  int32 isRumbleCartridge;
 };
 
 struct mapperMBC7 {
-  int mapperRAMEnable;
-  int mapperROMBank;
-  int mapperRAMBank;
-  int mapperRAMAddress;
-  int cs;
-  int sk;
-  int state;
-  int buffer;
-  int idle;
-  int count;
-  int code;
-  int address;
-  int writeEnable;
-  int value;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
+  int32 mapperRAMBank;
+  int32 mapperRAMAddress;
+  int32 cs;
+  int32 sk;
+  int32 state;
+  int32 buffer;
+  int32 idle;
+  int32 count;
+  int32 code;
+  int32 address;
+  int32 writeEnable;
+  int32 value;
 };
 
 struct mapperHuC1 {
-  int mapperRAMEnable;
-  int mapperROMBank;
-  int mapperRAMBank;
-  int mapperMemoryModel;
-  int mapperROMHighAddress;
-  int mapperRAMAddress;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
+  int32 mapperRAMBank;
+  int32 mapperMemoryModel;
+  int32 mapperROMHighAddress;
+  int32 mapperRAMAddress;
 };
 
 struct mapperHuC3 {
-  int mapperRAMEnable;
-  int mapperROMBank;
-  int mapperRAMBank;
-  int mapperRAMAddress;
-  int mapperAddress;
-  int mapperRAMFlag;
-  int mapperRAMValue;
-  int mapperRegister1;
-  int mapperRegister2;
-  int mapperRegister3;
-  int mapperRegister4;
-  int mapperRegister5;
-  int mapperRegister6;
-  int mapperRegister7;
-  int mapperRegister8;
+  int32 mapperRAMEnable;
+  int32 mapperROMBank;
+  int32 mapperRAMBank;
+  int32 mapperRAMAddress;
+  int32 mapperAddress;
+  int32 mapperRAMFlag;
+  int32 mapperRAMValue;
+  int32 mapperRegister1;
+  int32 mapperRegister2;
+  int32 mapperRegister3;
+  int32 mapperRegister4;
+  int32 mapperRegister5;
+  int32 mapperRegister6;
+  int32 mapperRegister7;
+  int32 mapperRegister8;
 };
 
 extern mapperMBC1 gbDataMBC1;

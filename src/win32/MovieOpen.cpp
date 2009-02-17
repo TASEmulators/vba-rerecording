@@ -1,6 +1,7 @@
 // MovieOpen.cpp : implementation file
 //
 
+#include "../Port.h"
 #include "stdafx.h"
 #include "../GBA.h"
 #include "MovieOpen.h"
@@ -9,11 +10,10 @@
 #include "filedlg.h"
 #include "WinResUtil.h"
 #include "VBA.h"
-#include "time.h"
 #include "../gb/gbGlobals.h"
 #include "../Util.h"
 #include "../GBAinline.h"
-#include ".\movieopen.h"
+#include "movieOpen.h"
 
 
 

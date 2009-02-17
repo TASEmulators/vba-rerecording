@@ -98,17 +98,17 @@ extern HANDLE mapIOMEM;
 extern reg_pair reg[45];
 extern u8 biosProtected[4];
 
-extern bool N_FLAG;
-extern bool Z_FLAG;
-extern bool C_FLAG;
-extern bool V_FLAG;
-extern bool armIrqEnable;
-extern bool armState;
-extern int armMode;
+extern bool8 N_FLAG;
+extern bool8 Z_FLAG;
+extern bool8 C_FLAG;
+extern bool8 V_FLAG;
+extern bool8 armIrqEnable;
+extern bool8 armState;
+extern int32 armMode;
 extern void (*cpuSaveGameFunc)(u32,u8);
 
-extern bool freezeWorkRAM[0x40000];
-extern bool freezeInternalRAM[0x8000];
+extern bool8 freezeWorkRAM[0x40000];
+extern bool8 freezeInternalRAM[0x8000];
 extern bool CPUReadGSASnapshot(const char *);
 extern bool CPUWriteGSASnapshot(const char *, const char *, const char *, const char *);
 extern bool CPUWriteBatteryFile(const char *);

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
+#include <assert.h>
 
 #include "../System.h"
 #include "../NLS.h"
@@ -43,7 +44,7 @@
 
 u8 *origPix = NULL;
 extern u8 *pix;
-extern bool speedup;
+extern bool8 speedup;
 
 bool gbUpdateSizes();
 
@@ -112,67 +113,67 @@ u8 register_SVBK  = 0;
 u8 register_IE    = 0;
 
 // ticks definition
-int GBDIV_CLOCK_TICKS          = 64;
-int GBLCD_MODE_0_CLOCK_TICKS   = 51;
-int GBLCD_MODE_1_CLOCK_TICKS   = 1140;
-int GBLCD_MODE_2_CLOCK_TICKS   = 20;
-int GBLCD_MODE_3_CLOCK_TICKS   = 43;
-int GBLY_INCREMENT_CLOCK_TICKS = 114;
-int GBTIMER_MODE_0_CLOCK_TICKS = 256;
-int GBTIMER_MODE_1_CLOCK_TICKS = 4;
-int GBTIMER_MODE_2_CLOCK_TICKS = 16;
-int GBTIMER_MODE_3_CLOCK_TICKS = 64;
-int GBSERIAL_CLOCK_TICKS       = 128;
-int GBSYNCHRONIZE_CLOCK_TICKS  = 52920;
+int32 GBDIV_CLOCK_TICKS          = 64;
+int32 GBLCD_MODE_0_CLOCK_TICKS   = 51;
+int32 GBLCD_MODE_1_CLOCK_TICKS   = 1140;
+int32 GBLCD_MODE_2_CLOCK_TICKS   = 20;
+int32 GBLCD_MODE_3_CLOCK_TICKS   = 43;
+int32 GBLY_INCREMENT_CLOCK_TICKS = 114;
+int32 GBTIMER_MODE_0_CLOCK_TICKS = 256;
+int32 GBTIMER_MODE_1_CLOCK_TICKS = 4;
+int32 GBTIMER_MODE_2_CLOCK_TICKS = 16;
+int32 GBTIMER_MODE_3_CLOCK_TICKS = 64;
+int32 GBSERIAL_CLOCK_TICKS       = 128;
+int32 GBSYNCHRONIZE_CLOCK_TICKS  = 52920;
 
 // state variables
 
 // interrupt
-int gbInterrupt = 0;
-int gbInterruptWait = 0;
+int32 gbInterrupt = 0;
+int32 gbInterruptWait = 0;
 // serial
-int gbSerialOn = 0;
-int gbSerialTicks = 0;
-int gbSerialBits = 0;
+int32 gbSerialOn = 0;
+int32 gbSerialTicks = 0;
+int32 gbSerialBits = 0;
 // timer
-int gbTimerOn = 0;
-int gbTimerTicks = 0;
-int gbTimerClockTicks = 0;
-int gbTimerMode = 0;
+int32 gbTimerOn = 0;
+int32 gbTimerTicks = 0;
+int32 gbTimerClockTicks = 0;
+int32 gbTimerMode = 0;
 // lcd
-int gbLcdMode = 2;
-int gbLcdTicks = GBLCD_MODE_2_CLOCK_TICKS;
-int gbLcdLYIncrementTicks = 0;
+int32 gbLcdMode = 2;
+int32 gbLcdTicks = GBLCD_MODE_2_CLOCK_TICKS;
+int32 gbLcdLYIncrementTicks = 0;
 // div
-int gbDivTicks = GBDIV_CLOCK_TICKS;
+int32 gbDivTicks = GBDIV_CLOCK_TICKS;
 // cgb
-int gbVramBank = 0;
-int gbWramBank = 1;
-int gbHdmaSource = 0x0000;
-int gbHdmaDestination = 0x8000;
-int gbHdmaBytes = 0x0000;
-int gbHdmaOn = 0;
-int gbSpeed = 0;
+int32 gbVramBank = 0;
+int32 gbWramBank = 1;
+int32 gbHdmaSource = 0x0000;
+int32 gbHdmaDestination = 0x8000;
+int32 gbHdmaBytes = 0x0000;
+int32 gbHdmaOn = 0;
+int32 gbSpeed = 0;
 // frame counting
-int gbFrameCount = 0;
-int gbFrameSkip = 0;
-int gbFrameSkipCount = 0;
+int32 gbFrameCount = 0;
+int32 gbFrameSkip = 0;
+int32 gbFrameSkipCount = 0;
 // timing
 u32 gbLastTime = 0;
 u32 gbElapsedTime = 0;
 u32 gbTimeNow = 0;
-int gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
-int gbDMASpeedVersion = 1;
+int32 gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
+int32 gbDMASpeedVersion = 1;
 // emulator features
-int gbBattery = 0;
-int gbCaptureNumber = 0;
-bool gbCapture = false;
-bool gbCapturePrevious = false;
-int gbJoymask[4] = { 0, 0, 0, 0 };
+int32 gbBattery = 0;
+int32 gbCaptureNumber = 0;
+bool8 gbCapture = false;
+bool8 gbCapturePrevious = false;
+int32 gbJoymask[4] = { 0, 0, 0, 0 };
 
-static bool pauseAfterFrameAdvance = false;
+static bool8 pauseAfterFrameAdvance = false;
 
-int gbRomSizes[] = { 0x00008000, // 32K
+int32 gbRomSizes[] = { 0x00008000, // 32K
 0x00010000, // 64K
 0x00020000, // 128K
 0x00040000, // 256K
@@ -182,7 +183,7 @@ int gbRomSizes[] = { 0x00008000, // 32K
 0x00400000, // 4096K
 0x00800000  // 8192K
 };
-int gbRomSizesMasks[] = { 0x00007fff,
+int32 gbRomSizesMasks[] = { 0x00007fff,
 0x0000ffff,
 0x0001ffff,
 0x0003ffff,
@@ -193,7 +194,7 @@ int gbRomSizesMasks[] = { 0x00007fff,
 0x007fffff
 };
 
-int gbRamSizes[6] = { 0x00000000, // 0K
+int32 gbRamSizes[6] = { 0x00000000, // 0K
 0x00000800, // 2K
 0x00002000, // 8K
 0x00008000, // 32K
@@ -201,7 +202,7 @@ int gbRamSizes[6] = { 0x00000000, // 0K
 0x00010000  // 64K
 };
 
-int gbRamSizesMasks[6] = { 0x00000000,
+int32 gbRamSizesMasks[6] = { 0x00000000,
 0x000007ff,
 0x00001fff,
 0x00007fff,
@@ -209,7 +210,7 @@ int gbRamSizesMasks[6] = { 0x00000000,
 0x0000ffff
 };
 
-int gbCycles[] = 
+int32 gbCycles[] = 
 {
 	//  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 	1, 3, 2, 2, 1, 1, 2, 1, 5, 2, 2, 2, 1, 1, 2, 1,  // 0
@@ -230,7 +231,7 @@ int gbCycles[] =
 		3, 3, 2, 1, 0, 4, 2, 4, 3, 2, 4, 1, 0, 0, 2, 4   // f
 };
 
-int gbCyclesCB[] = 
+int32 gbCyclesCB[] = 
 {
 	//  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f   
 	2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,  // 0
@@ -1748,7 +1749,7 @@ void gbReset()
 	gbDataMBC2.mapperRAMEnable = 0;
 	gbDataMBC2.mapperROMBank = 1;
 
-	memset(&gbDataMBC3,0, 6 * sizeof(int));
+	memset(&gbDataMBC3,0, 6 * sizeof(int32));
 	gbDataMBC3.mapperROMBank = 1;
 
 	memset(&gbDataMBC5, 0, sizeof(gbDataMBC5));
@@ -1862,11 +1863,13 @@ void gbWriteSaveMBC3(const char * name, bool extendedSave)
 		gbRamSize,
 		gzFile);
 
-	if(extendedSave)
+	if(extendedSave) {
+		assert(sizeof(time_t) == 4);
 		fwrite(&gbDataMBC3.mapperSeconds,
 		1,
-		10*sizeof(int) + sizeof(time_t),
+		10*sizeof(int32) + sizeof(time_t),
 		gzFile);
+	}
 
 	fclose(gzFile);
 }
@@ -1978,11 +1981,12 @@ bool gbReadSaveMBC3(const char * name)
 			N_("Failed to read complete save game %s (%d)"), name, read);
 	} else 
 	{
+		assert(sizeof(time_t) == 4);
 		read = gzread(gzFile,
 			&gbDataMBC3.mapperSeconds,
-			sizeof(int)*10 + sizeof(time_t));
+			sizeof(int32)*10 + sizeof(time_t));
 
-		if(read != (sizeof(int)*10 + sizeof(time_t)) && read != 0) 
+		if(read != (sizeof(int32)*10 + sizeof(time_t)) && read != 0) 
 		{
 			systemMessage(MSG_FAILED_TO_READ_RTC,
 				N_("Failed to read RTC from save game %s (continuing)"),
@@ -2290,42 +2294,42 @@ variable_desc gbSaveGameStruct[] =
 	{ &DE.W, sizeof(u16) },
 	{ &HL.W, sizeof(u16) },
 	{ &IFF,  sizeof(u8) },
-	{ &GBLCD_MODE_0_CLOCK_TICKS, sizeof(int) },
-	{ &GBLCD_MODE_1_CLOCK_TICKS, sizeof(int) },
-	{ &GBLCD_MODE_2_CLOCK_TICKS, sizeof(int) },
-	{ &GBLCD_MODE_3_CLOCK_TICKS, sizeof(int) },
-	{ &GBDIV_CLOCK_TICKS, sizeof(int) },
-	{ &GBLY_INCREMENT_CLOCK_TICKS, sizeof(int) },
-	{ &GBTIMER_MODE_0_CLOCK_TICKS, sizeof(int) },
-	{ &GBTIMER_MODE_1_CLOCK_TICKS, sizeof(int) },
-	{ &GBTIMER_MODE_2_CLOCK_TICKS, sizeof(int) },
-	{ &GBTIMER_MODE_3_CLOCK_TICKS, sizeof(int) },
-	{ &GBSERIAL_CLOCK_TICKS, sizeof(int) },
-	{ &GBSYNCHRONIZE_CLOCK_TICKS, sizeof(int) },
-	{ &gbDivTicks, sizeof(int) },
-	{ &gbLcdMode, sizeof(int) },
-	{ &gbLcdTicks, sizeof(int) },
-	{ &gbLcdLYIncrementTicks, sizeof(int) },
-	{ &gbTimerTicks, sizeof(int) },
-	{ &gbTimerClockTicks, sizeof(int) },
-	{ &gbSerialTicks, sizeof(int) },
-	{ &gbSerialBits, sizeof(int) },
-	{ &gbInterrupt, sizeof(int) },
-	{ &gbInterruptWait, sizeof(int) },
-	{ &gbSynchronizeTicks, sizeof(int) },
-	{ &gbTimerOn, sizeof(int) },
-	{ &gbTimerMode, sizeof(int) },
-	{ &gbSerialOn, sizeof(int) },
-	{ &gbWindowLine, sizeof(int) },
-	{ &gbCgbMode, sizeof(int) },
-	{ &gbVramBank, sizeof(int) },
-	{ &gbWramBank, sizeof(int) },
-	{ &gbHdmaSource, sizeof(int) },
-	{ &gbHdmaDestination, sizeof(int) },
-	{ &gbHdmaBytes, sizeof(int) },
-	{ &gbHdmaOn, sizeof(int) },
-	{ &gbSpeed, sizeof(int) },
-	{ &gbSgbMode, sizeof(int) },
+	{ &GBLCD_MODE_0_CLOCK_TICKS, sizeof(int32) },
+	{ &GBLCD_MODE_1_CLOCK_TICKS, sizeof(int32) },
+	{ &GBLCD_MODE_2_CLOCK_TICKS, sizeof(int32) },
+	{ &GBLCD_MODE_3_CLOCK_TICKS, sizeof(int32) },
+	{ &GBDIV_CLOCK_TICKS, sizeof(int32) },
+	{ &GBLY_INCREMENT_CLOCK_TICKS, sizeof(int32) },
+	{ &GBTIMER_MODE_0_CLOCK_TICKS, sizeof(int32) },
+	{ &GBTIMER_MODE_1_CLOCK_TICKS, sizeof(int32) },
+	{ &GBTIMER_MODE_2_CLOCK_TICKS, sizeof(int32) },
+	{ &GBTIMER_MODE_3_CLOCK_TICKS, sizeof(int32) },
+	{ &GBSERIAL_CLOCK_TICKS, sizeof(int32) },
+	{ &GBSYNCHRONIZE_CLOCK_TICKS, sizeof(int32) },
+	{ &gbDivTicks, sizeof(int32) },
+	{ &gbLcdMode, sizeof(int32) },
+	{ &gbLcdTicks, sizeof(int32) },
+	{ &gbLcdLYIncrementTicks, sizeof(int32) },
+	{ &gbTimerTicks, sizeof(int32) },
+	{ &gbTimerClockTicks, sizeof(int32) },
+	{ &gbSerialTicks, sizeof(int32) },
+	{ &gbSerialBits, sizeof(int32) },
+	{ &gbInterrupt, sizeof(int32) },
+	{ &gbInterruptWait, sizeof(int32) },
+	{ &gbSynchronizeTicks, sizeof(int32) },
+	{ &gbTimerOn, sizeof(int32) },
+	{ &gbTimerMode, sizeof(int32) },
+	{ &gbSerialOn, sizeof(int32) },
+	{ &gbWindowLine, sizeof(int32) },
+	{ &gbCgbMode, sizeof(int32) },
+	{ &gbVramBank, sizeof(int32) },
+	{ &gbWramBank, sizeof(int32) },
+	{ &gbHdmaSource, sizeof(int32) },
+	{ &gbHdmaDestination, sizeof(int32) },
+	{ &gbHdmaBytes, sizeof(int32) },
+	{ &gbHdmaOn, sizeof(int32) },
+	{ &gbSpeed, sizeof(int32) },
+	{ &gbSgbMode, sizeof(int32) },
 	{ &register_DIV, sizeof(u8) },
 	{ &register_TIMA, sizeof(u8) },
 	{ &register_TMA, sizeof(u8) },
@@ -2381,6 +2385,7 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 
 	utilGzWrite(gzFile, &gbDataMBC1, sizeof(gbDataMBC1));
 	utilGzWrite(gzFile, &gbDataMBC2, sizeof(gbDataMBC2));
+	assert(sizeof(time_t) == 4);
 	utilGzWrite(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	utilGzWrite(gzFile, &gbDataMBC5, sizeof(gbDataMBC5));
 	utilGzWrite(gzFile, &gbDataHuC1, sizeof(gbDataHuC1));
@@ -2544,9 +2549,11 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		// prior to version 4, there was no adjustment for the time the game
 		// was last played, so we have less to read. This needs update if the
 		// structure changes again.
-		utilGzRead(gzFile, &gbDataMBC3, sizeof(gbDataMBC3)-sizeof(time_t));
-	else
+		utilGzRead(gzFile, &gbDataMBC3, sizeof(int32)*10);
+	else {
+		assert(sizeof(time_t) == 4);
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
+	}
 	utilGzRead(gzFile, &gbDataMBC5, sizeof(gbDataMBC5));
 	utilGzRead(gzFile, &gbDataHuC1, sizeof(gbDataHuC1));
 	utilGzRead(gzFile, &gbDataHuC3, sizeof(gbDataHuC3));

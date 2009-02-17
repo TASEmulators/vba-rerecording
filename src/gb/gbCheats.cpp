@@ -32,7 +32,7 @@ gbCheat gbCheatList[100];
 int gbCheatNumber = 0;
 bool gbCheatMap[0x10000];
 
-extern bool cheatsEnabled;
+extern bool8 cheatsEnabled;
 
 #define GBCHEAT_IS_HEX(a) ( ((a)>='A' && (a) <='F') || ((a) >='0' && (a) <= '9'))
 #define GBCHEAT_HEX_VALUE(a) ( (a) >= 'A' ? (a) - 'A' + 10 : (a) - '0')

@@ -344,7 +344,7 @@ bool Direct3DDisplay::initialize()
   HRESULT hret = pD3D->CreateDevice(D3DADAPTER_DEFAULT,
                                     D3DDEVTYPE_HAL,
                                     pWnd->GetSafeHwnd(),
-                                    D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+                                    D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE,
                                     &dpp,
                                     &pDevice);
   if(!SUCCEEDED(hret)) {

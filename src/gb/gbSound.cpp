@@ -30,102 +30,102 @@
 
 extern u8 soundBuffer[6][735];
 extern u16 soundFinalWave[1470];
-extern int soundVolume;
+extern int32 soundVolume;
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
 #define NOISE_MAGIC 5
 
-extern int speed;
+extern int32 speed;
 
 extern void soundResume();
 
 extern u8 soundWavePattern[4][32];
 
-extern int soundBufferLen;
-extern int soundBufferTotalLen;
-extern int soundQuality;
-extern int soundPaused;
-extern int soundPlay;
-extern int soundTicks;
-extern int SOUND_CLOCK_TICKS;
+extern int32 soundBufferLen;
+extern int32 soundBufferTotalLen;
+extern int32 soundQuality;
+extern int32 soundPaused;
+extern int32 soundPlay;
+extern int32 soundTicks;
+extern int32 SOUND_CLOCK_TICKS;
 extern u32 soundNextPosition;
 
-extern int soundLevel1;
-extern int soundLevel2;
-extern int soundBalance;
-extern int soundMasterOn;
-extern int soundIndex;
-extern int soundBufferIndex;
-int soundVIN = 0;
-extern int soundDebug;
+extern int32 soundLevel1;
+extern int32 soundLevel2;
+extern int32 soundBalance;
+extern int32 soundMasterOn;
+extern int32 soundIndex;
+extern int32 soundBufferIndex;
+int32 soundVIN = 0;
+extern int32 soundDebug;
 
-extern int sound1On;
-extern int sound1ATL;
-extern int sound1Skip;
-extern int sound1Index;
-extern int sound1Continue;
-extern int sound1EnvelopeVolume;
-extern int sound1EnvelopeATL;
-extern int sound1EnvelopeUpDown;
-extern int sound1EnvelopeATLReload;
-extern int sound1SweepATL;
-extern int sound1SweepATLReload;
-extern int sound1SweepSteps;
-extern int sound1SweepUpDown;
-extern int sound1SweepStep;
+extern int32 sound1On;
+extern int32 sound1ATL;
+extern int32 sound1Skip;
+extern int32 sound1Index;
+extern int32 sound1Continue;
+extern int32 sound1EnvelopeVolume;
+extern int32 sound1EnvelopeATL;
+extern int32 sound1EnvelopeUpDown;
+extern int32 sound1EnvelopeATLReload;
+extern int32 sound1SweepATL;
+extern int32 sound1SweepATLReload;
+extern int32 sound1SweepSteps;
+extern int32 sound1SweepUpDown;
+extern int32 sound1SweepStep;
 extern u8 *sound1Wave;
 
-extern int sound2On;
-extern int sound2ATL;
-extern int sound2Skip;
-extern int sound2Index;
-extern int sound2Continue;
-extern int sound2EnvelopeVolume;
-extern int sound2EnvelopeATL;
-extern int sound2EnvelopeUpDown;
-extern int sound2EnvelopeATLReload;
+extern int32 sound2On;
+extern int32 sound2ATL;
+extern int32 sound2Skip;
+extern int32 sound2Index;
+extern int32 sound2Continue;
+extern int32 sound2EnvelopeVolume;
+extern int32 sound2EnvelopeATL;
+extern int32 sound2EnvelopeUpDown;
+extern int32 sound2EnvelopeATLReload;
 extern u8 *sound2Wave;
 
-extern int sound3On;
-extern int sound3ATL;
-extern int sound3Skip;
-extern int sound3Index;
-extern int sound3Continue;
-extern int sound3OutputLevel;
-extern int sound3Last;
+extern int32 sound3On;
+extern int32 sound3ATL;
+extern int32 sound3Skip;
+extern int32 sound3Index;
+extern int32 sound3Continue;
+extern int32 sound3OutputLevel;
+extern int32 sound3Last;
 
-extern int sound4On;
-extern int sound4Clock;
-extern int sound4ATL;
-extern int sound4Skip;
-extern int sound4Index;
-extern int sound4ShiftRight;
-extern int sound4ShiftSkip;
-extern int sound4ShiftIndex;
-extern int sound4NSteps;
-extern int sound4CountDown;
-extern int sound4Continue;
-extern int sound4EnvelopeVolume;
-extern int sound4EnvelopeATL;
-extern int sound4EnvelopeUpDown;
-extern int sound4EnvelopeATLReload;
+extern int32 sound4On;
+extern int32 sound4Clock;
+extern int32 sound4ATL;
+extern int32 sound4Skip;
+extern int32 sound4Index;
+extern int32 sound4ShiftRight;
+extern int32 sound4ShiftSkip;
+extern int32 sound4ShiftIndex;
+extern int32 sound4NSteps;
+extern int32 sound4CountDown;
+extern int32 sound4Continue;
+extern int32 sound4EnvelopeVolume;
+extern int32 sound4EnvelopeATL;
+extern int32 sound4EnvelopeUpDown;
+extern int32 sound4EnvelopeATLReload;
 
-extern int soundEnableFlag;
+extern int32 soundEnableFlag;
 
-extern int soundFreqRatio[8];
-extern int soundShiftClock[16];
+extern int32 soundFreqRatio[8];
+extern int32 soundShiftClock[16];
 
 extern s16 soundFilter[4000];
 extern s16 soundLeft[5];
 extern s16 soundRight[5];
-extern int soundEchoIndex;
-extern bool soundEcho;
-extern bool soundLowPass;
-extern bool soundReverse;
-extern bool soundOffFlag;
+extern int32 soundEchoIndex;
+extern bool8 soundEcho;
+extern bool8 soundLowPass;
+extern bool8 soundReverse;
+extern bool8 soundOffFlag;
 
-bool gbDigitalSound = false;
+bool8 gbDigitalSound = false;
 
 void gbSoundEvent(register u16 address, register int data)
 {
@@ -883,61 +883,61 @@ void gbSoundSetQuality(int quality)
 }
 
 variable_desc gbSoundSaveStruct[] = {
-  { &soundPaused, sizeof(int) },
-  { &soundPlay, sizeof(int) },
-  { &soundTicks, sizeof(int) },
-  { &SOUND_CLOCK_TICKS, sizeof(int) },
-  { &soundLevel1, sizeof(int) },
-  { &soundLevel2, sizeof(int) },
-  { &soundBalance, sizeof(int) },
-  { &soundMasterOn, sizeof(int) },
-  { &soundIndex, sizeof(int) },
-  { &soundVIN, sizeof(int) },
-  { &sound1On, sizeof(int) },
-  { &sound1ATL, sizeof(int) },
-  { &sound1Skip, sizeof(int) },
-  { &sound1Index, sizeof(int) },
-  { &sound1Continue, sizeof(int) },
-  { &sound1EnvelopeVolume, sizeof(int) },
-  { &sound1EnvelopeATL, sizeof(int) },
-  { &sound1EnvelopeATLReload, sizeof(int) },
-  { &sound1EnvelopeUpDown, sizeof(int) },
-  { &sound1SweepATL, sizeof(int) },
-  { &sound1SweepATLReload, sizeof(int) },
-  { &sound1SweepSteps, sizeof(int) },
-  { &sound1SweepUpDown, sizeof(int) },
-  { &sound1SweepStep, sizeof(int) },
-  { &sound2On, sizeof(int) },
-  { &sound2ATL, sizeof(int) },
-  { &sound2Skip, sizeof(int) },
-  { &sound2Index, sizeof(int) },
-  { &sound2Continue, sizeof(int) },
-  { &sound2EnvelopeVolume, sizeof(int) },
-  { &sound2EnvelopeATL, sizeof(int) },
-  { &sound2EnvelopeATLReload, sizeof(int) },
-  { &sound2EnvelopeUpDown, sizeof(int) },
-  { &sound3On, sizeof(int) },
-  { &sound3ATL, sizeof(int) },
-  { &sound3Skip, sizeof(int) },
-  { &sound3Index, sizeof(int) },
-  { &sound3Continue, sizeof(int) },
-  { &sound3OutputLevel, sizeof(int) },
-  { &sound4On, sizeof(int) },
-  { &sound4ATL, sizeof(int) },
-  { &sound4Skip, sizeof(int) },
-  { &sound4Index, sizeof(int) },
-  { &sound4Clock, sizeof(int) },
-  { &sound4ShiftRight, sizeof(int) },
-  { &sound4ShiftSkip, sizeof(int) },
-  { &sound4ShiftIndex, sizeof(int) },
-  { &sound4NSteps, sizeof(int) },
-  { &sound4CountDown, sizeof(int) },
-  { &sound4Continue, sizeof(int) },
-  { &sound4EnvelopeVolume, sizeof(int) },
-  { &sound4EnvelopeATL, sizeof(int) },
-  { &sound4EnvelopeATLReload, sizeof(int) },
-  { &sound4EnvelopeUpDown, sizeof(int) },
-  { &soundEnableFlag, sizeof(int) },
+  { &soundPaused, sizeof(int32) },
+  { &soundPlay, sizeof(int32) },
+  { &soundTicks, sizeof(int32) },
+  { &SOUND_CLOCK_TICKS, sizeof(int32) },
+  { &soundLevel1, sizeof(int32) },
+  { &soundLevel2, sizeof(int32) },
+  { &soundBalance, sizeof(int32) },
+  { &soundMasterOn, sizeof(int32) },
+  { &soundIndex, sizeof(int32) },
+  { &soundVIN, sizeof(int32) },
+  { &sound1On, sizeof(int32) },
+  { &sound1ATL, sizeof(int32) },
+  { &sound1Skip, sizeof(int32) },
+  { &sound1Index, sizeof(int32) },
+  { &sound1Continue, sizeof(int32) },
+  { &sound1EnvelopeVolume, sizeof(int32) },
+  { &sound1EnvelopeATL, sizeof(int32) },
+  { &sound1EnvelopeATLReload, sizeof(int32) },
+  { &sound1EnvelopeUpDown, sizeof(int32) },
+  { &sound1SweepATL, sizeof(int32) },
+  { &sound1SweepATLReload, sizeof(int32) },
+  { &sound1SweepSteps, sizeof(int32) },
+  { &sound1SweepUpDown, sizeof(int32) },
+  { &sound1SweepStep, sizeof(int32) },
+  { &sound2On, sizeof(int32) },
+  { &sound2ATL, sizeof(int32) },
+  { &sound2Skip, sizeof(int32) },
+  { &sound2Index, sizeof(int32) },
+  { &sound2Continue, sizeof(int32) },
+  { &sound2EnvelopeVolume, sizeof(int32) },
+  { &sound2EnvelopeATL, sizeof(int32) },
+  { &sound2EnvelopeATLReload, sizeof(int32) },
+  { &sound2EnvelopeUpDown, sizeof(int32) },
+  { &sound3On, sizeof(int32) },
+  { &sound3ATL, sizeof(int32) },
+  { &sound3Skip, sizeof(int32) },
+  { &sound3Index, sizeof(int32) },
+  { &sound3Continue, sizeof(int32) },
+  { &sound3OutputLevel, sizeof(int32) },
+  { &sound4On, sizeof(int32) },
+  { &sound4ATL, sizeof(int32) },
+  { &sound4Skip, sizeof(int32) },
+  { &sound4Index, sizeof(int32) },
+  { &sound4Clock, sizeof(int32) },
+  { &sound4ShiftRight, sizeof(int32) },
+  { &sound4ShiftSkip, sizeof(int32) },
+  { &sound4ShiftIndex, sizeof(int32) },
+  { &sound4NSteps, sizeof(int32) },
+  { &sound4CountDown, sizeof(int32) },
+  { &sound4Continue, sizeof(int32) },
+  { &sound4EnvelopeVolume, sizeof(int32) },
+  { &sound4EnvelopeATL, sizeof(int32) },
+  { &sound4EnvelopeATLReload, sizeof(int32) },
+  { &sound4EnvelopeUpDown, sizeof(int32) },
+  { &soundEnableFlag, sizeof(int32) },
   { NULL, 0 }
 };
 
@@ -947,7 +947,7 @@ void gbSoundSaveGame(gzFile gzFile)
 
   utilGzWrite(gzFile, soundBuffer, 4*735);
   utilGzWrite(gzFile, soundFinalWave, 2*735);
-  utilGzWrite(gzFile, &soundQuality, sizeof(int));
+  utilGzWrite(gzFile, &soundQuality, sizeof(int32));
 }
 
 void gbSoundReadGame(int version,gzFile gzFile)
@@ -961,7 +961,7 @@ void gbSoundReadGame(int version,gzFile gzFile)
 
   if(version >=7) {
     int quality = 1;
-    utilGzRead(gzFile, &quality, sizeof(int));
+    utilGzRead(gzFile, &quality, sizeof(int32));
     gbSoundSetQuality(quality);
   } else {
     soundQuality = -1;
