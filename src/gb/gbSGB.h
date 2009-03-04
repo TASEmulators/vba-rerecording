@@ -28,12 +28,12 @@ void gbSgbReadGame(gzFile, int version);
 void gbSgbRenderBorder();
 
 extern u8  gbSgbATF[20*18];
-extern int gbSgbMode;
-extern int gbSgbMask;
-extern int gbSgbMultiplayer;
+extern int32 gbSgbMode;
+extern int32 gbSgbMask;
+extern int32 gbSgbMultiplayer;
 extern u8  gbSgbNextController;
-extern int gbSgbPacketTimeout;
+extern int32 gbSgbPacketTimeout;
 extern u8  gbSgbReadingController;
-extern int gbSgbFourPlayers;
+extern int32 gbSgbFourPlayers;
 
 

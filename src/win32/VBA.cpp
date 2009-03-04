@@ -44,6 +44,7 @@
 #include "../Text.h"
 #include "../movie.h"
 #include "../nesvideos-piece.h"
+#include "../vbalua.h"
 
 extern void Pixelate(u8*,u32,u8*,u8*,u32,int,int);
 extern void Pixelate32(u8*,u32,u8*,u8*,u32,int,int);
@@ -1611,6 +1612,11 @@ BOOL VBA::OnIdle(LONG lCount)
   } else if(emulating && active && !paused) {
 ///    for(int i = 0; i < 2; i++)
 	{
+		if (VBALuaRunning())
+		{
+			VBALuaFrameBoundary();
+		}
+
       emulator.emuMain(emulator.emuCount);
 
 	  // save the state for rewinding, if necessary

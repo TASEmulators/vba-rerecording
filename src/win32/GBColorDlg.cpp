@@ -25,7 +25,7 @@
 #include "../System.h"
 #include "Reg.h"
 
-extern int gbPaletteOption;
+extern int32 gbPaletteOption;
 extern int emulating;
 extern int cartridgeType;
 extern u16 gbPalette[128];

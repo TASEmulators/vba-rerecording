@@ -21,7 +21,7 @@
 #include "Util.h"
 #include <memory.h>
 
-extern int cpuDmaCount;
+extern int32 cpuDmaCount;
 
 int32 eepromMode = EEPROM_IDLE;
 int32 eepromByte = 0;

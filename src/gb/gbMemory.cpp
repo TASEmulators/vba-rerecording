@@ -901,7 +901,7 @@ u8 mapperHuC3ReadRAM(u16 address)
 // HuC3 RAM write
 void mapperHuC3RAM(u16 address, u8 value)
 {
-  int *p;
+  int32 *p;
 
   if(gbDataHuC3.mapperRAMFlag < 0x0b ||
      gbDataHuC3.mapperRAMFlag > 0x0e) {

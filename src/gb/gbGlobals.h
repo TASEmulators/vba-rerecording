@@ -17,10 +17,10 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-extern int gbRomSizeMask;
-extern int gbRomSize;
-extern int gbRamSize;
-extern int gbRamSizeMask;
+extern int32 gbRomSizeMask;
+extern int32 gbRomSize;
+extern int32 gbRamSize;
+extern int32 gbRamSizeMask;
 
 extern u8 *gbRom;
 extern u8 *gbRam;
@@ -30,7 +30,7 @@ extern u8 *gbMemory;
 extern u16 *gbLineBuffer;
 
 extern u8 *gbMemoryMap[16];
-extern int gbEchoRAMFixOn;
+extern int32 gbEchoRAMFixOn;
 
 inline u8 gbReadMemoryQuick(u16 address)
 {
@@ -56,17 +56,17 @@ inline void gbWriteMemoryQuick(u16 address, u8 value)
 	gbMemoryMap[address>>12][address&0xfff] = value;
 }
 
-extern int gbFrameSkip;
+extern int32 gbFrameSkip;
 extern u16 gbColorFilter[32768];
-extern int gbColorOption;
-extern int gbPaletteOption;
-extern int gbEmulatorType;
-extern int gbBorderOn;
-extern int gbBorderAutomatic;
-extern int gbCgbMode;
-extern int gbSgbMode;
-extern int gbWindowLine;
-extern int gbSpeed;
+extern int32 gbColorOption;
+extern int32 gbPaletteOption;
+extern int32 gbEmulatorType;
+extern int32 gbBorderOn;
+extern int32 gbBorderAutomatic;
+extern int32 gbCgbMode;
+extern int32 gbSgbMode;
+extern int32 gbWindowLine;
+extern int32 gbSpeed;
 extern u8 gbBgp[4];
 extern u8 gbObp0[4];
 extern u8 gbObp1[4];
@@ -82,10 +82,10 @@ extern u8 register_VBK;
 
 extern int emulating;
 
-extern int gbBorderLineSkip;
-extern int gbBorderRowSkip;
-extern int gbBorderColumnSkip;
-extern int gbDmaTicks;
+extern int32 gbBorderLineSkip;
+extern int32 gbBorderRowSkip;
+extern int32 gbBorderColumnSkip;
+extern int32 gbDmaTicks;
 
 extern void gbRenderLine();
 extern void gbDrawSprites();

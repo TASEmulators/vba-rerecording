@@ -50,7 +50,7 @@ typedef int pint;
 #endif /* PTR_NOT_INT */
 
 /* FIXME: Refactor this by moving out the BORLAND part and unifying typedefs */
-#ifndef __WIN32__
+#ifndef WIN32
 typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef signed char int8;
@@ -64,7 +64,7 @@ __extension__ typedef unsigned long long uint64;
 typedef long long int64;
 typedef unsigned long long uint64;
 # endif
-#else /* __WIN32__ */
+#else /* WIN32 */
 
 # ifdef __BORLANDC__
 #   include <systypes.h>
@@ -87,9 +87,31 @@ typedef unsigned int uint32;
 typedef __int64 int64;
 typedef unsigned __int64 uint64;
 
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #endif /* HAVE_STDINT_H */
 
+#ifndef WIN32
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
+#define _MAX_DIR PATH_MAX
+#define _MAX_DRIVE 1
+#define _MAX_FNAME PATH_MAX
+#define _MAX_EXT PATH_MAX
+#define _MAX_PATH PATH_MAX
+
+#define ZeroMemory(a,b) memset((a),0,(b))
+
+void _makepath (char *path, const char *drive, const char *dir,
+		const char *fname, const char *ext);
+void _splitpath (const char *path, char *drive, char *dir, char *fname,
+		 char *ext);
+#else /* WIN32 */
+#define strcasecmp stricmp
+#define strncasecmp strnicmp
+#endif
 
 typedef uint8  u8;
 typedef uint16 u16;
