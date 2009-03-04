@@ -30,7 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern int gbRomSize;
+extern int32 gbRomSize;
 
 struct WinGBACompanyName {
   LPCTSTR code;

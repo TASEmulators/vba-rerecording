@@ -34,6 +34,7 @@
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
 #include "../movie.h"
+#include "../vbalua.h"
 
 extern int emulating;
 
@@ -1130,4 +1131,36 @@ void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI* pCmdUI)
 	pCmdUI->Enable(true);
     theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
   }
+}
+
+void MainWnd::OnFileLuaLoad()
+{
+	MessageBox("NYI: drop the script into the main window instead.", "VBA Lua Error", MB_OK); // TODO: NYI
+}
+
+void MainWnd::OnUpdateFileLuaLoad(CCmdUI* pCmdUI)
+{
+  pCmdUI->Enable(true);
+}
+
+void MainWnd::OnFileLuaReload()
+{
+	VBAReloadLuaCode();
+}
+
+void MainWnd::OnUpdateFileLuaReload(CCmdUI* pCmdUI)
+{
+  pCmdUI->Enable(true);
+}
+
+void MainWnd::OnFileLuaStop()
+{
+	// I'm going to assume that Windows will adequately guard against this being executed
+	// uselessly. Even if it wasn't, it's no big deal.
+	VBALuaStop();
+}
+
+void MainWnd::OnUpdateFileLuaStop(CCmdUI* pCmdUI)
+{
+  pCmdUI->Enable(VBALuaRunning());
 }

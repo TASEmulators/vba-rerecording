@@ -96,6 +96,7 @@
 #define IDD_MOVIECREATE                 156
 #define IDD_MOVIEOPEN                   157
 #define IDD_TEXTCONFIG                  158
+#define IDD_LUA_ADD                     159
 #define IDC_R0                          1000
 #define IDC_EDIT_UP                     1000
 #define IDC_R1                          1001
@@ -576,6 +577,8 @@
 #define IDC_DECIMAL_DISPLAY             1281
 #define IDC_CHEATREFRESHBUTTON          1283
 #define IDC_CANCEL                      1284
+#define IDC_LUA_FILENAME                1285
+#define IDC_LUA_BROWSE                  1286
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
 #define ID_OPTIONS_VIDEO_FRAMESKIP_0    40003
@@ -898,14 +901,17 @@
 #define ID_TOOLS_LAGCOUNTER             40464
 #define ID_TOOLS_VBAWATCH_SETTING       40465
 #define ID_TOOLS_VBXWATCH_SETTING       40466
+#define ID_FILE_LUA_LOAD                40467
+#define ID_FILE_LUA_RELOAD              40468
+#define ID_FILE_LUA_STOP                40469
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        159
-#define _APS_NEXT_COMMAND_VALUE         40467
-#define _APS_NEXT_CONTROL_VALUE         1285
+#define _APS_NEXT_RESOURCE_VALUE        160
+#define _APS_NEXT_COMMAND_VALUE         40470
+#define _APS_NEXT_CONTROL_VALUE         1287
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

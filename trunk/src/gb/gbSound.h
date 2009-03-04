@@ -54,6 +54,6 @@ extern void gbSoundReadGame(int,gzFile);
 extern void gbSoundEvent(register u16, register int);
 extern void gbSoundSetQuality(int);
 
-extern int soundTicks;
-extern int soundQuality;
-extern int SOUND_CLOCK_TICKS;
+extern int32 soundTicks;
+extern int32 soundQuality;
+extern int32 SOUND_CLOCK_TICKS;

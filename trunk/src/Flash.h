@@ -30,5 +30,5 @@ extern void flashReset();
 extern void flashErase();
 extern void flashSetSize(int size);
 
-extern int flashSize;
+extern int32 flashSize;
 #endif // VBA_FLASH_H

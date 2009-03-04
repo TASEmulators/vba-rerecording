@@ -278,7 +278,7 @@ static void change_state(MovieState new_state)
 			gbBorderAutomatic = prevBorderAuto;
 		}
 #endif
-		extern int gbDMASpeedVersion;
+		extern int32 gbDMASpeedVersion;
 		gbDMASpeedVersion = 1;
 
 		if(Movie.inputBuffer)
@@ -523,7 +523,7 @@ static void SetPlayEmuSettings ()
 		theApp.winSaveType = Movie.header.saveType;
 		theApp.winFlashSize = Movie.header.flashSize;
 
-		extern int gbDMASpeedVersion;
+		extern int32 gbDMASpeedVersion;
 		if((Movie.header.optionFlags & MOVIE_SETTING_GBCFF55FIX) != 0)
 			gbDMASpeedVersion = 1;
 		else
@@ -766,7 +766,7 @@ static void SetRecordEmuSettings ()
 		Movie.header.gbEmulatorType = gbEmulatorType;
 
 		Movie.header.optionFlags |= MOVIE_SETTING_GBCFF55FIX;
-		extern int gbDMASpeedVersion;
+		extern int32 gbDMASpeedVersion;
 		gbDMASpeedVersion = 1;
 
 #	if (defined(WIN32) && !defined(SDL))

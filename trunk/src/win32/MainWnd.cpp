@@ -45,6 +45,7 @@
 #include "../Sound.h"
 #include "../Util.h"
 #include "../movie.h"
+#include "../vbalua.h"
 #include ".\mainwnd.h"
 
 #ifdef _DEBUG
@@ -494,6 +495,13 @@ BEGIN_MESSAGE_MAP(MainWnd, CWnd)
   ON_MESSAGE(WM_SYSCOMMAND, OnMySysCommand)
   ON_COMMAND(ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS, OnOptionsVideoTextdisplayoptions)
   ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS, OnUpdateOptionsVideoTextdisplayoptions)
+
+  ON_COMMAND(ID_FILE_LUA_LOAD, OnFileLuaLoad)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LUA_LOAD, OnUpdateFileLuaLoad)
+  ON_COMMAND(ID_FILE_LUA_RELOAD, OnFileLuaReload)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LUA_RELOAD, OnUpdateFileLuaReload)
+  ON_COMMAND(ID_FILE_LUA_STOP, OnFileLuaStop)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LUA_STOP, OnUpdateFileLuaStop)
   END_MESSAGE_MAP()
 
 
@@ -1334,7 +1342,14 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
     DragFinish(hDropInfo);
 
     _splitpath(szFile, NULL, NULL, NULL, ext);
-    if(strcmp(ext, ".vbm") == 0) {
+    if(strcasecmp(ext, ".lua") == 0) {
+        if (VBALoadLuaCode(szFile)) {
+            // success, there is nothing to do
+        } else {
+            // Errors are displayed by the Lua code.
+        }
+    }
+    else if(strcasecmp(ext, ".vbm") == 0) {
       SMovie movieInfo;
       char *movieName = szFile;
       char romTitle [12];

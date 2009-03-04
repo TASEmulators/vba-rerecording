@@ -898,7 +898,7 @@ u32 DirectInput::readDevice(int which, bool sensor)
 	if(theApp.autoHold)
 		currentButtons[i] ^= theApp.autoHold;
 
-	extern int gbSgbMode; // from gbSGB.cpp
+	extern int32 gbSgbMode; // from gbSGB.cpp
 	if(theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
 	{
 		if(currentButtons[i] & BUTTON_MASK_L)

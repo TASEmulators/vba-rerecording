@@ -484,6 +484,13 @@ class MainWnd : public CWnd
   afx_msg void OnOptionsVideoFullscreenmaxscale();
   afx_msg void OnOptionsVideoTextdisplayoptions();
   afx_msg void OnUpdateOptionsVideoTextdisplayoptions(CCmdUI *pCmdUI);
+
+  afx_msg void OnFileLuaLoad();
+  afx_msg void OnUpdateFileLuaLoad(CCmdUI *pCmdUI);
+  afx_msg void OnFileLuaReload();
+  afx_msg void OnUpdateFileLuaReload(CCmdUI *pCmdUI);
+  afx_msg void OnFileLuaStop();
+  afx_msg void OnUpdateFileLuaStop(CCmdUI *pCmdUI);
 	//}}AFX_MSG
   DECLARE_MESSAGE_MAP()
 

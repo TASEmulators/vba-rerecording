@@ -782,7 +782,7 @@ static bool backupSafe = true;
 
 bool CPUReadStateFromStream(gzFile gzFile)
 {
-	bool ub;
+	bool8 ub;
   char tempBackupName [128];
   if(backupSafe)
   {
@@ -3570,7 +3570,7 @@ void TogglePrefetchHack()
 			prefetchActive = !prefetchActive;
 			//if(prefetchActive && !prefetchPrevActive) systemScreenMessage("pre-fetch enabled",3,600);
 			//if(!prefetchActive && prefetchPrevActive) systemScreenMessage("pre-fetch disabled",3,600);
-			extern int memoryWaitFetch [16];
+			extern int32 memoryWaitFetch [16];
 			if(prefetchActive) memoryWaitFetch[8]--;
 			else               memoryWaitFetch[8]++;
 			prefetchPrevActive = prefetchActive;
@@ -3580,7 +3580,7 @@ void TogglePrefetchHack()
 
 void SetPrefetchHack(bool set)
 {
-	if(memLagTempEnabled == set)
+	if((bool)memLagTempEnabled == set)
 		TogglePrefetchHack();
 }
 
@@ -3607,11 +3607,12 @@ extern void winlog(const char *, ...);
 
 static bool frameBoundary = false;
 
-void CPULoop(int ticks)
+void CPULoop(int _ticks)
 {  
-  int clockTicks;
-  int cpuLoopTicks = 0;
-  int timerOverflow = 0;
+  int32 ticks = _ticks;
+  int32 clockTicks;
+  int32 cpuLoopTicks = 0;
+  int32 timerOverflow = 0;
   // variables used by the CPU core
 
   extCpuLoopTicks = &cpuLoopTicks;

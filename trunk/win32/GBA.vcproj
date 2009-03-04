@@ -79,11 +79,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib lua51.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="lib/win32"
+				AdditionalLibraryDirectories="lib/win32;lua-5.1.4/lib"
 				IgnoreDefaultLibraryNames="libci.lib"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
@@ -168,6 +168,7 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4244;4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -182,11 +183,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib lua51.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="lib/win32"
+				AdditionalLibraryDirectories="lib/win32;lua-5.1.4/lib"
 				IgnoreDefaultLibraryNames="libci.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
@@ -282,6 +283,10 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\GDIDisplay.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\lua-engine.cpp"
 				>
 			</File>
 			<File
@@ -946,11 +951,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
@@ -1171,6 +1176,10 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\VBA.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vbalua.h"
 				>
 			</File>
 			<File
