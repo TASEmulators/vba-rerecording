@@ -16,7 +16,8 @@ int VBALuaReadJoypad(int);
 int VBALuaSpeed();
 bool8 VBALuaRerecordCountSkip();
 
-void VBALuaGui(uint16 *, int ppl, int width, int height);
+void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth);
+void VBALuaClearGui();
 
 // And some interesting REVERSE declarations!
 char *VBAGetFreezeFilename(int slot);

@@ -47,6 +47,7 @@
 #include "prof/prof.h"
 #endif
 #include "movie.h"
+#include "vbalua.h"
 
 #define UPDATE_REG(address, value) WRITE16LE(((u16 *)&ioMem[address]),value)
 
@@ -3824,8 +3825,10 @@ void CPULoop(int _ticks)
 			  if(frameCount >= framesToSkip || pauseAfterFrameAdvance) {
                 systemDrawScreen();
                 frameCount = 0;
-              } else 
+              } else  {
                 frameCount++;
+                VBALuaClearGui();
+              }
 ///              if(systemPauseOnFrame())
 ///                ticks = 0;
               if(pauseAfterFrameAdvance)

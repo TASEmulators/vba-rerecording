@@ -2006,13 +2006,13 @@ static const struct luaL_reg guilib[] = {
 	{"drawcircle", gui_drawcircle},
 	{"fillbox", gui_fillbox},
 	{"fillcircle", gui_fillcircle},
-	{"text", gui_text},
+//	{"text", gui_text},
 
-	{"gdscreenshot", gui_gdscreenshot},
-	{"gdoverlay", gui_gdoverlay},
+//	{"gdscreenshot", gui_gdscreenshot},
+//	{"gdoverlay", gui_gdoverlay},
 	{"transparency", gui_transparency},
 
-	{"register", gui_register},
+//	{"register", gui_register},
 	
 	{"popup", gui_popup},
 	{NULL,NULL}
@@ -2254,12 +2254,10 @@ bool8 VBALuaRerecordCountSkip() {
 
 
 /**
- * Given a 16 bit screen with the indicated resolution,
+ * Given a screen with the indicated resolution,
  * draw the current GUI onto it.
- *
- * Currently we only support 256x* resolutions.
  */
-void VBALuaGui(uint16 *screen, int ppl, int width, int height) {
+void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth) {
 
 	if (!LUA || !luaRunning)
 		return;
@@ -2293,41 +2291,119 @@ void VBALuaGui(uint16 *screen, int ppl, int width, int height) {
 	gui_used = false;
 
 	int x,y;
+	//int pitch = (((ppl * depth + 7)>>3)+3)&~3;
+	int pitch = ppl*(depth/8)+(depth==24?0:4);
 
-	if (width == 256) {
-		for (y=0; y < height && y < 239; y++) {
-			for (x=0; x < 256; x++) {
-				const uint8 gui_alpha = gui_data[(y*256+x)*4+3];
-				const uint8 gui_red   = gui_data[(y*256+x)*4+2];
-				const uint8 gui_green = gui_data[(y*256+x)*4+1];
-				const uint8 gui_blue  = gui_data[(y*256+x)*4];
-				const uint8 scr_red   = ((screen[y*ppl + x] >> 11) & 31) << 3;
-				const uint8 scr_green = ((screen[y*ppl + x] >> 5)  & 63) << 2;
-				const uint8 scr_blue  = ( screen[y*ppl + x]        & 31) << 3;
-				int red, green, blue;
+	if (width > 256)
+		width = 256;
+	if (height > 239)
+		height = 239;
 
-				if (gui_alpha == 0) {
-					// do nothing
-					red = scr_red;
-					green = scr_green;
-					blue = scr_blue;
-				}
-				else if (gui_alpha == 255) {
-					// direct copy
-					red = gui_red;
-					green = gui_green;
-					blue = gui_blue;
+	for (y = 0; y < height; y++) {
+		uint8 *scr = &screen[y*pitch];
+		for (x = 0; x < width; x++, scr += depth/8) {
+			const uint8 gui_alpha = gui_data[(y*256+x)*4+3];
+			const uint8 gui_red   = gui_data[(y*256+x)*4+2];
+			const uint8 gui_green = gui_data[(y*256+x)*4+1];
+			const uint8 gui_blue  = gui_data[(y*256+x)*4];
+			uint8 scr_red, scr_green, scr_blue;
+			int red, green, blue;
+
+			// get colour from screen
+			switch(depth) {
+			case 16:
+			  {
+				u16 v = *(uint16*)scr;
+				scr_blue  = ((v >> systemBlueShift) & 0x001f) << 3;
+				scr_green = ((v >> systemGreenShift) & 0x001f) << 3;
+				scr_red   = ((v >> systemRedShift) & 0x001f) << 3;
+			  }
+			  break;
+			case 24:
+			  {
+				if(systemRedShift > systemBlueShift) {
+					scr_blue  = scr[0];
+					scr_green = scr[1];
+					scr_red   = scr[2];
 				}
 				else {
-					// alpha-blending
-					red   = (((int) gui_red   - scr_red)   * gui_alpha / 255 + scr_red)   & 255;
-					green = (((int) gui_green - scr_green) * gui_alpha / 255 + scr_green) & 255;
-					blue  = (((int) gui_blue  - scr_blue)  * gui_alpha / 255 + scr_blue)  & 255;
+					scr_red   = scr[0];
+					scr_green = scr[1];
+					scr_blue  = scr[2];
 				}
-				screen[y*ppl + x] =  ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3);
+			  }
+			  break;
+			case 32:
+			  {
+				u32 v = *(uint32*)scr;
+				scr_blue  = ((v >> systemBlueShift) & 0x001f) << 3;
+				scr_green = ((v >> systemGreenShift) & 0x001f) << 3;
+				scr_red   = ((v >> systemRedShift) & 0x001f) << 3;
+			  }
+			  break;
+			default:
+				assert(false);
+			}
+
+			if (gui_alpha == 0) {
+				// do nothing
+				red = scr_red;
+				green = scr_green;
+				blue = scr_blue;
+			}
+			else if (gui_alpha == 255) {
+				// direct copy
+				red = gui_red;
+				green = gui_green;
+				blue = gui_blue;
+			}
+			else {
+				// alpha-blending
+				red   = (((int) gui_red   - scr_red)   * gui_alpha / 255 + scr_red)   & 255;
+				green = (((int) gui_green - scr_green) * gui_alpha / 255 + scr_green) & 255;
+				blue  = (((int) gui_blue  - scr_blue)  * gui_alpha / 255 + scr_blue)  & 255;
+			}
+
+			// put colour to screen
+			switch(depth) {
+			case 16:
+			  {
+				*(uint16*)scr = 
+					((blue >> 3) & 0x01f) << systemBlueShift | 
+					((green >> 3) & 0x01f) << systemGreenShift | 
+					((red >> 3) & 0x01f) << systemRedShift;
+			  }
+			  break;
+			case 24:
+			  {
+				if(systemRedShift > systemBlueShift) {
+					scr[0] = (uint8) blue;
+					scr[1] = (uint8) green;
+					scr[2] = (uint8) red;
+				}
+				else {
+					scr[0] = (uint8) red;
+					scr[1] = (uint8) green;
+					scr[2] = (uint8) blue;
+				}
+			  }
+			  break;
+			case 32:
+			  {
+				*(uint32*)scr = 
+					((blue >> 3) & 0x01f) << systemBlueShift | 
+					((green >> 3) & 0x01f) << systemGreenShift | 
+					((red >> 3) & 0x01f) << systemRedShift;
+			  }
+			  break;
+			default:
+				assert(false);
 			}
 		}
 	}
-
 	return;
+}
+
+void VBALuaClearGui() {
+	gui_used = false;
 }

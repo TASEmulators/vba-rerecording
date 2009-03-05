@@ -185,6 +185,30 @@ void DrawTextMessages(u8 * dest, int pitch, int left, int bottom)
 	}
 }
 
+// draw Lua graphics in game screen
+void DrawLuaGui()
+{
+	int copyX = 240, copyY = 160;
+	int screenX = 240, screenY = 160;
+	int copyOffsetX = 0, copyOffsetY = 0;
+	int pitch;
+	if(theApp.cartridgeType == 1) {
+		if(gbBorderOn) {
+			copyX = 256, copyY = 224;
+			copyOffsetX = 48, copyOffsetY = 40;
+		}
+		else {
+			copyX = 160, copyY = 144;
+		}
+		screenX = 160, screenY = 144;
+	}
+	pitch = copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4);
+
+	copyOffsetY++; // don't know why it's needed
+
+	VBALuaGui(&pix[copyOffsetY*pitch+copyOffsetX*(systemColorDepth/8)], copyX, screenX, screenY, systemColorDepth);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // VBA
 
@@ -1227,14 +1251,19 @@ void systemDrawScreen()
 	// text messages cannot be recorded to the video, of course.
 	//
 	// "in-game" text rendering
-	if(textMethod == 0)
+	if(textMethod == 0 && !theApp.painting) // transparent text shouldn't be painted twice
 	{
 		int copyX = 240, copyY = 160;
+		int pitch;
 		if(theApp.cartridgeType == 1)
-			if(gbBorderOn) copyX = 256, copyY = 224;
-			else           copyX = 160, copyY = 144;
+			if(gbBorderOn)
+				copyX = 256, copyY = 224;
+			else
+				copyX = 160, copyY = 144;
+		pitch = copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4);
 
-		DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
+		DrawLuaGui();
+		DrawTextMessages((u8*)pix, pitch, 0, copyY);
 	}
 
   if(!theApp.painting)
@@ -1312,6 +1341,11 @@ void systemDrawScreen()
 	while(linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
   }
 
+	// draw Lua graphics in-game but after video logging
+	if(textMethod != 0 && !theApp.painting) // transparent text shouldn't be painted twice
+	{
+		DrawLuaGui();
+	}
 
   if(theApp.ifbFunction) {
     if(systemColorDepth == 16)
@@ -1381,6 +1415,11 @@ void systemShowSpeed(int speed)
 
 void systemFrame(int rate)
 {
+	if (VBALuaRunning())
+	{
+		VBALuaFrameBoundary();
+	}
+
   if(quitAfterTime >= 0 && theApp.globalFrameCount == quitAfterTime)
   {
 	  VBAMovieStop(true);
@@ -1612,11 +1651,6 @@ BOOL VBA::OnIdle(LONG lCount)
   } else if(emulating && active && !paused) {
 ///    for(int i = 0; i < 2; i++)
 	{
-		if (VBALuaRunning())
-		{
-			VBALuaFrameBoundary();
-		}
-
       emulator.emuMain(emulator.emuCount);
 
 	  // save the state for rewinding, if necessary
