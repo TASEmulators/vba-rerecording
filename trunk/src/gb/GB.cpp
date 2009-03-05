@@ -37,6 +37,7 @@
 #	include "../win32/vba.h"
 #endif
 #include "../movie.h"
+#include "../vbalua.h"
 
 #ifdef __GNUC__
 #define _stricmp strcasecmp
@@ -3316,10 +3317,15 @@ void gbEmulate(int ticksToStop)
 
 						if(gbFrameSkipCount >= framesToSkip || pauseAfterFrameAdvance) 
 						{
+							if(gbBorderOn)
+								gbSgbRenderBorder(); // clear unnecessary things on border (e.g. in-game text message)
+
 							systemDrawScreen();
 							gbFrameSkipCount = 0;
-						} else 
+						} else  {
 							gbFrameSkipCount++;
+							VBALuaClearGui();
+						}
 
 						if(pauseAfterFrameAdvance)
 						{

@@ -237,16 +237,19 @@ void gbSgbDrawBorderTile(int x, int y, int tile, int attr)
 
       u8 xxx = xx;
       u8 yyy = yy;
-      
+
       if(flipX)
         xxx = 7 - xx;
       if(flipY)
         yyy = 7 - yy;
 
+      u8 realx = x + xxx;
+      u8 realy = y + yyy;
+
       u16 c = gbPalette[palette + color];
       if(!color)
         c = gbPalette[0];
-      if((yy < 40 || yy >= 184) || (xx < 48 || xx >= 208)) {
+      if((realy < 40 || realy >= 184) || (realx < 48 || realx >= 208)) {
         switch(systemColorDepth) {
         case 16:
           gbSgbDraw16Bit(dest + yyy*(256+2) + xxx, c);
