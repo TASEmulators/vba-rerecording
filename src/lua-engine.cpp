@@ -458,7 +458,11 @@ static int memory_readdword(lua_State *L) {
 		val = gbReadMemoryQuick32(addr);
 	}
 
-	lua_pushinteger(L, val); // FIXME: in 32bit system, lua_pushinteger doesn't work properly for unsigned reading
+	// lua_pushinteger doesn't work properly for 32bit system, does it?
+	if (val >= 0x80000000 && sizeof(int) <= 4)
+		lua_pushnumber(L, val);
+	else
+		lua_pushinteger(L, val);
 	return 1;
 }
 
@@ -475,6 +479,37 @@ static int memory_readdwordsigned(lua_State *L) {
 	}
 
 	lua_pushinteger(L, val);
+	return 1;
+}
+
+static int memory_readbyterange(lua_State *L) {
+	uint32 address = luaL_checkinteger(L,1);
+	int length = luaL_checkinteger(L,2);
+
+	if(length < 0)
+	{
+		address += length;
+		length = -length;
+	}
+
+	// push the array
+	lua_createtable(L, abs(length), 0);
+
+	// put all the values into the (1-based) array
+	for(int a = address, n = 1; n <= length; a++, n++)
+	{
+		unsigned char value;
+
+		if (vbaRunsGBA()) {
+			value = CPUReadByteQuick(a);
+		}
+		else {
+			value = gbReadMemoryQuick8(a);
+		}
+		lua_pushinteger(L, value);
+		lua_rawseti(L, -2, n);
+	}
+
 	return 1;
 }
 
@@ -1954,15 +1989,15 @@ static const struct luaL_reg vbalib [] = {
 static const struct luaL_reg memorylib [] = {
 
 	{"readbyte", memory_readbyte},
-	{"writebyte", memory_writebyte},
-	{"readword", memory_readword},
-	{"writeword", memory_writeword},
-	{"readdword", memory_readdword},
-	{"writedword", memory_writedword},
-
-	{"readdwordsigned", memory_readdwordsigned},
-	{"readwordsigned", memory_readwordsigned},
 	{"readbytesigned", memory_readbytesigned},
+	{"readword", memory_readword},
+	{"readwordsigned", memory_readwordsigned},
+	{"readdword", memory_readdword},
+	{"readdwordsigned", memory_readdwordsigned},
+	{"readbyterange", memory_readbyterange},
+	{"writebyte", memory_writebyte},
+	{"writeword", memory_writeword},
+	{"writedword", memory_writedword},
 
 //	{"register", memory_register},	// TODO: NYI
 
