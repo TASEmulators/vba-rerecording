@@ -16,7 +16,7 @@ int VBALuaReadJoypad(int);
 int VBALuaSpeed();
 bool8 VBALuaRerecordCountSkip();
 
-void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth);
+void VBALuaGui(uint8 *screen, int ppl, int width, int height);
 void VBALuaClearGui();
 
 // And some interesting REVERSE declarations!

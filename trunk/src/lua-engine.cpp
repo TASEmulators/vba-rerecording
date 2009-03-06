@@ -142,6 +142,76 @@ static inline void gbWriteMemoryQuick32(u16 addr, u32 b) {
 	gbWriteMemoryQuick(addr+1, (b>>24) & 0xff);
 }
 
+typedef void (*GetColorFunc) (const uint8*, uint8*, uint8*, uint8*);
+typedef void (*SetColorFunc) (uint8*, uint8, uint8, uint8);
+
+static void getColor16(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
+	u16 v = *(const uint16*)s;
+	*r = ((v >> systemBlueShift) & 0x001f) << 3;
+	*g = ((v >> systemGreenShift) & 0x001f) << 3;
+	*b = ((v >> systemRedShift) & 0x001f) << 3;
+}
+
+static void getColor24(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
+	if(systemRedShift > systemBlueShift)
+		*b = s[0], *g = s[1], *r = s[2];
+	else
+		*r = s[0], *g = s[1], *b = s[2];
+}
+
+static void getColor32(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
+	u32 v = *(const uint32*)s;
+	*b = ((v >> systemBlueShift) & 0x001f) << 3;
+	*g = ((v >> systemGreenShift) & 0x001f) << 3;
+	*r = ((v >> systemRedShift) & 0x001f) << 3;
+}
+
+static void setColor16(uint8 *s, uint8 r, uint8 g, uint8 b) {
+	*(uint16*)s = 
+		((b >> 3) & 0x01f) << systemBlueShift | 
+		((g >> 3) & 0x01f) << systemGreenShift | 
+		((r >> 3) & 0x01f) << systemRedShift;
+}
+
+static void setColor24(uint8 *s, uint8 r, uint8 g, uint8 b) {
+	if(systemRedShift > systemBlueShift)
+		s[0] = b, s[1] = g, s[2] = r;
+	else
+		s[0] = r, s[1] = g, s[2] = b;
+}
+
+static void setColor32(uint8 *s, uint8 r, uint8 g, uint8 b) {
+	*(uint32*)s = 
+		((b >> 3) & 0x01f) << systemBlueShift | 
+		((g >> 3) & 0x01f) << systemGreenShift | 
+		((r >> 3) & 0x01f) << systemRedShift;
+}
+
+static bool getColorIOFunc(int depth, GetColorFunc *getColor, SetColorFunc *setColor) {
+	switch(depth) {
+	case 16:
+		if (getColor)
+			*getColor = getColor16;
+		if (setColor)
+			*setColor = setColor16;
+		return true;
+	case 24:
+		if (getColor)
+			*getColor = getColor24;
+		if (setColor)
+			*setColor = setColor24;
+		return true;
+	case 32:
+		if (getColor)
+			*getColor = getColor32;
+		if (setColor)
+			*setColor = setColor32;
+		return true;
+	default:
+		return false;
+	}
+}
+
 static bool vbaIsPaused() {
 #if (defined(WIN32) && !defined(SDL))
 	return theApp.paused;
@@ -1384,13 +1454,23 @@ static int gui_fillcircle(lua_State *L) {
 //  Well, either way, just install gd and do what you like with it.
 //  It really is easier that way.
 static int gui_gdscreenshot(lua_State *L) {
-/*
+
 	// Eat the stack
 	lua_settop(L,0);
 	
-	// This is QUITE nasty...
+	int xofs = 0, yofs = 0, ppl = 240, width = 240, height = 160;
+	if (!vbaRunsGBA()) {
+		if(gbBorderOn)
+			xofs = 48, yofs = 40, ppl = 256;
+		else
+			ppl = 160;
+		width = 160, height = 144;
+	}
+	yofs++;
 	
-	const int width=256, height=224;
+	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
+	int pitch = ppl*(systemColorDepth/8)+(systemColorDepth==24?0:4);
+	uint8 *screen = &pix[yofs*pitch+xofs*(systemColorDepth/8)];
 	
 	// Stack allocation
 	unsigned char *buffer = (unsigned char*)alloca(2+2+2+1+4 + (width*height*4));
@@ -1414,37 +1494,26 @@ static int gui_gdscreenshot(lua_State *L) {
 	// No transparency
 	buffer[7] = buffer[8] = buffer[9] = buffer[10] = 255;
 	
+	GetColorFunc getColor;
+	getColorIOFunc(systemColorDepth, &getColor, NULL);
+	
 	// Now we can actually save the image data
 	int i = 0;
 	int x,y;
 	for (y=0; y < height; y++) {
-		for (x=0; x < width; x++) {
-			// This section is long and verbose for the sake of readability by you.
-			// I hope the compiler can make it a little bit faster than it looks!
-		
-			unsigned short rgb16 = *((unsigned short*)(GFX.Screen + GFX.Pitch*y) + x);
-			int red = (rgb16 >> 11) & 31;
-			
-			// Diagram:   000RRrrr -> RRrrr000 -> RRrrrRRr
-			red = ((red << 3) & 0xff) | ((red >> 5) & 0xff);
-
-			int green = (rgb16 >> 5) & 63;
-			// 00Gggggg -> Gggggg00 -> GgggggGg
-			green = ((green << 2) & 0xff) | ((green >> 6) & 0xff);
-
-			int blue = (rgb16) & 31;
-			
-			// Diagram:   000RRrrr -> RRrrr000 -> RRrrrRRr
-			blue = ((blue << 3) & 0xff) | ((blue >> 5) & 0xff);
+		uint8 *s = &screen[y*pitch];
+		for (x=0; x < width; x++, s+=systemColorDepth/8) {
+			uint8 r, g, b;
+			getColor(s, &r, &g, &b);
 
 			// Alpha
 			pixels[i++] = 0;
 			// R
-			pixels[i++] = red;
+			pixels[i++] = r;
 			// G
-			pixels[i++] = green;
+			pixels[i++] = g;
 			// B
-			pixels[i++] = blue;
+			pixels[i++] = b;
 		}
 	}
 	
@@ -1454,7 +1523,6 @@ static int gui_gdscreenshot(lua_State *L) {
 	
 	// Buffers allocated with alloca are freed by the function's exit, since they're on the stack.
 	
-*/
 	return 1;
 }
 
@@ -2174,11 +2242,11 @@ static const struct luaL_reg guilib[] = {
 	{"fillcircle", gui_fillcircle},
 	{"text", gui_text},
 
-//	{"gdscreenshot", gui_gdscreenshot},
-//	{"gdoverlay", gui_gdoverlay},
+	{"gdscreenshot", gui_gdscreenshot},
+	{"gdoverlay", gui_gdoverlay},
 	{"transparency", gui_transparency},
 
-//	{"register", gui_register},
+	{"register", gui_register},
 	
 	{"popup", gui_popup},
 	{NULL,NULL}
@@ -2423,7 +2491,7 @@ bool8 VBALuaRerecordCountSkip() {
  * Given a screen with the indicated resolution,
  * draw the current GUI onto it.
  */
-void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth) {
+void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 
 	if (!LUA || !luaRunning)
 		return;
@@ -2457,17 +2525,21 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth) {
 	gui_used = false;
 
 	int x,y;
-	//int pitch = (((ppl * depth + 7)>>3)+3)&~3;
-	int pitch = ppl*(depth/8)+(depth==24?0:4);
+	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
+	int pitch = ppl*(systemColorDepth/8)+(systemColorDepth==24?0:4);
 
 	if (width > 256)
 		width = 256;
 	if (height > 239)
 		height = 239;
 
+	GetColorFunc getColor;
+	SetColorFunc setColor;
+	getColorIOFunc(systemColorDepth, &getColor, &setColor);
+
 	for (y = 0; y < height; y++) {
 		uint8 *scr = &screen[y*pitch];
-		for (x = 0; x < width; x++, scr += depth/8) {
+		for (x = 0; x < width; x++, scr += systemColorDepth/8) {
 			const uint8 gui_alpha = gui_data[(y*256+x)*4+3];
 			const uint8 gui_red   = gui_data[(y*256+x)*4+2];
 			const uint8 gui_green = gui_data[(y*256+x)*4+1];
@@ -2475,41 +2547,7 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth) {
 			uint8 scr_red, scr_green, scr_blue;
 			int red, green, blue;
 
-			// get colour from screen
-			switch(depth) {
-			case 16:
-			  {
-				u16 v = *(uint16*)scr;
-				scr_blue  = ((v >> systemBlueShift) & 0x001f) << 3;
-				scr_green = ((v >> systemGreenShift) & 0x001f) << 3;
-				scr_red   = ((v >> systemRedShift) & 0x001f) << 3;
-			  }
-			  break;
-			case 24:
-			  {
-				if(systemRedShift > systemBlueShift) {
-					scr_blue  = scr[0];
-					scr_green = scr[1];
-					scr_red   = scr[2];
-				}
-				else {
-					scr_red   = scr[0];
-					scr_green = scr[1];
-					scr_blue  = scr[2];
-				}
-			  }
-			  break;
-			case 32:
-			  {
-				u32 v = *(uint32*)scr;
-				scr_blue  = ((v >> systemBlueShift) & 0x001f) << 3;
-				scr_green = ((v >> systemGreenShift) & 0x001f) << 3;
-				scr_red   = ((v >> systemRedShift) & 0x001f) << 3;
-			  }
-			  break;
-			default:
-				assert(false);
-			}
+			getColor(scr, &scr_red, &scr_green, &scr_blue);
 
 			if (gui_alpha == 0) {
 				// do nothing
@@ -2530,41 +2568,7 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height, int depth) {
 				blue  = (((int) gui_blue  - scr_blue)  * gui_alpha / 255 + scr_blue)  & 255;
 			}
 
-			// put colour to screen
-			switch(depth) {
-			case 16:
-			  {
-				*(uint16*)scr = 
-					((blue >> 3) & 0x01f) << systemBlueShift | 
-					((green >> 3) & 0x01f) << systemGreenShift | 
-					((red >> 3) & 0x01f) << systemRedShift;
-			  }
-			  break;
-			case 24:
-			  {
-				if(systemRedShift > systemBlueShift) {
-					scr[0] = (uint8) blue;
-					scr[1] = (uint8) green;
-					scr[2] = (uint8) red;
-				}
-				else {
-					scr[0] = (uint8) red;
-					scr[1] = (uint8) green;
-					scr[2] = (uint8) blue;
-				}
-			  }
-			  break;
-			case 32:
-			  {
-				*(uint32*)scr = 
-					((blue >> 3) & 0x01f) << systemBlueShift | 
-					((green >> 3) & 0x01f) << systemGreenShift | 
-					((red >> 3) & 0x01f) << systemRedShift;
-			  }
-			  break;
-			default:
-				assert(false);
-			}
+			setColor(scr, (uint8) red, (uint8) green, (uint8) blue);
 		}
 	}
 	return;
