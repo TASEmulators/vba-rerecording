@@ -323,6 +323,11 @@ void MainWnd::OnUpdateToolsLagCounter(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(theApp.lagCounter);  
 }
 
+void MainWnd::OnToolsLagCounterReset() 
+{
+	theApp.globalLagFrameCount = 0;
+}
+
 void MainWnd::OnToolsInputDisplay() 
 {
 	theApp.inputDisplay = !theApp.inputDisplay;
