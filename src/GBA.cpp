@@ -2922,7 +2922,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   }
 }
 
-void CPUWriteHalfWord(u32 address, u16 value)
+void CPUWriteHalfWordWrapped(u32 address, u16 value)
 {
 #ifdef DEV_VERSION
   if(address & 1) {
@@ -3003,8 +3003,12 @@ void CPUWriteHalfWord(u32 address, u16 value)
     break;
   }
 }
+void CPUWriteHalfWord(u32 address, u16 value) {
+    CPUWriteHalfWordWrapped(address, value);
+    VBALuaWriteInform(address);
+}
 
-void CPUWriteByte(u32 address, u8 b)
+void CPUWriteByteWrapped(u32 address, u8 b)
 {
   switch(address >> 24) {
   case 2:
@@ -3126,6 +3130,10 @@ void CPUWriteByte(u32 address, u8 b)
 #endif
     break;
   }
+}
+void CPUWriteByte(u32 address, u8 b) {
+    CPUWriteByteWrapped(address, b);
+    VBALuaWriteInform(address);
 }
 
 u8 cpuBitsSet[256];

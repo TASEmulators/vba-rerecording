@@ -657,7 +657,7 @@ void gbCompareLYToLYC()
 		register_STAT &= 0xfb;
 }
 
-void gbWriteMemory(register u16 address, register u8 value)
+void gbWriteMemoryWrapped(register u16 address, register u8 value)
 {
 	if(address < 0x8000) 
 	{
@@ -1309,6 +1309,10 @@ u8 gbReadOpcode(register u16 address)
 		break;
 	}
 	return gbReadMemoryQuick(address);
+}
+void gbWriteMemory(register u16 address, register u8 value) {
+	gbWriteMemoryWrapped(address, value);
+	VBALuaWriteInform(address);
 }
 
 u8 gbReadMemory(register u16 address)

@@ -22,8 +22,6 @@ void VBALuaClearGui();
 // And some interesting REVERSE declarations!
 char *VBAGetFreezeFilename(int slot);
 
-// See getset.h!
-//inline void VBALuaWriteInform(uint32 address);
-
+void VBALuaWriteInform(uint32 addr);
 
 #endif

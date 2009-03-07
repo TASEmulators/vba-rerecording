@@ -32,6 +32,10 @@ extern "C" {
 
 #include "vbalua.h"
 
+#ifndef countof
+#define countof(a)  (sizeof(a) / sizeof(a[0]))
+#endif
+
 static lua_State *LUA;
 
 // Are we running any code right now?
@@ -70,10 +74,39 @@ static uint8 lua_joypads_used = 0;
 
 
 // NON-static. This is a listing of memory addresses we're watching as bitfields
-// in order to speed up emulation, at the cost of memory usage. the SNES has
-// 128 KB of main RAM, 128 * 1024 / 8 = 16384 entries with bit-level precision.
-unsigned char lua_watch_bitfield[16384];
-
+// in order to speed up emulation, at the cost of memory usage.
+// 
+// GBA Memory Map (see GBATEK for details):
+// 
+// Section      Start Addr  End Addr    Size
+// ---------------------------------------------
+// System ROM   0000:0000h  0000:3fffh  16kB
+// EWRAM *      0200:0000h  0203:ffffh  256kB
+// IWRAM *      0300:0000h  0300:7fffh  32kB
+// IO RAM *     0400:0000h  0401:03ffh  1kB
+// PAL RAM *    0500:0000h  0500:03ffh  1kB
+// VRAM *       0600:0000h  0601:7fffh  96kB
+// OAM *        0700:0000h  0700:03ffh  1kB
+// PAK ROM #0   0800:0000h  09ff:ffffh  32MB
+// PAK ROM #1   0a00:0000h  0bff:ffffh  32MB
+// PAK ROM #2   0c00:0000h  0dff:ffffh  32MB
+// Cart RAM *   0e00:0000h  0e00:ffffh  64kB
+// 
+// We care only starred areas (515kB in total).
+// 515 * 1024 / 8 = 65920 entries with bit-level precision.
+// 
+// Gameboy has only 64k of memory.
+// 64 * 1024 / 8 = 8192 entries with bit-level precision.
+uint8 lua_watch_bitfield[65920] = { 0 };
+static struct { uint32 start; uint32 end; } lua_watch_gba_map[] = {
+	{ 0x02000000, 0x0203ffff }, // EWRAM
+	{ 0x03000000, 0x03007fff }, // IWRAM
+	{ 0x04000000, 0x040103ff }, // IO RAM
+	{ 0x05000000, 0x050003ff }, // PAL RAM
+	{ 0x06000000, 0x06017fff }, // VRAM
+	{ 0x07000000, 0x070003ff }, // OAM
+	{ 0x0e000000, 0x0e00ffff }  // Cart RAM
+};
 
 static bool8 gui_used = false;
 static uint8 *gui_data = NULL; // BGRA
@@ -144,6 +177,26 @@ static inline void gbWriteMemoryQuick32(u16 addr, u32 b) {
 
 typedef void (*GetColorFunc) (const uint8*, uint8*, uint8*, uint8*);
 typedef void (*SetColorFunc) (uint8*, uint8, uint8, uint8);
+
+// Returns -1 if addr is invalid.
+static int getLuaMemWatchBitIndex(uint32 addr) {
+	if(vbaRunsGBA()) {
+		int offset = 0;
+		for (int i = 0; i < countof(lua_watch_gba_map); i++) {
+			if (addr >= lua_watch_gba_map[i].start && addr <= lua_watch_gba_map[i].end) {
+				return offset + (addr - lua_watch_gba_map[i].start);
+			}
+			offset += (lua_watch_gba_map[i].end - lua_watch_gba_map[i].start + 1);
+		}
+		return -1;
+	}
+	else {
+		if (addr >= 0x0000 && addr <= 0xffff)
+			return addr;
+		else
+			return -1;
+	}
+}
 
 static void getColor16(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
 	u16 v = *(const uint16*)s;
@@ -331,37 +384,21 @@ void VBALuaWrite(uint32 addr) {
 	lua_settop(LUA,0);
 }
 
-extern "C" { 
-
-void VBALuaWriteCheck(uint32 address) {
-	// Crazy problem: memory maps are pretty f**ked up.
-/*	
-	int block = address >> MEMMAP_SHIFT;
-	int newaddr;
-	if (Memory.Map[block] == Memory.Map[0x7e0])
-		newaddr = address & 0xffff;
-	else if (Memory.Map[block] == Memory.Map[0x7f0])
-		newaddr = (address & 0xffff) + 65536;
-	else
-		// Not in RAM
+void VBALuaWriteInform(uint32 addr) {
+	int bitindex = getLuaMemWatchBitIndex(addr);
+	if (bitindex < 0)
+		// Not supported
 		return;
 	
 	// These might be better using binary arithmatic -- a shift and an AND
-	int slot = newaddr / 8;
-	int bits = newaddr % 8;
-	
-
-	
-	extern unsigned char lua_watch_bitfield[16384];
+	int slot = bitindex / 8;
+	int bits = bitindex % 8;
 	
 	// Check the slot
 	if (lua_watch_bitfield[slot] & (1 << bits))
-		VBALuaWrite(newaddr + 0x7e0000);
-
-*/
+		VBALuaWrite(addr);
 }
 
-}
 ///////////////////////////
 
 
@@ -595,6 +632,7 @@ static int memory_writebyte(lua_State *L) {
 	else {
 		gbWriteMemoryQuick8(addr, val);
 	}
+	VBALuaWriteInform(addr);
 	return 0;
 }
 
@@ -610,6 +648,7 @@ static int memory_writeword(lua_State *L) {
 	else {
 		gbWriteMemoryQuick16(addr, val);
 	}
+	VBALuaWriteInform(addr);
 	return 0;
 }
 
@@ -625,6 +664,7 @@ static int memory_writedword(lua_State *L) {
 	else {
 		gbWriteMemoryQuick32(addr, val);
 	}
+	VBALuaWriteInform(addr);
 	return 0;
 }
 
@@ -641,24 +681,22 @@ static int memory_register(lua_State *L) {
 	if (lua_type(L,2) != LUA_TNIL && lua_type(L,2) != LUA_TFUNCTION)
 		luaL_error(L, "function or nil expected in arg 2 to memory.register");
 	
-	
+	int bitindex = getLuaMemWatchBitIndex(addr);
 	// Check the address range
-	if (addr < 0x7e0000 || addr > 0x7fffff)	
-		luaL_error(L, "arg 1 should be between 0x7e0000 and 0x7fffff");
-
+	if (bitindex < 0)
+		luaL_error(L, "arg 1 points to invalid/unsupported memory area");
+	
 	// Commit it to the registery
 	lua_getfield(L, LUA_REGISTRYINDEX, memoryWatchTable);
 	lua_pushvalue(L,1);
 	lua_pushvalue(L,2);
 	lua_settable(L, -3);
 	
-	addr -= 0x7e0000;
-
 	// Now, set the bitfield accordingly
 	if (lua_type(L,2) == LUA_TNIL) {
-		lua_watch_bitfield[addr / 8] &= ~(1 << (addr & 7));	
+		lua_watch_bitfield[bitindex / 8] &= ~(1 << (bitindex & 7));
 	} else {
-		lua_watch_bitfield[addr / 8] |= 1 << (addr & 7);
+		lua_watch_bitfield[bitindex / 8] |= 1 << (bitindex & 7);
 	
 	}
 	
@@ -2198,7 +2236,7 @@ static const struct luaL_reg memorylib [] = {
 	{"writeword", memory_writeword},
 	{"writedword", memory_writedword},
 
-//	{"register", memory_register},	// TODO: NYI
+	{"register", memory_register},
 
 	{NULL,NULL}
 };

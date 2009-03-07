@@ -23,6 +23,7 @@
 #include "System.h"
 #include "Port.h"
 #include "RTC.h"
+#include "vbalua.h"
 
 extern bool8 cpuSramEnabled;
 extern bool8 cpuFlashEnabled;
@@ -368,7 +369,7 @@ inline u8 CPUReadByte(u32 address)
   }
 }
 
-inline void CPUWriteMemory(u32 address, u32 value)
+inline void CPUWriteMemoryWrapped(u32 address, u32 value)
 {
 #ifdef DEV_VERSION
   if(address & 3) {
@@ -442,6 +443,10 @@ inline void CPUWriteMemory(u32 address, u32 value)
 #endif
     break;
   }
+}
+inline void CPUWriteMemory(u32 address, u32 value) {
+    CPUWriteMemoryWrapped(address, value);
+    VBALuaWriteInform(address);
 }
 
 #endif //VBA_GBAinline_H
