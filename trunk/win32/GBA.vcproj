@@ -290,6 +290,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\win32\LuaOpenDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\win32\MainWnd.cpp"
 				>
 			</File>
@@ -951,11 +955,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
@@ -1020,6 +1024,10 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\Logging.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\win32\LuaOpenDialog.h"
 				>
 			</File>
 			<File
@@ -1123,11 +1131,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\Sound.h"
+				RelativePath="..\src\win32\Sound.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Sound.h"
+				RelativePath="..\src\Sound.h"
 				>
 			</File>
 			<File
