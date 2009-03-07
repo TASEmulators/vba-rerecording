@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <math.h>
+#include <direct.h>
 
 #ifdef __linux
 #include <sys/types.h>
@@ -713,13 +714,11 @@ static int joypad_read(lua_State *L) {
 	// Reads the joypads as inputted by the user
 	int which = luaL_checkinteger(L,1);
 	
-	if (which < 1 || which > 5) {
-		luaL_error(L,"Invalid input port (valid range 1-5, specified %d)", which);
+	if (which < 1 || which > 4) {
+		luaL_error(L,"Invalid input port (valid range 1-4, specified %d)", which);
 	}
 	
-	//extern uint16 S9xReadJoypadNext(int which);
-	//uint32 buttons = S9xReadJoypadNext(which - 1);
-	uint32 buttons = 0;
+	uint32 buttons = systemReadJoypad(which - 1, false);
 	
 	lua_newtable(L);
 	
@@ -2242,7 +2241,7 @@ static const struct luaL_reg memorylib [] = {
 };
 
 static const struct luaL_reg joypadlib[] = {
-//	{"read", joypad_read},	// TODO: NYI
+	{"read", joypad_read},
 //	{"set", joypad_set},	// TODO: NYI
 
 	{NULL,NULL}
@@ -2360,6 +2359,19 @@ int VBALoadLuaCode(const char *filename) {
 	//stop any lua we might already have had running
 	VBALuaStop();
 
+	// Set current directory from filename (for dofile)
+	char dir[_MAX_PATH];
+	char *slash, *backslash;
+	strcpy(dir, filename);
+	slash = strrchr(dir, '/');
+	backslash = strrchr(dir, '\\');
+	if (!slash || (backslash && backslash < slash))
+		slash = backslash;
+	if (slash) {
+		slash[1] = '\0';    // keep slash itself for some reasons
+		_chdir(dir);
+	}
+
 	if (!LUA) {
 		LUA = lua_open();
 		luaL_openlibs(LUA);
@@ -2394,7 +2406,7 @@ int VBALoadLuaCode(const char *filename) {
 	// We make our thread NOW because we want it at the bottom of the stack.
 	// If all goes wrong, we let the garbage collector remove it.
 	lua_State *thread = lua_newthread(LUA);
-	
+
 	// Load the data	
 	int result = luaL_loadfile(LUA,filename);
 
