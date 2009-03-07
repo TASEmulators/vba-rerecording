@@ -737,6 +737,21 @@ bool CPUWriteStateToStream(gzFile gzFile)
 	utilGzWrite(gzFile, &speedHack, sizeof(bool8)); // just in case it's ever used...
   }
 
+	// SAVE_GAME_VERSION_13
+	{
+#if (defined(WIN32) && !defined(SDL))
+	utilGzWrite(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
+	utilGzWrite(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
+	utilGzWrite(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
+#else
+	int32 dummy32 = 0;
+	bool8 dummy8 = false;
+	utilGzWrite(gzFile, &dummy32, sizeof(dummy32));
+	utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
+	utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
+#endif
+	}
+
 
   return true;
 }
@@ -989,7 +1004,20 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	utilGzRead(gzFile, &memLagTempEnabled, sizeof(bool8)); // necessary
 	utilGzRead(gzFile, &speedHack, sizeof(bool8)); // just in case it's ever used...
   }
-
+  if(version >= SAVE_GAME_VERSION_13)
+  {
+#if (defined(WIN32) && !defined(SDL))
+	utilGzRead(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
+	utilGzRead(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
+	utilGzRead(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
+#else
+	int32 dummy32;
+	bool8 dummy8;
+	utilGzRead(gzFile, &dummy32, sizeof(dummy32));
+	utilGzRead(gzFile, &dummy8, sizeof(dummy8));
+	utilGzRead(gzFile, &dummy8, sizeof(dummy8));
+#endif
+  }
 
   if(backupSafe)
   {
