@@ -579,6 +579,8 @@
 #define IDC_CANCEL                      1284
 #define IDC_LUA_FILENAME                1285
 #define IDC_LUA_BROWSE                  1286
+#define IDS_FILTER_LUA                  1287
+#define IDS_SELECT_LUA_NAME             1288
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
 #define ID_OPTIONS_VIDEO_FRAMESKIP_0    40003
@@ -911,7 +913,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        160
 #define _APS_NEXT_COMMAND_VALUE         40470
-#define _APS_NEXT_CONTROL_VALUE         1287
+#define _APS_NEXT_CONTROL_VALUE         1289
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

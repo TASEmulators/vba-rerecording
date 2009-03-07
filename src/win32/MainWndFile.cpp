@@ -25,6 +25,7 @@
 #include "RomInfo.h"
 #include "Reg.h"
 #include "WinResUtil.h"
+#include "LuaOpenDialog.h"
 
 #include "../GBA.h"
 #include "../Globals.h"
@@ -1135,7 +1136,9 @@ void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI* pCmdUI)
 
 void MainWnd::OnFileLuaLoad()
 {
-	MessageBox("NYI: drop the script into the main window instead.", "VBA Lua Error", MB_OK); // TODO: NYI
+	theApp.winCheckFullscreen();
+	LuaOpenDialog dlg;
+	dlg.DoModal();
 }
 
 void MainWnd::OnUpdateFileLuaLoad(CCmdUI* pCmdUI)
