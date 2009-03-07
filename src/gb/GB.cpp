@@ -553,7 +553,8 @@ u8 ZeroTable[] =
 #define GBSAVE_GAME_VERSION_10 10
 #define GBSAVE_GAME_VERSION_11 11
 #define GBSAVE_GAME_VERSION_12 12
-#define GBSAVE_GAME_VERSION GBSAVE_GAME_VERSION_12
+#define GBSAVE_GAME_VERSION_13 13
+#define GBSAVE_GAME_VERSION GBSAVE_GAME_VERSION_13
 
 int inline gbGetValue(int min,int max,int v)
 {
@@ -2461,6 +2462,21 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 #endif
 	}
 
+	// new to rerecording 19.4 wip (svn r22+):
+	{
+#if (defined(WIN32) && !defined(SDL))
+		utilGzWrite(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
+		utilGzWrite(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
+		utilGzWrite(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
+#else
+		int32 dummy32 = 0;
+		bool8 dummy8 = false;
+		utilGzWrite(gzFile, &dummy32, sizeof(dummy32));
+		utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
+		utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
+#endif
+	}
+
 	return true;
 }
 
@@ -2756,6 +2772,20 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 #else
 		int dummy;
 		utilGzRead(gzFile, &dummy, sizeof(dummy));
+#endif
+	}
+
+	if(version >= GBSAVE_GAME_VERSION_13) { // new to rerecording 19.4 wip (svn r22+):
+#if (defined(WIN32) && !defined(SDL))
+		utilGzRead(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
+		utilGzRead(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
+		utilGzRead(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
+#else
+		int32 dummy32;
+		bool8 dummy8;
+		utilGzRead(gzFile, &dummy32, sizeof(dummy32));
+		utilGzRead(gzFile, &dummy8, sizeof(dummy8));
+		utilGzRead(gzFile, &dummy8, sizeof(dummy8));
 #endif
 	}
 
