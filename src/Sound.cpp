@@ -31,7 +31,7 @@
 #define USE_TICKS_AS  380
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
-#define NOISE_MAGIC 5
+#define NOISE_MAGIC (2097152.0/44100.0)
 
 extern bool8 stopState;
 
@@ -458,13 +458,13 @@ void soundEvent(u32 address, u8 data)
     freq = soundFreqRatio[data & 7];
     sound4NSteps = data & 0x08;
 
-    sound4Skip = (freq << 8) / NOISE_MAGIC;
+    sound4Skip = freq * NOISE_MAGIC;
     
     sound4Clock = data >> 4;
 
     freq = freq / soundShiftClock[sound4Clock];
 
-    sound4ShiftSkip = (freq << 8) / NOISE_MAGIC;
+    sound4ShiftSkip = freq * NOISE_MAGIC;
     ioMem[address] = data;    
     break;
   case NR44:
@@ -484,13 +484,13 @@ void soundEvent(u32 address, u8 data)
       
       freq = soundFreqRatio[ioMem[NR43] & 7];
 
-      sound4Skip = (freq << 8) / NOISE_MAGIC;
+      sound4Skip = freq * NOISE_MAGIC;
       
       sound4NSteps = ioMem[NR43] & 0x08;
       
       freq = freq / soundShiftClock[ioMem[NR43] >> 4];
 
-      sound4ShiftSkip = (freq << 8) / NOISE_MAGIC;
+      sound4ShiftSkip = freq * NOISE_MAGIC;
       if(sound4NSteps)
         sound4ShiftRight = 0x7f;
       else
@@ -789,7 +789,7 @@ void soundChannel4()
 
   if(sound4Clock <= 0x0c) {
     if(sound4On && (sound4ATL || !sound4Continue)) {
-      #define NOISE_ONE_SAMP_SCALE  0x200000 // 0x200000 (fast), 0x227400 (slightly better but slow)
+      #define NOISE_ONE_SAMP_SCALE  0x200000
 
       sound4Index += soundQuality*sound4Skip;
       sound4ShiftIndex += soundQuality*sound4ShiftSkip;
