@@ -22,9 +22,11 @@
 #endif
 
 #include <memory.h>
+#include <assert.h>
 
 #include "../System.h"
 #include "../Util.h"
+#include "../Blip_Buffer.h"
 #include "gbGlobals.h"
 #include "gbSound.h"
 
@@ -522,29 +524,86 @@ void gbSoundChannel4()
 
   if(sound4Clock <= 0x0c) {
     if(sound4On && (sound4ATL || !sound4Continue)) {
+      //static Blip_Buffer sound4Buf;
+      //static Blip_Synth<blip_good_quality,32> sound4Synth;
+      const int freq = (sound4ShiftSkip * NOISE_MAGIC) >> 8;
+      #define NOISE_ONE_SAMP_SCALE  0x200000 // 0x200000 (fast), 0x227400 (slightly better but slow?)
+
+      //sound4Buf.clock_rate(freq);
+      //if (sound4Buf.set_sample_rate(44100/soundQuality))
+      //  assert(false);
+
+      //sound4Synth.volume(0.50);
+      //sound4Synth.output(&sound4Buf);
+
       sound4Index += soundQuality*sound4Skip;
       sound4ShiftIndex += soundQuality*sound4ShiftSkip;
 
+      //int count = 0;
+      //int totalCount = 0;
       if(sound4NSteps) {
-        while(sound4ShiftIndex > 0x1fffff) {
+        while(sound4ShiftIndex >= NOISE_ONE_SAMP_SCALE) {
+          //if (vol != 0) {
+          //  sound4Synth.update(count, ((sound4ShiftRight & 1)*2-1) * vol);
+          //  count++;
+          //}
+
           sound4ShiftRight = (((sound4ShiftRight << 6) ^
                                (sound4ShiftRight << 5)) & 0x40) |
             (sound4ShiftRight >> 1);
-          sound4ShiftIndex -= 0x200000;
+          sound4ShiftIndex -= NOISE_ONE_SAMP_SCALE;
         }
       } else {
-        while(sound4ShiftIndex > 0x1fffff) {
+        while(sound4ShiftIndex >= NOISE_ONE_SAMP_SCALE) {
+          //if (vol != 0) {
+          //  sound4Synth.update(count++, ((sound4ShiftRight & 1)*2-1) * vol);
+          //  count++;
+          //}
+
           sound4ShiftRight = (((sound4ShiftRight << 14) ^
                               (sound4ShiftRight << 13)) & 0x4000) |
             (sound4ShiftRight >> 1);
 
-          sound4ShiftIndex -= 0x200000;   
+          sound4ShiftIndex -= NOISE_ONE_SAMP_SCALE;
         }
       }
 
-      sound4Index &= 0x1fffff;    
-      sound4ShiftIndex &= 0x1fffff;        
-    
+      sound4Index %= NOISE_ONE_SAMP_SCALE;
+      sound4ShiftIndex %= NOISE_ONE_SAMP_SCALE;
+
+      //sound4Synth.update(count++, ((sound4ShiftRight & 1)*2-1) * vol);
+      //count++;
+
+      //totalCount += count;
+      //sound4Buf.end_frame(totalCount);
+      //count = 0;
+
+      //long samples_avail;
+      //while (vol != 0 && (samples_avail = sound4Buf.samples_avail()) < 1) {
+      //  int shiftRight = sound4ShiftRight;
+      //  if(sound4NSteps) {
+      //    shiftRight = (((shiftRight << 6) ^
+      //                   (shiftRight << 5)) & 0x40) |
+      //      (shiftRight >> 1);
+      //  } else {
+      //    shiftRight = (((shiftRight << 14) ^
+      //                   (shiftRight << 13)) & 0x4000) |
+      //      (shiftRight >> 1);
+      //  }
+      //  sound4Synth.update(count, ((shiftRight & 1)*2-1) * vol);
+      //  count++;
+
+      //  totalCount += count;
+      //  sound4Buf.end_frame(totalCount);
+      //  count = 0;
+      //}
+
+      //blip_sample_t sound4Wave16 = 0;
+      //if (vol != 0)
+      //  sound4Buf.read_samples(&sound4Wave16, 1);
+      //value = sound4Wave16/256; // 16bit => 8bit
+      //while (sound4Buf.read_samples(&sound4Wave16, 1));
+
       value = ((sound4ShiftRight & 1)*2-1) * vol;
     } else {
       value = 0;
