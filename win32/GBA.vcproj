@@ -258,6 +258,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\Blip_Buffer.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						SmallerTypeCheck="false"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\win32\BugReport.cpp"
 				>
 			</File>
@@ -839,6 +851,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\Blip_Buffer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\win32\BugReport.h"
 				>
 			</File>
@@ -955,11 +971,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
@@ -1131,11 +1147,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Sound.h"
+				RelativePath="..\src\Sound.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\Sound.h"
+				RelativePath="..\src\win32\Sound.h"
 				>
 			</File>
 			<File
