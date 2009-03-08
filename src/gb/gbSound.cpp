@@ -307,9 +307,9 @@ void gbSoundEvent(register u16 address, register int data)
 
       sound4ShiftSkip = (freq << 8) / NOISE_MAGIC;
       if(sound4NSteps)
-        sound4ShiftRight = 0x7fff;
-      else
         sound4ShiftRight = 0x7f;
+      else
+        sound4ShiftRight = 0x7fff;
     }
     break;
   case NR50:
@@ -527,7 +527,7 @@ void gbSoundChannel4()
       //static Blip_Buffer sound4Buf;
       //static Blip_Synth<blip_good_quality,32> sound4Synth;
       const int freq = (sound4ShiftSkip * NOISE_MAGIC) >> 8;
-      #define NOISE_ONE_SAMP_SCALE  0x200000 // 0x200000 (fast), 0x227400 (slightly better but slow?)
+      #define NOISE_ONE_SAMP_SCALE  0x200000 // 0x200000 (fast), 0x227400 (slightly better but slow)
 
       //sound4Buf.clock_rate(freq);
       //if (sound4Buf.set_sample_rate(44100/soundQuality))
