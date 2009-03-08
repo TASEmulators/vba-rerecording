@@ -492,9 +492,9 @@ void soundEvent(u32 address, u8 data)
 
       sound4ShiftSkip = (freq << 8) / NOISE_MAGIC;
       if(sound4NSteps)
-        sound4ShiftRight = 0x7fff;
+        sound4ShiftRight = 0x7f;
       else
-        sound4ShiftRight = 0x7f;      
+        sound4ShiftRight = 0x7fff;
     }
     ioMem[address] = data;    
     break;
@@ -789,28 +789,30 @@ void soundChannel4()
 
   if(sound4Clock <= 0x0c) {
     if(sound4On && (sound4ATL || !sound4Continue)) {
+      #define NOISE_ONE_SAMP_SCALE  0x200000 // 0x200000 (fast), 0x227400 (slightly better but slow)
+
       sound4Index += soundQuality*sound4Skip;
       sound4ShiftIndex += soundQuality*sound4ShiftSkip;
 
       if(sound4NSteps) {
-        while(sound4ShiftIndex > 0x1fffff) {
+        while(sound4ShiftIndex >= NOISE_ONE_SAMP_SCALE) {
           sound4ShiftRight = (((sound4ShiftRight << 6) ^
                                (sound4ShiftRight << 5)) & 0x40) |
             (sound4ShiftRight >> 1);
-          sound4ShiftIndex -= 0x200000;
+          sound4ShiftIndex -= NOISE_ONE_SAMP_SCALE;
         }
       } else {
-        while(sound4ShiftIndex > 0x1fffff) {
+        while(sound4ShiftIndex >= NOISE_ONE_SAMP_SCALE) {
           sound4ShiftRight = (((sound4ShiftRight << 14) ^
                               (sound4ShiftRight << 13)) & 0x4000) |
             (sound4ShiftRight >> 1);
 
-          sound4ShiftIndex -= 0x200000;   
+          sound4ShiftIndex -= NOISE_ONE_SAMP_SCALE;
         }
       }
 
-      sound4Index &= 0x1fffff;    
-      sound4ShiftIndex &= 0x1fffff;        
+      sound4Index %= NOISE_ONE_SAMP_SCALE;
+      sound4ShiftIndex %= NOISE_ONE_SAMP_SCALE;
     
       value = ((sound4ShiftRight & 1)*2-1) * vol;
     } else {
