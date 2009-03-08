@@ -14,7 +14,7 @@
 #  define FILE_NOT_FOUND (-3)
 #  define NOT_FROM_THIS_MOVIE (-4)
 #  define NOT_FROM_A_MOVIE (-5)
-#  define INVALID_FRAME (-6)
+#  define SNAPSHOT_INCONSISTENT (-6)
 #  define UNKNOWN_ERROR (-7)
 #endif
 
@@ -118,6 +118,8 @@ struct SMovie
 	uint8* inputBuffer;
 	uint32 inputBufferSize;
 	uint8* inputBufferPtr;
+
+	bool8  RecordedThisSession;
 };
 
 // methods used by the user-interface code
@@ -139,6 +141,8 @@ void VBAMovieRestart ();
 // accessor functions
 bool8 VBAMovieActive ();
 bool8 VBAMovieLoading ();
+bool8 VBAMoviePlaying ();
+bool8 VBAMovieRecording ();
 // the following accessors return 0/false if !VBAMovieActive()
 bool8 VBAMovieReadOnly ();
 uint32 VBAMovieGetId ();

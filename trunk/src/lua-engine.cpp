@@ -23,6 +23,7 @@
 #include "Globals.h"
 #include "Sound.h"
 #include "gb/gbGlobals.h"
+#include "movie.h"
 
 extern "C" {
 
@@ -934,12 +935,12 @@ static int savestate_load(lua_State *L) {
 //
 //   Gets the frame counter for the movie, or nil if no movie running.
 int movie_framecount(lua_State *L) {
-	//if (!S9xMovieActive()) {
+	if (!VBAMovieActive()) {
 		lua_pushnil(L);
 		return 1;
-	//}
+	}
 	
-	//lua_pushinteger(L, S9xMovieGetFrameCounter());
+	lua_pushinteger(L, VBAMovieGetFrameCounter());
 	return 1;
 }
 
@@ -947,15 +948,16 @@ int movie_framecount(lua_State *L) {
 //
 //   "record", "playback" or nil
 int movie_mode(lua_State *L) {
-	//if (!S9xMovieActive()) {
+	assert(!VBAMovieLoading());
+	if (!VBAMovieActive()) {
 		lua_pushnil(L);
 		return 1;
-	//}
+	}
 	
-	//if (S9xMovieRecording())
-	//	lua_pushstring(L, "record");
-	//else
-	//	lua_pushstring(L, "playback");
+	if (VBAMovieRecording())
+		lua_pushstring(L, "record");
+	else
+		lua_pushstring(L, "playback");
 	return 1;
 }
 
@@ -972,10 +974,10 @@ static int movie_rerecordcounting(lua_State *L) {
 //
 //   Stops movie playback/recording. Bombs out if movie is not running.
 static int movie_stop(lua_State *L) {
-	//if (!S9xMovieActive())
-	//	luaL_error(L, "no movie");
+	if (!VBAMovieActive())
+		luaL_error(L, "no movie");
 	
-	//S9xMovieStop(false);
+	VBAMovieStop(false);
 	return 0;
 
 }
@@ -2272,10 +2274,10 @@ static const struct luaL_reg savestatelib[] = {
 
 static const struct luaL_reg movielib[] = {
 
-//	{"framecount", movie_framecount},	// TODO: NYI
-//	{"mode", movie_mode},	// TODO: NYI
-//	{"rerecordcounting", movie_rerecordcounting},	// TODO: NYI
-//	{"stop", movie_stop},	// TODO: NYI
+	{"framecount", movie_framecount},
+	{"mode", movie_mode},
+	{"rerecordcounting", movie_rerecordcounting},
+	{"stop", movie_stop},
 //	{"record", movie_record},	// TODO: NYI
 //	{"playback", movie_playback},	// TODO: NYI
 

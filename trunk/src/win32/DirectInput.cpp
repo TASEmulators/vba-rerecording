@@ -855,7 +855,7 @@ u32 DirectInput::readDevice(int which, bool sensor, bool free)
     u32 currentButtonsBackup = currentButtons[i];
     currentButtons[i] = 0;
 
-	if(inputActive || free)
+	if(inputActive)
 	{
 		if(checkKey(joypad[i][KEY_BUTTON_A]))
 			currentButtons[i] |= BUTTON_MASK_A;

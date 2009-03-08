@@ -967,7 +967,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 			{
 				case NOT_FROM_THIS_MOVIE: strcat(errStr, ";\nSnapshot not from this movie"); break;
 				case NOT_FROM_A_MOVIE: strcat(errStr, ";\nNot a movie snapshot"); break;// shouldn't get here...
-				case INVALID_FRAME: strcat(errStr, ";\nInvalid frame number"); break;
+				case SNAPSHOT_INCONSISTENT: strcat(errStr, ";\nSnapshot inconsistent with movie"); break;
 				case WRONG_FORMAT: strcat(errStr, ";\nWrong format"); break;
 			}
 			strcat(errStr, ".");
