@@ -1188,8 +1188,8 @@ bool systemReadJoypads()
 
 u32 systemReadJoypad(int which, bool sensor)
 {
-  if(theApp.input)
-    return theApp.input->readDevice(which,sensor);
+  if(theApp.input/* || VBALuaUsingJoypad(which)*/)
+    return theApp.input->readDevice(which,sensor,false);
   return 0;
 }
 

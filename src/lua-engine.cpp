@@ -133,6 +133,14 @@ static inline bool vbaRunsGBA () {
 #endif
 }
 
+static inline int vbaDefaultJoypad() {
+#ifdef WIN32
+	return theApp.joypadDefault;
+#else
+	return sdlDefaultJoypad;
+#endif
+}
+
 // GBA memory I/O functions copied from win32/MemoryViewerDlg.cpp
 static inline u8 CPUReadByteQuick(u32 addr) {
 	return ::map[addr>>24].address[addr & ::map[addr>>24].mask];
@@ -705,7 +713,7 @@ static int memory_register(lua_State *L) {
 }
 
 
-// table joypad.read(int which = 1)
+// table joypad.read(int which = 0)
 //
 //  Reads the joypads as inputted by the user.
 //  This is really the only way to get input to the system.
@@ -714,11 +722,17 @@ static int joypad_read(lua_State *L) {
 	// Reads the joypads as inputted by the user
 	int which = luaL_checkinteger(L,1);
 	
-	if (which < 1 || which > 4) {
-		luaL_error(L,"Invalid input port (valid range 1-4, specified %d)", which);
+	if (which < 0 || which > 4) {
+		luaL_error(L,"Invalid input port (valid range 0-4, specified %d)", which);
 	}
 	
-	uint32 buttons = systemReadJoypad(which - 1, false);
+	uint32 buttons = 0;
+#ifdef WIN32
+	if(theApp.input/* || VBALuaUsingJoypad(which-1)*/)
+		buttons = theApp.input->readDevice(which-1,false,true);
+#else
+	buttons = systemReadJoypad(which - 1, false);
+#endif
 	
 	lua_newtable(L);
 	
@@ -743,10 +757,11 @@ static int joypad_set(lua_State *L) {
 
 	// Which joypad we're tampering with
 	int which = luaL_checkinteger(L,1);
-	if (which < 1 || which > 4) {
-		luaL_error(L,"Invalid output port (valid range 1-4, specified %d)", which);
-
+	if (which < 0 || which > 4) {
+		luaL_error(L,"Invalid output port (valid range 0-4, specified %d)", which);
 	}
+	if (which == 0)
+		which = vbaDefaultJoypad();
 
 	// And the table of buttons.
 	luaL_checktype(L,2,LUA_TTABLE);
@@ -2242,7 +2257,7 @@ static const struct luaL_reg memorylib [] = {
 
 static const struct luaL_reg joypadlib[] = {
 	{"read", joypad_read},
-//	{"set", joypad_set},	// TODO: NYI
+	{"set", joypad_set},
 
 	{NULL,NULL}
 };
@@ -2508,9 +2523,11 @@ int VBALuaRunning() {
 /**
  * Returns true if Lua would like to steal the given joypad control.
  *
- * Range is 0 through 4
+ * Range is 0 through 3
  */
 int VBALuaUsingJoypad(int which) {
+	if (which < 0 || which > 3)
+		which = vbaDefaultJoypad();
 	return lua_joypads_used & (1 << which);
 }
 
@@ -2518,11 +2535,13 @@ int VBALuaUsingJoypad(int which) {
  * Reads the buttons Lua is feeding for the given joypad, in the same
  * format as the OS-specific code.
  *
- * This function must not be called more than once per frame. Ideally exactly once
+ * <del>This function must not be called more than once per frame. </del>Ideally exactly once
  * per frame (if VBALuaUsingJoypad says it's safe to do so)
  */
 int VBALuaReadJoypad(int which) {
-	lua_joypads_used &= ~(1 << which);
+	if (which < 0 || which > 3)
+		which = vbaDefaultJoypad();
+	//lua_joypads_used &= ~(1 << which);
 	return lua_joypads[which];
 }
 

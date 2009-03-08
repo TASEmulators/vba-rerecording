@@ -35,7 +35,7 @@ class Input {
   virtual bool initialize() = 0;
 
   virtual bool readDevices() = 0;
-  virtual u32 readDevice(int which, bool sensor) = 0;
+  virtual u32 readDevice(int which, bool sensor, bool free) = 0;
   virtual CString getKeyName(int key) = 0;
   virtual void checkKeys() = 0;
   virtual void checkDevices() = 0;

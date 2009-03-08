@@ -21,6 +21,7 @@
 #include "WinResUtil.h"
 
 #include "../movie.h"
+#include "../vbalua.h"
 
 #define DIRECTINPUT_VERSION 0x0500
 #include "dinput.h"
@@ -50,7 +51,7 @@ public:
 
   virtual bool initialize();
   virtual bool readDevices();
-  virtual u32 readDevice(int which, bool sensor);
+  virtual u32 readDevice(int which, bool sensor, bool free);
   virtual CString getKeyName(int key);
   virtual void checkKeys();
   virtual void activate();
@@ -842,17 +843,19 @@ u32 currentButtons [4] = {0,0,0,0};
 bool inputActive = true; // used to disable all input when the window is inactive
 bool sensorOn = false;
 
-u32 DirectInput::readDevice(int which, bool sensor)
+u32 DirectInput::readDevice(int which, bool sensor, bool free)
 {
   int i = theApp.joypadDefault;
   if(which >= 0 && which <= 3)
     i = which;
 
-  sensorOn = sensor;
+  if(!free)
+    sensorOn = sensor;
 
+    u32 currentButtonsBackup = currentButtons[i];
     currentButtons[i] = 0;
 
-	if(inputActive)
+	if(inputActive || free)
 	{
 		if(checkKey(joypad[i][KEY_BUTTON_A]))
 			currentButtons[i] |= BUTTON_MASK_A;
@@ -893,10 +896,14 @@ u32 DirectInput::readDevice(int which, bool sensor)
 	if(theApp.autoFire || theApp.autoFire2)
 	{
 		currentButtons[i] |= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
-		theApp.autoFireToggle = !theApp.autoFireToggle;
+		if (!free)
+			theApp.autoFireToggle = !theApp.autoFireToggle;
 	}
 	if(theApp.autoHold)
 		currentButtons[i] ^= theApp.autoHold;
+
+	if(VBALuaUsingJoypad(i))
+		currentButtons[i] = VBALuaReadJoypad(i);
 
 	extern int32 gbSgbMode; // from gbSGB.cpp
 	if(theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
@@ -919,10 +926,10 @@ u32 DirectInput::readDevice(int which, bool sensor)
 	if(theApp.frameSearchSkipping)
 		currentButtons[i] = theApp.frameSearchOldInput[i];
 
-	VBAMovieUpdate(i);
+	if (!free)
+		VBAMovieUpdate(i);
 
-
-	if(sensorOn)
+	if(sensorOn && !free)
 	{
 		// handle motion sensor input
 		if(currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
@@ -972,10 +979,11 @@ u32 DirectInput::readDevice(int which, bool sensor)
 		}
 	}
 
-
 	uint32 res = currentButtons[i] & BUTTON_REGULAR_MASK;
+	if (free)
+		currentButtons[i] = currentButtonsBackup;
 
-	if(inputActive)
+	if(inputActive && !free)
 	{
 		// the "non-button" buttons (what a hack!)
 		if(checkKey(joypad[i][KEY_BUTTON_SPEED]) || theApp.speedupToggle)
