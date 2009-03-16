@@ -44,6 +44,8 @@
 
 #include "../GBA.h"
 #include "../Globals.h"
+#include "../gb/gbGlobals.h"
+#include "../Sound.h"
 #include "../movie.h"
 #include "../RTC.h"
 
@@ -446,9 +448,9 @@ void MainWnd::OnOptionsSoundStartrecording()
   CString filter = theApp.winLoadFilter(IDS_FILTER_WAV);
   CString title = winResLoadString(IDS_SELECT_WAV_NAME);
 
-  LPCTSTR exts[] = { ".WAV" };
+  LPCTSTR exts[] = { ".wav" };
   
-  FileDlg dlg(this, "", filter, 1, "WAV", exts, capdir, title, true);
+  FileDlg dlg(this, "", filter, 1, "wav", exts, capdir, title, true);
   
   if(dlg.DoModal() == IDCANCEL) {
     return;
@@ -500,9 +502,9 @@ void MainWnd::OnToolsRecordStartavirecording()
   CString filter = theApp.winLoadFilter(IDS_FILTER_AVI);
   CString title = winResLoadString(IDS_SELECT_AVI_NAME);
 
-  LPCTSTR exts[] = { ".AVI" };
+  LPCTSTR exts[] = { ".avi" };
   
-  FileDlg dlg(this, "", filter, 1, "AVI", exts, capdir, title, true);
+  FileDlg dlg(this, "", filter, 1, "avi", exts, capdir, title, true);
   
   if(dlg.DoModal() == IDCANCEL) {
     return;
@@ -525,6 +527,69 @@ void MainWnd::OnToolsRecordStartavirecording()
     captureBuffer = captureBuffer.Left(len-1);
 
   regSetStringValue("aviRecordDir", captureBuffer);
+
+  if(theApp.aviRecorder == NULL) {
+    int width = 240;
+    int height = 160;
+    switch(theApp.cartridgeType)
+    {
+      case 0:
+        width = 240;
+        height = 160;
+        break;
+      case 1:
+        if(gbBorderOn) {
+          width = 256;
+          height = 224;
+        } else {
+          width = 160;
+          height = 144;
+        }
+        break;
+    }
+
+    FILE * temp = fopen(theApp.aviRecordName, "wb");
+    if(temp == NULL)
+    {
+      theApp.aviRecording = false;
+      systemMessage(0,"AVI recording failed: file is read-only or already in use.");
+    }
+    else
+    {
+      fclose(temp);
+
+      theApp.aviRecorder = new AVIWrite();
+      theApp.aviFrameNumber = 0;
+
+      theApp.aviRecorder->SetFPS(60);
+
+      BITMAPINFOHEADER bi;
+      memset(&bi, 0, sizeof(bi));      
+      bi.biSize = 0x28;    
+      bi.biPlanes = 1;
+      bi.biBitCount = 24;
+      bi.biWidth = width;
+      bi.biHeight = height;
+      bi.biSizeImage = 3*width*height;
+      theApp.aviRecorder->SetVideoFormat(&bi);
+      theApp.aviRecorder->Open(theApp.aviRecordName);
+
+      WAVEFORMATEX wfx;
+      memset(&wfx, 0, sizeof(wfx));
+      wfx.wFormatTag = WAVE_FORMAT_PCM;
+      wfx.nChannels = 2;
+      wfx.nSamplesPerSec = 44100 / soundQuality;
+      wfx.wBitsPerSample = 16;
+      wfx.nBlockAlign = (wfx.wBitsPerSample/8) * wfx.nChannels;
+      wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+      wfx.cbSize = 0;
+      theApp.aviRecorder->SetSoundFormat(&wfx);
+
+      extern int32 soundFrameBufferIndex;
+      if (soundQuality == 1)
+        soundFrameBufferIndex = 0;
+    }
+  }
 }
 
 void MainWnd::OnUpdateToolsRecordStartavirecording(CCmdUI* pCmdUI) 

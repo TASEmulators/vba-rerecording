@@ -16,6 +16,8 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <assert.h>
+
 #include "stdafx.h"
 #include "AVIWrite.h"
 
@@ -27,7 +29,8 @@ AVIWrite::AVIWrite()
   m_streamCompressed = NULL;
   m_streamSound = NULL;
   m_samplesSound = 0;
-  
+  m_totalBytes = 0;
+
   AVIFileInit();
 }
 
@@ -134,10 +137,13 @@ bool AVIWrite::Open(const char *filename)
 
 bool AVIWrite::AddSound(const char *sound, int len)
 {
+  LONG byteBuffer;
+
   // return if we failed somewhere already
   if(m_failed)
     return false;
 
+  assert(len % m_soundFormat.nBlockAlign == 0);
   int samples = len / m_soundFormat.nBlockAlign;
 
   if(FAILED(AVIStreamWrite(m_streamSound,
@@ -147,20 +153,22 @@ bool AVIWrite::AddSound(const char *sound, int len)
                            len,
                            0,
                            NULL,
-                           NULL))) {
+                           &byteBuffer))) {
     m_failed = true;
     return false;
   }
   m_samplesSound += samples;
-
+  m_totalBytes += byteBuffer;
   return true;
 }
 
 bool AVIWrite::AddFrame(const int frame, const char *bmp)
 {
+  LONG byteBuffer;
+
   if (m_failed)
     return false;
-  
+
   // write the frame to the video stream
   if(FAILED(AVIStreamWrite(m_streamCompressed,
                            frame,
@@ -169,10 +177,11 @@ bool AVIWrite::AddFrame(const int frame, const char *bmp)
                            m_bitmap.biSizeImage,
                            AVIIF_KEYFRAME,
                            NULL,
-                           NULL))) {
+                           &byteBuffer))) {
     m_failed = true;
     return false;
   }
+  m_totalBytes += byteBuffer;
   return true;
 }
 

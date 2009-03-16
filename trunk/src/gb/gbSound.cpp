@@ -32,6 +32,7 @@
 
 extern u8 soundBuffer[6][735];
 extern u16 soundFinalWave[1470];
+extern u16 soundFrameSound[735*2];
 extern int32 soundVolume;
 
 #define SOUND_MAGIC   0x60000000
@@ -59,6 +60,7 @@ extern int32 soundBalance;
 extern int32 soundMasterOn;
 extern int32 soundIndex;
 extern int32 soundBufferIndex;
+extern int32 soundFrameBufferIndex;
 int32 soundVIN = 0;
 extern int32 soundDebug;
 
@@ -623,30 +625,43 @@ void gbSoundMix()
            soundLeft[0])/14;
   }
 
-  switch(soundVolume) {
-  case 0:
-  case 1:
-  case 2:
-  case 3:
-    res *= (soundVolume+1);
-    break;
-  case 4:
-    res >>= 2;
-    break;
-  case 5:
-    res >>= 1;
-    break;
+  bool noSpecialEffects = false;
+#if (defined(WIN32) && !defined(SDL))
+  if(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog)
+    noSpecialEffects = true;
+#endif
+
+  if(!noSpecialEffects)
+  {
+    switch(soundVolume) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      res *= (soundVolume+1);
+      break;
+    case 4:
+      res >>= 2;
+      break;
+    case 5:
+      res >>= 1;
+      break;
+    }
   }
-  
+
   if(res > 32767)
     res = 32767;
   if(res < -32768)
     res = -32768;
 
-  if(soundReverse)
+  if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-  else
+    soundFrameSound[++soundFrameBufferIndex] = res;
+  }
+  else {
     soundFinalWave[soundBufferIndex++] = res;
+    soundFrameSound[soundFrameBufferIndex++] = res;
+  }
   
   res = 0;
 
@@ -688,40 +703,43 @@ void gbSoundMix()
            soundRight[0])/14;
   }
 
-  switch(soundVolume) {
-  case 0:
-  case 1:
-  case 2:
-  case 3:
-    res *= (soundVolume+1);
-    break;
-  case 4:
-    res >>= 2;
-    break;
-  case 5:
-    res >>= 1;
-    break;
+  if(!noSpecialEffects)
+  {
+    switch(soundVolume) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      res *= (soundVolume+1);
+      break;
+    case 4:
+      res >>= 2;
+      break;
+    case 5:
+      res >>= 1;
+      break;
+    }
   }
   
   if(res > 32767)
     res = 32767;
   if(res < -32768)
     res = -32768;
-
-  if(soundReverse)
+  
+  if(soundReverse && !noSpecialEffects) {
     soundFinalWave[-1+soundBufferIndex++] = res;
-  else
+    soundFrameSound[-1+soundFrameBufferIndex++] = res;
+  }
+  else {
     soundFinalWave[soundBufferIndex++] = res;
+    soundFrameSound[soundFrameBufferIndex++] = res;
+  }
 }
 
 void gbSoundTick()
 {
   if(systemSoundOn) {
-    if(soundMasterOn
-#if (defined(WIN32) && !defined(SDL))
-		&& !theApp.frameAdvanceMuteNow
-#endif
-		) {
+    if(soundMasterOn) {
       gbSoundChannel1();
       gbSoundChannel2();
       gbSoundChannel3();
@@ -731,10 +749,25 @@ void gbSoundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
+      soundFrameSound[soundFrameBufferIndex++] = 0;
+      soundFrameSound[soundFrameBufferIndex++] = 0;
     }
-  
+#if (defined(WIN32) && !defined(SDL))
+    if(theApp.frameAdvanceMuteNow) {
+      soundFinalWave[soundBufferIndex++] = 0;
+      soundFinalWave[soundBufferIndex++] = 0;
+    }
+#endif
+    
     soundIndex++;
     
+    if((soundFrameBufferIndex/2) >= (44100/soundQuality/60)) {
+#if (defined(WIN32) && !defined(SDL))
+      if (soundQuality == 1)
+        systemFrameSound();
+#endif
+      soundFrameBufferIndex = 0;
+    }
     if(2*soundBufferIndex >= soundBufferLen) {
       if(systemSoundOn) {
         if(soundPaused) {

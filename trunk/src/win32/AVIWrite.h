@@ -45,5 +45,6 @@ class AVIWrite {
   AVICOMPRESSOPTIONS m_options;
   AVICOMPRESSOPTIONS *m_arrayOptions[1];
   int m_samplesSound;
+  LONG m_totalBytes;
   bool m_failed;
 };

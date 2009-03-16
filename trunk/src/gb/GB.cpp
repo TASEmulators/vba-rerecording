@@ -3263,6 +3263,12 @@ void gbEmulate(int ticksToStop)
 				else if(throttle != 100)
 					framesToSkip = (framesToSkip * throttle) / 100;
 
+#if (defined(WIN32) && !defined(SDL))
+				if(theApp.aviRecording || theApp.nvVideoLog) {
+					framesToSkip = 0; // render all frames
+				}
+#endif
+
 				switch(gbLcdMode)
 				{
 				case 0:

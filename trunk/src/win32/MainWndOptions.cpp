@@ -1173,7 +1173,7 @@ void MainWnd::OnOptionsSound11khz()
 void MainWnd::OnUpdateOptionsSound11khz(CCmdUI* pCmdUI) 
 {
   pCmdUI->SetCheck(soundQuality == 4);
-  pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+  pCmdUI->Enable((!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL)) && !(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog));
 }
 
 void MainWnd::OnOptionsSound22khz() 
@@ -1187,7 +1187,7 @@ void MainWnd::OnOptionsSound22khz()
 void MainWnd::OnUpdateOptionsSound22khz(CCmdUI* pCmdUI) 
 {
   pCmdUI->SetCheck(soundQuality == 2);
-  pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+  pCmdUI->Enable((!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL)) && !(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog));
 }
 
 void MainWnd::OnOptionsSound44khz() 
@@ -1201,6 +1201,7 @@ void MainWnd::OnOptionsSound44khz()
 void MainWnd::OnUpdateOptionsSound44khz(CCmdUI* pCmdUI) 
 {
   pCmdUI->SetCheck(soundQuality == 1);
+  pCmdUI->Enable(!(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog));
 }
 
 BOOL MainWnd::OnOptionsSoundVolume(UINT nID)

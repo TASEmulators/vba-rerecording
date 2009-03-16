@@ -361,7 +361,8 @@ void DirectSound::write()
 			NESVideoLoggingAudio((u8 *)soundFinalWave, wfx.nSamplesPerSec, wfx.wBitsPerSample, wfx.nChannels, len/(wfx.nChannels*(wfx.wBitsPerSample/8)));
 		}
 
-		if(theApp.aviRecording) {
+		// the routine for 44kHz output has been moved to VBA.cpp
+		if((!theApp.newAviRecordMethod || soundQuality != 1) && theApp.aviRecording) {
 			if(theApp.aviRecorder) {
 				if(dsbSecondary) {
 					if(!theApp.aviRecorder->IsSoundAdded()) {
@@ -370,7 +371,7 @@ void DirectSound::write()
 					theApp.aviRecorder->SetSoundFormat(&format);
 					}
 				}
-			      
+
 				theApp.aviRecorder->AddSound((const char *)soundFinalWave, len);
 			}
 		}
