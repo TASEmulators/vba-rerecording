@@ -1293,7 +1293,8 @@ void systemDrawScreen()
 		linearFrameCount++;
 
 		if(theApp.aviRecording)
-		{    
+		{
+			// usually aviRecorder is created when vba starts avi recording, though
 			if(theApp.aviRecorder == NULL) {
 				FILE * temp = fopen(theApp.aviRecordName, "wb");
 				if(temp == NULL)
@@ -1338,7 +1339,7 @@ void systemDrawScreen()
 			NESVideoLoggingVideo((u8 *)bmpBuffer, width, height, 0x1000000 * 60);
 		}
 	}
-	while(linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
+	while((!theApp.newAviRecordMethod || soundQuality != 1) && linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
   }
 
 	// draw Lua graphics in-game but after video logging
@@ -1559,6 +1560,28 @@ void systemSoundResume()
 {
   if(theApp.sound)
     theApp.sound->resume();
+}
+
+void systemFrameSound()
+{
+  // messy implementation for better recording X(
+  if((theApp.newAviRecordMethod && soundQuality == 1) && theApp.aviRecording) {
+    if(theApp.aviRecorder) {
+      if(!theApp.aviRecorder->IsSoundAdded()) {
+        WAVEFORMATEX wfx;
+        memset(&wfx, 0, sizeof(wfx));
+        wfx.wFormatTag = WAVE_FORMAT_PCM;
+        wfx.nChannels = 2;
+        wfx.nSamplesPerSec = 44100 / soundQuality;
+        wfx.wBitsPerSample = 16;
+        wfx.nBlockAlign = (wfx.wBitsPerSample/8) * wfx.nChannels;
+        wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+        wfx.cbSize = 0;
+        theApp.aviRecorder->SetSoundFormat(&wfx);
+      }
+      theApp.aviRecorder->AddSound((const char *)soundFrameSound, 2*2*44100/60/soundQuality);
+    }
+  }
 }
 
 void systemWriteDataToSoundBuffer()
@@ -1862,6 +1885,8 @@ void VBA::loadSettings()
   lagCounter = regQueryDwordValue("lagCounter", false) ? true : false;
   inputDisplay = regQueryDwordValue("inputDisplay", false) ? true : false;
   movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
+
+  newAviRecordMethod = regQueryDwordValue("newAviRecordMethod", false) ? true : false;
 
   useOldSync = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 
@@ -2700,6 +2725,8 @@ void VBA::saveSettings()
   regSetDwordValue("lagCounter", lagCounter);
   regSetDwordValue("inputDisplay", inputDisplay);
   regSetDwordValue("movieReadOnly", movieReadOnly);
+
+  regSetDwordValue("newAviRecordMethod", newAviRecordMethod);
 
   regSetDwordValue("useOldSync", useOldSync);
 

@@ -73,6 +73,7 @@ extern int32 soundBufferLen;
 extern int32 soundBufferTotalLen;
 extern u32 soundNextPosition;
 extern u16 soundFinalWave[1470];
+extern u16 soundFrameSound[735*2];
 extern int32 soundVolume;
 
 extern bool8 soundEcho;

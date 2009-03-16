@@ -3779,7 +3779,13 @@ void CPULoop(int _ticks)
             framesToSkip = 9; // try 6 FPS during speedup
 		  else if(throttle != 100)
             framesToSkip = (framesToSkip * throttle) / 100; // change frame skip to match up with the throttle's adjusted speed (so 6 frame skip becomes 3 frames at 50% speed)
-          
+
+#if (defined(WIN32) && !defined(SDL))
+          if(theApp.aviRecording || theApp.nvVideoLog) {
+            framesToSkip = 0; // render all frames
+          }
+#endif
+
           if(DISPSTAT & 2) {
             // if in H-Blank, leave it and move to drawing mode
             VCOUNT++;

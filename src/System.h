@@ -78,6 +78,9 @@ extern void systemNotifyJoypadRead();
 extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
 extern void systemSetTitle(const char *);
+#if (defined(WIN32) && !defined(SDL))
+extern void systemFrameSound();
+#endif
 extern void systemWriteDataToSoundBuffer();
 extern void systemSoundShutdown();
 extern void systemSoundPause();
