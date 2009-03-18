@@ -548,32 +548,26 @@ void MainWnd::OnToolsRecordStartavirecording()
         break;
     }
 
-    FILE * temp = fopen(theApp.aviRecordName, "wb");
-    if(temp == NULL)
-    {
+    theApp.aviRecorder = new AVIWrite();
+
+    theApp.aviRecorder->SetFPS(60);
+
+    BITMAPINFOHEADER bi;
+    memset(&bi, 0, sizeof(bi));      
+    bi.biSize = 0x28;    
+    bi.biPlanes = 1;
+    bi.biBitCount = 24;
+    bi.biWidth = width;
+    bi.biHeight = height;
+    bi.biSizeImage = 3*width*height;
+    theApp.aviRecorder->SetVideoFormat(&bi);
+    if(!theApp.aviRecorder->Open(theApp.aviRecordName)) {
+      delete theApp.aviRecorder;
+      theApp.aviRecorder = NULL;
       theApp.aviRecording = false;
-      systemMessage(0,"AVI recording failed: file is read-only or already in use.");
     }
-    else
-    {
-      fclose(temp);
 
-      theApp.aviRecorder = new AVIWrite();
-      theApp.aviFrameNumber = 0;
-
-      theApp.aviRecorder->SetFPS(60);
-
-      BITMAPINFOHEADER bi;
-      memset(&bi, 0, sizeof(bi));      
-      bi.biSize = 0x28;    
-      bi.biPlanes = 1;
-      bi.biBitCount = 24;
-      bi.biWidth = width;
-      bi.biHeight = height;
-      bi.biSizeImage = 3*width*height;
-      theApp.aviRecorder->SetVideoFormat(&bi);
-      theApp.aviRecorder->Open(theApp.aviRecordName);
-
+    if(theApp.aviRecorder) {
       WAVEFORMATEX wfx;
       memset(&wfx, 0, sizeof(wfx));
       wfx.wFormatTag = WAVE_FORMAT_PCM;
@@ -598,7 +592,6 @@ void MainWnd::OnToolsRecordStopavirecording()
   if(theApp.aviRecorder != NULL) {
     delete theApp.aviRecorder;
     theApp.aviRecorder = NULL;
-    theApp.aviFrameNumber = 0;
   }
   theApp.aviRecording = false;
 }

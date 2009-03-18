@@ -25,7 +25,7 @@ class AVIWrite {
   virtual ~AVIWrite();
 
   bool Open(const char *filename);
-  virtual bool AddFrame(const int number, const char * bmp);
+  virtual bool AddFrame(const char * bmp);
   void SetFPS(int fps);
   void SetVideoFormat(BITMAPINFOHEADER *);
   bool IsSoundAdded();
@@ -44,7 +44,15 @@ class AVIWrite {
   PAVISTREAM m_streamSound;
   AVICOMPRESSOPTIONS m_options;
   AVICOMPRESSOPTIONS *m_arrayOptions[1];
+  int m_videoFrames;
   int m_samplesSound;
   LONG m_totalBytes;
   bool m_failed;
+  int m_segmentNumber;
+  bool m_usePrevOptions;
+  char m_aviFileName[MAX_PATH];
+  char m_aviBaseName[MAX_PATH];
+  char m_aviExtension[MAX_PATH];
+  void CleanUp();
+  bool NextSegment();
 };
