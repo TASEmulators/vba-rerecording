@@ -3796,6 +3796,7 @@ void CPULoop(int _ticks)
             if(VCOUNT == 160) {
               count++;
               systemFrame(60);
+              soundFrameSoundWritten = 0;
 
               if(count == 60) {
                 u32 time = systemGetClock();
@@ -4197,7 +4198,7 @@ void CPULoop(int _ticks)
       // if sound is disabled, so in stop state, soundTick will just produce
       // mute sound
       soundTicks -= clockTicks;
-      if(soundTicks <= 0) {
+      if(soundTicks < 1) {
         soundTick();
         soundTicks += SOUND_CLOCK_TICKS;
       }

@@ -584,10 +584,6 @@ void MainWnd::OnToolsRecordStartavirecording()
       wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
       wfx.cbSize = 0;
       theApp.aviRecorder->SetSoundFormat(&wfx);
-
-      extern int32 soundFrameBufferIndex;
-      if (soundQuality == 1)
-        soundFrameBufferIndex = 0;
     }
   }
 }

@@ -1287,12 +1287,13 @@ void systemDrawScreen()
 			break;
 	}
 
+	bool firstFrameLogged = false;
 	linearFrameCount--;
     do
     {
 		linearFrameCount++;
 
-		if(theApp.aviRecording)
+		if(theApp.aviRecording && (!theApp.altAviRecordMethod || (theApp.altAviRecordMethod && !firstFrameLogged)))
 		{
 			// usually aviRecorder is created when vba starts avi recording, though
 			if(theApp.aviRecorder == NULL) {
@@ -1338,8 +1339,10 @@ void systemDrawScreen()
 			utilWriteBMP(bmpBuffer, width, -height, 16, pix);
 			NESVideoLoggingVideo((u8 *)bmpBuffer, width, height, 0x1000000 * 60);
 		}
+
+		firstFrameLogged = true;
 	}
-	while((!theApp.newAviRecordMethod || soundQuality != 1) && linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
+	while(linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
   }
 
 	// draw Lua graphics in-game but after video logging
@@ -1416,6 +1419,24 @@ void systemShowSpeed(int speed)
 
 void systemFrame(int rate)
 {
+  if(theApp.altAviRecordMethod && theApp.aviRecording) {
+    if(theApp.aviRecorder) {
+      if(!theApp.aviRecorder->IsSoundAdded()) {
+        WAVEFORMATEX wfx;
+        memset(&wfx, 0, sizeof(wfx));
+        wfx.wFormatTag = WAVE_FORMAT_PCM;
+        wfx.nChannels = 2;
+        wfx.nSamplesPerSec = 44100 / soundQuality;
+        wfx.wBitsPerSample = 16;
+        wfx.nBlockAlign = (wfx.wBitsPerSample/8) * wfx.nChannels;
+        wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+        wfx.cbSize = 0;
+        theApp.aviRecorder->SetSoundFormat(&wfx);
+      }
+      theApp.aviRecorder->AddSound((const char *)soundFrameSound, soundFrameSoundWritten * 2);
+    }
+  }
+
 	if (VBALuaRunning())
 	{
 		VBALuaFrameBoundary();
@@ -1560,28 +1581,6 @@ void systemSoundResume()
 {
   if(theApp.sound)
     theApp.sound->resume();
-}
-
-void systemFrameSound()
-{
-  // messy implementation for better recording X(
-  if((theApp.newAviRecordMethod && soundQuality == 1) && theApp.aviRecording) {
-    if(theApp.aviRecorder) {
-      if(!theApp.aviRecorder->IsSoundAdded()) {
-        WAVEFORMATEX wfx;
-        memset(&wfx, 0, sizeof(wfx));
-        wfx.wFormatTag = WAVE_FORMAT_PCM;
-        wfx.nChannels = 2;
-        wfx.nSamplesPerSec = 44100 / soundQuality;
-        wfx.wBitsPerSample = 16;
-        wfx.nBlockAlign = (wfx.wBitsPerSample/8) * wfx.nChannels;
-        wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-        wfx.cbSize = 0;
-        theApp.aviRecorder->SetSoundFormat(&wfx);
-      }
-      theApp.aviRecorder->AddSound((const char *)soundFrameSound, 2*2*44100/60/soundQuality);
-    }
-  }
 }
 
 void systemWriteDataToSoundBuffer()
@@ -1886,7 +1885,7 @@ void VBA::loadSettings()
   inputDisplay = regQueryDwordValue("inputDisplay", false) ? true : false;
   movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
 
-  newAviRecordMethod = regQueryDwordValue("newAviRecordMethod", false) ? true : false;
+  altAviRecordMethod = regQueryDwordValue("altAviRecordMethod", false) ? true : false;
 
   useOldSync = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 
@@ -2726,7 +2725,7 @@ void VBA::saveSettings()
   regSetDwordValue("inputDisplay", inputDisplay);
   regSetDwordValue("movieReadOnly", movieReadOnly);
 
-  regSetDwordValue("newAviRecordMethod", newAviRecordMethod);
+  regSetDwordValue("altAviRecordMethod", altAviRecordMethod);
 
   regSetDwordValue("useOldSync", useOldSync);
 

@@ -28,7 +28,8 @@
 #include "Sound.h"
 #include "Util.h"
 
-#define USE_TICKS_AS  380
+double USE_TICKS_AS = 380; // (16777216.0/44100.0); // FIXME: (16777216.0/280896.0)(fps) vs 60.0fps?
+
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
 #define NOISE_MAGIC (2097152.0/44100.0)
@@ -104,15 +105,15 @@ int32 soundVolume = 0;
 
 u8 soundBuffer[6][735];
 u16 soundFinalWave[1470];
-u16 soundFrameSound[735*2]; // for avi logging
+u16 soundFrameSound[735*15*2]; // for avi logging
 
 int32 soundBufferLen = 1470;
 int32 soundBufferTotalLen = 14700;
 int32 soundQuality = 2;
 int32 soundPaused = 1;
 int32 soundPlay = 0;
-int32 soundTicks = soundQuality * USE_TICKS_AS;
-int32 SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
+double soundTicks = soundQuality * USE_TICKS_AS;
+double SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
 u32 soundNextPosition = 0;
 
 int32 soundLevel1 = 0;
@@ -121,7 +122,7 @@ int32 soundBalance = 0;
 int32 soundMasterOn = 0;
 int32 soundIndex = 0;
 int32 soundBufferIndex = 0;
-int32 soundFrameBufferIndex = 0;
+int32 soundFrameSoundWritten = 0;
 int32 soundDebug = 0;
 bool8 soundOffFlag = false;
 
@@ -208,11 +209,13 @@ bool8 soundEcho = false;
 bool8 soundLowPass = false;
 bool8 soundReverse = false;
 
+static int32 soundTicks_int32;
+static int32 SOUND_CLOCK_TICKS_int32;
 variable_desc soundSaveStruct[] = {
   { &soundPaused, sizeof(int32) },
   { &soundPlay, sizeof(int32) },
-  { &soundTicks, sizeof(int32) },
-  { &SOUND_CLOCK_TICKS, sizeof(int32) },
+  { &soundTicks_int32, sizeof(int32) },
+  { &SOUND_CLOCK_TICKS_int32, sizeof(int32) },
   { &soundLevel1, sizeof(int32) },
   { &soundLevel2, sizeof(int32) },
   { &soundBalance, sizeof(int32) },
@@ -290,6 +293,13 @@ variable_desc soundSaveStructV2[] = {
   { &sound3ForcedOutput, sizeof(int32) },
   { NULL, 0 }
 };
+
+//variable_desc soundSaveStructV3[] = {
+//  { &soundTicks, sizeof(double) },
+//  { &SOUND_CLOCK_TICKS, sizeof(double) },
+//  { &USE_TICKS_AS, sizeof(double) },
+//  { NULL, 0 }
+//};
 
 void soundEvent(u32 address, u8 data)
 {
@@ -1024,11 +1034,11 @@ void soundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-    soundFrameSound[++soundFrameBufferIndex] = res;
+    soundFrameSound[++soundFrameSoundWritten] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameBufferIndex++] = res;
+    soundFrameSound[soundFrameSoundWritten++] = res;
   }
 
   res = 0;
@@ -1123,11 +1133,11 @@ void soundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[-1+soundBufferIndex++] = res;
-    soundFrameSound[-1+soundFrameBufferIndex++] = res;
+    soundFrameSound[-1+soundFrameSoundWritten++] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameBufferIndex++] = res;
+    soundFrameSound[soundFrameSoundWritten++] = res;
   }
 }
 
@@ -1145,8 +1155,8 @@ void soundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
-      soundFrameSound[soundFrameBufferIndex++] = 0;
-      soundFrameSound[soundFrameBufferIndex++] = 0;
+      soundFrameSound[soundFrameSoundWritten++] = 0;
+      soundFrameSound[soundFrameSoundWritten++] = 0;
     }
 #if (defined(WIN32) && !defined(SDL))
     if(theApp.frameAdvanceMuteNow) {
@@ -1157,13 +1167,6 @@ void soundTick()
     
     soundIndex++;
     
-    if((soundFrameBufferIndex/2) >= (44100/soundQuality/60)) {
-#if (defined(WIN32) && !defined(SDL))
-      if (soundQuality == 1)
-        systemFrameSound();
-#endif
-      soundFrameBufferIndex = 0;
-    }
     if(2*soundBufferIndex >= soundBufferLen) {
       if(systemSoundOn) {
         if(soundPaused) {
@@ -1353,10 +1356,14 @@ void soundSetQuality(int quality)
 
 void soundSaveGame(gzFile gzFile)
 {
+  soundTicks_int32 = (int32) soundTicks;
+  SOUND_CLOCK_TICKS_int32 = (int32) SOUND_CLOCK_TICKS;
+
   utilWriteData(gzFile, soundSaveStruct);
   utilWriteData(gzFile, soundSaveStructV2);
-  
+
   utilGzWrite(gzFile, &soundQuality, sizeof(int32));
+  //utilWriteData(gzFile, soundSaveStructV3);
 }
 
 void soundReadGame(gzFile gzFile, int version)
@@ -1380,4 +1387,12 @@ void soundReadGame(gzFile gzFile, int version)
   
   sound1Wave = soundWavePattern[ioMem[NR11] >> 6];
   sound2Wave = soundWavePattern[ioMem[NR21] >> 6];
+
+  //if(version >= SAVE_GAME_VERSION_14) {
+  //  utilReadData(gzFile, soundSaveStructV3);
+  //}
+  //else {
+    soundTicks = (double) soundTicks_int32;
+    SOUND_CLOCK_TICKS = (double) SOUND_CLOCK_TICKS_int32;
+  //}
 }
