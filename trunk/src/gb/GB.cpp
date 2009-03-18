@@ -39,6 +39,10 @@
 #include "../movie.h"
 #include "../vbalua.h"
 
+extern double GB_USE_TICKS_AS;
+
+extern int32 soundFrameSoundWritten;
+
 #ifdef __GNUC__
 #define _stricmp strcasecmp
 #endif
@@ -1601,7 +1605,7 @@ void gbSpeedSwitch()
 		//    timerTicks *= 2;
 		//    timerClockTicks *= 2;
 		gbSerialTicks *= 2;
-		SOUND_CLOCK_TICKS = soundQuality * 24 * 2;
+		SOUND_CLOCK_TICKS = soundQuality * GB_USE_TICKS_AS * 2;
 		soundTicks *= 2;
 		//    synchronizeTicks *= 2;
 		//    SYNCHRONIZE_CLOCK_TICKS *= 2;
@@ -1625,7 +1629,7 @@ void gbSpeedSwitch()
 		//    timerTicks /= 2;
 		//    timerClockTicks /= 2;
 		gbSerialTicks /= 2;
-		SOUND_CLOCK_TICKS = soundQuality * 24;
+		SOUND_CLOCK_TICKS = soundQuality * GB_USE_TICKS_AS;
 		soundTicks /= 2;
 		//    synchronizeTicks /= 2;
 		//    SYNCHRONIZE_CLOCK_TICKS /= 2;    
@@ -3296,6 +3300,7 @@ void gbEmulate(int ticksToStop)
 						gbFrameCount++;
 
 						systemFrame(60);
+						soundFrameSoundWritten = 0;
 
 						if(gbFrameCount >= 60) 
 						{
@@ -3691,7 +3696,7 @@ void gbEmulate(int ticksToStop)
 		*/
 		
 		soundTicks -= clockTicks;
-		while(soundTicks < 0) 
+		while(soundTicks < 1) 
 		{
 			soundTicks += SOUND_CLOCK_TICKS;
 

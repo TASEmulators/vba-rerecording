@@ -63,9 +63,8 @@ extern void soundEvent(u32, u16);
 extern void soundTimerOverflow(int);
 extern void soundSetQuality(int);
 
-//extern int32 SOUND_TICKS;
-extern int32 SOUND_CLOCK_TICKS;
-extern int32 soundTicks;
+extern double SOUND_CLOCK_TICKS;
+extern double soundTicks;
 extern int32 soundPaused;
 extern bool8 soundOffFlag;
 extern int32 soundQuality;
@@ -73,7 +72,8 @@ extern int32 soundBufferLen;
 extern int32 soundBufferTotalLen;
 extern u32 soundNextPosition;
 extern u16 soundFinalWave[1470];
-extern u16 soundFrameSound[735*2];
+extern u16 soundFrameSound[735*15*2];
+extern int32 soundFrameSoundWritten;
 extern int32 soundVolume;
 
 extern bool8 soundEcho;

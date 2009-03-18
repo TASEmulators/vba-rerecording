@@ -32,12 +32,14 @@
 
 extern u8 soundBuffer[6][735];
 extern u16 soundFinalWave[1470];
-extern u16 soundFrameSound[735*2];
+extern u16 soundFrameSound[735*15*2];
 extern int32 soundVolume;
+
+double GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
-#define NOISE_MAGIC (2097152.0/44100.0)
+#define NOISE_MAGIC   (2097152.0/44100.0)
 
 extern int32 speed;
 
@@ -50,8 +52,8 @@ extern int32 soundBufferTotalLen;
 extern int32 soundQuality;
 extern int32 soundPaused;
 extern int32 soundPlay;
-extern int32 soundTicks;
-extern int32 SOUND_CLOCK_TICKS;
+extern double soundTicks;
+extern double SOUND_CLOCK_TICKS;
 extern u32 soundNextPosition;
 
 extern int32 soundLevel1;
@@ -60,7 +62,7 @@ extern int32 soundBalance;
 extern int32 soundMasterOn;
 extern int32 soundIndex;
 extern int32 soundBufferIndex;
-extern int32 soundFrameBufferIndex;
+extern int32 soundFrameSoundWritten;
 int32 soundVIN = 0;
 extern int32 soundDebug;
 
@@ -656,11 +658,11 @@ void gbSoundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-    soundFrameSound[++soundFrameBufferIndex] = res;
+    soundFrameSound[++soundFrameSoundWritten] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameBufferIndex++] = res;
+    soundFrameSound[soundFrameSoundWritten++] = res;
   }
   
   res = 0;
@@ -728,11 +730,11 @@ void gbSoundMix()
   
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[-1+soundBufferIndex++] = res;
-    soundFrameSound[-1+soundFrameBufferIndex++] = res;
+    soundFrameSound[-1+soundFrameSoundWritten++] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameBufferIndex++] = res;
+    soundFrameSound[soundFrameSoundWritten++] = res;
   }
 }
 
@@ -749,8 +751,8 @@ void gbSoundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
-      soundFrameSound[soundFrameBufferIndex++] = 0;
-      soundFrameSound[soundFrameBufferIndex++] = 0;
+      soundFrameSound[soundFrameSoundWritten++] = 0;
+      soundFrameSound[soundFrameSoundWritten++] = 0;
     }
 #if (defined(WIN32) && !defined(SDL))
     if(theApp.frameAdvanceMuteNow) {
@@ -761,13 +763,6 @@ void gbSoundTick()
     
     soundIndex++;
     
-    if((soundFrameBufferIndex/2) >= (44100/soundQuality/60)) {
-#if (defined(WIN32) && !defined(SDL))
-      if (soundQuality == 1)
-        systemFrameSound();
-#endif
-      soundFrameBufferIndex = 0;
-    }
     if(2*soundBufferIndex >= soundBufferLen) {
       if(systemSoundOn) {
         if(soundPaused) {
@@ -786,7 +781,7 @@ void gbSoundReset()
 {
   soundPaused = 1;
   soundPlay = 0;
-  SOUND_CLOCK_TICKS = soundQuality * 24;  
+  SOUND_CLOCK_TICKS = soundQuality * GB_USE_TICKS_AS;  
 //  soundTicks = SOUND_CLOCK_TICKS;
   soundTicks = 0;
   soundNextPosition = 0;
@@ -908,22 +903,24 @@ void gbSoundSetQuality(int quality)
     soundNextPosition = 0;
     if(!soundOffFlag)
       soundInit();
-    SOUND_CLOCK_TICKS = (gbSpeed ? 2 : 1) * 24 * soundQuality;
+    SOUND_CLOCK_TICKS = (gbSpeed ? 2 : 1) * GB_USE_TICKS_AS * soundQuality;
     soundIndex = 0;
     soundBufferIndex = 0;
   } else {
     soundNextPosition = 0;
-    SOUND_CLOCK_TICKS = (gbSpeed ? 2 : 1) * 24 * soundQuality;
+    SOUND_CLOCK_TICKS = (gbSpeed ? 2 : 1) * GB_USE_TICKS_AS * soundQuality;
     soundIndex = 0;
     soundBufferIndex = 0;
   }
 }
 
+static int32 soundTicks_int32;
+static int32 SOUND_CLOCK_TICKS_int32;
 variable_desc gbSoundSaveStruct[] = {
   { &soundPaused, sizeof(int32) },
   { &soundPlay, sizeof(int32) },
-  { &soundTicks, sizeof(int32) },
-  { &SOUND_CLOCK_TICKS, sizeof(int32) },
+  { &soundTicks_int32, sizeof(int32) },
+  { &SOUND_CLOCK_TICKS_int32, sizeof(int32) },
   { &soundLevel1, sizeof(int32) },
   { &soundLevel2, sizeof(int32) },
   { &soundBalance, sizeof(int32) },
@@ -978,13 +975,25 @@ variable_desc gbSoundSaveStruct[] = {
   { NULL, 0 }
 };
 
+//variable_desc gbSoundSaveStructV2[] = {
+//  { &soundTicks, sizeof(double) },
+//  { &SOUND_CLOCK_TICKS, sizeof(double) },
+//  { &GB_USE_TICKS_AS, sizeof(double) },
+//  { NULL, 0 }
+//};
+
 void gbSoundSaveGame(gzFile gzFile)
 {
+  soundTicks_int32 = (int32) soundTicks;
+  SOUND_CLOCK_TICKS_int32 = (int32) SOUND_CLOCK_TICKS;
+
   utilWriteData(gzFile, gbSoundSaveStruct);
 
   utilGzWrite(gzFile, soundBuffer, 4*735);
   utilGzWrite(gzFile, soundFinalWave, 2*735);
   utilGzWrite(gzFile, &soundQuality, sizeof(int32));
+
+  //utilWriteData(gzFile, gbSoundSaveStructV2);
 }
 
 void gbSoundReadGame(int version,gzFile gzFile)
@@ -1007,4 +1016,12 @@ void gbSoundReadGame(int version,gzFile gzFile)
   
   sound1Wave = soundWavePattern[gbMemory[NR11] >> 6];
   sound2Wave = soundWavePattern[gbMemory[NR21] >> 6];
+
+  //if(version >= 14) {
+  //  utilReadData(gzFile, gbSoundSaveStructV2);
+  //}
+  //else {
+    soundTicks = (double) soundTicks_int32;
+    SOUND_CLOCK_TICKS = (double) SOUND_CLOCK_TICKS_int32;
+  //}
 }
