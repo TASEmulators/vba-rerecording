@@ -71,7 +71,6 @@ DirectSound::~DirectSound()
   if(theApp.aviRecorder != NULL) {
     delete theApp.aviRecorder;
     theApp.aviRecorder = NULL;
-    theApp.aviFrameNumber = 0;
 	theApp.aviRecording = false;
   }
 

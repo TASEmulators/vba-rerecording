@@ -209,7 +209,7 @@ bool OpenGLDisplay::initialize()
 
   pWnd->CreateEx(styleEx,
                  theApp.wndClass,
-                 "VisualBoyAdvance",
+                 "VBA rerecording",
                  style,
                  x,y,winSizeX,winSizeY,
                  NULL,

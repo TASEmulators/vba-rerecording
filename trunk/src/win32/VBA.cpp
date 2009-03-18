@@ -342,7 +342,6 @@ VBA::VBA()
   sound = NULL;
   aviRecording = false;
   aviRecorder = NULL;
-  aviFrameNumber = 0;
   painting = false;
   sensorX = 2047;
   sensorY = 2047;
@@ -1297,38 +1296,30 @@ void systemDrawScreen()
 		{
 			// usually aviRecorder is created when vba starts avi recording, though
 			if(theApp.aviRecorder == NULL) {
-				FILE * temp = fopen(theApp.aviRecordName, "wb");
-				if(temp == NULL)
-				{
-					theApp.aviRecording = false;
-					systemMessage(0,"AVI recording failed: file is read-only or already in use.");
-				}
-				else
-				{
-					fclose(temp);
+				theApp.aviRecorder = new AVIWrite();
 
-					theApp.aviRecorder = new AVIWrite();
-					theApp.aviFrameNumber = 0;
-				      
-					theApp.aviRecorder->SetFPS(60);
-				        
-					BITMAPINFOHEADER bi;
-					memset(&bi, 0, sizeof(bi));      
-					bi.biSize = 0x28;    
-					bi.biPlanes = 1;
-					bi.biBitCount = 24;
-					bi.biWidth = width;
-					bi.biHeight = height;
-					bi.biSizeImage = 3*width*height;
-					theApp.aviRecorder->SetVideoFormat(&bi);
-					theApp.aviRecorder->Open(theApp.aviRecordName);
+				theApp.aviRecorder->SetFPS(60);
+
+				BITMAPINFOHEADER bi;
+				memset(&bi, 0, sizeof(bi));      
+				bi.biSize = 0x28;    
+				bi.biPlanes = 1;
+				bi.biBitCount = 24;
+				bi.biWidth = width;
+				bi.biHeight = height;
+				bi.biSizeImage = 3*width*height;
+				theApp.aviRecorder->SetVideoFormat(&bi);
+				if(!theApp.aviRecorder->Open(theApp.aviRecordName)) {
+					delete theApp.aviRecorder;
+					theApp.aviRecorder = NULL;
+					theApp.aviRecording = false;
 				}
 			}
 
 			if(theApp.aviRecorder != NULL) {
 				assert(width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && systemColorDepth <= BMP_BUFFER_MAX_DEPTH*8);
 				utilWriteBMP(bmpBuffer, width, height, systemColorDepth, pix);
-				theApp.aviRecorder->AddFrame(theApp.aviFrameNumber++, bmpBuffer);
+				theApp.aviRecorder->AddFrame(bmpBuffer);
 			}
 		}
 
@@ -1407,9 +1398,9 @@ void systemShowSpeed(int speed)
   if(theApp.videoOption <= VIDEO_4X && theApp.showSpeed) {
     CString buffer;
     if(theApp.showSpeed == 1)
-      buffer.Format("VisualBoyAdvance-%3d%%", systemSpeed);
+      buffer.Format("VBA rerecording-%3d%%", systemSpeed);
     else
-      buffer.Format("VisualBoyAdvance-%3d%%(%d, %d fps)", systemSpeed,
+      buffer.Format("VBA rerecording-%3d%%(%d, %d fps)", systemSpeed,
                     systemFrameSkip,
                     theApp.showRenderedFrames);
 

@@ -187,7 +187,6 @@ class VBA : public CWinApp
   bool aviRecording;
   AVIWrite *aviRecorder;
   CString aviRecordName;
-  int aviFrameNumber;
   bool altAviRecordMethod;
   bool nvVideoLog;
   bool nvAudioLog;
