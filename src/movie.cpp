@@ -1317,6 +1317,14 @@ std::string VBAMovieGetAuthorInfo ()
 	return Movie.authorInfo;
 }
 
+std::string VBAMovieGetFilename ()
+{
+	if(!VBAMovieActive())
+		return "";
+
+	return Movie.filename;
+}
+
 void VBAMovieFreeze (uint8** buf, uint32* size)
 {
 	// sanity check

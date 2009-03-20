@@ -151,6 +151,7 @@ uint32 VBAMovieGetLength ();
 uint32 VBAMovieGetFrameCounter ();
 uint32 VBAMovieGetState ();
 std::string VBAMovieGetAuthorInfo ();
+std::string VBAMovieGetFilename ();
 
 uint32 VBAGetCurrentInputOf (int controllerNum, bool normalOnly=true);
 void VBAMovieSignalReset ();
