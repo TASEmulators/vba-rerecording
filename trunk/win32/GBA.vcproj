@@ -66,6 +66,7 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4996;4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -970,11 +971,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
