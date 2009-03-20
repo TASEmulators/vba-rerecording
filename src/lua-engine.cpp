@@ -944,6 +944,19 @@ int movie_framecount(lua_State *L) {
 	return 1;
 }
 
+//string movie.author.info
+//
+// returns author info field of .vbm file
+int movie_getauthor(lua_State *L) {
+	if (!VBAMovieActive()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_pushstring(L, VBAMovieGetAuthorInfo().c_str());
+	return 1;
+}
+
 // string movie.mode()
 //
 //   "record", "playback" or nil
@@ -1829,7 +1842,7 @@ static int gui_gdoverlay(lua_State *L) {
 		luaL_error(L, "bad image data or not truecolour");
 	
 	// Don't care about transparent colour
-	if (size < (11+ width*height*4))
+	if ((int)size < (11+ width*height*4))
 		luaL_error(L, "bad image data");
 	
 	const uint8* pixels = data + 11;
@@ -2278,6 +2291,7 @@ static const struct luaL_reg movielib[] = {
 	{"mode", movie_mode},
 	{"rerecordcounting", movie_rerecordcounting},
 	{"stop", movie_stop},
+	{"getauthor", movie_getauthor},
 //	{"record", movie_record},	// TODO: NYI
 //	{"playback", movie_playback},	// TODO: NYI
 
