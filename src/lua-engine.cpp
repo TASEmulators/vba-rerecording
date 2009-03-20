@@ -498,7 +498,7 @@ static int vba_message(lua_State *L) {
 
 }
 
-//int vba.getlagcount
+//int vba.lagcount
 //
 //Returns the lagcounter variable
 static int vba_getlagcount(lua_State *L) {
@@ -2282,7 +2282,7 @@ static const struct luaL_reg vbalib [] = {
 //	{"speedmode", vba_speedmode},	// TODO: NYI
 	{"frameadvance", vba_frameadvance},
 	{"pause", vba_pause},
-	{"getlagcount", vba_getlagcount},
+	{"lagcount", vba_getlagcount},
 	{"lagged", vba_lagged},
 	{"message", vba_message},
 	{NULL,NULL}
