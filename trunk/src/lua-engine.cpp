@@ -944,7 +944,7 @@ int movie_framecount(lua_State *L) {
 	return 1;
 }
 
-//string movie.author.info
+//string movie.getauthor
 //
 // returns author info field of .vbm file
 int movie_getauthor(lua_State *L) {
@@ -954,6 +954,17 @@ int movie_getauthor(lua_State *L) {
 	}
 
 	lua_pushstring(L, VBAMovieGetAuthorInfo().c_str());
+	return 1;
+}
+
+//string movie.filename
+int movie_getfilename(lua_State *L) {
+	if (!VBAMovieActive()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_pushstring(L, VBAMovieGetFilename().c_str());
 	return 1;
 }
 
@@ -2292,6 +2303,7 @@ static const struct luaL_reg movielib[] = {
 	{"rerecordcounting", movie_rerecordcounting},
 	{"stop", movie_stop},
 	{"getauthor", movie_getauthor},
+	{"getfilename", movie_getfilename},
 //	{"record", movie_record},	// TODO: NYI
 //	{"playback", movie_playback},	// TODO: NYI
 
