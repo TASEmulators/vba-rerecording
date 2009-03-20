@@ -435,7 +435,15 @@ void MainWnd::OnUpdateToolsDebugDisconnect(CCmdUI* pCmdUI)
   pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && remoteSocket != -1);
 }
 
-void MainWnd::OnOptionsSoundStartrecording() 
+void MainWnd::OnToolsSoundRecording() 
+{
+  if (!theApp.soundRecording)
+    OnToolsSoundStartrecording();
+  else
+    OnToolsSoundStoprecording();
+}
+
+void MainWnd::OnToolsSoundStartrecording() 
 {
   theApp.winCheckFullscreen();
   CString captureBuffer;
@@ -445,12 +453,41 @@ void MainWnd::OnOptionsSoundStartrecording()
   if(capdir.IsEmpty())
     capdir = getDirFromFile(theApp.filename);
 
+  CString filename = "";
+  if (VBAMovieActive()) {
+    extern SMovie Movie;
+    filename = Movie.filename;
+    int slash = filename.ReverseFind('/');
+    int backslash = filename.ReverseFind('\\');
+    if (slash == -1 || (backslash != -1 && backslash > slash))
+      slash = backslash;
+    if (slash != -1)
+      filename = filename.Right(filename.GetLength()-slash-1);
+    int dot = filename.Find('.');
+    if (dot != -1)
+      filename = filename.Left(dot);
+    filename += ".wav";
+  }
+  else if (emulating) {
+    filename = theApp.szFile;
+    int slash = filename.ReverseFind('/');
+    int backslash = filename.ReverseFind('\\');
+    if (slash == -1 || (backslash != -1 && backslash > slash))
+      slash = backslash;
+    if (slash != -1)
+      filename = filename.Right(filename.GetLength()-slash-1);
+    int dot = filename.Find('.');
+    if (dot != -1)
+      filename = filename.Left(dot);
+    filename += ".wav";
+  }
+
   CString filter = theApp.winLoadFilter(IDS_FILTER_WAV);
   CString title = winResLoadString(IDS_SELECT_WAV_NAME);
 
   LPCTSTR exts[] = { ".wav" };
   
-  FileDlg dlg(this, "", filter, 1, "wav", exts, capdir, title, true);
+  FileDlg dlg(this, filename, filter, 1, "wav", exts, capdir, title, true);
   
   if(dlg.DoModal() == IDCANCEL) {
     return;
@@ -470,12 +507,7 @@ void MainWnd::OnOptionsSoundStartrecording()
   regSetStringValue("soundRecordDir", captureBuffer);
 }
 
-void MainWnd::OnUpdateOptionsSoundStartrecording(CCmdUI* pCmdUI) 
-{
-  pCmdUI->Enable(emulating && !theApp.soundRecording);
-}
-
-void MainWnd::OnOptionsSoundStoprecording() 
+void MainWnd::OnToolsSoundStoprecording() 
 {
   if(theApp.soundRecorder) {
     delete theApp.soundRecorder;
@@ -484,12 +516,24 @@ void MainWnd::OnOptionsSoundStoprecording()
   theApp.soundRecording = false;
 }
 
-void MainWnd::OnUpdateOptionsSoundStoprecording(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsSoundRecording(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(emulating && theApp.soundRecording);
+  pCmdUI->Enable(emulating);
+  if (!theApp.soundRecording)
+    pCmdUI->SetText(winResLoadString(IDS_STARTSOUNDRECORDING));
+  else
+    pCmdUI->SetText(winResLoadString(IDS_STOPSOUNDRECORDING));
 }
 
-void MainWnd::OnToolsRecordStartavirecording() 
+void MainWnd::OnToolsAVIRecording() 
+{
+  if (!theApp.aviRecording)
+    OnToolsStartAVIRecording();
+  else
+    OnToolsStopAVIRecording();
+}
+
+void MainWnd::OnToolsStartAVIRecording() 
 {
   theApp.winCheckFullscreen();
   CString captureBuffer;
@@ -499,12 +543,41 @@ void MainWnd::OnToolsRecordStartavirecording()
   if(capdir.IsEmpty())
     capdir = getDirFromFile(theApp.filename);
 
+  CString filename = "";
+  if (VBAMovieActive()) {
+    extern SMovie Movie;
+    filename = Movie.filename;
+    int slash = filename.ReverseFind('/');
+    int backslash = filename.ReverseFind('\\');
+    if (slash == -1 || (backslash != -1 && backslash > slash))
+      slash = backslash;
+    if (slash != -1)
+      filename = filename.Right(filename.GetLength()-slash-1);
+    int dot = filename.Find('.');
+    if (dot != -1)
+      filename = filename.Left(dot);
+    filename += ".avi";
+  }
+  else if (emulating) {
+    filename = theApp.szFile;
+    int slash = filename.ReverseFind('/');
+    int backslash = filename.ReverseFind('\\');
+    if (slash == -1 || (backslash != -1 && backslash > slash))
+      slash = backslash;
+    if (slash != -1)
+      filename = filename.Right(filename.GetLength()-slash-1);
+    int dot = filename.Find('.');
+    if (dot != -1)
+      filename = filename.Left(dot);
+    filename += ".avi";
+  }
+
   CString filter = theApp.winLoadFilter(IDS_FILTER_AVI);
   CString title = winResLoadString(IDS_SELECT_AVI_NAME);
 
   LPCTSTR exts[] = { ".avi" };
   
-  FileDlg dlg(this, "", filter, 1, "avi", exts, capdir, title, true);
+  FileDlg dlg(this, filename, filter, 1, "avi", exts, capdir, title, true);
   
   if(dlg.DoModal() == IDCANCEL) {
     return;
@@ -582,12 +655,7 @@ void MainWnd::OnToolsRecordStartavirecording()
   }
 }
 
-void MainWnd::OnUpdateToolsRecordStartavirecording(CCmdUI* pCmdUI) 
-{
-  pCmdUI->Enable(emulating && !theApp.aviRecording);
-}
-
-void MainWnd::OnToolsRecordStopavirecording() 
+void MainWnd::OnToolsStopAVIRecording() 
 {
   if(theApp.aviRecorder != NULL) {
     delete theApp.aviRecorder;
@@ -596,48 +664,43 @@ void MainWnd::OnToolsRecordStopavirecording()
   theApp.aviRecording = false;
 }
 
-void MainWnd::OnUpdateToolsRecordStopavirecording(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsAVIRecording(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(emulating && theApp.aviRecording);
+  pCmdUI->Enable(emulating);
+  if (!theApp.aviRecording)
+    pCmdUI->SetText(winResLoadString(IDS_STARTAVIRECORDING));
+  else
+    pCmdUI->SetText(winResLoadString(IDS_STOPAVIRECORDING));
 }
 
-void MainWnd::OnToolsRecordStartmovierecording() 
+void MainWnd::OnToolsRecordMovie() 
 {
     MovieCreate dlg;
     dlg.DoModal();
 }
 
-void MainWnd::OnUpdateToolsRecordStartmovierecording(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsRecordMovie(CCmdUI* pCmdUI) 
 {
   pCmdUI->Enable(emulating);
 }
 
-void MainWnd::OnToolsRecordStopmovierecording() 
+void MainWnd::OnToolsStopMovie() 
 {
 	VBAMovieStop(false);
 }
-void MainWnd::OnUpdateToolsRecordStopmovierecording(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsStopMovie(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(emulating && VBAMovieGetState() == MOVIE_STATE_RECORD);
+  pCmdUI->Enable(emulating && VBAMovieActive());
 }
 
-void MainWnd::OnToolsPlayStartmovieplaying() 
+void MainWnd::OnToolsPlayMovie() 
 {
     MovieOpen dlg;
     dlg.DoModal();
 }
-void MainWnd::OnUpdateToolsPlayStartmovieplaying(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsPlayMovie(CCmdUI* pCmdUI) 
 {
   pCmdUI->Enable(emulating);
-}
-
-void MainWnd::OnToolsPlayStopmovieplaying() 
-{
-  VBAMovieStop(false);
-}
-void MainWnd::OnUpdateToolsPlayStopmovieplaying(CCmdUI* pCmdUI) 
-{
-  pCmdUI->Enable(emulating && VBAMovieGetState() == MOVIE_STATE_PLAY);
 }
 
 void MainWnd::OnToolsPlayReadOnly() 
@@ -656,11 +719,11 @@ void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(VBAMovieActive() ? VBAMovieReadOnly() : theApp.movieReadOnly); // TEMP
 }
 
-void MainWnd::OnToolsPlayContinue() 
+void MainWnd::OnToolsResumeRecord() 
 {
   VBAMovieSwitchToRecording();
 }
-void MainWnd::OnUpdateToolsPlayContinue(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsResumeRecord(CCmdUI* pCmdUI) 
 {
   pCmdUI->Enable(!VBAMovieReadOnly() && VBAMovieGetState() == MOVIE_STATE_PLAY);
 }

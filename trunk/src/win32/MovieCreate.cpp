@@ -129,12 +129,27 @@ void MovieCreate::OnBnClickedBrowse()
   if(capdir.IsEmpty())
     capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
 
+  CString filename = "";
+  if (emulating) {
+    filename = theApp.szFile;
+    int slash = filename.ReverseFind('/');
+    int backslash = filename.ReverseFind('\\');
+    if (slash == -1 || (backslash != -1 && backslash > slash))
+      slash = backslash;
+    if (slash != -1)
+      filename = filename.Right(filename.GetLength()-slash-1);
+    int dot = filename.Find('.');
+    if (dot != -1)
+      filename = filename.Left(dot);
+    filename += ".vbm";
+  }
+
   CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
   CString title = winResLoadString(IDS_SELECT_MOVIE_NAME);
   
   LPCTSTR exts[] = { ".vbm" };
 
-  FileDlg dlg(this, "", filter, 1, "vbm", exts, capdir, title, true);
+  FileDlg dlg(this, filename, filter, 1, "vbm", exts, capdir, title, true);
   
   if(dlg.DoModal() == IDCANCEL) {
     return;

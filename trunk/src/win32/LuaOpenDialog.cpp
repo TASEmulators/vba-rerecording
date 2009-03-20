@@ -29,6 +29,8 @@
 #include "MainWnd.h"
 #include "LuaOpenDialog.h"
 
+extern int emulating; // from VBA.cpp
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -87,12 +89,27 @@ void LuaOpenDialog::OnBnClickedBrowse()
 	if(capdir.IsEmpty())
 		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
 
+  CString filename = "";
+  if (emulating) {
+    filename = theApp.szFile;
+    int slash = filename.ReverseFind('/');
+    int backslash = filename.ReverseFind('\\');
+    if (slash == -1 || (backslash != -1 && backslash > slash))
+      slash = backslash;
+    if (slash != -1)
+      filename = filename.Right(filename.GetLength()-slash-1);
+    int dot = filename.Find('.');
+    if (dot != -1)
+      filename = filename.Left(dot);
+    filename += ".lua";
+  }
+
 	CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
 	CString title = winResLoadString(IDS_SELECT_LUA_NAME);
 
 	LPCTSTR exts[] = { ".lua" };
 
-	FileDlg dlg(this, "", filter, 1, "lua", exts, capdir, title, false, true);
+	FileDlg dlg(this, filename, filter, 1, "lua", exts, capdir, title, false, true);
 
 	if(dlg.DoModal() == IDCANCEL) {
 		return;

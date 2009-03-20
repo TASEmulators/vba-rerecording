@@ -1971,27 +1971,19 @@ BEGIN
         MENUITEM "Frame Search Prev",           ID_DEBUG_FRAMESEARCHPREV
         MENUITEM "Frame Search End",            ID_DEBUG_FRAMESEARCHLOAD
         MENUITEM SEPARATOR
-        POPUP "Play"
+        POPUP "Movie"
         BEGIN
-            MENUITEM "Start playing movie...",      ID_TOOLS_PLAY_STARTMOVIEPLAYING
-            MENUITEM "Stop playing movie",          ID_TOOLS_PLAY_STOPMOVIEPLAYING
+            MENUITEM "Play movie...",               ID_MOVIE_PLAY
+            MENUITEM "Watch from beginning",        ID_MOVIE_RESTART_PLAY
             MENUITEM SEPARATOR
-            MENUITEM "Read-only mode",              ID_TOOLS_PLAY_READONLY
+            MENUITEM "Record new movie...",         ID_MOVIE_RECORD
+            MENUITEM "Resume record from now",      ID_MOVIE_RESUME_RECORD
+            MENUITEM "Read-only mode",              ID_MOVIE_READONLY
             MENUITEM SEPARATOR
-            MENUITEM "Continue recording from here", ID_TOOLS_PLAY_CONTINUE
-            MENUITEM "Watch from beginning",        ID_TOOLS_PLAY_RESTART
+            MENUITEM "Stop movie",                  ID_MOVIE_STOP
         END
-        POPUP "Record"
-        BEGIN
-            MENUITEM "Start movie recording...",    ID_TOOLS_RECORD_STARTMOVIERECORDING
-            MENUITEM "Stop movie recording",        ID_TOOLS_RECORD_STOPMOVIERECORDING
-            MENUITEM SEPARATOR
-            MENUITEM "Start AVI recording...",      ID_TOOLS_RECORD_STARTAVIRECORDING
-            MENUITEM "Stop AVI recording",          ID_TOOLS_RECORD_STOPAVIRECORDING
-            MENUITEM SEPARATOR
-            MENUITEM "Start sound recording...",    ID_OPTIONS_SOUND_STARTRECORDING
-            MENUITEM "Stop sound recording",        ID_OPTIONS_SOUND_STOPRECORDING
-        END
+        MENUITEM "AVI recording...",            ID_TOOLS_AVIRECORDING
+        MENUITEM "Sound recording...",          ID_TOOLS_SOUNDRECORDING
         MENUITEM SEPARATOR
         MENUITEM "Customize All Commands...",   ID_TOOLS_CUSTOMIZE
         MENUITEM "Customize Common Hotkeys...", ID_TOOLS_CUSTOMIZE_COMMON
@@ -2083,7 +2075,7 @@ BEGIN
     "7",            ID_OPTIONS_VIDEO_LAYERS_WIN1, VIRTKEY, CONTROL, NOINVERT
     VK_OEM_PERIOD,  ID_TOOLS_FRAMECOUNTER,  VIRTKEY, NOINVERT
     VK_OEM_COMMA,   ID_TOOLS_INPUTDISPLAY,  VIRTKEY, NOINVERT
-    "8",            ID_TOOLS_PLAY_READONLY, VIRTKEY, SHIFT, NOINVERT
+    "8",            ID_MOVIE_READONLY,      VIRTKEY, SHIFT, NOINVERT
     "B",            ID_TOOLS_REWIND,        VIRTKEY, CONTROL, NOINVERT
     "1",            ID_SELECT_SLOT1,        VIRTKEY, NOINVERT
     "2",            ID_SELECT_SLOT2,        VIRTKEY, NOINVERT
@@ -2111,6 +2103,14 @@ END
 //
 // String Table
 //
+
+STRINGTABLE 
+BEGIN
+    IDS_STARTAVIRECORDING   "Start AVI recording..."
+    IDS_STOPAVIRECORDING    "Stop AVI recording"
+    IDS_STARTSOUNDRECORDING "Start sound recording..."
+    IDS_STOPSOUNDRECORDING  "Stop sound recording"
+END
 
 STRINGTABLE 
 BEGIN
