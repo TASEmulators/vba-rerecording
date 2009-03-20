@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string>
 
 #ifndef SUCCESS
 #  define SUCCESS 1
@@ -149,6 +150,7 @@ uint32 VBAMovieGetId ();
 uint32 VBAMovieGetLength ();
 uint32 VBAMovieGetFrameCounter ();
 uint32 VBAMovieGetState ();
+std::string VBAMovieGetAuthorInfo ();
 
 uint32 VBAGetCurrentInputOf (int controllerNum, bool normalOnly=true);
 void VBAMovieSignalReset ();

@@ -1,6 +1,6 @@
 
 #include "Port.h"
-
+#include <string>
 #include <string.h>
 #ifdef HAVE_STRINGS_H
 #	include <strings.h>
@@ -1307,6 +1307,14 @@ uint32 VBAMovieGetFrameCounter ()
 		return 0;
 
 	return Movie.currentFrame;
+}
+
+std::string VBAMovieGetAuthorInfo ()
+{
+	if(!VBAMovieActive())
+		return "";
+
+	return Movie.authorInfo;
 }
 
 void VBAMovieFreeze (uint8** buf, uint32* size)
