@@ -498,6 +498,30 @@ static int vba_message(lua_State *L) {
 
 }
 
+//int vba.getlagcount
+//
+//Returns the lagcounter variable
+static int vba_getlagcount(lua_State *L) {
+#ifdef WIN32
+	lua_pushinteger(L, theApp.globalLagFrameCount);
+#endif
+
+//TODO: add SDL ifdef
+	return 1;
+}
+
+//int vba.lagged
+//
+//Returns true if the current frame is a lag frame
+static int vba_lagged(lua_State *L) {
+#ifdef WIN32
+	lua_pushboolean(L, theApp.lagFrame);
+#endif
+
+//TODO: add SDL ifdef
+	return 1;
+}
+
 
 static int memory_readbyte(lua_State *L) {
 	u32 addr;
@@ -939,7 +963,7 @@ int movie_framecount(lua_State *L) {
 		lua_pushnil(L);
 		return 1;
 	}
-	
+	//adelikat: VBA has a frame counter even when there is no movie, so why must a movie be loaded?
 	lua_pushinteger(L, VBAMovieGetFrameCounter());
 	return 1;
 }
@@ -2258,7 +2282,8 @@ static const struct luaL_reg vbalib [] = {
 //	{"speedmode", vba_speedmode},	// TODO: NYI
 	{"frameadvance", vba_frameadvance},
 	{"pause", vba_pause},
-
+	{"getlagcount", vba_getlagcount},
+	{"lagged", vba_lagged},
 	{"message", vba_message},
 	{NULL,NULL}
 };
@@ -2303,7 +2328,7 @@ static const struct luaL_reg movielib[] = {
 	{"rerecordcounting", movie_rerecordcounting},
 	{"stop", movie_stop},
 	{"getauthor", movie_getauthor},
-	{"getfilename", movie_getfilename},
+	{"getname", movie_getfilename},
 //	{"record", movie_record},	// TODO: NYI
 //	{"playback", movie_playback},	// TODO: NYI
 
