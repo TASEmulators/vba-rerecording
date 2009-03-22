@@ -3302,6 +3302,8 @@ void gbEmulate(int ticksToStop)
 						systemFrame(60);
 						soundFrameSoundWritten = 0;
 
+						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+
 						if(gbFrameCount >= 60) 
 						{
 							u32 currentTime = systemGetClock();
@@ -3338,6 +3340,8 @@ void gbEmulate(int ticksToStop)
 						}
 
 						frameBoundary = true;
+
+						CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION); // FIXME: proper position?
 
 						int newmask = gbJoymask[0] & 255;
 

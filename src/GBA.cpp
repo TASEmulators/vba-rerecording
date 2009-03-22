@@ -3798,6 +3798,8 @@ void CPULoop(int _ticks)
               systemFrame(60);
               soundFrameSoundWritten = 0;
 
+              CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+
               if(count == 60) {
                 u32 time = systemGetClock();
                 if(time != lastTime) {
@@ -3817,6 +3819,7 @@ void CPULoop(int _ticks)
 
 			  frameBoundary = true;
 
+              CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION); // FIXME: proper position?
 
 			  P1 = 0x03FF ^ (joy & 0x3FF);
 
