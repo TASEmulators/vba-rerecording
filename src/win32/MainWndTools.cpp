@@ -216,7 +216,7 @@ void MainWnd::OnDebugFramesearch()
 	{
 		// starting a new search
 		theApp.frameSearching = true;
-		theApp.frameSearchStart = (Movie.state == MOVIE_STATE_NONE) ? theApp.globalFrameCount : Movie.currentFrame;
+		theApp.frameSearchStart = (Movie.state == MOVIE_STATE_NONE) ? theApp.emulator.frameCount : Movie.currentFrame;
 		theApp.frameSearchLength = 0;
 		theApp.frameSearchLoadValid = false;
 		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE*0], REWIND_SIZE); // 0 is start state, 1 is intermediate state (for speedup when going forward), 2 is end state
@@ -327,7 +327,7 @@ void MainWnd::OnUpdateToolsLagCounter(CCmdUI* pCmdUI)
 
 void MainWnd::OnToolsLagCounterReset() 
 {
-	theApp.globalLagFrameCount = 0;
+	theApp.emulator.lagCount = 0;
 }
 
 void MainWnd::OnToolsInputDisplay() 

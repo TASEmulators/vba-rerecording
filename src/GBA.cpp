@@ -706,12 +706,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 			return false;
 		}
 	}
-#if (defined(WIN32) && !defined(SDL))
-	utilGzWrite(gzFile, &theApp.globalFrameCount, sizeof(theApp.globalFrameCount));
-#else
-	int dummy = 0;
-	utilGzWrite(gzFile, &dummy, sizeof(dummy));
-#endif
+	utilGzWrite(gzFile, &GBASystem.frameCount, sizeof(GBASystem.frameCount));
   }
 
   // SAVE_GAME_VERSION_10
@@ -737,21 +732,12 @@ bool CPUWriteStateToStream(gzFile gzFile)
 	utilGzWrite(gzFile, &speedHack, sizeof(bool8)); // just in case it's ever used...
   }
 
-	// SAVE_GAME_VERSION_13
-	{
-#if (defined(WIN32) && !defined(SDL))
-	utilGzWrite(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
-	utilGzWrite(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
-	utilGzWrite(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
-#else
-	int32 dummy32 = 0;
-	bool8 dummy8 = false;
-	utilGzWrite(gzFile, &dummy32, sizeof(dummy32));
-	utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
-	utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
-#endif
-	}
-
+  // SAVE_GAME_VERSION_13
+  {
+    utilGzWrite(gzFile, &GBASystem.lagCount, sizeof(GBASystem.lagCount));
+    utilGzWrite(gzFile, &GBASystem.lagged, sizeof(GBASystem.lagged));
+    utilGzWrite(gzFile, &GBASystem.laggedLast, sizeof(GBASystem.laggedLast));
+  }
 
   return true;
 }
@@ -975,12 +961,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 			goto failedLoad;
 		}
 	}
-#if (defined(WIN32) && !defined(SDL))
-	utilGzRead(gzFile, &theApp.globalFrameCount, sizeof(theApp.globalFrameCount));
-#else
-	int dummy;
-	utilGzRead(gzFile, &dummy, sizeof(dummy));
-#endif
+	utilGzRead(gzFile, &GBASystem.frameCount, sizeof(GBASystem.frameCount));
   }
   if(version >= SAVE_GAME_VERSION_10)
   {
@@ -1006,17 +987,9 @@ bool CPUReadStateFromStream(gzFile gzFile)
   }
   if(version >= SAVE_GAME_VERSION_13)
   {
-#if (defined(WIN32) && !defined(SDL))
-	utilGzRead(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
-	utilGzRead(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
-	utilGzRead(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
-#else
-	int32 dummy32;
-	bool8 dummy8;
-	utilGzRead(gzFile, &dummy32, sizeof(dummy32));
-	utilGzRead(gzFile, &dummy8, sizeof(dummy8));
-	utilGzRead(gzFile, &dummy8, sizeof(dummy8));
-#endif
+    utilGzRead(gzFile, &GBASystem.lagCount, sizeof(GBASystem.lagCount));
+    utilGzRead(gzFile, &GBASystem.lagged, sizeof(GBASystem.lagged));
+    utilGzRead(gzFile, &GBASystem.laggedLast, sizeof(GBASystem.laggedLast));
   }
 
   if(backupSafe)
@@ -1455,10 +1428,10 @@ bool CPUIsELF(const char *file)
 
 void CPUCleanUp()
 {
-#if (defined(WIN32) && !defined(SDL))
-	theApp.globalFrameCount = 0;
-	theApp.globalLagFrameCount = 0;
-#endif
+	GBASystem.frameCount = 0;
+	GBASystem.lagCount = 0;
+	GBASystem.lagged = true;
+	GBASystem.laggedLast = true;
 
 #ifdef PROFILING
   if(profilingTicksReload) {
@@ -3269,10 +3242,10 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 
 void CPUReset()
 {
-#if (defined(WIN32) && !defined(SDL))
-	theApp.globalFrameCount = 0;
-	theApp.globalLagFrameCount = 0;
-#endif
+	GBASystem.frameCount = 0;
+	GBASystem.lagCount = 0;
+	GBASystem.lagged = true;
+	GBASystem.laggedLast = true;
 	VBAMovieSignalReset();
 
   if(gbaSaveType == 0) {
@@ -3798,7 +3771,13 @@ void CPULoop(int _ticks)
               systemFrame(60);
               soundFrameSoundWritten = 0;
 
+              GBASystem.frameCount++;
+              if (GBASystem.lagged) {
+                GBASystem.lagCount++;
+              }
+              GBASystem.laggedLast = GBASystem.lagged;
               CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+              GBASystem.lagged = true;
 
               if(count == 60) {
                 u32 time = systemGetClock();
@@ -4321,8 +4300,16 @@ struct EmulatedSystem GBASystem = {
   true,
   // emuCount
 #ifdef FINAL_VERSION
-  250000
+  250000,
 #else
-  5000
+  5000,
 #endif
+  // frameCount
+  0,
+  // lagCount
+  0,
+  // lagged
+  true,
+  // laggedLast
+  true,
 };
