@@ -49,6 +49,7 @@
 #endif
 
 #include "GBA.h"
+#include "gb/GB.h"
 #include "Globals.h"
 #include "System.h"
 #include "unzip.h"
@@ -1034,8 +1035,18 @@ void DisplayPressedKeys ()
 
 void VBAUpdateFrameCountDisplay ()
 {
+#if (!(defined(WIN32) && !defined(SDL)))
+	extern int cartridgeType; // from SDL.cpp
+#endif
 	char frameDisplayString [64];
 	char lagFrameDisplayString [64];
+	struct EmulatedSystem &emu = 
+#if (defined(WIN32) && !defined(SDL))
+	(theApp.cartridgeType == 0) // GBA
+#else
+	(cartridgeType == 0) // GBA
+#endif
+		? GBASystem : GBSystem;
 
 	switch(Movie.state)
 	{
@@ -1048,7 +1059,7 @@ void VBAUpdateFrameCountDisplay ()
 #			endif
 				{
 					sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
-					sprintf(lagFrameDisplayString, " | %d%s", theApp.globalLagFrameCount, theApp.lagFrameLast ? " *" : "");
+					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 					if (theApp.lagCounter)
 						strcat(frameDisplayString, lagFrameDisplayString);
 					systemScreenMessage(frameDisplayString,1,600);
@@ -1065,7 +1076,7 @@ void VBAUpdateFrameCountDisplay ()
 #		endif
 			{
 				sprintf(frameDisplayString, "%d", Movie.currentFrame);
-				sprintf(lagFrameDisplayString, " | %d%s", theApp.globalLagFrameCount, theApp.lagFrameLast ? " *" : "");
+				sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 				if (theApp.lagCounter)
 					strcat(frameDisplayString, lagFrameDisplayString);
 				systemScreenMessage(frameDisplayString,1,600);
@@ -1078,8 +1089,8 @@ void VBAUpdateFrameCountDisplay ()
 #		if (defined(WIN32) && !defined(SDL))
 			if(theApp.frameCounter)
 			{
-				sprintf(frameDisplayString, "%d", theApp.globalFrameCount);
-				sprintf(lagFrameDisplayString, " | %d%s", theApp.globalLagFrameCount, theApp.lagFrameLast ? " *" : "");
+				sprintf(frameDisplayString, "%d", emu.frameCount);
+				sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 				if (theApp.lagCounter)
 					strcat(frameDisplayString, lagFrameDisplayString);
 				strcat(frameDisplayString, " (no movie)");

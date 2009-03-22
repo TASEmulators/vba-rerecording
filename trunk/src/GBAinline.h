@@ -86,16 +86,12 @@ inline u32 CPUReadMemory(u32 address)
     if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
       if(ioReadable[(address & 0x3fc) + 2]) {
         if(address >= 0x400012d && address <= 0x4000131)
-        #if (defined(WIN32) && !defined(SDL))
-          systemNotifyJoypadRead();
-        #endif
+          GBASystem.lagged = false;
         value = READ32LE(((u32 *)&ioMem[address & 0x3fC]));
       }
       else {
         if(address >= 0x400012f && address <= 0x4000131)
-        #if (defined(WIN32) && !defined(SDL))
-          systemNotifyJoypadRead();
-        #endif
+          GBASystem.lagged = false;
         value = READ16LE(((u16 *)&ioMem[address & 0x3fc]));
       }
     } else goto unreadable;
@@ -211,9 +207,7 @@ inline u32 CPUReadHalfWord(u32 address)
   case 4:
     if((address < 0x4000400) && ioReadable[address & 0x3fe]) {
       if(address >= 0x400012f && address <= 0x4000131)
-      #if (defined(WIN32) && !defined(SDL))
-        systemNotifyJoypadRead();
-      #endif
+        GBASystem.lagged = false;
       value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
     }
     else goto unreadable;
@@ -312,9 +306,7 @@ inline u8 CPUReadByte(u32 address)
   case 4:
     if((address < 0x4000400) && ioReadable[address & 0x3ff]) {
       if(address == 0x4000130 || address == 0x4000131)
-      #if (defined(WIN32) && !defined(SDL))
-        systemNotifyJoypadRead();
-      #endif
+        GBASystem.lagged = false;
       return ioMem[address & 0x3ff];
     }
     else goto unreadable;

@@ -35,6 +35,7 @@
 #include "../agbprint.h"
 #include "../cheatSearch.h"
 #include "../GBA.h"
+#include "../gb/GB.h"
 #include "../Globals.h"
 #include "../RTC.h"
 #include "../Sound.h"
@@ -313,8 +314,6 @@ VBA::VBA()
   pauseWhenInactive = true;
   frameCounter = false;
   lagCounter = false;
-  lagFrame = false;
-  lagFrameLast = false;
   inputDisplay = false;
   movieReadOnly = true;
   speedupToggle = false;
@@ -364,9 +363,6 @@ VBA::VBA()
 ///  FPS = 60;
 
   updateCount = 0;
-
-  globalFrameCount = 0;
-  globalLagFrameCount = 0;
 
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
@@ -1192,11 +1188,6 @@ u32 systemReadJoypad(int which, bool sensor)
   return 0;
 }
 
-void systemNotifyJoypadRead()
-{
-  theApp.lagFrame = false;
-}
-
 extern bool vbaShuttingDown;
 extern long linearSoundFrameCount;
 long linearFrameCount = 0;
@@ -1428,23 +1419,23 @@ void systemFrame(int rate)
     }
   }
 
+	// stupid updates :(
+	struct EmulatedSystem &emu = (theApp.cartridgeType == 0) ? GBASystem : GBSystem;
+	theApp.emulator.frameCount = emu.frameCount;
+	theApp.emulator.lagCount = emu.lagCount;
+	theApp.emulator.lagged = emu.lagged;
+	theApp.emulator.laggedLast = emu.laggedLast;
+
 	if (VBALuaRunning())
 	{
 		VBALuaFrameBoundary();
 	}
 
-  if(quitAfterTime >= 0 && theApp.globalFrameCount == quitAfterTime)
+  if(quitAfterTime >= 0 && theApp.emulator.frameCount == quitAfterTime)
   {
 	  VBAMovieStop(true);
       AfxPostQuitMessage(0);
   }
-
-  theApp.globalFrameCount++;
-  if (theApp.lagFrame) {
-    theApp.globalLagFrameCount++;
-  }
-  theApp.lagFrameLast = theApp.lagFrame;
-  theApp.lagFrame = true;
 
   u32 time = systemGetClock();  
 
@@ -1489,7 +1480,7 @@ void systemFrame(int rate)
 	  //}
   }
 
-  if(theApp.globalFrameCount % 10 == 0)
+  if(theApp.emulator.frameCount % 10 == 0)
   {
 	if(theApp.rewindMemory) {
 		if(++theApp.rewindCounter >= (theApp.rewindTimer)) {
@@ -1623,7 +1614,7 @@ void VBA::saveRewindStateIfNecessary ()
 	if(theApp.frameSearching)
 	{
 		extern SMovie Movie;
-		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? theApp.globalFrameCount : Movie.currentFrame;
+		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? theApp.emulator.frameCount : Movie.currentFrame;
 		int endFrame = theApp.frameSearchStart + theApp.frameSearchLength;
 		theApp.frameSearchSkipping = (curFrame < endFrame);
 		theApp.frameSearchFirstStep = false;

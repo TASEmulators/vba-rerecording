@@ -1441,9 +1441,7 @@ u8 gbReadMemory(register u16 address)
 					}
 				}
 			}
-			#if (defined(WIN32) && !defined(SDL))
-				systemNotifyJoypadRead();
-			#endif
+			GBSystem.lagged = false;
 			return gbMemory[0xff00];
 			break;
 		case 0x01:
@@ -1638,10 +1636,10 @@ void gbSpeedSwitch()
 
 void gbReset()
 {
-#if (defined(WIN32) && !defined(SDL))
-	theApp.globalFrameCount = 0;
-	theApp.globalLagFrameCount = 0;
-#endif
+	GBSystem.frameCount = 0;
+	GBSystem.lagCount = 0;
+	GBSystem.lagged = true;
+	GBSystem.laggedLast = true;
 	VBAMovieSignalReset();
 
 	SP.W = 0xfffe;
@@ -2458,27 +2456,14 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 				return false;
 			}
 		}
-#if (defined(WIN32) && !defined(SDL))
-		utilGzWrite(gzFile, &theApp.globalFrameCount, sizeof(theApp.globalFrameCount));
-#else
-		int dummy = 0;
-		utilGzWrite(gzFile, &dummy, sizeof(dummy));
-#endif
+		utilGzWrite(gzFile, &GBSystem.frameCount, sizeof(GBSystem.frameCount));
 	}
 
 	// new to rerecording 19.4 wip (svn r22+):
 	{
-#if (defined(WIN32) && !defined(SDL))
-		utilGzWrite(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
-		utilGzWrite(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
-		utilGzWrite(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
-#else
-		int32 dummy32 = 0;
-		bool8 dummy8 = false;
-		utilGzWrite(gzFile, &dummy32, sizeof(dummy32));
-		utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
-		utilGzWrite(gzFile, &dummy8, sizeof(dummy8));
-#endif
+		utilGzWrite(gzFile, &GBSystem.lagCount, sizeof(GBSystem.lagCount));
+		utilGzWrite(gzFile, &GBSystem.lagged, sizeof(GBSystem.lagged));
+		utilGzWrite(gzFile, &GBSystem.laggedLast, sizeof(GBSystem.laggedLast));
 	}
 
 	return true;
@@ -2771,26 +2756,13 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 				goto failedLoadGB;
 			}
 		}
-#if (defined(WIN32) && !defined(SDL))
-		utilGzRead(gzFile, &theApp.globalFrameCount, sizeof(theApp.globalFrameCount));
-#else
-		int dummy;
-		utilGzRead(gzFile, &dummy, sizeof(dummy));
-#endif
+		utilGzRead(gzFile, &GBSystem.frameCount, sizeof(GBSystem.frameCount));
 	}
 
 	if(version >= GBSAVE_GAME_VERSION_13) { // new to rerecording 19.4 wip (svn r22+):
-#if (defined(WIN32) && !defined(SDL))
-		utilGzRead(gzFile, &theApp.globalLagFrameCount, sizeof(theApp.globalLagFrameCount));
-		utilGzRead(gzFile, &theApp.lagFrame, sizeof(theApp.lagFrame));
-		utilGzRead(gzFile, &theApp.lagFrameLast, sizeof(theApp.lagFrameLast));
-#else
-		int32 dummy32;
-		bool8 dummy8;
-		utilGzRead(gzFile, &dummy32, sizeof(dummy32));
-		utilGzRead(gzFile, &dummy8, sizeof(dummy8));
-		utilGzRead(gzFile, &dummy8, sizeof(dummy8));
-#endif
+		utilGzRead(gzFile, &GBSystem.lagCount, sizeof(GBSystem.lagCount));
+		utilGzRead(gzFile, &GBSystem.lagged, sizeof(GBSystem.lagged));
+		utilGzRead(gzFile, &GBSystem.laggedLast, sizeof(GBSystem.laggedLast));
 	}
 
 	if(backupSafe)
@@ -2861,10 +2833,10 @@ void gbCleanUp()
 {
 	frameBoundary = false;
 
-#if (defined(WIN32) && !defined(SDL))
-	theApp.globalFrameCount = 0;
-	theApp.globalLagFrameCount = 0;
-#endif
+	GBSystem.frameCount = 0;
+	GBSystem.lagCount = 0;
+	GBSystem.lagged = true;
+	GBSystem.laggedLast = true;
 
 	if(gbRam != NULL) 
 	{
@@ -3302,7 +3274,13 @@ void gbEmulate(int ticksToStop)
 						systemFrame(60);
 						soundFrameSoundWritten = 0;
 
+						GBSystem.frameCount++;
+						if (GBSystem.lagged) {
+							GBSystem.lagCount++;
+						}
+						GBSystem.laggedLast = GBSystem.lagged;
 						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+						GBSystem.lagged = true;
 
 						if(gbFrameCount >= 60) 
 						{
@@ -3870,4 +3848,12 @@ struct EmulatedSystem GBSystem =
 #else
 		1000,
 #endif
+		// frameCount
+		0,
+		// lagCount
+		0,
+		// lagged
+		true,
+		// laggedLast
+		true,
 };

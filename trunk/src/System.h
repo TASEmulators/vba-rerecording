@@ -60,6 +60,14 @@ struct EmulatedSystem {
   bool emuHasDebugger;
   // clock ticks to emulate
   int emuCount;
+  // number of frames emulated since last reset
+  int32 frameCount;
+  // number of frames which don't read joypad, counted since last reset
+  int32 lagCount;
+  // flag which tells us whether the joypad was read at the last (or current) frame
+  bool8 lagged;
+  // stores the value of "lagged" at previous frame
+  bool8 laggedLast;
 };
 
 extern void log(const char *,...);
@@ -72,9 +80,6 @@ extern void systemDrawScreen();
 extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick... the bool is for if motion sensor should be handled too
 extern u32 systemReadJoypad(int,bool);
-#if (defined(WIN32) && !defined(SDL))
-extern void systemNotifyJoypadRead();
-#endif
 extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
 extern void systemSetTitle(const char *);

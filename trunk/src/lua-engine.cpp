@@ -13,13 +13,22 @@
 #include <sys/wait.h>
 #endif
 
-#ifdef WIN32
-#include "win32/stdafx.h"
+#if (defined(WIN32) && !defined(SDL))
+#	include "win32/stdafx.h"
+#	include "win32/vba.h"
+#	include "win32/resource.h"
+#	include "win32/WinResUtil.h"
+#	include "win32/MainWnd.h"
+#	define theEmulator (theApp.emulator)
+#else
+	extern struct EmulatedSystem emulator;
+#	define theEmulator (emulator)
 #endif
 
 #include "Port.h"
 #include "System.h"
 #include "GBA.h"
+#include "gb/GB.h"
 #include "Globals.h"
 #include "Sound.h"
 #include "gb/gbGlobals.h"
@@ -134,7 +143,7 @@ static const char* luaCallIDStrings [] =
 static const int _makeSureWeHaveTheRightNumberOfStrings [sizeof(luaCallIDStrings)/sizeof(*luaCallIDStrings) == LUACALL_COUNT ? 1 : 0];
 
 static inline bool vbaRunsGBA () {
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 	return (theApp.cartridgeType == 0);
 #else
 	return (rom != NULL);
@@ -142,7 +151,7 @@ static inline bool vbaRunsGBA () {
 }
 
 static inline int vbaDefaultJoypad() {
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 	return theApp.joypadDefault;
 #else
 	return sdlDefaultJoypad;
@@ -391,7 +400,7 @@ void VBALuaWrite(uint32 addr) {
 	if (res) {
 		const char *err = lua_tostring(LUA, -1);
 		
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 		AfxGetApp()->m_pMainWnd->MessageBox(err, "Lua Engine", MB_OK);
 #else
 		fprintf(stderr, "Lua error: %s\n", err);
@@ -541,11 +550,8 @@ static int vba_message(lua_State *L) {
 //
 //Returns the lagcounter variable
 static int vba_getlagcount(lua_State *L) {
-#ifdef WIN32
-	lua_pushinteger(L, theApp.globalLagFrameCount);
-#endif
-
-//TODO: add SDL ifdef
+	struct EmulatedSystem &emu = vbaRunsGBA() ? GBASystem : GBSystem;
+	lua_pushinteger(L, emu.lagCount);
 	return 1;
 }
 
@@ -553,11 +559,8 @@ static int vba_getlagcount(lua_State *L) {
 //
 //Returns true if the current frame is a lag frame
 static int vba_lagged(lua_State *L) {
-#ifdef WIN32
-	lua_pushboolean(L, theApp.lagFrame);
-#endif
-
-//TODO: add SDL ifdef
+	struct EmulatedSystem &emu = vbaRunsGBA() ? GBASystem : GBSystem;
+	lua_pushboolean(L, emu.laggedLast);
 	return 1;
 }
 
@@ -791,7 +794,7 @@ static int joypad_read(lua_State *L) {
 	}
 	
 	uint32 buttons = 0;
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 	if(theApp.input/* || VBALuaUsingJoypad(which-1)*/)
 		buttons = theApp.input->readDevice(which-1,false,true);
 #else
@@ -998,13 +1001,9 @@ static int savestate_load(lua_State *L) {
 //
 //   Gets the frame counter for the movie, or the number of frames since last reset.
 int vba_framecount(lua_State *L) {
+	struct EmulatedSystem &emu = vbaRunsGBA() ? GBASystem : GBSystem;
 	if (!VBAMovieActive()) {
-#ifdef WIN32
-	lua_pushinteger(L, theApp.globalFrameCount);
-#else
-//TODO: add SDL ifdef
-	lua_pushinteger(L, 0);
-#endif
+		lua_pushinteger(L, emu.frameCount);
 	}
 	else {
 		lua_pushinteger(L, VBAMovieGetFrameCounter());
@@ -2009,7 +2008,7 @@ int gui_popup(lua_State *L) {
 	const char *message = luaL_checkstring(L, 1);
 	const char *type = luaL_optstring(L, 2, "ok");
 	
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 	int t;
 	if (strcmp(type, "ok") == 0)
 		t = MB_OK;
@@ -2284,7 +2283,7 @@ static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg) {
 
 		int kill = 0;
 
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 		// Uh oh
 		int ret = AfxGetApp()->m_pMainWnd->MessageBox("The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)", "Lua Script Gone Nuts?", MB_YESNO);
 		
@@ -2408,7 +2407,7 @@ static const struct luaL_reg guilib[] = {
 
 void HandleCallbackError(lua_State* L)
 {
-#ifdef __WIN32__
+#if (defined(WIN32) && !defined(SDL))
 		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(L,-1), "Lua run error", MB_OK | MB_ICONSTOP);
 #else
 		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(L,-1));
@@ -2489,7 +2488,7 @@ void VBALuaFrameBoundary() {
 		lua_setfield(LUA, LUA_REGISTRYINDEX, frameAdvanceThread);
 		
 		// Error?
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(thread,-1), "Lua run error", MB_OK | MB_ICONSTOP);
 #else
 		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(thread,-1));
@@ -2571,7 +2570,7 @@ int VBALoadLuaCode(const char *filename) {
 	int result = luaL_loadfile(LUA,filename);
 
 	if (result) {
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA,-1), "Lua load error", MB_OK | MB_ICONSTOP);
 #else
 		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA,-1));
@@ -2637,7 +2636,7 @@ void VBALuaStop() {
 
 	//sometimes iup uninitializes com
 	//MBG TODO - test whether this is really necessary. i dont think it is
-	#ifdef WIN32
+	#if (defined(WIN32) && !defined(SDL))
 	CoInitialize(0);
 	#endif
 
@@ -2711,7 +2710,7 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 		numTries = 1000;
 		int ret = lua_pcall(LUA, 0, 0, 0);
 		if (ret != 0) {
-#ifdef WIN32
+#if (defined(WIN32) && !defined(SDL))
 			AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua Error in GUI function", MB_OK);
 #else
 			fprintf(stderr, "Lua error in gui.register function: %s\n", lua_tostring(LUA, -1));
