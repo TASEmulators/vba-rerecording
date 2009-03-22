@@ -26,10 +26,10 @@
 #include "movie.h"
 
 extern "C" {
-
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+	#include "lua.h"
+	#include "lauxlib.h"
+	#include "lualib.h"
+	#include "lstate.h"
 }
 
 #include "vbalua.h"
@@ -125,6 +125,13 @@ static const char *button_mappings[] = {
 	"A", "B", "select", "start", "right", "left", "up", "down", "R", "L"
 };
 
+static const char* luaCallIDStrings [] =
+{
+	"CALL_BEFOREEMULATION",
+	"CALL_AFTEREMULATION",
+	"CALL_BEFOREEXIT",
+};
+static const int _makeSureWeHaveTheRightNumberOfStrings [sizeof(luaCallIDStrings)/sizeof(*luaCallIDStrings) == LUACALL_COUNT ? 1 : 0];
 
 static inline bool vbaRunsGBA () {
 #ifdef WIN32
@@ -485,6 +492,38 @@ static int vba_pause(lua_State *L) {
 	
 }
 
+static int vba_registerbefore(lua_State *L) {
+	if (!lua_isnil(L,1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L,1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEMULATION]);
+	lua_insert(L,1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEMULATION]);
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registerafter(lua_State *L) {
+	if (!lua_isnil(L,1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L,1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTEREMULATION]);
+	lua_insert(L,1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTEREMULATION]);
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registerexit(lua_State *L) {
+	if (!lua_isnil(L,1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L,1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEXIT]);
+	lua_insert(L,1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEXIT]);
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
 
 // vba.message(string msg)
 //
@@ -955,16 +994,21 @@ static int savestate_load(lua_State *L) {
 }
 
 
-// int movie.framecount()
+// int vba.framecount()
 //
-//   Gets the frame counter for the movie, or nil if no movie running.
-int movie_framecount(lua_State *L) {
+//   Gets the frame counter for the movie, or the number of frames since last reset.
+int vba_framecount(lua_State *L) {
 	if (!VBAMovieActive()) {
-		lua_pushnil(L);
-		return 1;
+#ifdef WIN32
+	lua_pushinteger(L, theApp.globalFrameCount);
+#else
+//TODO: add SDL ifdef
+	lua_pushinteger(L, 0);
+#endif
 	}
-	//adelikat: VBA has a frame counter even when there is no movie, so why must a movie be loaded?
-	lua_pushinteger(L, VBAMovieGetFrameCounter());
+	else {
+		lua_pushinteger(L, VBAMovieGetFrameCounter());
+	}
 	return 1;
 }
 
@@ -1808,7 +1852,7 @@ static void LuaDisplayString (const char *string, int linesFromTop, int pixelsFr
 	//extern int font_width, font_height;
 
 	int len = strlen(string);
-	int max_chars = (256-pixelsFromLeft) / (font_width);
+	int max_chars = (256-pixelsFromLeft) / (font_width-1);
 	int char_count = 0;
 	int x = pixelsFromLeft, y = linesFromTop;
 
@@ -1818,7 +1862,7 @@ static void LuaDisplayString (const char *string, int linesFromTop, int pixelsFr
 		if((unsigned char) string[i]<32) continue;
 
 		LuaDisplayChar(x, y, string[i], colour, borderColour);
-		x += font_width;
+		x += (font_width-1);
 	}
 }
 
@@ -2282,8 +2326,12 @@ static const struct luaL_reg vbalib [] = {
 //	{"speedmode", vba_speedmode},	// TODO: NYI
 	{"frameadvance", vba_frameadvance},
 	{"pause", vba_pause},
+	{"framecount", vba_framecount},
 	{"lagcount", vba_getlagcount},
 	{"lagged", vba_lagged},
+	{"registerbefore", vba_registerbefore},
+	{"registerafter", vba_registerafter},
+	{"registerexit", vba_registerexit},
 	{"message", vba_message},
 	{NULL,NULL}
 };
@@ -2323,7 +2371,7 @@ static const struct luaL_reg savestatelib[] = {
 
 static const struct luaL_reg movielib[] = {
 
-	{"framecount", movie_framecount},
+	{"framecount", vba_framecount},
 	{"mode", movie_mode},
 	{"rerecordcounting", movie_rerecordcounting},
 	{"stop", movie_stop},
@@ -2358,6 +2406,57 @@ static const struct luaL_reg guilib[] = {
 
 };
 
+void HandleCallbackError(lua_State* L)
+{
+#ifdef __WIN32__
+		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(L,-1), "Lua run error", MB_OK | MB_ICONSTOP);
+#else
+		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(L,-1));
+#endif
+//	if(L->errfunc || L->errorJmp)
+		luaL_error(L, "%s", lua_tostring(L,-1)); // FIXME: crashes vba? why?
+}
+
+void CallExitFunction() {
+	if (!LUA)
+		return;
+
+	lua_settop(LUA, 0);
+	lua_getfield(LUA, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEXIT]);
+
+	int errorcode = 0;
+	if (lua_isfunction(LUA, -1))
+	{
+		errorcode = lua_pcall(LUA, 0, 0, 0);
+	}
+
+	if (errorcode)
+		HandleCallbackError(LUA);
+}
+
+void CallRegisteredLuaFunctions(LuaCallID calltype)
+{
+	assert((unsigned int)calltype < (unsigned int)LUACALL_COUNT);
+	const char* idstring = luaCallIDStrings[calltype];
+
+	if (!LUA)
+		return;
+
+	lua_settop(LUA, 0);
+	lua_getfield(LUA, LUA_REGISTRYINDEX, idstring);
+
+	int errorcode = 0;
+	if (lua_isfunction(LUA, -1))
+	{
+		errorcode = lua_pcall(LUA, 0, 0, 0);
+		if (errorcode)
+			HandleCallbackError(LUA);
+	}
+	else
+	{
+		lua_pop(LUA, 1);
+	}
+}
 
 void VBALuaFrameBoundary() {
 
@@ -2461,13 +2560,6 @@ int VBALoadLuaCode(const char *filename) {
 		lua_setfield(LUA, LUA_GLOBALSINDEX, "BIT");
 
 		lua_newtable(LUA);
-		lua_setglobal(LUA,"emu");
-		lua_getglobal(LUA,"emu");
-		lua_newtable(LUA);
-		lua_setfield(LUA,-2,"OnClose");
-
-		
-		lua_newtable(LUA);
 		lua_setfield(LUA, LUA_REGISTRYINDEX, memoryWatchTable);
 	}
 
@@ -2541,14 +2633,7 @@ void VBALuaStop() {
 	if (!LUA) return;
 
 	//execute the user's shutdown callbacks
-	//onCloseCallback
-	lua_getglobal(LUA, "emu");
-	lua_getfield(LUA, -1, "OnClose");
-	lua_pushnil(LUA);
-	while (lua_next(LUA, -2) != 0)
-	{
-		lua_call(LUA,0,0);
-	}
+	CallExitFunction();
 
 	//sometimes iup uninitializes com
 	//MBG TODO - test whether this is really necessary. i dont think it is

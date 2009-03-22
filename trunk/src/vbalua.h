@@ -1,6 +1,15 @@
 #ifndef _VBALUA_H
 #define _VBALUA_H
 
+enum LuaCallID
+{
+	LUACALL_BEFOREEMULATION,
+	LUACALL_AFTEREMULATION,
+	LUACALL_BEFOREEXIT,
+
+	LUACALL_COUNT
+};
+void CallRegisteredLuaFunctions(LuaCallID calltype);
 
 // Just forward function declarations 
 
