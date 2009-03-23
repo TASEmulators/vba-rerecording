@@ -22,11 +22,16 @@
 #endif
 
 #include <memory.h>
+#include <assert.h>
 
 #include "GBA.h"
 #include "Globals.h"
 #include "Sound.h"
 #include "Util.h"
+
+#ifndef countof
+#define countof(a)  (sizeof(a) / sizeof(a[0]))
+#endif
 
 double USE_TICKS_AS = 380; // (16777216.0/44100.0); // FIXME: (16777216.0/280896.0)(fps) vs 60.0fps?
 
@@ -105,7 +110,7 @@ int32 soundVolume = 0;
 
 u8 soundBuffer[6][735];
 u16 soundFinalWave[1470];
-u16 soundFrameSound[735*15*2]; // for avi logging
+u16 soundFrameSound[735*30*2]; // for avi logging
 
 int32 soundBufferLen = 1470;
 int32 soundBufferTotalLen = 14700;
@@ -1034,11 +1039,13 @@ void soundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-    soundFrameSound[++soundFrameSoundWritten] = res;
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+      soundFrameSound[++soundFrameSoundWritten] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameSoundWritten++] = res;
+    if (soundFrameSoundWritten>=countof(soundFrameSound)) assert(false); else
+      soundFrameSound[soundFrameSoundWritten++] = res;
   }
 
   res = 0;
@@ -1137,7 +1144,8 @@ void soundMix()
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameSoundWritten++] = res;
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+      soundFrameSound[soundFrameSoundWritten++] = res;
   }
 }
 
@@ -1155,8 +1163,10 @@ void soundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
-      soundFrameSound[soundFrameSoundWritten++] = 0;
-      soundFrameSound[soundFrameSoundWritten++] = 0;
+      if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else {
+        soundFrameSound[soundFrameSoundWritten++] = 0;
+        soundFrameSound[soundFrameSoundWritten++] = 0;
+      }
     }
 #if (defined(WIN32) && !defined(SDL))
     if(theApp.frameAdvanceMuteNow) {

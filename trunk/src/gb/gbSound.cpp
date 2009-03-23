@@ -30,9 +30,13 @@
 #include "gbGlobals.h"
 #include "gbSound.h"
 
+#ifndef countof
+#define countof(a)  (sizeof(a) / sizeof(a[0]))
+#endif
+
 extern u8 soundBuffer[6][735];
 extern u16 soundFinalWave[1470];
-extern u16 soundFrameSound[735*15*2];
+extern u16 soundFrameSound[735*30*2];
 extern int32 soundVolume;
 
 double GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
@@ -658,13 +662,15 @@ void gbSoundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-    soundFrameSound[++soundFrameSoundWritten] = res;
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+      soundFrameSound[++soundFrameSoundWritten] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameSoundWritten++] = res;
+    if (soundFrameSoundWritten>=countof(soundFrameSound)) assert(false); else
+      soundFrameSound[soundFrameSoundWritten++] = res;
   }
-  
+
   res = 0;
 
   if(soundBalance & 1) {
@@ -734,7 +740,8 @@ void gbSoundMix()
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    soundFrameSound[soundFrameSoundWritten++] = res;
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+      soundFrameSound[soundFrameSoundWritten++] = res;
   }
 }
 
@@ -751,8 +758,10 @@ void gbSoundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
-      soundFrameSound[soundFrameSoundWritten++] = 0;
-      soundFrameSound[soundFrameSoundWritten++] = 0;
+      if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else {
+        soundFrameSound[soundFrameSoundWritten++] = 0;
+        soundFrameSound[soundFrameSoundWritten++] = 0;
+      }
     }
 #if (defined(WIN32) && !defined(SDL))
     if(theApp.frameAdvanceMuteNow) {
