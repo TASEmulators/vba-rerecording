@@ -51,7 +51,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="include/zlib,include/png,include/cxImage,directx;lua-5.1.4/src"
+				AdditionalIncludeDirectories="include/zlib,include/png,include/cxImage,directx;../src/lua/src"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_WIN32_IE=0x0501;_WIN32_WINNT=0x0400;ISOLATION_AWARE_ENABLED=0;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -85,7 +85,7 @@
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="lib/win32;lua-5.1.4/lib"
+				AdditionalLibraryDirectories="lib/win32"
 				IgnoreDefaultLibraryNames="libci.lib"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
@@ -153,7 +153,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include/zlib,include/png,include/cxImage,directx;lua-5.1.4/src"
+				AdditionalIncludeDirectories="include/zlib,include/png,include/cxImage,directx;../src/lua/src"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;DEV_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_WIN32_IE=0x0501;_WIN32_WINNT=0x0400;ISOLATION_AWARE_ENABLED=0;_USE_32BIT_TIME_T"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
@@ -188,7 +188,7 @@
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="lib/win32;lua-5.1.4/lib"
+				AdditionalLibraryDirectories="lib/win32"
 				IgnoreDefaultLibraryNames="libci.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
@@ -971,11 +971,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
