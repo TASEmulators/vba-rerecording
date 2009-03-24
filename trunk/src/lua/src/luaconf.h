@@ -558,7 +558,7 @@
     (defined(__i386) || defined (_M_IX86) || defined(__i386__))
 
 /* On a Microsoft compiler, use assembler */
-#if defined(_MSC_VER)
+#if 0//defined(_MSC_VER) // nitsuja: the "using assembly" method doesn't correctly handle integers between 0xFF000000 and and 0xFFFFFFFF, while the other branch does handle it correctly and it's not slower.
 
 #define lua_number2int(i,d)   __asm fld d   __asm fistp i
 #define lua_number2integer(i,n)		lua_number2int(i, n)

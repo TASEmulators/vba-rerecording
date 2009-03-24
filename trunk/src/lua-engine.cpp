@@ -2407,13 +2407,21 @@ static const struct luaL_reg guilib[] = {
 
 void HandleCallbackError(lua_State* L)
 {
+	if(L->errfunc || L->errorJmp)
+		luaL_error(L, "%s", lua_tostring(L,-1));
+	else {
+		lua_pushnil(LUA);
+		lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
+
+		// Error?
 #if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(L,-1), "Lua run error", MB_OK | MB_ICONSTOP);
+		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA,-1), "Lua run error", MB_OK | MB_ICONSTOP);
 #else
-		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(L,-1));
+		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(LUA,-1));
 #endif
-//	if(L->errfunc || L->errorJmp)
-		luaL_error(L, "%s", lua_tostring(L,-1)); // FIXME: crashes vba? why?
+
+		VBALuaStop();
+	}
 }
 
 void CallExitFunction() {
@@ -2486,7 +2494,9 @@ void VBALuaFrameBoundary() {
 		VBALuaOnStop();
 		lua_pushnil(LUA);
 		lua_setfield(LUA, LUA_REGISTRYINDEX, frameAdvanceThread);
-		
+		lua_pushnil(LUA);
+		lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
+
 		// Error?
 #if (defined(WIN32) && !defined(SDL))
 		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(thread,-1), "Lua run error", MB_OK | MB_ICONSTOP);
@@ -2710,15 +2720,19 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 		numTries = 1000;
 		int ret = lua_pcall(LUA, 0, 0, 0);
 		if (ret != 0) {
+			// This is grounds for trashing the function
+			// Note: This must be done before the messagebox pops up,
+			//       otherwise the messagebox will cause a paint event which causes a weird
+			//       infinite call sequence that makes Snes9x silently exit with error code 3,
+			//       if a Lua GUI function crashes. (nitsuja)
+			lua_pushnil(LUA);
+			lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
+
 #if (defined(WIN32) && !defined(SDL))
 			AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua Error in GUI function", MB_OK);
 #else
 			fprintf(stderr, "Lua error in gui.register function: %s\n", lua_tostring(LUA, -1));
 #endif
-			// This is grounds for trashing the function
-			lua_pushnil(LUA);
-			lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
-		
 		}
 	}
 
