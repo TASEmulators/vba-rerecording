@@ -81,7 +81,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib lua51.lib"
+				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -184,7 +184,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib lua51.lib"
+				AdditionalDependencies="libpngMT.lib zlibMT.lib CxImageMT.lib libjpegMT.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -798,6 +798,130 @@
 				</File>
 				<File
 					RelativePath="..\src\win32\ZoomControl.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Lua"
+				>
+				<File
+					RelativePath="..\src\lua\src\lapi.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lauxlib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lbaselib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lcode.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ldblib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ldebug.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ldo.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ldump.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lfunc.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lgc.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\linit.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\liolib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\llex.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lmathlib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lmem.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\loadlib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lobject.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lopcodes.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\loslib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lparser.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lstate.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lstring.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lstrlib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ltable.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ltablib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\ltm.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lundump.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lvm.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\lzio.c"
+					>
+				</File>
+				<File
+					RelativePath="..\src\lua\src\print.c"
 					>
 				</File>
 			</Filter>
