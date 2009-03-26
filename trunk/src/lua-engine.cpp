@@ -1218,6 +1218,19 @@ static void gui_drawline_internal(int x1, int y1, int x2, int y2, bool lastPixel
 // draw a rect on gui_data
 static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour) {
 
+	if (x1 > x2) 
+		swap<int>(x1, x2);
+	if (y1 > y2) 
+		swap<int>(y1, y2);
+	if (x1 < 0)
+		x1 = -1;
+	if (y1 < 0)
+		y1 = -1;
+	if (x2 >= 256)
+		x2 = 256;
+	if (y2 >= 239)
+		y2 = 239;
+
 	//gui_prepare();
 
 	gui_drawline_internal(x1, y1, x2, y1, true, colour);
@@ -1427,14 +1440,17 @@ static inline bool str2colour(uint32 *colour, lua_State *L, const char *str) {
 		*colour = color;
 		return true;
 	}
-	else for(int i = 0; i < sizeof(s_colorMapping)/sizeof(*s_colorMapping); i++) {
-		if(!stricmp(str,s_colorMapping[i].name))
-			*colour = s_colorMapping[i].value;
-		else if(!strnicmp(str, "rand", 4))
+	else {
+		if(!strnicmp(str, "rand", 4)) {
 			*colour = ((rand()*255/RAND_MAX) << 8) | ((rand()*255/RAND_MAX) << 16) | ((rand()*255/RAND_MAX) << 24) | 0xFF;
-		else
-			return false;
-		return true;
+			return true;
+		}
+		for(int i = 0; i < sizeof(s_colorMapping)/sizeof(*s_colorMapping); i++) {
+			if(!stricmp(str,s_colorMapping[i].name)) {
+				*colour = s_colorMapping[i].value;
+				return true;
+			}
+		}
 	}
 	return false;
 }
@@ -1828,13 +1844,25 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 	if(!Opac && !backOpac)
 		return;
 
-	while(*str && len)
+	while(*str && len && y < 239)
 	{
 		int c = *str++;
+		while (x > 256 && c != '\n') {
+			c = *str;
+			if (c == '\0')
+				break;
+			str++;
+		}
 		if(c == '\n')
 		{
 			x = origX;
 			y += 8;
+			continue;
+		}
+		else if(c == '\t') // just in case
+		{
+			const int tabSpace = 8;
+			x += (tabSpace-(((x-origX)/4)%tabSpace))*4;
 			continue;
 		}
 		if((unsigned int)(c-32) >= 96)
@@ -1852,9 +1880,10 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 
 				if(intensity && x2 >= 0 && y2 < 7)
 				{
-					int xdraw = max(0,min(256 - 1,x+x2));
-					int ydraw = max(0,min(239 - 1,y+y2));
-					gui_drawpixel_fast(xdraw, ydraw, color);
+					//int xdraw = max(0,min(256 - 1,x+x2));
+					//int ydraw = max(0,min(239 - 1,y+y2));
+					//gui_drawpixel_fast(xdraw, ydraw, color);
+					gui_drawpixel_internal(x+x2, y+y2, color);
 				}
 				else if(backOpac)
 				{
@@ -1870,9 +1899,10 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 					}
 					if(intensity)
 					{
-						int xdraw = max(0,min(256 - 1,x+x2));
-						int ydraw = max(0,min(239 - 1,y+y2));
-						gui_drawpixel_fast(xdraw, ydraw, backcolor);
+						//int xdraw = max(0,min(256 - 1,x+x2));
+						//int ydraw = max(0,min(239 - 1,y+y2));
+						//gui_drawpixel_fast(xdraw, ydraw, backcolor);
+						gui_drawpixel_internal(x+x2, y+y2, backcolor);
 					}
 				}
 			}
@@ -1900,6 +1930,8 @@ static void LuaDisplayString (const char *string, int y, int x, uint32 color, ui
 
 	gui_prepare();
 
+	PutTextInternal(string, strlen(string), x, y, color, outlineColor);
+/*
 	const char* ptr = string;
 	while(*ptr && y < 239)
 	{
@@ -1935,6 +1967,7 @@ static void LuaDisplayString (const char *string, int y, int x, uint32 color, ui
 		ptr += len + skip;
 		y += 8;
 	}
+*/
 }
 
 // gui.text(int x, int y, string msg)
