@@ -137,8 +137,10 @@ static void drawTextInternal(u8 *screen, int pitch, int x, int y,
               if(on)
                 *s = loCol +
                   ((*s & mask) >>1);
-			  else if(border)
-                *s = outCol;
+              else if(border) {
+                *s = outCol +
+                  ((*s & mask) >>1);
+              }
             } else {
               if(on)
                 *s = hiCol;
@@ -187,8 +189,12 @@ static void drawTextInternal(u8 *screen, int pitch, int x, int y,
                 *(s+1) = (((color >> 8) & 255)>>1)+(*(s+1)>>1);
                 *(s+2) = (((color >> 16) & 255)>>1)+(*(s+2)>>1);
               }
- 			  else if(border)
-                *s = outCol;
+              else if(border) {
+                u32 color = outCol;
+                *s = ((color & 255)>>1)+(*s>>1);
+                *(s+1) = (((color >> 8) & 255)>>1)+(*(s+1)>>1);
+                *(s+2) = (((color >> 16) & 255)>>1)+(*(s+2)>>1);
+              }
            } else {
               if(on) {
                 u32 color = hiCol;
@@ -196,8 +202,12 @@ static void drawTextInternal(u8 *screen, int pitch, int x, int y,
                 *(s+1) = (color >> 8) & 255;
                 *(s+2) = (color >> 16) & 255;
               }
- 			  else if(border)
-                *s = outCol;
+              else if(border) {
+                u32 color = outCol;
+                *s = (color & 255);
+                *(s+1) = (color >> 8) & 255;
+                *(s+2) = (color >> 16) & 255;
+              }
            }
           }
           scr += pitch;
@@ -238,9 +248,11 @@ static void drawTextInternal(u8 *screen, int pitch, int x, int y,
             if(trans) {
               if(on)
                 *s = loCol +
-				  ((*s & mask)>>1);
- 			  else if(border)
-                *s = outCol;
+                  ((*s & mask)>>1);
+              else if(border) {
+                *s = outCol +
+                  ((*s & mask)>>1);
+              }
            } else {
               if(on)
                 *s = hiCol;
