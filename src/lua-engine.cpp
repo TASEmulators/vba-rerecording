@@ -77,7 +77,7 @@ static bool8 frameAdvanceWaiting = false;
 static bool8 wasPaused = false;
 
 // Transparency strength. 255=opaque, 0=so transparent it's invisible
-static uint8 alphaDefault = 255;
+static uint8 transparencyModifier = 255;
 
 // Our joypads.
 static uint32 lua_joypads[4];
@@ -745,12 +745,12 @@ static int memory_writedword(lua_State *L) {
 }
 
 
-// memory.register(int address, function func)
+// memory.registerwrite(int address, function func)
 //
 //  Calls the given function when the indicated memory address is
 //  written to. No args are given to the function. The write has already
 //  occurred, so the new address is readable.
-static int memory_register(lua_State *L) {
+static int memory_registerwrite(lua_State *L) {
 
 	// Check args
 	unsigned int addr = luaL_checkinteger(L, 1);
@@ -780,11 +780,11 @@ static int memory_register(lua_State *L) {
 }
 
 
-// table joypad.read(int which = 0)
+// table joypad.get(int which = 0)
 //
 //  Reads the joypads as inputted by the user.
 //  This is really the only way to get input to the system.
-static int joypad_read(lua_State *L) {
+static int joypad_get(lua_State *L) {
 
 	// Reads the joypads as inputted by the user
 	int which = luaL_checkinteger(L,1);
@@ -1487,7 +1487,8 @@ static uint32 gui_getcolour(lua_State *L, int offset) {
 	uint8 a, r, g, b;
 
 	colour = gui_getcolour_wrapped(L, offset, false, 0);
-	a = colour & 0xff;
+	a = ((colour & 0xff) * transparencyModifier) / 255;
+	if (a > 255) a = 255;
 	b = (colour >> 8) & 0xff;
 	g = (colour >> 16) & 0xff;
 	r = (colour >> 24) & 0xff;
@@ -1502,7 +1503,8 @@ static uint32 gui_optcolour(lua_State *L, int offset, uint32 defaultColour) {
 	defaultColour = (defR << 24) | (defG << 16) | (defB << 8) | defA;
 
 	colour = gui_getcolour_wrapped(L, offset, true, defaultColour);
-	a = colour & 0xff;
+	a = ((colour & 0xff) * transparencyModifier) / 255;
+	if (a > 255) a = 255;
 	b = (colour >> 8) & 0xff;
 	g = (colour >> 16) & 0xff;
 	r = (colour >> 24) & 0xff;
@@ -1720,6 +1722,23 @@ static int gui_gdscreenshot(lua_State *L) {
 }
 
 
+// gui.opacity(number alphaValue)
+// sets the transparency of subsequent draw calls
+// 0.0 is completely transparent, 1.0 is completely opaque
+// non-integer values are supported and meaningful, as are values greater than 1.0
+// it is not necessary to use this function to get transparency (or the less-recommended gui.transparency() either),
+// because you can provide an alpha value in the color argument of each draw call.
+// however, it can be convenient to be able to globally modify the drawing transparency
+static int gui_setopacity(lua_State *L) {
+	double opacF = luaL_checknumber(L,1);
+	if (opacF < 0.0 || opacF > 1.0) {
+		luaL_error(L, "alphaValue out of range");
+	}
+
+	transparencyModifier = (uint8) (opacF * 255);
+	return 0;
+}
+
 // gui.transparency(int strength)
 //
 //  0 = solid, 
@@ -1729,7 +1748,7 @@ static int gui_transparency(lua_State *L) {
 		luaL_error(L, "transparency out of range");
 	}
 
-	alphaDefault = (uint8) ((4.0 - trans) / 4.0 * 255);
+	transparencyModifier = (uint8) ((4.0 - trans) / 4.0 * 255);
 	return 0;
 }
 
@@ -1895,8 +1914,11 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 							int shift = x3 << 3;
 							int mask = 0xFF << shift;
 							intensity |= (glyphLine & mask) >> shift;
+							if (intensity)
+								goto draw_outline; // speedup?
 						}
 					}
+draw_outline:
 					if(intensity)
 					{
 						//int xdraw = max(0,min(256 - 1,x+x2));
@@ -1987,8 +2009,8 @@ static int gui_text(lua_State *L) {
 //	if (x < 0 || x >= 256 || y < 0 || y >= (239 - font_height))
 //		luaL_error(L,"bad coordinates");
 
-	colour = gui_optcolour(L,4,(alphaDefault << 24)|0xffffff);
-	borderColour = gui_optcolour(L,5,LUA_BUILD_PIXEL(alphaDefault, 0, 0, 0));
+	colour = gui_optcolour(L,4,(transparencyModifier << 24)|0xffffff);
+	borderColour = gui_optcolour(L,5,LUA_BUILD_PIXEL(transparencyModifier, 0, 0, 0));
 
 	gui_prepare();
 
@@ -2369,6 +2391,18 @@ static int base_XOR(lua_State *L) {
 	return 1;
 }
 
+static int base_SHIFT(lua_State *L) {
+	int num = luaL_checkinteger(L,1);
+	int shift = luaL_checkinteger(L,2);
+	if(shift < 0)
+		num <<= -shift;
+	else
+		num >>= shift;
+	lua_settop(L,0);
+	lua_pushinteger(L,num);
+	return 1;
+}
+
 static int base_BIT(lua_State *L) {
 	int bit = luaL_checkinteger(L,1);
 	if (bit < 0 || bit > 30)
@@ -2451,16 +2485,33 @@ static const struct luaL_reg memorylib [] = {
 	{"writebyte", memory_writebyte},
 	{"writeword", memory_writeword},
 	{"writedword", memory_writedword},
+	// alternate naming scheme for word and double-word and unsigned
+	{"readbyteunsigned", memory_readbyte},
+	{"readwordunsigned", memory_readword},
+	{"readdwordunsigned", memory_readdword},
+	{"readshort", memory_readword},
+	{"readshortunsigned", memory_readword},
+	{"readshortsigned", memory_readwordsigned},
+	{"readlong", memory_readdword},
+	{"readlongunsigned", memory_readdword},
+	{"readlongsigned", memory_readdwordsigned},
+	{"writeshort", memory_writeword},
+	{"writelong", memory_writedword},
 
-	{"register", memory_register},
+	// memory hooks
+	{"registerwrite", memory_registerwrite},
+	// alternate names
+	{"register", memory_registerwrite},
 
 	{NULL,NULL}
 };
 
 static const struct luaL_reg joypadlib[] = {
-	{"read", joypad_read},
+	{"get", joypad_get},
 	{"set", joypad_set},
-
+	// alternative names
+	{"read", joypad_get},
+	{"write", joypad_set},
 	{NULL,NULL}
 };
 
@@ -2474,39 +2525,50 @@ static const struct luaL_reg savestatelib[] = {
 
 static const struct luaL_reg movielib[] = {
 
-	{"framecount", vba_framecount},
+	{"framecount", vba_framecount}, // for those familiar with other emulators that have movie.framecount() instead of emulatorname.framecount()
 	{"mode", movie_mode},
 	{"rerecordcounting", movie_rerecordcounting},
 	{"stop", movie_stop},
+
+	{"author", movie_getauthor},
+	{"name", movie_getfilename},
+
+	// alternative names
+	{"close", movie_stop},
 	{"getauthor", movie_getauthor},
 	{"getname", movie_getfilename},
-//	{"record", movie_record},	// TODO: NYI
-//	{"playback", movie_playback},	// TODO: NYI
-
 	{NULL,NULL}
 
 };
 
 
 static const struct luaL_reg guilib[] = {
-	
-	{"drawpixel", gui_drawpixel},
-	{"drawline", gui_drawline},
-	{"drawbox", gui_drawbox},
-	{"drawcircle", gui_drawcircle},
+	{"register", gui_register},
+	{"text", gui_text},
+	{"box", gui_drawbox},
+	{"line", gui_drawline},
+	{"pixel", gui_drawpixel},
+	{"circle", gui_drawcircle},
+	{"opacity", gui_setopacity},
 	{"fillbox", gui_fillbox},
 	{"fillcircle", gui_fillcircle},
-	{"text", gui_text},
-
+	{"transparency", gui_transparency},
+	{"popup", gui_popup},
 	{"gdscreenshot", gui_gdscreenshot},
 	{"gdoverlay", gui_gdoverlay},
-	{"transparency", gui_transparency},
-
-	{"register", gui_register},
-	
-	{"popup", gui_popup},
+	// alternative names
+	{"drawtext", gui_text},
+	{"drawbox", gui_drawbox},
+	{"drawline", gui_drawline},
+	{"drawpixel", gui_drawpixel},
+	{"setpixel", gui_drawpixel},
+	{"writepixel", gui_drawpixel},
+	{"drawcircle", gui_drawcircle},
+	{"rect", gui_drawbox},
+	{"drawrect", gui_drawbox},
+	{"drawimage", gui_gdoverlay},
+	{"image", gui_gdoverlay},
 	{NULL,NULL}
-
 };
 
 void HandleCallbackError(lua_State* L)
@@ -2662,15 +2724,13 @@ int VBALoadLuaCode(const char *filename) {
 		luaL_register(LUA, "savestate", savestatelib);
 		luaL_register(LUA, "movie", movielib);
 		luaL_register(LUA, "gui", guilib);
+		lua_settop(LUA, 0); // clean the stack, because each call to luaL_register leaves a table on top
 
-		lua_pushcfunction(LUA, base_AND);
-		lua_setfield(LUA, LUA_GLOBALSINDEX, "AND");
-		lua_pushcfunction(LUA, base_OR);
-		lua_setfield(LUA, LUA_GLOBALSINDEX, "OR");
-		lua_pushcfunction(LUA, base_XOR);
-		lua_setfield(LUA, LUA_GLOBALSINDEX, "XOR");
-		lua_pushcfunction(LUA, base_BIT);
-		lua_setfield(LUA, LUA_GLOBALSINDEX, "BIT");
+		lua_register(LUA, "AND", base_AND);
+		lua_register(LUA, "OR", base_OR);
+		lua_register(LUA, "XOR", base_XOR);
+		lua_register(LUA, "SHIFT", base_SHIFT);
+		lua_register(LUA, "BIT", base_BIT);
 
 		lua_newtable(LUA);
 		lua_setfield(LUA, LUA_REGISTRYINDEX, memoryWatchTable);
@@ -2706,7 +2766,7 @@ int VBALoadLuaCode(const char *filename) {
 	// Initialize settings
 	luaRunning = true;
 	skipRerecords = false;
-	alphaDefault = 255; // opaque
+	transparencyModifier = 255; // opaque
 	lua_joypads_used = 0; // not used
 
 	wasPaused = vbaIsPaused();
