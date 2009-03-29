@@ -2009,8 +2009,8 @@ static int gui_text(lua_State *L) {
 //	if (x < 0 || x >= 256 || y < 0 || y >= (239 - font_height))
 //		luaL_error(L,"bad coordinates");
 
-	colour = gui_optcolour(L,4,(transparencyModifier << 24)|0xffffff);
-	borderColour = gui_optcolour(L,5,LUA_BUILD_PIXEL(transparencyModifier, 0, 0, 0));
+	colour = gui_optcolour(L,4,LUA_BUILD_PIXEL(255, 255, 255, 255));
+	borderColour = gui_optcolour(L,5,LUA_BUILD_PIXEL(255, 0, 0, 0));
 
 	gui_prepare();
 
