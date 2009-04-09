@@ -63,8 +63,10 @@ extern void soundEvent(u32, u16);
 extern void soundTimerOverflow(int);
 extern void soundSetQuality(int);
 
-extern double SOUND_CLOCK_TICKS;
-extern double soundTicks;
+typedef int32 soundtick_t;
+
+extern soundtick_t SOUND_CLOCK_TICKS;
+extern soundtick_t soundTicks;
 extern int32 soundPaused;
 extern bool8 soundOffFlag;
 extern int32 soundQuality;

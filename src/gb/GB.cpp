@@ -39,7 +39,7 @@
 #include "../movie.h"
 #include "../vbalua.h"
 
-extern double GB_USE_TICKS_AS;
+extern soundtick_t GB_USE_TICKS_AS;
 
 extern int32 soundFrameSoundWritten;
 
@@ -3678,7 +3678,7 @@ void gbEmulate(int ticksToStop)
 		*/
 		
 		soundTicks -= clockTicks;
-		while(soundTicks < 1) 
+		while(soundTicks < 0) // must be < 1 when soundtick_t is real data type
 		{
 			soundTicks += SOUND_CLOCK_TICKS;
 

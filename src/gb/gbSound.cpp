@@ -39,7 +39,7 @@ extern u16 soundFinalWave[1470];
 extern u16 soundFrameSound[735*30*2];
 extern int32 soundVolume;
 
-double GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
+soundtick_t GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
@@ -56,8 +56,8 @@ extern int32 soundBufferTotalLen;
 extern int32 soundQuality;
 extern int32 soundPaused;
 extern int32 soundPlay;
-extern double soundTicks;
-extern double SOUND_CLOCK_TICKS;
+extern soundtick_t soundTicks;
+extern soundtick_t SOUND_CLOCK_TICKS;
 extern u32 soundNextPosition;
 
 extern int32 soundLevel1;
@@ -662,12 +662,12 @@ void gbSoundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) /*assert(false)*/; else
       soundFrameSound[++soundFrameSoundWritten] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    if (soundFrameSoundWritten>=countof(soundFrameSound)) assert(false); else
+    if (soundFrameSoundWritten>=countof(soundFrameSound)) /*assert(false)*/; else
       soundFrameSound[soundFrameSoundWritten++] = res;
   }
 
@@ -740,7 +740,7 @@ void gbSoundMix()
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) /*assert(false)*/; else
       soundFrameSound[soundFrameSoundWritten++] = res;
   }
 }
@@ -758,7 +758,7 @@ void gbSoundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
-      if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else {
+      if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) /*assert(false)*/; else {
         soundFrameSound[soundFrameSoundWritten++] = 0;
         soundFrameSound[soundFrameSoundWritten++] = 0;
       }
@@ -985,9 +985,9 @@ variable_desc gbSoundSaveStruct[] = {
 };
 
 //variable_desc gbSoundSaveStructV2[] = {
-//  { &soundTicks, sizeof(double) },
-//  { &SOUND_CLOCK_TICKS, sizeof(double) },
-//  { &GB_USE_TICKS_AS, sizeof(double) },
+//  { &soundTicks, sizeof(soundtick_t) },
+//  { &SOUND_CLOCK_TICKS, sizeof(soundtick_t) },
+//  { &GB_USE_TICKS_AS, sizeof(soundtick_t) },
 //  { NULL, 0 }
 //};
 
@@ -1030,7 +1030,7 @@ void gbSoundReadGame(int version,gzFile gzFile)
   //  utilReadData(gzFile, gbSoundSaveStructV2);
   //}
   //else {
-    soundTicks = (double) soundTicks_int32;
-    SOUND_CLOCK_TICKS = (double) SOUND_CLOCK_TICKS_int32;
+    soundTicks = (soundtick_t) soundTicks_int32;
+    SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
   //}
 }
