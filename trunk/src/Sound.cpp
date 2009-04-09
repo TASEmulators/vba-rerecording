@@ -33,7 +33,7 @@
 #define countof(a)  (sizeof(a) / sizeof(a[0]))
 #endif
 
-double USE_TICKS_AS = 380; // (16777216.0/44100.0); // FIXME: (16777216.0/280896.0)(fps) vs 60.0fps?
+soundtick_t USE_TICKS_AS = 380; // (16777216.0/44100.0); // FIXME: (16777216.0/280896.0)(fps) vs 60.0fps?
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
@@ -117,8 +117,8 @@ int32 soundBufferTotalLen = 14700;
 int32 soundQuality = 2;
 int32 soundPaused = 1;
 int32 soundPlay = 0;
-double soundTicks = soundQuality * USE_TICKS_AS;
-double SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
+soundtick_t soundTicks = soundQuality * USE_TICKS_AS;
+soundtick_t SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
 u32 soundNextPosition = 0;
 
 int32 soundLevel1 = 0;
@@ -300,9 +300,9 @@ variable_desc soundSaveStructV2[] = {
 };
 
 //variable_desc soundSaveStructV3[] = {
-//  { &soundTicks, sizeof(double) },
-//  { &SOUND_CLOCK_TICKS, sizeof(double) },
-//  { &USE_TICKS_AS, sizeof(double) },
+//  { &soundTicks, sizeof(soundtick_t) },
+//  { &SOUND_CLOCK_TICKS, sizeof(soundtick_t) },
+//  { &USE_TICKS_AS, sizeof(soundtick_t) },
 //  { NULL, 0 }
 //};
 
@@ -1039,12 +1039,12 @@ void soundMix()
 
   if(soundReverse && !noSpecialEffects) {
     soundFinalWave[++soundBufferIndex] = res;
-    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) /*assert(false)*/; else
       soundFrameSound[++soundFrameSoundWritten] = res;
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    if (soundFrameSoundWritten>=countof(soundFrameSound)) assert(false); else
+    if (soundFrameSoundWritten>=countof(soundFrameSound)) /*assert(false)*/; else
       soundFrameSound[soundFrameSoundWritten++] = res;
   }
 
@@ -1144,7 +1144,7 @@ void soundMix()
   }
   else {
     soundFinalWave[soundBufferIndex++] = res;
-    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else
+    if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) /*assert(false)*/; else
       soundFrameSound[soundFrameSoundWritten++] = res;
   }
 }
@@ -1163,7 +1163,7 @@ void soundTick()
     } else {
       soundFinalWave[soundBufferIndex++] = 0;
       soundFinalWave[soundBufferIndex++] = 0;
-      if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) assert(false); else {
+      if ((soundFrameSoundWritten+1)>=countof(soundFrameSound)) /*assert(false)*/; else {
         soundFrameSound[soundFrameSoundWritten++] = 0;
         soundFrameSound[soundFrameSoundWritten++] = 0;
       }
@@ -1402,7 +1402,7 @@ void soundReadGame(gzFile gzFile, int version)
   //  utilReadData(gzFile, soundSaveStructV3);
   //}
   //else {
-    soundTicks = (double) soundTicks_int32;
-    SOUND_CLOCK_TICKS = (double) SOUND_CLOCK_TICKS_int32;
+    soundTicks = (soundtick_t) soundTicks_int32;
+    SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
   //}
 }
