@@ -55,6 +55,8 @@ enum {
 #define MAX_REWIND_SLOTS 256
 #define SCREEN_MESSAGE_SLOTS 8
 
+#define MAINWND_TITLE_STRING "VBA rerecording v21"
+
 class CSkin;
 class AVIWrite;
 class WavWriter;

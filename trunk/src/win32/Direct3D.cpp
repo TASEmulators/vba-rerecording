@@ -245,7 +245,7 @@ bool Direct3DDisplay::initialize()
 
   pWnd->CreateEx(styleEx,
                  theApp.wndClass,
-                 "VBA rerecording",
+                 MAINWND_TITLE_STRING,
                  style,
                  x,y,winSizeX,winSizeY,
                  NULL,

@@ -866,7 +866,7 @@ BOOL MainWnd::OnOptionsEmulatorShowSpeed(UINT nID)
   switch(nID) {
   case ID_OPTIONS_EMULATOR_SHOWSPEED_NONE:
     theApp.showSpeed = 0;
-    systemSetTitle("VBA rerecording");
+    systemSetTitle(MAINWND_TITLE_STRING);
     break;
   case ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE:
     theApp.showSpeed = 1;

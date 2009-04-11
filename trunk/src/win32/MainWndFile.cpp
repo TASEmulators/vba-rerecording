@@ -191,7 +191,7 @@ void MainWnd::OnFileClose()
   }
   emulating = 0;
   RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
-  systemSetTitle("VBA rerecording");
+  systemSetTitle(MAINWND_TITLE_STRING);
 }
 
 void MainWnd::OnUpdateFileClose(CCmdUI* pCmdUI) 
