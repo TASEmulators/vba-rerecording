@@ -294,6 +294,9 @@ static void change_state(MovieState new_state)
 		extern int32 gbDMASpeedVersion;
 		gbDMASpeedVersion = 1;
 
+		extern int32 gbEchoRAMFixOn;
+		gbEchoRAMFixOn = 1;
+
 		if(Movie.inputBuffer)
 		{
 			free(Movie.inputBuffer);
@@ -543,6 +546,12 @@ static void SetPlayEmuSettings ()
 			gbDMASpeedVersion = 1;
 		else
 			gbDMASpeedVersion = 0; // old CGB HDMA5 timing was used
+
+		extern int32 gbEchoRAMFixOn;
+		if((Movie.header.optionFlags & MOVIE_SETTING_GBECHORAMFIX) != 0)
+			gbEchoRAMFixOn = 1;
+		else
+			gbEchoRAMFixOn = 0;
 
 		prevBorder = gbBorderOn;
 		prevWinBorder = theApp.winGbBorderOn;
@@ -798,6 +807,10 @@ static void SetRecordEmuSettings ()
 		Movie.header.optionFlags |= MOVIE_SETTING_GBCFF55FIX;
 		extern int32 gbDMASpeedVersion;
 		gbDMASpeedVersion = 1;
+
+		Movie.header.optionFlags |= MOVIE_SETTING_GBECHORAMFIX;
+		extern int32 gbEchoRAMFixOn;
+		gbEchoRAMFixOn = 1;
 
 #	if (defined(WIN32) && !defined(SDL))
 		((MainWnd *)theApp.m_pMainWnd)->OnOptionsSound44khz(); // some GB/GBC games depend on the sound rate, so just use the highest one

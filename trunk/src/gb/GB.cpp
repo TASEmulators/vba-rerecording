@@ -176,6 +176,8 @@ bool8 gbCapture = false;
 bool8 gbCapturePrevious = false;
 int32 gbJoymask[4] = { 0, 0, 0, 0 };
 
+int32 gbEchoRAMFixOn = 1;
+
 static bool8 pauseAfterFrameAdvance = false;
 
 int32 gbRomSizes[] = { 0x00008000, // 32K
