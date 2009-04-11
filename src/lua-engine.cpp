@@ -19,6 +19,7 @@
 #	include "win32/resource.h"
 #	include "win32/WinResUtil.h"
 #	include "win32/MainWnd.h"
+#	include "win32/Reg.h"
 #	define theEmulator (theApp.emulator)
 #else
 	extern struct EmulatedSystem emulator;
@@ -907,17 +908,46 @@ static int savestate_create(lua_State *L) {
 	}
 	
 
-	char *filename;
+	char stateName[2048];
 
 	if (which > 0) {
 		// Find an appropriate filename. This is OS specific, unfortunately.
-		// So I turned the filename selection code into my bitch. :)
-		// Numbers are 0 through 9 though.
+#if (defined(WIN32) && !defined(SDL))
+		CString buffer;
 
-		//filename = S9xGetFreezeFilename(which - 1);
+		int index = theApp.filename.ReverseFind('\\');
+
+		if(index != -1)
+			buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
+		else
+			buffer = theApp.filename;
+
+		CString saveDir = regQueryStringValue("saveDir", NULL);
+
+		if(saveDir.IsEmpty())
+			saveDir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
+
+		if(((MainWnd *)theApp.m_pMainWnd)->isDriveRoot(saveDir))
+			sprintf(stateName, "%s%s%d.sgm", saveDir, buffer, which);
+		else
+			sprintf(stateName, "%s\\%s%d.sgm", saveDir, buffer, which);
+#else
+		extern char saveDir[2048];
+		extern char filename[2048];
+		extern char *sdlGetFilename(char *name);
+
+		if(saveDir[0])
+			sprintf(stateName, "%s/%s%d.sgm", saveDir, sdlGetFilename(filename),
+			        which);
+		else
+			sprintf(stateName,"%s%d.sgm", filename, which);
+#endif
 	}
 	else {
-		filename = tempnam(NULL, "snlua");
+		char *stateNameTemp = tempnam(NULL, "snlua");
+		strcpy(stateName, stateNameTemp);
+		if (stateNameTemp)
+			free(stateNameTemp);
 	}
 	
 	// Our "object". We don't care about the type, we just need the memory and GC services.
@@ -929,10 +959,9 @@ static int savestate_create(lua_State *L) {
 	// First, we must protect it
 	lua_pushstring(L, "vba Savestate");
 	lua_setfield(L, -2, "__metatable");
-	
-	
+
 	// Now we need to save the file itself.
-	lua_pushstring(L, filename);
+	lua_pushstring(L, stateName);
 	lua_setfield(L, -2, "filename");
 	
 	// If it's an anonymous savestate, we must delete the file from disk should it be gargage collected
@@ -945,9 +974,6 @@ static int savestate_create(lua_State *L) {
 	// Set the metatable
 	lua_setmetatable(L, -2);
 
-	// The filename was allocated using malloc. Do something about that.
-	free(filename);
-	
 	// Awesome. Return the object
 	return 1;
 	
@@ -966,8 +992,7 @@ static int savestate_save(lua_State *L) {
 	// Save states are very expensive. They take time.
 	numTries--;
 
-	//bool8 retvalue = S9xFreezeGame(filename);
-	bool8 retvalue = false;
+	bool8 retvalue = theEmulator.emuWriteState ? theEmulator.emuWriteState(filename) : FALSE;
 	if (!retvalue) {
 		// Uh oh
 		luaL_error(L, "savestate failed");
@@ -986,8 +1011,7 @@ static int savestate_load(lua_State *L) {
 	numTries--;
 
 //	printf("loading %s\n", filename);
-	//bool8 retvalue = S9xUnfreezeGame(filename);
-	bool8 retvalue = false;
+	bool8 retvalue = theEmulator.emuReadState ? theEmulator.emuReadState(filename) : FALSE;
 	if (!retvalue) {
 		// Uh oh
 		luaL_error(L, "loadstate failed");
@@ -2516,9 +2540,9 @@ static const struct luaL_reg joypadlib[] = {
 };
 
 static const struct luaL_reg savestatelib[] = {
-//	{"create", savestate_create},	// TODO: NYI
-//	{"save", savestate_save},	// TODO: NYI
-//	{"load", savestate_load},	// TODO: NYI
+	{"create", savestate_create},
+	{"save", savestate_save},
+	{"load", savestate_load},
 
 	{NULL,NULL}
 };
