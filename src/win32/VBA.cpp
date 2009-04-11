@@ -1388,9 +1388,9 @@ void systemShowSpeed(int speed)
   if(theApp.videoOption <= VIDEO_4X && theApp.showSpeed) {
     CString buffer;
     if(theApp.showSpeed == 1)
-      buffer.Format("VBA rerecording-%3d%%", systemSpeed);
+      buffer.Format(MAINWND_TITLE_STRING "-%3d%%", systemSpeed);
     else
-      buffer.Format("VBA rerecording-%3d%%(%d, %d fps)", systemSpeed,
+      buffer.Format(MAINWND_TITLE_STRING "-%3d%%(%d, %d fps)", systemSpeed,
                     systemFrameSkip,
                     theApp.showRenderedFrames);
 
