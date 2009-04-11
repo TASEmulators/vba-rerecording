@@ -30,10 +30,10 @@ extern u8 *gbMemory;
 extern u16 *gbLineBuffer;
 
 extern u8 *gbMemoryMap[16];
-extern int32 gbEchoRAMFixOn;
 
 inline u8 gbReadMemoryQuick(u16 address)
 {
+	extern int32 gbEchoRAMFixOn;
 	if (gbEchoRAMFixOn)
 	{
 		if (address>=0xe000 && address<0xfe00)
@@ -46,6 +46,7 @@ inline u8 gbReadMemoryQuick(u16 address)
 
 inline void gbWriteMemoryQuick(u16 address, u8 value)
 {
+	extern int32 gbEchoRAMFixOn;
 	if (gbEchoRAMFixOn)
 	{
 		if (address>=0xe000 && address<0xfe00)
