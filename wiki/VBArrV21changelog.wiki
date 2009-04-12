@@ -3,7 +3,6 @@
 ===Previous version resolution:===
 
   * V21 fixes the emulation bug that v20 did (Echo RAM bug fix).  However, it does so without breaking compatibility with 19.x movies!
-
   * V20 bugs/regressions are not present in v21 (basically v21 takes 19.3 and re-fixed it in a much better way)
 
 ----
