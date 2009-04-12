@@ -13,8 +13,6 @@ Fixed 'xn' window size would not reset when clicking on the option that is alrea
 Fix for not recording the  lag Reduction flag in GBA movies caused by using Ctrl-key-combos right before opening the recording
 Fix crash caused by trying to open a file that doesn't exist and ends with .gba
 Fix crash caused by the sequence "Load movie, use cheat search, close movie, open new movie, open cheat search"
-Fixed a fatal bug that VBA doesn't clear out SRAM before movie playback.
-Fixed RTC snapshot length problem
 
 Feature enhancements:
 Drag and Drop for movie files
