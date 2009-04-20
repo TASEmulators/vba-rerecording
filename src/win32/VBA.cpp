@@ -208,6 +208,7 @@ void DrawLuaGui()
 	copyOffsetY++; // don't know why it's needed
 
 	VBALuaGui(&pix[copyOffsetY*pitch+copyOffsetX*(systemColorDepth/8)], copyX, screenX, screenY);
+	VBALuaClearGui();
 }
 
 /////////////////////////////////////////////////////////////////////////////
