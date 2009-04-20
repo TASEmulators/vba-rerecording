@@ -78,7 +78,7 @@ static bool8 frameAdvanceWaiting = false;
 static bool8 wasPaused = false;
 
 // Transparency strength. 255=opaque, 0=so transparent it's invisible
-static uint8 transparencyModifier = 255;
+static int transparencyModifier = 255;
 
 // Our joypads.
 static uint32 lua_joypads[4];
@@ -1099,13 +1099,15 @@ static int movie_stop(lua_State *L) {
 
 
 
+#define LUA_SCREEN_WIDTH    256
+#define LUA_SCREEN_HEIGHT   239
 
 // Common code by the gui library: make sure the screen array is ready
 static void gui_prepare() {
 	if (!gui_data)
-		gui_data = (uint8*) malloc(256*239*4);
+		gui_data = (uint8*) malloc(LUA_SCREEN_WIDTH*LUA_SCREEN_HEIGHT*4);
 	if (!gui_used)
-		memset(gui_data, 0, 256*239*4);
+		memset(gui_data, 0, LUA_SCREEN_WIDTH*LUA_SCREEN_HEIGHT*4);
 	gui_used = true;
 }
 
@@ -1148,13 +1150,13 @@ static inline void blend32(uint32 *dstPixel, uint32 colour)
 }
 // check if a pixel is in the lua canvas
 static inline bool gui_check_boundary(int x, int y) {
-	return !(x < 0 || x >= 256 || y < 0 || y >= 239);
+	return !(x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= LUA_SCREEN_HEIGHT);
 }
 
 // write a pixel to gui_data (do not check boundaries for speedup)
 static inline void gui_drawpixel_fast(int x, int y, uint32 colour) {
 	//gui_prepare();
-	blend32((uint32*) &gui_data[(y*256+x)*4], colour);
+	blend32((uint32*) &gui_data[(y*LUA_SCREEN_WIDTH+x)*4], colour);
 }
 
 // write a pixel to gui_data (check boundaries)
@@ -1250,10 +1252,10 @@ static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour) 
 		x1 = -1;
 	if (y1 < 0)
 		y1 = -1;
-	if (x2 >= 256)
-		x2 = 256;
-	if (y2 >= 239)
-		y2 = 239;
+	if (x2 >= LUA_SCREEN_WIDTH)
+		x2 = LUA_SCREEN_WIDTH;
+	if (y2 >= LUA_SCREEN_HEIGHT)
+		y2 = LUA_SCREEN_HEIGHT;
 
 	//gui_prepare();
 
@@ -1340,10 +1342,10 @@ static void gui_fillbox_internal(int x1, int y1, int x2, int y2, uint32 colour) 
 		x1 = 0;
 	if (y1 < 0)
 		y1 = 0;
-	if (x2 >= 256)
-		x2 = 256 - 1;
-	if (y2 >= 239)
-		y2 = 239 - 1;
+	if (x2 >= LUA_SCREEN_WIDTH)
+		x2 = LUA_SCREEN_WIDTH - 1;
+	if (y2 >= LUA_SCREEN_HEIGHT)
+		y2 = LUA_SCREEN_HEIGHT - 1;
 
 	//gui_prepare();
 
@@ -1508,7 +1510,7 @@ static inline uint32 gui_getcolour_wrapped(lua_State *L, int offset, bool hasDef
 }
 static uint32 gui_getcolour(lua_State *L, int offset) {
 	uint32 colour;
-	uint8 a, r, g, b;
+	int a, r, g, b;
 
 	colour = gui_getcolour_wrapped(L, offset, false, 0);
 	a = ((colour & 0xff) * transparencyModifier) / 255;
@@ -1520,7 +1522,7 @@ static uint32 gui_getcolour(lua_State *L, int offset) {
 }
 static uint32 gui_optcolour(lua_State *L, int offset, uint32 defaultColour) {
 	uint32 colour;
-	uint8 a, r, g, b;
+	int a, r, g, b;
 	uint8 defA, defB, defG, defR;
 
 	LUA_DECOMPOSE_PIXEL(defaultColour, defA, defR, defG, defB);
@@ -1669,14 +1671,12 @@ static int gui_fillcircle(lua_State *L) {
 //  This allows us to make screen shots available without gd installed locally.
 //  Users can also just grab pixels via substring selection.
 //
-//  I think...  Does lua support grabbing byte values from a string?
+//  I think...  Does lua support grabbing byte values from a string? // yes, string.byte(str,offset)
 //  Well, either way, just install gd and do what you like with it.
 //  It really is easier that way.
+// example: gd.createFromGdStr(gui.gdscreenshot()):png("outputimage.png")
 static int gui_gdscreenshot(lua_State *L) {
 
-	// Eat the stack
-	lua_settop(L,0);
-	
 	int xofs = 0, yofs = 0, ppl = 240, width = 240, height = 160;
 	if (!vbaRunsGBA()) {
 		if(gbBorderOn)
@@ -1686,38 +1686,32 @@ static int gui_gdscreenshot(lua_State *L) {
 		width = 160, height = 144;
 	}
 	yofs++;
-	
+
 	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
 	int pitch = ppl*(systemColorDepth/8)+(systemColorDepth==24?0:4);
 	uint8 *screen = &pix[yofs*pitch+xofs*(systemColorDepth/8)];
-	
-	// Stack allocation
-	unsigned char *buffer = (unsigned char*)alloca(2+2+2+1+4 + (width*height*4));
-	unsigned char *pixels = (buffer + 2+2+2+1+4);
 
-	// Truecolour image
-	buffer[0] = 255;
-	buffer[1] = 254;
-	
-	// Width
-	buffer[2] = width >> 8;
-	buffer[3] = width & 0xFF;
-	
-	// height
-	buffer[4] = height >> 8;
-	buffer[5] = height & 0xFF;
-	
-	// Make it truecolour... AGAIN?
-	buffer[6] = 1;
-	
-	// No transparency
-	buffer[7] = buffer[8] = buffer[9] = buffer[10] = 255;
-	
+	int size = 11 + width * height * 4;
+	char* str = new char[size+1];
+	str[size] = 0;
+	unsigned char* ptr = (unsigned char*)str;
+
+	// GD format header for truecolor image (11 bytes)
+	*ptr++ = (65534 >> 8) & 0xFF;
+	*ptr++ = (65534     ) & 0xFF;
+	*ptr++ = (width >> 8) & 0xFF;
+	*ptr++ = (width     ) & 0xFF;
+	*ptr++ = (height >> 8) & 0xFF;
+	*ptr++ = (height     ) & 0xFF;
+	*ptr++ = 1;
+	*ptr++ = 255;
+	*ptr++ = 255;
+	*ptr++ = 255;
+	*ptr++ = 255;
+
 	GetColorFunc getColor;
 	getColorIOFunc(systemColorDepth, &getColor, NULL);
-	
-	// Now we can actually save the image data
-	int i = 0;
+
 	int x,y;
 	for (y=0; y < height; y++) {
 		uint8 *s = &screen[y*pitch];
@@ -1725,23 +1719,15 @@ static int gui_gdscreenshot(lua_State *L) {
 			uint8 r, g, b;
 			getColor(s, &r, &g, &b);
 
-			// Alpha
-			pixels[i++] = 0;
-			// R
-			pixels[i++] = r;
-			// G
-			pixels[i++] = g;
-			// B
-			pixels[i++] = b;
+			*ptr++ = 0;
+			*ptr++ = r;
+			*ptr++ = g;
+			*ptr++ = b;
 		}
 	}
-	
-	// Ugh, ugh, ugh. Don't call this more than once a frame, for god's sake!
-	
-	lua_pushlstring(L, (char*)buffer, 2+2+2+1+4 + (width*height*4));
-	
-	// Buffers allocated with alloca are freed by the function's exit, since they're on the stack.
-	
+
+	lua_pushlstring(L, str, size);
+	delete[] str;
 	return 1;
 }
 
@@ -1755,11 +1741,9 @@ static int gui_gdscreenshot(lua_State *L) {
 // however, it can be convenient to be able to globally modify the drawing transparency
 static int gui_setopacity(lua_State *L) {
 	double opacF = luaL_checknumber(L,1);
-	if (opacF < 0.0 || opacF > 1.0) {
-		luaL_error(L, "alphaValue out of range");
-	}
-
-	transparencyModifier = (uint8) (opacF * 255);
+	transparencyModifier = (int) (opacF * 255);
+	if (transparencyModifier < 0)
+		transparencyModifier = 0;
 	return 0;
 }
 
@@ -1768,11 +1752,9 @@ static int gui_setopacity(lua_State *L) {
 //  0 = solid, 
 static int gui_transparency(lua_State *L) {
 	double trans = luaL_checknumber(L,1);
-	if (trans < 0.0 || trans > 4.0) {
-		luaL_error(L, "transparency out of range");
-	}
-
-	transparencyModifier = (uint8) ((4.0 - trans) / 4.0 * 255);
+	transparencyModifier = (int) ((4.0 - trans) / 4.0 * 255);
+	if (transparencyModifier < 0)
+		transparencyModifier = 0;
 	return 0;
 }
 
@@ -1887,10 +1869,10 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 	if(!Opac && !backOpac)
 		return;
 
-	while(*str && len && y < 239)
+	while(*str && len && y < LUA_SCREEN_HEIGHT)
 	{
 		int c = *str++;
-		while (x > 256 && c != '\n') {
+		while (x > LUA_SCREEN_WIDTH && c != '\n') {
 			c = *str;
 			if (c == '\0')
 				break;
@@ -1923,8 +1905,8 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 
 				if(intensity && x2 >= 0 && y2 < 7)
 				{
-					//int xdraw = max(0,min(256 - 1,x+x2));
-					//int ydraw = max(0,min(239 - 1,y+y2));
+					//int xdraw = max(0,min(LUA_SCREEN_WIDTH - 1,x+x2));
+					//int ydraw = max(0,min(LUA_SCREEN_HEIGHT - 1,y+y2));
 					//gui_drawpixel_fast(xdraw, ydraw, color);
 					gui_drawpixel_internal(x+x2, y+y2, color);
 				}
@@ -1945,8 +1927,8 @@ static void PutTextInternal (const char *str, int len, short x, short y, int col
 draw_outline:
 					if(intensity)
 					{
-						//int xdraw = max(0,min(256 - 1,x+x2));
-						//int ydraw = max(0,min(239 - 1,y+y2));
+						//int xdraw = max(0,min(LUA_SCREEN_WIDTH - 1,x+x2));
+						//int ydraw = max(0,min(LUA_SCREEN_HEIGHT - 1,y+y2));
 						//gui_drawpixel_fast(xdraw, ydraw, backcolor);
 						gui_drawpixel_internal(x+x2, y+y2, backcolor);
 					}
@@ -1979,7 +1961,7 @@ static void LuaDisplayString (const char *string, int y, int x, uint32 color, ui
 	PutTextInternal(string, strlen(string), x, y, color, outlineColor);
 /*
 	const char* ptr = string;
-	while(*ptr && y < 239)
+	while(*ptr && y < LUA_SCREEN_HEIGHT)
 	{
 		int len = strlinelen(ptr);
 		int skip = 0;
@@ -2003,8 +1985,8 @@ static void LuaDisplayString (const char *string, int y, int x, uint32 color, ui
 
 		int xl = 0;
 		int yl = 0;
-		int xh = (256 - 1 - 1) - 4*len;
-		int yh = 239 - 1;
+		int xh = (LUA_SCREEN_WIDTH - 1 - 1) - 4*len;
+		int yh = LUA_SCREEN_HEIGHT - 1;
 		int x2 = min(max(x,xl),xh);
 		int y2 = min(max(y,yl),yh);
 
@@ -2030,7 +2012,7 @@ static int gui_text(lua_State *L) {
 	y = luaL_checkinteger(L,2);
 	msg = luaL_checkstring(L,3);
 
-//	if (x < 0 || x >= 256 || y < 0 || y >= (239 - font_height))
+//	if (x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= (LUA_SCREEN_HEIGHT - font_height))
 //		luaL_error(L,"bad coordinates");
 
 	colour = gui_optcolour(L,4,LUA_BUILD_PIXEL(255, 255, 255, 255));
@@ -2043,78 +2025,141 @@ static int gui_text(lua_State *L) {
 	return 0;
 }
 
-
-// gui.gdoverlay(string str)
+// gui.gdoverlay([int dx=0, int dy=0,] string str [, sx=0, sy=0, sw, sh] [, float alphamul=1.0])
 //
 //  Overlays the given image on the screen.
+// example: gui.gdoverlay(gd.createFromPng("myimage.png"):gdStr())
 static int gui_gdoverlay(lua_State *L) {
 
-	int baseX, baseY;
-	int width, height;
-	size_t size;
+	int argCount = lua_gettop(L);
 
-	baseX = luaL_checkinteger(L,1);
-	baseY = luaL_checkinteger(L,2);
-	const uint8 *data = (const uint8*) luaL_checklstring(L, 3, &size);
-	
-	if (size < 11)
+	int xStartDst = 0;
+	int yStartDst = 0;
+	int xStartSrc = 0;
+	int yStartSrc = 0;
+
+	int index = 1;
+	if(lua_type(L,index) == LUA_TNUMBER)
+	{
+		xStartDst = lua_tointeger(L,index++);
+		if(lua_type(L,index) == LUA_TNUMBER)
+			yStartDst = lua_tointeger(L,index++);
+	}
+
+	luaL_checktype(L,index,LUA_TSTRING);
+	const unsigned char* ptr = (const unsigned char*)lua_tostring(L,index++);
+
+	if (ptr[0] != 255 || (ptr[1] != 254 && ptr[1] != 255))
 		luaL_error(L, "bad image data");
-	
-	if (data[0] != 255 || data[1] != 254)
-		luaL_error(L, "bad image data or not truecolour");
-		
-	width = data[2] << 8 | data[3];
-	height = data[4] << 8 | data[5];
-	
-	if (!data[6])
-		luaL_error(L, "bad image data or not truecolour");
-	
-	// Don't care about transparent colour
-	if ((int)size < (11+ width*height*4))
+	bool trueColor = (ptr[1] == 254);
+	ptr += 2;
+	int imgwidth = *ptr++ << 8;
+	imgwidth |= *ptr++;
+	int width = imgwidth;
+	int imgheight = *ptr++ << 8;
+	imgheight |= *ptr++;
+	int height = imgheight;
+	if ((!trueColor && *ptr) || (trueColor && !*ptr))
 		luaL_error(L, "bad image data");
-	
-	const uint8* pixels = data + 11;
-	
-	// Run image
+	ptr++;
+	int pitch = imgwidth * (trueColor?4:1);
+
+	if ((argCount - index + 1) >= 4) {
+		xStartSrc = luaL_checkinteger(L,index++);
+		yStartSrc = luaL_checkinteger(L,index++);
+		width = luaL_checkinteger(L,index++);
+		height = luaL_checkinteger(L,index++);
+	}
+
+	int alphaMul = transparencyModifier;
+	if(lua_isnumber(L, index))
+		alphaMul = (int)(alphaMul * lua_tonumber(L, index++));
+	if(alphaMul <= 0)
+		return 0;
+
+	// since there aren't that many possible opacity levels,
+	// do the opacity modification calculations beforehand instead of per pixel
+	int opacMap[256];
+	for(int i = 0; i < 128; i++)
+	{
+		int opac = 255 - ((i << 1) | (i & 1)); // gdAlphaMax = 127, not 255
+		opac = (opac * alphaMul) / 255;
+		if(opac < 0) opac = 0;
+		if(opac > 255) opac = 255;
+		opacMap[i] = opac;
+	}
+	for(int i = 128; i < 256; i++)
+		opacMap[i] = 0; // what should we do for them, actually?
+
+	int colorsTotal = 0;
+	if (!trueColor) {
+		colorsTotal = *ptr++ << 8;
+		colorsTotal |= *ptr++;
+	}
+	int transparent = *ptr++ << 24;
+	transparent |= *ptr++ << 16;
+	transparent |= *ptr++ << 8;
+	transparent |= *ptr++;
+	struct { uint8 r, g, b, a; } pal[256];
+	if (!trueColor) for (int i = 0; i < 256; i++) {
+		pal[i].r = *ptr++;
+		pal[i].g = *ptr++;
+		pal[i].b = *ptr++;
+		pal[i].a = opacMap[*ptr++];
+	}
+
+	// some of clippings
+	if (xStartSrc < 0) {
+		width += xStartSrc;
+		xStartDst -= xStartSrc;
+		xStartSrc = 0;
+	}
+	if (yStartSrc < 0) {
+		height += yStartSrc;
+		yStartDst -= yStartSrc;
+		yStartSrc = 0;
+	}
+	if (xStartSrc+width >= imgwidth)
+		width = imgwidth - xStartSrc;
+	if (yStartSrc+height >= imgheight)
+		height = imgheight - yStartSrc;
+	if (xStartDst < 0) {
+		width += xStartDst;
+		if (width <= 0)
+			return 0;
+		xStartSrc = -xStartDst;
+		xStartDst = 0;
+	}
+	if (yStartDst < 0) {
+		height += yStartDst;
+		if (height <= 0)
+			return 0;
+		yStartSrc = -yStartDst;
+		yStartDst = 0;
+	}
+	if (xStartDst+width >= LUA_SCREEN_WIDTH)
+		width = LUA_SCREEN_WIDTH - xStartDst;
+	if (yStartDst+height >= LUA_SCREEN_HEIGHT)
+		height = LUA_SCREEN_HEIGHT - yStartDst;
+	if (width <= 0 || height <= 0)
+		return 0; // out of screen or invalid size
 
 	gui_prepare();
 
-	// These coordinates are relative to the image itself.
-	int x,y;
-	
-	// These coordinates are relative to the screen
-	int sx, sy;
-	
-	if (baseY < 0) {
-		// Above the top of the screen
-		sy = 0;
-		y = -baseY;
-	} else {
-		// It starts on the screen itself
-		sy = baseY;
-		y = 0; 
-	}	
-	
-	for (; y < height && sy < 239; y++, sy++) {
-	
-		if (baseX < 0) {
-			x = -baseX;
-			sx = 0;
-		} else {
-			x = 0;
-			sx = baseX;
+	const uint8* pix = (const uint8*)(&ptr[yStartSrc*pitch + (xStartSrc*(trueColor?4:1))]);
+	int bytesToNextLine = pitch - (width * (trueColor?4:1));
+	if (trueColor)
+		for (int y = yStartDst; y < height+yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine) {
+			for (int x = xStartDst; x < width+xStartDst && x < LUA_SCREEN_WIDTH; x++, pix += 4) {
+				gui_drawpixel_fast(x, y, LUA_BUILD_PIXEL(opacMap[pix[0]], pix[1], pix[2], pix[3]));
+			}
 		}
-
-		for (; x < width && sx < 256; x++, sx++) {
-			if (pixels[4 * (y*height+x)] == 127)
-				continue;
-
-			gui_drawpixel_fast(sx, sy, LUA_BUILD_PIXEL(255,
-				pixels[4 * (y*width+x)+1], pixels[4 * (y*width+x)+2],
-				pixels[4 * (y*width+x)+3]));
+	else
+		for (int y = yStartDst; y < height+yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine) {
+			for (int x = xStartDst; x < width+xStartDst && x < LUA_SCREEN_WIDTH; x++, pix++) {
+				gui_drawpixel_fast(x, y, LUA_BUILD_PIXEL(pal[*pix].a, pal[*pix].r, pal[*pix].g, pal[*pix].b));
+			}
 		}
-	
-	}
 
 	return 0;
 }
@@ -2936,10 +2981,10 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
 	int pitch = ppl*(systemColorDepth/8)+(systemColorDepth==24?0:4);
 
-	if (width > 256)
-		width = 256;
-	if (height > 239)
-		height = 239;
+	if (width > LUA_SCREEN_WIDTH)
+		width = LUA_SCREEN_WIDTH;
+	if (height > LUA_SCREEN_HEIGHT)
+		height = LUA_SCREEN_HEIGHT;
 
 	GetColorFunc getColor;
 	SetColorFunc setColor;
@@ -2948,10 +2993,10 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 	for (y = 0; y < height; y++) {
 		uint8 *scr = &screen[y*pitch];
 		for (x = 0; x < width; x++, scr += systemColorDepth/8) {
-			const uint8 gui_alpha = gui_data[(y*256+x)*4+3];
-			const uint8 gui_red   = gui_data[(y*256+x)*4+2];
-			const uint8 gui_green = gui_data[(y*256+x)*4+1];
-			const uint8 gui_blue  = gui_data[(y*256+x)*4];
+			const uint8 gui_alpha = gui_data[(y*LUA_SCREEN_WIDTH+x)*4+3];
+			const uint8 gui_red   = gui_data[(y*LUA_SCREEN_WIDTH+x)*4+2];
+			const uint8 gui_green = gui_data[(y*LUA_SCREEN_WIDTH+x)*4+1];
+			const uint8 gui_blue  = gui_data[(y*LUA_SCREEN_WIDTH+x)*4];
 			uint8 scr_red, scr_green, scr_blue;
 			int red, green, blue;
 
