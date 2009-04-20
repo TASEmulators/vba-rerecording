@@ -3353,7 +3353,6 @@ void gbEmulate(int ticksToStop)
 							gbFrameSkipCount = 0;
 						} else  {
 							gbFrameSkipCount++;
-							VBALuaClearGui();
 						}
 
 						if(pauseAfterFrameAdvance)

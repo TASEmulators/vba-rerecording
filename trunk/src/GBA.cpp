@@ -3852,7 +3852,6 @@ void CPULoop(int _ticks)
                 frameCount = 0;
               } else  {
                 frameCount++;
-                VBALuaClearGui();
               }
 ///              if(systemPauseOnFrame())
 ///                ticks = 0;
