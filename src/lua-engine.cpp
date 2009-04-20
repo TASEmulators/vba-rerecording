@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <math.h>
 #include <direct.h>
+#include <time.h>
 
 #ifdef __linux
 #include <sys/types.h>
@@ -43,6 +44,8 @@ extern "C" {
 }
 
 #include "vbalua.h"
+
+#include "SFMT/SFMT.c"
 
 #ifndef countof
 #define countof(a)  (sizeof(a) / sizeof(a[0]))
@@ -1468,7 +1471,7 @@ static inline bool str2colour(uint32 *colour, lua_State *L, const char *str) {
 	}
 	else {
 		if(!strnicmp(str, "rand", 4)) {
-			*colour = ((rand()*255/RAND_MAX) << 8) | ((rand()*255/RAND_MAX) << 16) | ((rand()*255/RAND_MAX) << 24) | 0xFF;
+			*colour = gen_rand32() | 0xFF; //((rand()*255/RAND_MAX) << 8) | ((rand()*255/RAND_MAX) << 16) | ((rand()*255/RAND_MAX) << 24) | 0xFF;
 			return true;
 		}
 		for(int i = 0; i < sizeof(s_colorMapping)/sizeof(*s_colorMapping); i++) {
@@ -2401,6 +2404,41 @@ use_console:
 
 }
 
+// same as math.random, but uses SFMT instead of C rand()
+// FIXME: this function doesn't care multi-instance,
+//        original math.random either though (Lua 5.1)
+static int sfmt_random (lua_State *L) {
+	lua_Number r = (lua_Number) genrand_real2();
+	switch (lua_gettop(L)) {  // check number of arguments
+		case 0: {  // no arguments
+			lua_pushnumber(L, r);  // Number between 0 and 1
+			break;
+		}
+		case 1: {  // only upper limit
+			int u = luaL_checkint(L, 1);
+			luaL_argcheck(L, 1<=u, 1, "interval is empty");
+			lua_pushnumber(L, floor(r*u)+1);  // int between 1 and `u'
+			break;
+		}
+		case 2: {  // lower and upper limits
+			int l = luaL_checkint(L, 1);
+			int u = luaL_checkint(L, 2);
+			luaL_argcheck(L, l<=u, 2, "interval is empty");
+			lua_pushnumber(L, floor(r*(u-l+1))+l);  // int between `l' and `u'
+			break;
+		}
+		default: return luaL_error(L, "wrong number of arguments");
+	}
+	return 1;
+}
+
+// same as math.randomseed, but uses SFMT instead of C srand()
+// FIXME: this function doesn't care multi-instance,
+//        original math.randomseed either though (Lua 5.1)
+static int sfmt_randomseed (lua_State *L) {
+	init_gen_rand(luaL_checkint(L, 1));
+	return 0;
+}
 
 // int AND(int one, int two, ..., int n)
 //
@@ -2761,6 +2799,12 @@ void VBALuaFrameBoundary() {
  * Returns true on success, false on failure.
  */
 int VBALoadLuaCode(const char *filename) {
+	static bool sfmtInitialized = false;
+	if (!sfmtInitialized) {
+		init_gen_rand((unsigned) time(NULL));
+		sfmtInitialized = true;
+	}
+
 	if (filename != luaScriptName)
 	{
 		if (luaScriptName) free(luaScriptName);
@@ -2800,6 +2844,14 @@ int VBALoadLuaCode(const char *filename) {
 		lua_register(LUA, "XOR", base_XOR);
 		lua_register(LUA, "SHIFT", base_SHIFT);
 		lua_register(LUA, "BIT", base_BIT);
+
+		lua_pushstring(LUA, "math");
+		lua_gettable(LUA, LUA_GLOBALSINDEX);
+		lua_pushcfunction(LUA, sfmt_random);
+		lua_setfield(LUA, -2, "random");
+		lua_pushcfunction(LUA, sfmt_randomseed);
+		lua_setfield(LUA, -2, "randomseed");
+		lua_settop(LUA, 0);
 
 		lua_newtable(LUA);
 		lua_setfield(LUA, LUA_REGISTRYINDEX, memoryWatchTable);

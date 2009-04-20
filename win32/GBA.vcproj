@@ -362,6 +362,26 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\SFMT\SFMT.c"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\win32\skin.cpp"
 				>
 			</File>
@@ -1095,11 +1115,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
