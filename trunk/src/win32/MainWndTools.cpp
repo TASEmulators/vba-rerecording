@@ -841,7 +841,7 @@ void MainWnd::OnToolsCopyVBAWatchSetting()
 
 	// ;target:filename:vbaBIOS:vbaWORKRAM:vbaIRAM:vbaIOMEM:vbaPALETTERAM:vbaVRAM:vbaOAM:vbaROM
 	// (v2 beta)
-	wsprintf(buf, ":target:%s%s:%X:%X:%X:%X:%X:%X:%X:%X\n", exe_fname, exe_ext, 
+	wsprintf(buf, ":target:%s%s:%X:%X:%X:%X:%X:%X:%X:%X\r\n", exe_fname, exe_ext, 
 		&bios, 
 		&workRAM, 
 		&internalRAM, 
@@ -868,7 +868,7 @@ void MainWnd::OnToolsCopyVBxWatchSetting()
 	// ;target:filename:gbMemoryMap
 	// (v2 beta)
 	extern u8 *gbMemoryMap[16];
-	wsprintf(buf, ":target:%s%s:%X\n", exe_fname, exe_ext, 
+	wsprintf(buf, ":target:%s%s:%X\r\n", exe_fname, exe_ext, 
 		gbMemoryMap
 	);
 

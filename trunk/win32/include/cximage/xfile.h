@@ -9,6 +9,7 @@
 
 	CxFile (c)  11/May/2002 Davide Pizzolato - www.xdp.it
 	CxFile version 2.00 23/Aug/2002
+	CxFile version 2.10 16/Dec/2007
 	
 	Special thanks to Chris Shearer Cooper for new features, enhancements and bugfixes
 
@@ -40,7 +41,7 @@
 #if !defined(__xfile_h)
 #define __xfile_h
 
-#ifdef WIN32
+#if defined (WIN32) || defined (_WIN32_WCE)
  #include <windows.h>
 #endif
 
@@ -71,6 +72,8 @@ public:
 		return (bool)(nWrote == 1);
 		}
 	virtual long	GetC() = 0;
+	virtual char *	GetS(char *string, int n) = 0;
+	virtual long	Scanf(const char *format, void* output) = 0;
 };
 
 #endif //__xfile_h
