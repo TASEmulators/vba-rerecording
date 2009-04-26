@@ -285,7 +285,7 @@ public:
 	Silent_Blip_Buffer();
 };
 
-	#if __GNUC__ >= 3 || _MSC_VER >= 1100
+	#if __GNUC__ >= 3 || _MSC_VER >= 1400
 		#define BLIP_RESTRICT __restrict
 	#else
 		#define BLIP_RESTRICT
