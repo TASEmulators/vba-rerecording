@@ -2002,6 +2002,9 @@ void VBA::loadSettings()
   throttle = regQueryDwordValue("throttle", 0);
   if(throttle < 5 || throttle > 1000)
     throttle = 100;
+
+  movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
+  movieOnEndPause = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
 }
 
 void VBA::updateFrameSkip()
@@ -2774,6 +2777,8 @@ void VBA::saveSettings()
   regSetDwordValue("cheatsEnabled", cheatsEnabled);
   regSetDwordValue("fsMaxScale", fsMaxScale);
   regSetDwordValue("throttle", throttle);
+  regSetDwordValue("movieOnEndBehavior", movieOnEndBehavior);
+  regSetDwordValue("movieOnEndPause", movieOnEndPause);
 }
 
 void winSignal(int, int)

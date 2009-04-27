@@ -1119,7 +1119,8 @@ void VBAUpdateFrameCountDisplay ()
 
 void VBAMovieUpdate (int controllerNum)
 {
-movieUpdateStart:
+	bool8 willPause = false;
+//movieUpdateStart:
 	switch(Movie.state)
 	{
 	case MOVIE_STATE_PLAY:
@@ -1129,33 +1130,59 @@ movieUpdateStart:
 
 			if(Movie.currentFrame>=Movie.header.length_frames)
 			{
-				if(!Movie.RecordedThisSession)
+#if (defined(WIN32) && !defined(SDL))
+				if(theApp.movieOnEndBehavior == 1)
+#else
+				// SDL FIXME
+				if (false)
+#endif
 				{
-					// stop movie; it reached the end
-					change_state(MOVIE_STATE_NONE);
-					systemScreenMessage("Movie end");
-					return;
+					VBAMovieRestart();
+					willPause = theApp.movieOnEndPause;
+					break;
 				}
-				else
+#if (defined(WIN32) && !defined(SDL))
+				else if (theApp.movieOnEndBehavior == 2 && Movie.RecordedThisSession)
+#else
+				// SDL FIXME
+				if (Movie.RecordedThisSession)
+#endif
 				{
 					// if user has been recording this movie since the last time it started playing,
 					// they probably don't want the movie to end now during playback,
 					// so switch back to recording when it reaches the end
+					if (Movie.readOnly)
+					{
+						VBAMovieToggleReadOnly();
+					}
+/*
 					change_state(MOVIE_STATE_RECORD);
-					systemScreenMessage("Movie record");
+
+					systemScreenMessage("Movie re-record");
 					fseek(Movie.file, Movie.header.offset_to_controller_data+(Movie.bytesPerFrame * (Movie.currentFrame+1)), SEEK_SET);
-#					if (defined(WIN32) && !defined(SDL))
+#if (defined(WIN32) && !defined(SDL))
 						theApp.paused = true;
 						if(theApp.sound)
 							theApp.sound->pause();
 						theApp.speedupToggle = false;
-#					else
+#else
 						extern bool paused; // from SDL.cpp
 						paused = true;
 						systemSoundPause();
-#					endif
-					Movie.pauseFrame = -1;
-					goto movieUpdateStart;
+#endif
+*/
+					VBAMovieSwitchToRecording();
+					willPause = true;
+					break;
+//					goto movieUpdateStart;
+				}
+				else
+				{
+					// stop movie; it reached the end
+					change_state(MOVIE_STATE_NONE);
+					systemScreenMessage("Movie end");
+					willPause = theApp.movieOnEndPause;
+					break;
 				}
 			}
 			else
@@ -1194,7 +1221,7 @@ movieUpdateStart:
 		DisplayPressedKeys();
 
 	// if the movie's been set to pause at a certain frame
-	if(VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
+	if(willPause || VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
 	{
 #		if (defined(WIN32) && !defined(SDL))
 			theApp.paused = true;
@@ -1527,11 +1554,15 @@ void VBAMovieRestart ()
 {
 	if(VBAMovieActive())
 	{
+		bool8 modified = Movie.RecordedThisSession;
+
 		VBAMovieStop(true);
 
 		char movieName [_MAX_PATH];
 		strcpy(movieName, Movie.filename); 
 		VBAMovieOpen(movieName, Movie.readOnly); // can't just pass in Movie.filename, since VBAMovieOpen clears out Movie's variables
+
+		Movie.RecordedThisSession = modified;
 	}
 }
 

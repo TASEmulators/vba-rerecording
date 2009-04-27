@@ -434,6 +434,16 @@ class MainWnd : public CWnd
   afx_msg void OnUpdateToolsResumeRecord(CCmdUI* pCmdUI);
   afx_msg void OnToolsPlayRestart();
   afx_msg void OnUpdateToolsPlayRestart(CCmdUI* pCmdUI);
+
+  afx_msg void OnToolsOnMovieEndPause();
+  afx_msg void OnUpdateToolsOnMovieEndPause(CCmdUI* pCmdUI);
+  afx_msg void OnToolsOnMovieEndStop();
+  afx_msg void OnUpdateToolsOnMovieEndStop(CCmdUI* pCmdUI);
+  afx_msg void OnToolsOnMovieEndRestart();
+  afx_msg void OnUpdateToolsOnMovieEndRestart(CCmdUI* pCmdUI);
+  afx_msg void OnToolsOnMovieEndRerecord();
+  afx_msg void OnUpdateToolsOnMovieEndRerecord(CCmdUI* pCmdUI);
+
   afx_msg void OnToolsRewind();
   afx_msg void OnUpdateToolsRewind(CCmdUI* pCmdUI);
   afx_msg void OnToolsCustomize();

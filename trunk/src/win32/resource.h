@@ -908,13 +908,17 @@
 #define ID_FILE_LUA_RELOAD              40468
 #define ID_FILE_LUA_STOP                40469
 #define ID_TOOLS_LAGCOUNTER_RESET       40470
+#define ID_MOVIE_END_PAUSE              40485
+#define ID_MOVIE_END_RESTART            40489
+#define ID_MOVIE_END_STOP               40490
+#define ID_MOVIE_END_RERECORD           40491
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        160
-#define _APS_NEXT_COMMAND_VALUE         40471
+#define _APS_NEXT_COMMAND_VALUE         40492
 #define _APS_NEXT_CONTROL_VALUE         1289
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
