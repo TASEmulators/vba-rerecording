@@ -732,10 +732,47 @@ void MainWnd::OnToolsPlayRestart()
 {
   VBAMovieRestart();
 }
-void MainWnd::OnUpdateToolsPlayRestart(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateToolsPlayRestart(CCmdUI* pCmdUI)
 {
   pCmdUI->Enable(VBAMovieActive());
 }
+
+void MainWnd::OnToolsOnMovieEndPause()
+{
+  theApp.movieOnEndPause = !theApp.movieOnEndPause;
+}
+void MainWnd::OnUpdateToolsOnMovieEndPause(CCmdUI* pCmdUI)
+{
+  pCmdUI->SetCheck(theApp.movieOnEndPause);
+}
+
+void MainWnd::OnToolsOnMovieEndStop()
+{
+  theApp.movieOnEndBehavior = 0;
+}
+void MainWnd::OnUpdateToolsOnMovieEndStop(CCmdUI* pCmdUI)
+{
+  pCmdUI->SetRadio(theApp.movieOnEndBehavior == 0);
+}
+
+void MainWnd::OnToolsOnMovieEndRestart()
+{
+  theApp.movieOnEndBehavior = 1;
+}
+void MainWnd::OnUpdateToolsOnMovieEndRestart(CCmdUI* pCmdUI)
+{
+  pCmdUI->SetRadio(theApp.movieOnEndBehavior == 1);
+}
+
+void MainWnd::OnToolsOnMovieEndRerecord()
+{
+  theApp.movieOnEndBehavior = 2;
+}
+void MainWnd::OnUpdateToolsOnMovieEndRerecord(CCmdUI* pCmdUI)
+{
+  pCmdUI->SetRadio(theApp.movieOnEndBehavior == 2);
+}
+
 
 #include "assert.h"
 void MainWnd::OnToolsRewind() 

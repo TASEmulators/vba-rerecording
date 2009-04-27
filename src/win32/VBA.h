@@ -177,6 +177,8 @@ class VBA : public CWinApp
   bool lagCounter;
   bool inputDisplay;
   bool movieReadOnly;
+  bool movieOnEndPause;
+  int movieOnEndBehavior;
   bool soundRecording;
   WavWriter *soundRecorder;
   CString soundRecordName;
