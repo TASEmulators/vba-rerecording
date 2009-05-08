@@ -205,15 +205,15 @@ BEGIN
     LTEXT           "Down:",IDC_STATIC,5,19,35,10
     LTEXT           "Left:",IDC_STATIC,5,33,35,10
     LTEXT           "Right:",IDC_STATIC,5,47,35,10
-    LTEXT           "Button A:",IDC_STATIC,5,61,35,10
-    LTEXT           "Button B:",IDC_STATIC,5,75,35,10
-    LTEXT           "Button L:",IDC_STATIC,5,89,35,10
-    LTEXT           "Button R:",IDC_STATIC,5,103,35,10
-    LTEXT           "Select:",IDC_STATIC,5,117,35,10
-    LTEXT           "Start:",IDC_STATIC,5,131,35,10
-    LTEXT           "Speed:",IDC_STATIC,5,145,35,10
-    LTEXT           "Capture:",IDC_STATIC,5,159,35,10
-    LTEXT           "GS:",IDC_STATIC,5,173,35,10
+    LTEXT           "Button A:",IDC_STATIC,5,61,40,10
+    LTEXT           "Button B:",IDC_STATIC,5,75,40,10
+    LTEXT           "Button L:",IDC_STATIC,5,89,40,10
+    LTEXT           "Button R:",IDC_STATIC,5,103,40,10
+    LTEXT           "Select:",IDC_STATIC,5,117,40,10
+    LTEXT           "Start:",IDC_STATIC,5,131,40,10
+    LTEXT           "Speed:",IDC_STATIC,5,145,40,10
+    LTEXT           "Capture:",IDC_STATIC,5,159,40,10
+    LTEXT           "GameShark:",IDC_STATIC,5,173,40,10
 END
 
 IDD_CHEATS DIALOGEX 0, 0, 276, 253
@@ -1821,6 +1821,7 @@ BEGIN
             MENUITEM "&Lock",                       ID_FILE_RECENT_FREEZE
             MENUITEM SEPARATOR
         END
+        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         POPUP "Loa&d Game"
         BEGIN
@@ -1875,8 +1876,8 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "&Pause",                      ID_FILE_PAUSE
+        MENUITEM "&Frame Advance",              ID_DEBUG_NEXTFRAME
         MENUITEM "&Reset",                      ID_FILE_RESET
-        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         POPUP "&Import"
         BEGIN
@@ -1895,9 +1896,7 @@ BEGIN
 
         END
         MENUITEM SEPARATOR
-        MENUITEM "Screen capt&ure...",          ID_FILE_SCREENCAPTURE
-        MENUITEM "Ro&m information...",         ID_FILE_ROMINFORMATION
-        MENUITEM "&Toggle menu",                ID_FILE_TOGGLEMENU
+        MENUITEM "Ro&m Information...",         ID_FILE_ROMINFORMATION
         MENUITEM SEPARATOR
         MENUITEM "Run Lua Script...",           ID_FILE_LUA_LOAD
         MENUITEM "Reload Lua Script",           ID_FILE_LUA_RELOAD
@@ -1907,30 +1906,149 @@ BEGIN
     END
     POPUP "&Options"
     BEGIN
-        POPUP "&Controls"
+        POPUP "&Emulator"
         BEGIN
-            MENUITEM "&Configure Controls...",      ID_OPTIONS_JOYPAD_CONFIGURE_1
+            MENUITEM "Pause When Inactive",         ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE
 
-            MENUITEM "Configure Motion Sensor...",  ID_OPTIONS_JOYPAD_MOTIONCONFIGURE
+            MENUITEM "&Toggle Menu",                ID_FILE_TOGGLEMENU
+            MENUITEM "Auto Hide Menu",              ID_OPTIONS_EMULATOR_AUTOHIDEMENU
 
-            POPUP "Configure Other Controllers"
+            POPUP "Process &Priority"
             BEGIN
+                MENUITEM "&Highest",                    ID_OPTIONS_PRIORITY_HIGHEST
+
+                MENUITEM "&Above Normal",               ID_OPTIONS_PRIORITY_ABOVENORMAL
+
+                MENUITEM "&Normal",                     ID_OPTIONS_PRIORITY_NORMAL
+
+                MENUITEM "&Below Normal",               ID_OPTIONS_PRIORITY_BELOWNORMAL
+
+            END
+            MENUITEM SEPARATOR
+            MENUITEM "&Directories...",             ID_OPTIONS_EMULATOR_DIRECTORIES
+
+            MENUITEM "File &Associate...",          ID_OPTIONS_EMULATOR_ASSOCIATE
+
+            MENUITEM SEPARATOR
+            MENUITEM "Use Skin",                    ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN
+
+            MENUITEM "Select Skin...",              ID_OPTIONS_VIDEO_RENDEROPTIONS_SELECTSKIN
+
+            MENUITEM SEPARATOR
+            POPUP "UI &Language"
+            BEGIN
+                MENUITEM "&System",                     ID_OPTIONS_LANGUAGE_SYSTEM
+
+                MENUITEM "&English",                    ID_OPTIONS_LANGUAGE_ENGLISH
+
+                MENUITEM "&Other...",                   ID_OPTIONS_LANGUAGE_OTHER
+
+            END
+        END
+        POPUP "Speed"
+        BEGIN
+            POPUP "Set &Speed"
+            BEGIN
+                MENUITEM "6% (very slow)",              ID_OPTIONS_FRAMESKIP_THROTTLE_6
+
+                MENUITEM "25%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_25
+
+                MENUITEM "50% (half speed)",            ID_OPTIONS_FRAMESKIP_THROTTLE_50
+
+                MENUITEM "75%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_75
+
+                MENUITEM "100% (normal speed)",         ID_OPTIONS_FRAMESKIP_THROTTLE_100
+
+                MENUITEM "150%",                        ID_OPTIONS_FRAMESKIP_THROTTLE_150
+
+                MENUITEM "200% (double speed)",         ID_OPTIONS_FRAMESKIP_THROTTLE_200
+
+                MENUITEM "Other...",                    ID_OPTIONS_FRAMESKIP_THROTTLE_OTHER
+
+                MENUITEM SEPARATOR
+                MENUITEM "Increase",                    ID_OPTIONS_FRAMESKIP_THROTTLE_INCREASE
+
+                MENUITEM "Decrease",                    ID_OPTIONS_FRAMESKIP_THROTTLE_DECREASE
+
+            END
+            POPUP "&Frame Skip"
+            BEGIN
+                MENUITEM "Skip &0 (don't skip any frames)", 
+                                                        ID_OPTIONS_VIDEO_FRAMESKIP_0
+
+                MENUITEM "Skip &1 (skip every other frame)", 
+                                                        ID_OPTIONS_VIDEO_FRAMESKIP_1
+
+                MENUITEM "Skip &2 (skip 2 out of every 3 frames)", 
+                                                        ID_OPTIONS_VIDEO_FRAMESKIP_2
+
+                MENUITEM "Skip &3",                     ID_OPTIONS_VIDEO_FRAMESKIP_3
+
+                MENUITEM "Skip &4",                     ID_OPTIONS_VIDEO_FRAMESKIP_4
+
+                MENUITEM "Skip &5",                     ID_OPTIONS_VIDEO_FRAMESKIP_5
+
+                MENUITEM "Skip &6",                     ID_OPTIONS_VIDEO_FRAMESKIP_6
+
+                MENUITEM "Skip &7",                     ID_OPTIONS_VIDEO_FRAMESKIP_7
+
+                MENUITEM "Skip &8",                     ID_OPTIONS_VIDEO_FRAMESKIP_8
+
+                MENUITEM "Skip &9 (skip 9 out of every 10 frames)", 
+                                                        ID_OPTIONS_VIDEO_FRAMESKIP_9
+
+            END
+            MENUITEM SEPARATOR
+            MENUITEM "Speed-up &Toggle",            ID_OPTIONS_EMULATOR_SPEEDUPTOGGLE
+
+            MENUITEM SEPARATOR
+            MENUITEM "&Synchronize Emulation Speed", 
+                                                    ID_OPTIONS_EMULATOR_SYNCHRONIZE
+
+            MENUITEM "    Accurate Sound &Pitch",   ID_OPTIONS_FRAMESKIP_ACCURATEPITCH
+
+            MENUITEM "    Accurate &Emulation Speed", 
+                                                    ID_OPTIONS_FRAMESKIP_ACCURATESPEED
+
+            MENUITEM SEPARATOR
+            POPUP "Show Speed"
+            BEGIN
+                MENUITEM "None",                        ID_OPTIONS_EMULATOR_SHOWSPEED_NONE
+
+                MENUITEM "Percentage",                  ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE
+
+                MENUITEM "Detailed",                    ID_OPTIONS_EMULATOR_SHOWSPEED_DETAILED
+
+                MENUITEM SEPARATOR
+                MENUITEM "Transparent",                 ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT
+
+            END
+        END
+        POPUP "&Input"
+        BEGIN
+            POPUP "Configure Controllers"
+            BEGIN
+                MENUITEM "Controller 1...",             ID_OPTIONS_JOYPAD_CONFIGURE_1
+
                 MENUITEM "Controller &2...",            ID_OPTIONS_JOYPAD_CONFIGURE_2
 
                 MENUITEM "Controller &3...",            ID_OPTIONS_JOYPAD_CONFIGURE_3
 
                 MENUITEM "Controller &4...",            ID_OPTIONS_JOYPAD_CONFIGURE_4
 
+                MENUITEM SEPARATOR
+                MENUITEM "Motion Sensor...",            ID_OPTIONS_JOYPAD_MOTIONCONFIGURE
+
             END
-            POPUP "Default Controller"
+            POPUP "Use Controller"
             BEGIN
-                MENUITEM "1",                           ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_1
+                MENUITEM "Controller 1",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_1
 
-                MENUITEM "2",                           ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_2
+                MENUITEM "Controller 2",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_2
 
-                MENUITEM "3",                           ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_3
+                MENUITEM "Controller 3",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_3
 
-                MENUITEM "4",                           ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_4
+                MENUITEM "Controller 4",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_4
 
             END
             MENUITEM SEPARATOR
@@ -1959,6 +2077,7 @@ BEGIN
 
                 MENUITEM "Right",                       ID_OPTIONS_JOYPAD_AUTOFIRE_RIGHT
 
+                MENUITEM SEPARATOR
                 MENUITEM "&Clear All",                  ID_OPTIONS_JOYPAD_AUTOFIRE_CLEAR
 
             END
@@ -1974,126 +2093,59 @@ BEGIN
                 MENUITEM "Down",                        ID_STICKY_DOWN
                 MENUITEM "Left",                        ID_STICKY_LEFT
                 MENUITEM "Right",                       ID_STICKY_RIGHT
+                MENUITEM SEPARATOR
                 MENUITEM "&Clear All",                  ID_STICKY_CLEAR
             END
-        END
-        POPUP "Speed"
-        BEGIN
-            POPUP "&Frame Skip"
-            BEGIN
-                MENUITEM "skip &0 (don't skip any frames)", 
-                                                        ID_OPTIONS_VIDEO_FRAMESKIP_0
-
-                MENUITEM "skip &1 (skip every other frame)", 
-                                                        ID_OPTIONS_VIDEO_FRAMESKIP_1
-
-                MENUITEM "skip &2 (skip 2 out of every 3 frames)", 
-                                                        ID_OPTIONS_VIDEO_FRAMESKIP_2
-
-                MENUITEM "skip &3",                     ID_OPTIONS_VIDEO_FRAMESKIP_3
-
-                MENUITEM "skip &4",                     ID_OPTIONS_VIDEO_FRAMESKIP_4
-
-                MENUITEM "skip &5",                     ID_OPTIONS_VIDEO_FRAMESKIP_5
-
-                MENUITEM "skip &6",                     ID_OPTIONS_VIDEO_FRAMESKIP_6
-
-                MENUITEM "skip &7",                     ID_OPTIONS_VIDEO_FRAMESKIP_7
-
-                MENUITEM "skip &8",                     ID_OPTIONS_VIDEO_FRAMESKIP_8
-
-                MENUITEM "skip &9 (skip 9 out of every 10 frames)", 
-                                                        ID_OPTIONS_VIDEO_FRAMESKIP_9
-
-            END
-            POPUP "Set Speed"
-            BEGIN
-                MENUITEM "6% (very slow)",              ID_OPTIONS_FRAMESKIP_THROTTLE_6
-
-                MENUITEM "25%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_25
-
-                MENUITEM "50% (half speed)",            ID_OPTIONS_FRAMESKIP_THROTTLE_50
-
-                MENUITEM "75%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_75
-
-                MENUITEM "100% (normal speed)",         ID_OPTIONS_FRAMESKIP_THROTTLE_100
-
-                MENUITEM "150%",                        ID_OPTIONS_FRAMESKIP_THROTTLE_150
-
-                MENUITEM "200% (double speed)",         ID_OPTIONS_FRAMESKIP_THROTTLE_200
-
-                MENUITEM "Other...",                    ID_OPTIONS_FRAMESKIP_THROTTLE_OTHER
-
-                MENUITEM SEPARATOR
-                MENUITEM "Increase",                    ID_OPTIONS_FRAMESKIP_THROTTLE_INCREASE
-
-                MENUITEM "Decrease",                    ID_OPTIONS_FRAMESKIP_THROTTLE_DECREASE
-
-            END
             MENUITEM SEPARATOR
-            MENUITEM "Accurate Sound &Pitch",       ID_OPTIONS_FRAMESKIP_ACCURATEPITCH
+            MENUITEM "Customize Common &Hotkeys...", 
+                                                    ID_TOOLS_CUSTOMIZE_COMMON
 
-            MENUITEM "Accurate Emulation &Speed",   ID_OPTIONS_FRAMESKIP_ACCURATESPEED
-
-            MENUITEM SEPARATOR
-            POPUP "Process &Priority"
-            BEGIN
-                MENUITEM "&Highest",                    ID_OPTIONS_PRIORITY_HIGHEST
-
-                MENUITEM "&Above Normal",               ID_OPTIONS_PRIORITY_ABOVENORMAL
-
-                MENUITEM "&Normal",                     ID_OPTIONS_PRIORITY_NORMAL
-
-                MENUITEM "&Below Normal",               ID_OPTIONS_PRIORITY_BELOWNORMAL
-
-            END
+            MENUITEM "Customize &All Commands...",  ID_TOOLS_CUSTOMIZE
         END
         MENUITEM SEPARATOR
         POPUP "&Video"
         BEGIN
-            MENUITEM "&Vsync",                      ID_OPTIONS_VIDEO_VSYNC
-            POPUP "Render Method"
+            POPUP "&Render Method"
             BEGIN
                 MENUITEM "GDI",                         ID_OPTIONS_VIDEO_RENDERMETHOD_GDI
 
+                MENUITEM SEPARATOR
                 MENUITEM "DirectDraw",                  ID_OPTIONS_VIDEO_RENDERMETHOD_DIRECTDRAW
 
+                MENUITEM "    DDraw &Emulation Only",   ID_OPTIONS_VIDEO_DDRAWEMULATIONONLY
+
+                MENUITEM "    DDraw Use &Video Memory", ID_OPTIONS_VIDEO_DDRAWUSEVIDEOMEMORY
+
+                MENUITEM "    DDraw Triple Buffering",  ID_OPTIONS_VIDEO_TRIPLEBUFFERING
+
+                MENUITEM SEPARATOR
                 MENUITEM "Direct3D",                    ID_OPTIONS_VIDEO_RENDERMETHOD_DIRECT3D
 
+                MENUITEM "    D3D Nearest",             ID_OPTIONS_VIDEO_RENDEROPTIONS_D3DNOFILTER
+
+                MENUITEM "    D3D Bilinear",            ID_OPTIONS_VIDEO_RENDEROPTIONS_D3DBILINEAR
+
+                MENUITEM SEPARATOR
                 MENUITEM "OpenGL",                      ID_OPTIONS_VIDEO_RENDERMETHOD_OPENGL
 
-                MENUITEM SEPARATOR
-                MENUITEM "DDraw &Emulation Only",       ID_OPTIONS_VIDEO_DDRAWEMULATIONONLY
+                MENUITEM "    GL Nearest",              ID_OPTIONS_VIDEO_RENDEROPTIONS_GLNEAREST
 
-                MENUITEM "DDraw Use &Video Memory",     ID_OPTIONS_VIDEO_DDRAWUSEVIDEOMEMORY
+                MENUITEM "    GL Bilinear",             ID_OPTIONS_VIDEO_RENDEROPTIONS_GLBILINEAR
 
-                MENUITEM "DDraw Triple Buffering",      ID_OPTIONS_VIDEO_TRIPLEBUFFERING
+                MENUITEM "    GL Triangle",             ID_OPTIONS_VIDEO_RENDEROPTIONS_GLTRIANGLE
 
-                MENUITEM SEPARATOR
-                MENUITEM "D3D Nearest",                 ID_OPTIONS_VIDEO_RENDEROPTIONS_D3DNOFILTER
-
-                MENUITEM "D3D Bilinear",                ID_OPTIONS_VIDEO_RENDEROPTIONS_D3DBILINEAR
+                MENUITEM "    GL Quads",                ID_OPTIONS_VIDEO_RENDEROPTIONS_GLQUADS
 
                 MENUITEM SEPARATOR
-                MENUITEM "GL Nearest",                  ID_OPTIONS_VIDEO_RENDEROPTIONS_GLNEAREST
-
-                MENUITEM "GL Bilinear",                 ID_OPTIONS_VIDEO_RENDEROPTIONS_GLBILINEAR
-
-                MENUITEM "GL Triangle",                 ID_OPTIONS_VIDEO_RENDEROPTIONS_GLTRIANGLE
-
-                MENUITEM "GL Quads",                    ID_OPTIONS_VIDEO_RENDEROPTIONS_GLQUADS
-
-                MENUITEM SEPARATOR
-                MENUITEM "Select skin...",              ID_OPTIONS_VIDEO_RENDEROPTIONS_SELECTSKIN
-
-                MENUITEM "Skin",                        ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN
+                MENUITEM "&Vsync",                      ID_OPTIONS_VIDEO_VSYNC
 
             END
             MENUITEM SEPARATOR
-            MENUITEM "x&1",                         ID_OPTIONS_VIDEO_X1
-            MENUITEM "x&2",                         ID_OPTIONS_VIDEO_X2
-            MENUITEM "x&3",                         ID_OPTIONS_VIDEO_X3
-            MENUITEM "x&4",                         ID_OPTIONS_VIDEO_X4
+            MENUITEM "x&1 Window",                  ID_OPTIONS_VIDEO_X1
+            MENUITEM "x&2 Window",                  ID_OPTIONS_VIDEO_X2
+            MENUITEM "x&3 Window",                  ID_OPTIONS_VIDEO_X3
+            MENUITEM "x&4 Window",                  ID_OPTIONS_VIDEO_X4
+            MENUITEM SEPARATOR
             MENUITEM "Full Screen (320x240)",       ID_OPTIONS_VIDEO_FULLSCREEN320X240
 
             MENUITEM "Full Screen (640x480)",       ID_OPTIONS_VIDEO_FULLSCREEN640X480
@@ -2102,19 +2154,18 @@ BEGIN
 
             MENUITEM "&Other Full Screen...",       ID_OPTIONS_VIDEO_FULLSCREEN
 
-            MENUITEM "Full screen max scale...",    ID_OPTIONS_VIDEO_FULLSCREENMAXSCALE
+            MENUITEM "Full Screen Max Scale...",    ID_OPTIONS_VIDEO_FULLSCREENMAXSCALE
+
+            MENUITEM "Full Screen Stretch to Fit",  ID_OPTIONS_VIDEO_FULLSCREENSTRETCHTOFIT
 
             MENUITEM SEPARATOR
-            MENUITEM "Text display options...",     ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
+            MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
 
-            MENUITEM "D&isable status messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
+            MENUITEM "Disable Status &Messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
 
             MENUITEM SEPARATOR
             MENUITEM "&Disable SFX",                ID_OPTIONS_VIDEO_DISABLESFX
 
-            MENUITEM "Fullscreen stretch to &fit",  ID_OPTIONS_VIDEO_FULLSCREENSTRETCHTOFIT
-
-            MENUITEM SEPARATOR
             POPUP "Graphics &Layers"
             BEGIN
                 MENUITEM "BG 0",                        ID_OPTIONS_VIDEO_LAYERS_BG0
@@ -2135,7 +2186,7 @@ BEGIN
 
             END
         END
-        POPUP "F&ilter"
+        POPUP "Pixel &Filter"
         BEGIN
             POPUP "Interframe Blending"
             BEGIN
@@ -2149,28 +2200,28 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Normal",                     ID_OPTIONS_FILTER_NORMAL
             MENUITEM "&TV Mode",                    ID_OPTIONS_FILTER_TVMODE
-            MENUITEM "&2xSaI",                      ID_OPTIONS_FILTER_2XSAI
-            MENUITEM "&Super 2xSaI",                ID_OPTIONS_FILTER_SUPER2XSAI
-
-            MENUITEM "Super &Eagle",                ID_OPTIONS_FILTER_SUPEREAGLE
-
-            MENUITEM "Pixelate",                    ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL
-
-            MENUITEM "Motion Blur",                 ID_OPTIONS_FILTER16BIT_MOTIONBLUREXPERIMENTAL
-
-            MENUITEM "AdvanceMAME Scale2x",         ID_OPTIONS_FILTER16BIT_ADVANCEMAMESCALE2X
-
-            MENUITEM "Simple 2x",                   ID_OPTIONS_FILTER16BIT_SIMPLE2X
+            MENUITEM "Scanlines",                   ID_OPTIONS_FILTER_SCANLINES
 
             MENUITEM "Bilinear",                    ID_OPTIONS_FILTER_BILINEAR
 
             MENUITEM "Bilinear Plus",               ID_OPTIONS_FILTER_BILINEARPLUS
 
-            MENUITEM "Scanlines",                   ID_OPTIONS_FILTER_SCANLINES
+            MENUITEM "&Pixelate",                   ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL
 
+            MENUITEM "&Motion Blur",                ID_OPTIONS_FILTER16BIT_MOTIONBLUREXPERIMENTAL
+
+            MENUITEM "Simple 2x",                   ID_OPTIONS_FILTER16BIT_SIMPLE2X
+
+            MENUITEM "&2xSaI",                      ID_OPTIONS_FILTER_2XSAI
+            MENUITEM "&Super 2xSaI",                ID_OPTIONS_FILTER_SUPER2XSAI
+
+            MENUITEM "Super &Eagle",                ID_OPTIONS_FILTER_SUPEREAGLE
+
+            MENUITEM "&AdvanceMAME Scale2x",        ID_OPTIONS_FILTER16BIT_ADVANCEMAMESCALE2X
+
+            MENUITEM "lq2x",                        ID_OPTIONS_FILTER_LQ2X
             MENUITEM "hq2xS",                       ID_OPTIONS_FILTER_HQ2X2
             MENUITEM "hq2x",                        ID_OPTIONS_FILTER_HQ2X
-            MENUITEM "lq2x",                        ID_OPTIONS_FILTER_LQ2X
             MENUITEM "hq3xS",                       ID_OPTIONS_FILTER_HQ3X2
             MENUITEM "hq3x",                        ID_OPTIONS_FILTER_HQ3X
             MENUITEM SEPARATOR
@@ -2183,14 +2234,15 @@ BEGIN
             MENUITEM "&Mute",                       ID_OPTIONS_SOUND_MUTE
             MENUITEM "Off",                         ID_OPTIONS_SOUND_OFF
             MENUITEM SEPARATOR
-            MENUITEM "Echo",                        ID_OPTIONS_SOUND_ECHO
-            MENUITEM "Low pass filter",             ID_OPTIONS_SOUND_LOWPASSFILTER
+            MENUITEM "Mute Frame Advance",          ID_OPTIONS_SOUND_MUTEFRAMEADVANCE
+
+            MENUITEM "Use Old Synchronization",     ID_OPTIONS_SOUND_USEOLDSYNCHRONIZATION
 
             MENUITEM "Reverse Stereo",              ID_OPTIONS_SOUND_REVERSESTEREO
 
-            MENUITEM "Use old synchronization",     ID_OPTIONS_SOUND_USEOLDSYNCHRONIZATION
-
-            MENUITEM "Mute frame advance",          ID_OPTIONS_SOUND_MUTEFRAMEADVANCE
+            MENUITEM SEPARATOR
+            MENUITEM "Echo",                        ID_OPTIONS_SOUND_ECHO
+            MENUITEM "Low Pass Filter",             ID_OPTIONS_SOUND_LOWPASSFILTER
 
             MENUITEM SEPARATOR
             POPUP "&Volume"
@@ -2229,49 +2281,11 @@ BEGIN
             MENUITEM "44 Kh&z",                     ID_OPTIONS_SOUND_44KHZ
         END
         MENUITEM SEPARATOR
-        POPUP "&Emulator"
+        POPUP "GBA Emulation"
         BEGIN
-            MENUITEM "Pause when inactive window",  ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE
-
-            MENUITEM "Auto hide menu",              ID_OPTIONS_EMULATOR_AUTOHIDEMENU
-
-            MENUITEM "Rewind settings...",          ID_OPTIONS_EMULATOR_REWINDINTERVAL
-
-            POPUP "Show speed"
-            BEGIN
-                MENUITEM "None",                        ID_OPTIONS_EMULATOR_SHOWSPEED_NONE
-
-                MENUITEM "Percentage",                  ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE
-
-                MENUITEM "Detailed",                    ID_OPTIONS_EMULATOR_SHOWSPEED_DETAILED
-
-                MENUITEM SEPARATOR
-                MENUITEM "Transparent",                 ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT
-
-            END
-            MENUITEM SEPARATOR
-            MENUITEM "&Directories...",             ID_OPTIONS_EMULATOR_DIRECTORIES
-
-            MENUITEM "&Associate...",               ID_OPTIONS_EMULATOR_ASSOCIATE
-
-            MENUITEM "PNG format",                  ID_OPTIONS_EMULATOR_PNGFORMAT
-
-            MENUITEM "BMP format",                  ID_OPTIONS_EMULATOR_BMPFORMAT
-
-            MENUITEM SEPARATOR
-            MENUITEM "&Synchronize emulation speed", 
-                                                    ID_OPTIONS_EMULATOR_SYNCHRONIZE
-
             MENUITEM "Automatic IPS patching",      ID_OPTIONS_EMULATOR_AUTOMATICALLYIPSPATCH
 
-            MENUITEM "Speed up toggle",             ID_OPTIONS_EMULATOR_SPEEDUPTOGGLE
-
-            MENUITEM "AGB Print",                   ID_OPTIONS_EMULATOR_AGBPRINT
-
             MENUITEM "Real Time Clock",             ID_OPTIONS_EMULATOR_REALTIMECLOCK
-
-            MENUITEM "Lag Reduction (GBA)",         ID_EMULATOR_GBALAG
-            MENUITEM "Use Old Frame Timing",        ID_EMULATOR_USEOLDGBTIMING
 
             POPUP "Save Type"
             BEGIN
@@ -2297,6 +2311,10 @@ BEGIN
 
             END
             MENUITEM SEPARATOR
+            MENUITEM "Lag Reduction (GBA)",         ID_EMULATOR_GBALAG
+            MENUITEM "Use Old Frame Timing",        ID_EMULATOR_USEOLDGBTIMING
+
+            MENUITEM SEPARATOR
             MENUITEM "&Use BIOS file",              ID_OPTIONS_EMULATOR_USEBIOSFILE
 
             MENUITEM "Skip BIOS intro",             ID_OPTIONS_EMULATOR_SKIPBIOS
@@ -2304,7 +2322,7 @@ BEGIN
             MENUITEM "S&elect BIOS file...",        ID_OPTIONS_EMULATOR_SELECTBIOSFILE
 
         END
-        POPUP "&Gameboy"
+        POPUP "&Gameboy Mode"
         BEGIN
             MENUITEM "&Automatic Mode",             ID_OPTIONS_GAMEBOY_AUTOMATIC
 
@@ -2328,16 +2346,6 @@ BEGIN
             MENUITEM "Customize Colors...",         ID_OPTIONS_GAMEBOY_COLORS
 
         END
-        MENUITEM SEPARATOR
-        POPUP "&Language"
-        BEGIN
-            MENUITEM "&System",                     ID_OPTIONS_LANGUAGE_SYSTEM
-
-            MENUITEM "&English",                    ID_OPTIONS_LANGUAGE_ENGLISH
-
-            MENUITEM "&Other...",                   ID_OPTIONS_LANGUAGE_OTHER
-
-        END
     END
     POPUP "&Cheats"
     BEGIN
@@ -2354,7 +2362,7 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        POPUP "Debug"
+        POPUP "&Debug"
         BEGIN
             MENUITEM "Disassemble...",              ID_TOOLS_DISASSEMBLE
             MENUITEM "Logging...",                  ID_TOOLS_LOGGING
@@ -2374,18 +2382,21 @@ BEGIN
 
             END
         END
+        MENUITEM "AGB &Print",                  ID_OPTIONS_EMULATOR_AGBPRINT
         MENUITEM SEPARATOR
         MENUITEM "Frame Counter",               ID_TOOLS_FRAMECOUNTER
         MENUITEM "Lag Counter",                 ID_TOOLS_LAGCOUNTER
         MENUITEM "Input Display",               ID_TOOLS_INPUTDISPLAY
         MENUITEM SEPARATOR
-        MENUITEM "&Frame Advance",              ID_DEBUG_NEXTFRAME
-        MENUITEM "Rewind",                      ID_TOOLS_REWIND
         MENUITEM "Frame Search",                ID_DEBUG_FRAMESEARCH
         MENUITEM "Frame Search Prev",           ID_DEBUG_FRAMESEARCHPREV
         MENUITEM "Frame Search End",            ID_DEBUG_FRAMESEARCHLOAD
         MENUITEM SEPARATOR
-        POPUP "Movie"
+        MENUITEM "&Rewind",                     ID_TOOLS_REWIND
+        MENUITEM "Rewind Se&ttings...",         ID_OPTIONS_EMULATOR_REWINDINTERVAL
+
+        MENUITEM SEPARATOR
+        POPUP "&Movie"
         BEGIN
             MENUITEM "Play movie...",               ID_MOVIE_PLAY
             MENUITEM "Watch from beginning",        ID_MOVIE_RESTART_PLAY
@@ -2406,11 +2417,16 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Stop movie",                  ID_MOVIE_STOP
         END
-        MENUITEM "AVI recording...",            ID_TOOLS_AVIRECORDING
-        MENUITEM "Sound recording...",          ID_TOOLS_SOUNDRECORDING
-        MENUITEM SEPARATOR
-        MENUITEM "Customize All Commands...",   ID_TOOLS_CUSTOMIZE
-        MENUITEM "Customize Common Hotkeys...", ID_TOOLS_CUSTOMIZE_COMMON
+        MENUITEM "&AVI Recording...",           ID_TOOLS_AVIRECORDING
+        MENUITEM "&Sound Recording...",         ID_TOOLS_SOUNDRECORDING
+        MENUITEM "Screen Capt&ure...",          ID_FILE_SCREENCAPTURE
+        POPUP "Default Screenshot &Format"
+        BEGIN
+            MENUITEM "&BMP",                        ID_OPTIONS_EMULATOR_BMPFORMAT
+
+            MENUITEM "&PNG",                        ID_OPTIONS_EMULATOR_PNGFORMAT
+
+        END
         MENUITEM SEPARATOR
         MENUITEM "Copy Settings for VBAWatch",  ID_TOOLS_VBAWATCH_SETTING
         MENUITEM "Copy Settings for VBxWatch",  ID_TOOLS_VBXWATCH_SETTING
