@@ -2117,23 +2117,28 @@ bool gbWriteBatteryFile(const char *file)
 
 bool gbWriteBatteryToStream(gzFile gzfile)
 {
-	/// XXX FIXME: probably broken - reading it fails
-
 	// the GB save code is ugly, so rather than convert it all to use gzFiles, just save it to a temp file...
 #define TEMP_SAVE_FNAME ("tempvbawrite.sav")
 	bool retVal = gbWriteBatteryFile(TEMP_SAVE_FNAME, true);
 
 	// ...open the temp file and figure out its size...
-	gzFile gzFileTemp = utilGzOpen(TEMP_SAVE_FNAME, "rb");
-	gzseek(gzFileTemp, 0, SEEK_END);
-	int len = gztell(gzFileTemp);
+	FILE *fileTemp = fopen(TEMP_SAVE_FNAME, "rb");
+	if (fileTemp == NULL) return false;
+	fseek(fileTemp, 0, SEEK_END);
+	int len = (int) ftell(fileTemp);
 
 	// ...copy over the temp file...
 	char * temp = new char [len];
-	if(temp == NULL) return false;
-	gzseek(gzFileTemp, 0, SEEK_SET);
-	utilGzRead(gzFileTemp, temp, len);
-	utilGzClose(gzFileTemp);
+	if(temp == NULL) {
+		fclose(fileTemp);
+		return false;
+	}
+	fseek(fileTemp, 0, SEEK_SET);
+	if (fread(temp, len, 1, fileTemp) != 1) {
+		fclose(fileTemp);
+		return false;
+	}
+	fclose(fileTemp);
 	utilGzWrite(gzfile, temp, len);
 	delete [] temp;
 
@@ -2208,22 +2213,26 @@ bool gbReadBatteryFile(const char *file)
 
 bool gbReadBatteryFromStream(gzFile gzfile)
 {
-	/// XXX FIXME: probably broken - fails to read save
-
 	// the GB save code is ugly, so rather than convert it all to use gzFiles, just copy it to temp RAM...
 #define TEMP_SAVE_FNAME ("tempvbaread.sav")
 	int pos = gztell(gzfile);
-	gzseek(gzfile, 0, SEEK_END);
-	int len = gztell(gzfile);
-	gzseek(gzfile, pos, SEEK_SET);
-	char * temp = new char [len];
+	int buflen = 1024;
+	char * temp = new char [buflen];
 	if(temp == NULL) return false;
 
 	// ...make a temp file and write it there...
-	gzFile gzFileTemp = utilGzOpen(TEMP_SAVE_FNAME, "wb");
-	utilGzRead(gzfile, temp, len);
+	FILE *fileTemp = fopen(TEMP_SAVE_FNAME, "wb");
+	if (fileTemp == NULL) return false;
+	int gzDeflated;
+	while ((gzDeflated = utilGzRead(gzfile, temp, buflen)) != 0) {
+		if (gzDeflated == -1 || fwrite(temp, gzDeflated, 1, fileTemp) != 1) {
+			fclose(fileTemp);
+			gzseek(gzfile, pos, SEEK_SET); /// FIXME: leaves pos in gzfile before save instead of after it (everything that calls this right now does a seek afterwards so it doesn't matter for now, but it's still bad)
+			return false;
+		}
+	}
 	gzseek(gzfile, pos, SEEK_SET); /// FIXME: leaves pos in gzfile before save instead of after it (everything that calls this right now does a seek afterwards so it doesn't matter for now, but it's still bad)
-	utilGzWrite(gzFileTemp, temp, len);
+	fclose(fileTemp);
 	delete [] temp;
 
 	// ... load from the temp file...
