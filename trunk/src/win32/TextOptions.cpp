@@ -2,9 +2,10 @@
 //
 
 #include "stdafx.h"
+#include "../Port.h"
 #include "../Text.h"
+#include "resource.h"
 #include "TextOptions.h"
-#include ".\textoptions.h"
 
 
 // TextOptions dialog

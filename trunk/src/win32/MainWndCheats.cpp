@@ -19,11 +19,13 @@
 #include "stdafx.h"
 #include "MainWnd.h"
 
+#include "resource.h"
 #include "FileDlg.h"
 #include "GBACheats.h"
 #include "GBCheatsDlg.h"
 #include "Reg.h"
 #include "WinResUtil.h"
+#include "VBA.h"
 
 #include "../GBA.h"
 #include "../Globals.h"
@@ -132,21 +134,21 @@ void MainWnd::OnCheatsLoadcheatlist()
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
 
-  if(saveDir.IsEmpty())
-    saveDir = getDirFromFile(theApp.filename);
+  if(cheatDir.IsEmpty())
+    cheatDir = getDirFromFile(theApp.filename);
 
-  if(isDriveRoot(saveDir))
-    filename.Format("%s%s.clt", saveDir, buffer);
+  if(isDriveRoot(cheatDir))
+    filename.Format("%s%s.clt", cheatDir, buffer);
   else
-    filename.Format("%s\\%s.clt", saveDir, buffer);
+    filename.Format("%s\\%s.clt", cheatDir, buffer);
 
   LPCTSTR exts[] = { ".clt" };
   CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
   CString title = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-  FileDlg dlg(this, filename, filter, 0, "CLT", exts, saveDir, title, false);
+  FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, false);
 
   if(dlg.DoModal() == IDOK) {
     winLoadCheatList(dlg.GetPathName());
@@ -171,21 +173,21 @@ void MainWnd::OnCheatsSavecheatlist()
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
 
-  if(saveDir.IsEmpty())
-    saveDir = getDirFromFile(theApp.filename);
+  if(cheatDir.IsEmpty())
+    cheatDir = getDirFromFile(theApp.filename);
 
-  if(isDriveRoot(saveDir))
-    filename.Format("%s%s.clt", saveDir, buffer);
+  if(isDriveRoot(cheatDir))
+    filename.Format("%s%s.clt", cheatDir, buffer);
   else
-    filename.Format("%s\\%s.clt", saveDir, buffer);
+    filename.Format("%s\\%s.clt", cheatDir, buffer);
 
   LPCTSTR exts[] = { ".clt" };
   CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
   CString title = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-  FileDlg dlg(this, filename, filter, 0, "CLT", exts, saveDir, title, true);
+  FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, true);
 
   if(dlg.DoModal() == IDOK) {
     winSaveCheatList(dlg.GetPathName());

@@ -26,6 +26,7 @@
 #include "../Globals.h"
 #include "../Text.h"
 
+#include "VBA.h"
 #include "Reg.h"
 #include "resource.h"
 

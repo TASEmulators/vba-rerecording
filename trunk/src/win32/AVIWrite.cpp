@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "AVIWrite.h"
+#include "VBA.h"
 
 AVIWrite::AVIWrite()
 {

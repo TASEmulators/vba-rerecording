@@ -925,7 +925,7 @@ static int savestate_create(lua_State *L) {
 		else
 			buffer = theApp.filename;
 
-		CString saveDir = regQueryStringValue("saveDir", NULL);
+		CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
 		if(saveDir.IsEmpty())
 			saveDir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);

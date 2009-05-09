@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "MainWnd.h"
 
+#include "resource.h"
 #include "Associate.h"
 #include "Directories.h"
 #include "FileDlg.h"
@@ -31,6 +32,7 @@
 #include "Throttle.h"
 #include "TextOptions.h"
 #include "WinResUtil.h"
+#include "VBA.h"
 
 #include "../System.h"
 #include "../agbprint.h"
@@ -274,23 +276,14 @@ BOOL MainWnd::OnOptionsFrameskip(UINT nID)
   case ID_OPTIONS_VIDEO_FRAMESKIP_3:
   case ID_OPTIONS_VIDEO_FRAMESKIP_4:
   case ID_OPTIONS_VIDEO_FRAMESKIP_5:
-    if(theApp.cartridgeType == 0) {
-      frameSkip = nID - ID_OPTIONS_VIDEO_FRAMESKIP_0;
-    } else {
-      gbFrameSkip = nID - ID_OPTIONS_VIDEO_FRAMESKIP_0;
-    }
-    if(emulating)
-      theApp.updateFrameSkip();
-    return TRUE;
-    break;
   case ID_OPTIONS_VIDEO_FRAMESKIP_6:
   case ID_OPTIONS_VIDEO_FRAMESKIP_7:
   case ID_OPTIONS_VIDEO_FRAMESKIP_8:
   case ID_OPTIONS_VIDEO_FRAMESKIP_9:
     if(theApp.cartridgeType == 0) {
-      frameSkip = 6 + nID - ID_OPTIONS_VIDEO_FRAMESKIP_6;
+      frameSkip = nID - ID_OPTIONS_VIDEO_FRAMESKIP_0;
     } else {
-      gbFrameSkip = 6 + nID - ID_OPTIONS_VIDEO_FRAMESKIP_6;
+      gbFrameSkip = nID - ID_OPTIONS_VIDEO_FRAMESKIP_0;
     }
     if(emulating)
       theApp.updateFrameSkip();

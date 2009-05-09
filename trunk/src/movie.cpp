@@ -33,10 +33,10 @@
 
 #if (defined(WIN32) && !defined(SDL))
 #	include "win32/stdafx.h"
-#	include "win32/vba.h"
 #	include "win32/resource.h"
 #	include "win32/WinResUtil.h"
 #	include "win32/MainWnd.h"
+#	include "win32/VBA.h"
 
 #	define theEmulator (theApp.emulator)
 
@@ -499,7 +499,7 @@ void VBAMovieInit ()
 			buffer = theApp.filename;
 
 		extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-		CString saveDir = regQueryStringValue("batteryDir", NULL);
+		CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
 
 		if(saveDir.IsEmpty())
 			saveDir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);

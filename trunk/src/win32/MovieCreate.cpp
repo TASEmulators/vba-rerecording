@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "../GBA.h"
 #include "MovieCreate.h"
 #include "./moviecreate.h"
@@ -61,7 +62,7 @@ BOOL MovieCreate::OnInitDialog()
   // convert the ROM filename into a default movie name
   {
 	extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-	CString capdir = regQueryStringValue("moviesDir", "");
+	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
 	  
 	if(capdir.IsEmpty())
 		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
@@ -122,7 +123,7 @@ void MovieCreate::OnBnClickedBrowse()
   theApp.winCheckFullscreen();
   CString captureBuffer;
   extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-  CString capdir = regQueryStringValue("moviesDir", "");
+  CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
   
   if(capdir.IsEmpty())
     capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
@@ -166,7 +167,7 @@ void MovieCreate::OnBnClickedBrowse()
     captureBuffer = captureBuffer.Left(len-1);
 
   extern void regSetStringValue(const char * key, const char * value); // from Reg.cpp
-  regSetStringValue("moviesDir", captureBuffer);
+  regSetStringValue(IDS_MOVIE_DIR, captureBuffer);
 
   GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 }

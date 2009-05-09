@@ -3,6 +3,7 @@
 
 #include "../Port.h"
 #include "stdafx.h"
+#include "resource.h"
 #include "../GBA.h"
 #include "MovieOpen.h"
 #include "../movie.h"
@@ -14,8 +15,6 @@
 #include "../Util.h"
 #include "../GBAinline.h"
 #include "movieOpen.h"
-
-
 
 // MovieOpen dialog
 
@@ -46,7 +45,7 @@ BOOL MovieOpen::OnInitDialog()
   // convert the ROM filename into a default movie name
   {
 	extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-	CString capdir = regQueryStringValue("moviesDir", "");
+	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
 	  
 	if(capdir.IsEmpty())
 		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
@@ -103,7 +102,7 @@ END_MESSAGE_MAP()
 void MovieOpen::OnBnClickedBrowse()
 {
 	extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-	CString capdir = regQueryStringValue("moviesDir", "");
+	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
 	  
 	if(capdir.IsEmpty())
 		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);

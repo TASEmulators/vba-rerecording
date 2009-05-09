@@ -56,6 +56,17 @@ enum {
 #define SCREEN_MESSAGE_SLOTS 8
 
 #define MAINWND_TITLE_STRING "VBA rerecording v21+ (interim)"
+#define IDS_ROM_DIR				"romDir"
+#define IDS_GBXROM_DIR			"gbromDir"
+#define IDS_BATTERY_DIR			"batteryDir"
+#define IDS_SAVE_DIR			"saveDir"
+#define IDS_MOVIE_DIR			"moviesDir"
+#define IDS_CHEAT_DIR			"cheatsDir"
+#define IDS_LUA_DIR				"luaDir"
+#define IDS_IPS_DIR				"ipsDir"
+#define IDS_AVI_DIR				"aviRecordDir"
+#define IDS_WAV_DIR				"soundRecordDir"
+#define IDS_CAPTURE_DIR			"captureDir"
 
 class AVIWrite;
 class WavWriter;

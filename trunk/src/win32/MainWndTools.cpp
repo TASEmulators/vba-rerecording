@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "MainWnd.h"
 
+#include "resource.h"
 #include "AccelEditor.h"
 #include "AVIWrite.h"
 #include "Disassemble.h"
@@ -41,6 +42,7 @@
 #include "TileView.h"
 #include "WavWriter.h"
 #include "WinResUtil.h"
+#include "VBA.h"
 
 #include "../GBA.h"
 #include "../Globals.h"
@@ -451,7 +453,7 @@ void MainWnd::OnToolsSoundStartrecording()
   theApp.winCheckFullscreen();
   CString captureBuffer;
 
-  CString capdir = regQueryStringValue("soundRecordDir", NULL);
+  CString capdir = regQueryStringValue(IDS_WAV_DIR, NULL);
   
   if(capdir.IsEmpty())
     capdir = getDirFromFile(theApp.filename);
@@ -507,7 +509,7 @@ void MainWnd::OnToolsSoundStartrecording()
 
   if(len > 3 && captureBuffer[len-1] == '\\')
     captureBuffer = captureBuffer.Left(len-1);
-  regSetStringValue("soundRecordDir", captureBuffer);
+  regSetStringValue(IDS_WAV_DIR, captureBuffer);
 }
 
 void MainWnd::OnToolsSoundStoprecording() 
@@ -541,7 +543,7 @@ void MainWnd::OnToolsStartAVIRecording()
   theApp.winCheckFullscreen();
   CString captureBuffer;
 
-  CString capdir = regQueryStringValue("aviRecordDir", NULL);
+  CString capdir = regQueryStringValue(IDS_AVI_DIR, NULL);
   
   if(capdir.IsEmpty())
     capdir = getDirFromFile(theApp.filename);
@@ -602,7 +604,7 @@ void MainWnd::OnToolsStartAVIRecording()
   if(len > 3 && captureBuffer[len-1] == '\\')
     captureBuffer = captureBuffer.Left(len-1);
 
-  regSetStringValue("aviRecordDir", captureBuffer);
+  regSetStringValue(IDS_AVI_DIR, captureBuffer);
 
   if(theApp.aviRecorder == NULL) {
     int width = 240;

@@ -78,6 +78,7 @@ BEGIN_MESSAGE_MAP(MainWnd, CWnd)
   ON_COMMAND(ID_HELP_ABOUT, OnHelpAbout)
   ON_COMMAND(ID_HELP_FAQ, OnHelpFaq)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+  ON_COMMAND(ID_FILE_OPENGAMEBOY, OnFileOpenGBx)
   ON_WM_INITMENUPOPUP()
   ON_COMMAND(ID_FILE_PAUSE, OnFilePause)
   ON_UPDATE_COMMAND_UI(ID_FILE_PAUSE, OnUpdateFilePause)
@@ -464,8 +465,7 @@ BEGIN_MESSAGE_MAP(MainWnd, CWnd)
   ON_COMMAND_EX_RANGE(ID_SELECT_SLOT1, ID_SELECT_SLOT10, OnSelectSlot)
   ON_UPDATE_COMMAND_UI_RANGE(ID_SELECT_SLOT1, ID_SELECT_SLOT10, OnUpdateSelectSlot)
 
-  ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_FRAMESKIP_0, ID_OPTIONS_VIDEO_FRAMESKIP_5, OnOptionsFrameskip)
-  ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_FRAMESKIP_6, ID_OPTIONS_VIDEO_FRAMESKIP_9, OnOptionsFrameskip)
+  ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_FRAMESKIP_0, ID_OPTIONS_VIDEO_FRAMESKIP_9, OnOptionsFrameskip)
   ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_X1, ID_OPTIONS_VIDEO_X4, OnOptionVideoSize)
   ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_LAYERS_BG0, ID_OPTIONS_VIDEO_LAYERS_OBJWIN, OnVideoLayer)
   ON_UPDATE_COMMAND_UI_RANGE(ID_OPTIONS_VIDEO_LAYERS_BG0, ID_OPTIONS_VIDEO_LAYERS_OBJWIN, OnUpdateVideoLayer)
@@ -558,7 +558,17 @@ bool MainWnd::FileRun()
     theApp.filename = theApp.filename.Left(index);
 
   CString ipsname;
-  ipsname.Format("%s.ips", theApp.filename);  
+//  ipsname.Format("%s.ips", theApp.filename);  
+
+  CString ipsDir = regQueryStringValue(IDS_IPS_DIR, NULL);
+
+  if(ipsDir.IsEmpty())
+    ipsDir = getDirFromFile(theApp.filename);
+
+  if(isDriveRoot(ipsDir))
+    ipsname.Format("%s%s.ips", ipsDir, theApp.filename);
+  else
+    ipsname.Format("%s\\%s.ips", ipsDir, theApp.filename);
 
   if(!theApp.dir.GetLength()) {
     int index = theApp.filename.ReverseFind('\\');
@@ -884,6 +894,30 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
   }
 }
 
+CString MainWnd::getDirFromFile(CString& file)
+{
+  CString temp = file;
+  int index = temp.ReverseFind('\\');
+
+  if(index != -1) {
+    temp = temp.Left(index);
+    if(temp.GetLength() == 2 && temp[1] == ':')
+      temp += "\\";
+  } else {
+    temp = "";
+  }
+  return temp;
+}
+
+bool MainWnd::isDriveRoot(CString& file)
+{
+  if(file.GetLength() == 3) {
+    if(file[1] == ':' && file[2] == '\\')
+      return true;
+  }
+  return false;
+}
+
 void MainWnd::winSaveCheatListDefault()
 {
   CString name;
@@ -895,10 +929,10 @@ void MainWnd::winSaveCheatListDefault()
     name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
   else
     name = theApp.filename;
-  CString dir = regQueryStringValue("saveDir", NULL);
+  CString dir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
 
-  if(!dir.GetLength())
-    dir = getDirFromFile(filename);
+  if(dir.IsEmpty())
+    dir = getDirFromFile(theApp.filename);
 
   if(isDriveRoot(dir))
     filename.Format("%s%s.clt", dir, name);
@@ -927,10 +961,10 @@ void MainWnd::winLoadCheatListDefault()
     name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
   else
     name = theApp.filename;
-  CString dir = regQueryStringValue("saveDir", NULL);
+  CString dir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
 
-  if(!dir.GetLength())
-    dir = getDirFromFile(filename);
+  if(dir.IsEmpty())
+    dir = getDirFromFile(theApp.filename);
 
   if(isDriveRoot(dir))
     filename.Format("%s%s.clt", dir, name);
@@ -953,30 +987,6 @@ void MainWnd::winLoadCheatList(const char *name)
     systemScreenMessage(winResLoadString(IDS_LOADED_CHEATS));
 }
 
-CString MainWnd::getDirFromFile(CString& file)
-{
-  CString temp = file;
-  int index = temp.ReverseFind('\\');
-
-  if(index != -1) {
-    temp = temp.Left(index);
-    if(temp.GetLength() == 2 && temp[1] == ':')
-      temp += "\\";
-  } else {
-    temp = "";
-  }
-  return temp;
-}
-
-bool MainWnd::isDriveRoot(CString& file)
-{
-  if(file.GetLength() == 3) {
-    if(file[1] == ':' && file[2] == '\\')
-      return true;
-  }
-  return false;
-}
-
 void MainWnd::writeBatteryFile()
 {
   CString buffer;
@@ -989,7 +999,7 @@ void MainWnd::writeBatteryFile()
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("batteryDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -1016,7 +1026,7 @@ void MainWnd::readBatteryFile()
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("batteryDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -1070,7 +1080,7 @@ void MainWnd::OnSystemMinimize()
 bool MainWnd::fileOpenSelect()
 {
   theApp.dir = "";
-  CString initialDir = regQueryStringValue("romdir",".");
+  CString initialDir = regQueryStringValue(theApp.cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR,".");
   if(!initialDir.IsEmpty())
     theApp.dir = initialDir;
 
@@ -1092,7 +1102,7 @@ bool MainWnd::fileOpenSelect()
     theApp.dir = theApp.szFile.Left(dlg.m_ofn.nFileOffset);
     if(theApp.dir.GetLength() > 3 && theApp.dir[theApp.dir.GetLength()-1] == '\\')
       theApp.dir = theApp.dir.Left(theApp.dir.GetLength()-1);
-    regSetStringValue("romdir", theApp.dir);
+    regSetStringValue(theApp.cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, theApp.dir);
     return true;
   }
   return false;
@@ -1165,7 +1175,7 @@ void MainWnd::screenCapture(int captureNumber)
 {
   CString buffer;
   
-  CString captureDir = regQueryStringValue("captureDir", "");
+  CString captureDir = regQueryStringValue(IDS_CAPTURE_DIR, "");
   int index = theApp.filename.ReverseFind('\\');
   
   CString name;
