@@ -42,8 +42,6 @@ BOOL MovieCreate::OnInitDialog()
 {
   CDialog::OnInitDialog();
 
-  GetDlgItem(IDC_RECRESET)->EnableWindow(theApp.cartridgeType == 0); /// FIXME / TEMP: from-SRAM of non-GBA games is broken
-
   GetDlgItem(IDC_REC_GBA)->EnableWindow(theApp.cartridgeType == 0);
   GetDlgItem(IDC_REC_GBC)->EnableWindow(theApp.cartridgeType != 0 && GBC_CAPABLE);
   GetDlgItem(IDC_REC_SGB)->EnableWindow(theApp.cartridgeType != 0 && SGB_CAPABLE);
@@ -330,6 +328,7 @@ void MovieCreate::OnBnClickedRecreset()
 	}
 	else
 	{
+		AfxGetApp()->m_pMainWnd->MessageBox("\"FIXME / TEMP: from-SRAM of non-GBA games is broken\"\n\nThe sentence above was written in the VBA source code, but we really didn't know about the detail of the problem. If you know the detail, tell us it please.\n\nhttp://code.google.com/p/vba-rerecording/issues/detail?id=29", "Warning", MB_OK|MB_ICONWARNING); // I really don't know the detail of the problem...
 		GetDlgItem(IDC_REC_GBC)->EnableWindow(GBC_CAPABLE);
 		GetDlgItem(IDC_REC_SGB)->EnableWindow(SGB_CAPABLE);
 		GetDlgItem(IDC_REC_GB )->EnableWindow(TRUE);

@@ -45,6 +45,7 @@
 #include "../GBA.h"
 #include "../Globals.h"
 #include "../gb/gbGlobals.h"
+#include "../gb/GB.h"
 #include "../Sound.h"
 #include "../movie.h"
 #include "../RTC.h"
@@ -327,6 +328,8 @@ void MainWnd::OnUpdateToolsLagCounter(CCmdUI* pCmdUI)
 
 void MainWnd::OnToolsLagCounterReset() 
 {
+	GBSystem.lagCount = 0;
+	GBASystem.lagCount = 0;
 	theApp.emulator.lagCount = 0;
 }
 

@@ -436,7 +436,7 @@ static void write_frame_controller_data(int i)
 
 #		if (defined(WIN32) && !defined(SDL))
 			// add in the motion sensor bits
-			extern BOOL checkKey(int key); // from Input.cpp
+			extern BOOL checkKey(LONG_PTR key); // from Input.cpp
 			extern USHORT motion[4]; // from DirectInput.cpp
 			if(checkKey(motion[KEY_LEFT])) buttonData |= BUTTON_MASK_LEFT_MOTION;
 			if(checkKey(motion[KEY_RIGHT])) buttonData |= BUTTON_MASK_RIGHT_MOTION;

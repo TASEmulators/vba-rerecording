@@ -39,6 +39,5 @@ class IDisplay {
   virtual void resize(int w, int h) {};
   virtual void setOption(const char *option, int value) = 0;
   virtual DISPLAY_TYPE getType() = 0;
-  virtual bool isSkinSupported() { return false; }
   virtual int selectFullScreenMode(GUID **) = 0;
 };

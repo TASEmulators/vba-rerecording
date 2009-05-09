@@ -17,6 +17,8 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
+#include "VBA.h"
+#include "Input.h"
 #include "Reg.h"
 #include "WinResUtil.h"
 
@@ -52,7 +54,7 @@ public:
   virtual bool initialize();
   virtual bool readDevices();
   virtual u32 readDevice(int which, bool sensor, bool free);
-  virtual CString getKeyName(int key);
+  virtual CString getKeyName(LONG_PTR key);
   virtual void checkKeys();
   virtual void activate();
   virtual void loadSettings();
@@ -334,7 +336,7 @@ static int getPovState(DWORD value)
 
 static void checkKeys()
 {
-  int dev = 0;
+  LONG_PTR dev = 0;
   int i;
 
   for(i = 0; i < numDevices; i++)
@@ -498,23 +500,33 @@ static bool readJoystick(int joy)
 
 static void checkKeyboard()
 {
+  // mham fix. Patch #1378104
+  UCHAR keystate[256];
   HRESULT hret = pDevices[0].device->Acquire();  
+
+  if (pDevices[0].first) {
+    pDevices[0].device->GetDeviceState(256, (LPVOID)pDevices[0].data);
+    pDevices[0].first = FALSE;
+    return;
+  }
+
   hret = pDevices[0].device->
-    GetDeviceState(256,
-                   (LPVOID)pDevices[0].data);
-  
+         GetDeviceState(256, (LPVOID)keystate);
+
   if(hret == DIERR_INPUTLOST || hret == DIERR_NOTACQUIRED) {
     return;
   }
- 
+
   if(hret == DI_OK) {
     for(int i = 0; i < 256; i++) {
-      if(KEYDOWN(pDevices[0].data, i)) {
+      if (keystate[i] == pDevices[0].data[i]) continue;
+      if (KEYDOWN(keystate, i)) {
         SendMessage(GetFocus(), JOYCONFIG_MESSAGE,0,i);
         break;
       }
     }
   }
+  memcpy(pDevices[0].data, keystate, sizeof(UCHAR) * 256);
 }
 
 static void checkJoypads()
@@ -619,17 +631,19 @@ static void checkJoypads()
   }
 }
 
-BOOL checkKey(int key)
+BOOL checkKey(LONG_PTR key)
 {
-  int dev = (key >> 8);
+  LONG_PTR dev = (key >> 8);
 
-  int k = (key & 255);
-  
+  LONG_PTR k = (key & 255);
+
   if(dev == 0) {
     return KEYDOWN(pDevices[0].data,k);
+  } else if (dev >= numDevices) {
+    return FALSE;
   } else {
     if(k < 16) {
-      int axis = k >> 1;
+      LONG_PTR axis = k >> 1;
       LONG value = pDevices[dev].axis[axis].center;
       switch(pDevices[dev].axis[axis].offset) {
       case DIJOFS_X:
@@ -662,7 +676,7 @@ BOOL checkKey(int key)
         return value > pDevices[dev].axis[axis].positive;
       return value < pDevices[dev].axis[axis].negative;
     } else if(k < 48) {
-      int hat = (k >> 2) & 3;
+      LONG_PTR hat = (k >> 2) & 3;
       int state = getPovState(pDevices[dev].state.rgdwPOV[hat]);
       BOOL res = FALSE;
       switch(k & 3) {
@@ -761,6 +775,7 @@ bool DirectInput::initialize()
   hret = pDirectInput->CreateDevice(GUID_SysKeyboard,&pDevices[0].device,NULL);
   pDevices[0].isPolled = false;
   pDevices[0].needed  = true;
+  pDevices[0].first  = true;
 
   if(hret != DI_OK) {
     //    errorMessage(myLoadString(IDS_ERROR_DISP_CREATEDEVICE), hret);
@@ -794,6 +809,7 @@ bool DirectInput::initialize()
   for(int i = 1; i < numDevices; i++) {
     pDevices[i].device->SetDataFormat(&c_dfDIJoystick);
     pDevices[i].needed = false;
+    pDevices[i].first  = true;
     currentDevice = &pDevices[i];
     axisNumber = 0;
     currentDevice->device->EnumObjects(EnumAxesCallback, NULL, DIDFT_AXIS);
@@ -891,8 +907,6 @@ u32 DirectInput::readDevice(int which, bool sensor, bool free)
 		}
 	}
 
-	currentButtons[i] |= theApp.skinButtons;
-
 	if(theApp.autoFire || theApp.autoFire2)
 	{
 		currentButtons[i] |= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
@@ -983,10 +997,12 @@ u32 DirectInput::readDevice(int which, bool sensor, bool free)
 	if (free)
 		currentButtons[i] = currentButtonsBackup;
 
+	if(theApp.speedupToggle)
+		res |= BUTTON_MASK_SPEED;
 	if(inputActive && !free)
 	{
 		// the "non-button" buttons (what a hack!)
-		if(checkKey(joypad[i][KEY_BUTTON_SPEED]) || theApp.speedupToggle)
+		if(checkKey(joypad[i][KEY_BUTTON_SPEED]))
 			res |= BUTTON_MASK_SPEED;
 		if(checkKey(joypad[i][KEY_BUTTON_CAPTURE]))
 			res |= BUTTON_MASK_CAPTURE;
@@ -997,10 +1013,10 @@ u32 DirectInput::readDevice(int which, bool sensor, bool free)
   return res;
 }
 
-CString DirectInput::getKeyName(int key)
+CString DirectInput::getKeyName(LONG_PTR key)
 {
-  int d = (key >> 8);
-  int k = key & 255;
+  LONG_PTR d = (key >> 8);
+  LONG_PTR k = key & 255;
 
   DIDEVICEOBJECTINSTANCE di;
 
@@ -1011,9 +1027,9 @@ CString DirectInput::getKeyName(int key)
   CString winBuffer = winResLoadString(IDS_ERROR);
   
   if(d == 0) {
-    pDevices[0].device->GetObjectInfo(&di,key,DIPH_BYOFFSET);
+    pDevices[0].device->GetObjectInfo(&di,(DWORD)key,DIPH_BYOFFSET);
     winBuffer = di.tszName;
-  } else {
+  } else if (d < numDevices) {
     if(k < 16) {
       if(k < 4) {
         switch(k) {
@@ -1040,12 +1056,12 @@ CString DirectInput::getKeyName(int key)
           winBuffer.Format("Joy %d %s -", d, di.tszName);
       }
     } else if(k < 48) {
-      int hat = (k >> 2) & 3;
+      LONG_PTR hat = (k >> 2) & 3;
       pDevices[d].device->GetObjectInfo(&di,
-                                        DIJOFS_POV(hat),
+                                        (DWORD)DIJOFS_POV(hat),
                                         DIPH_BYOFFSET);
       char *dir = "up";
-      int dd = k & 3;
+      LONG_PTR dd = k & 3;
       if(dd == 1)
         dir = "down";
       else if(dd == 2)
@@ -1055,10 +1071,15 @@ CString DirectInput::getKeyName(int key)
       winBuffer.Format("Joy %d %s %s", d, di.tszName, dir);
     } else {
       pDevices[d].device->GetObjectInfo(&di,
-                                        DIJOFS_BUTTON(k-128),
+                                        (DWORD)DIJOFS_BUTTON(k-128),
                                         DIPH_BYOFFSET);
       winBuffer.Format(winResLoadString(IDS_JOY_BUTTON),d,di.tszName);
     }
+  }
+  else
+  {
+    // Joystick isn't plugged in.  We can't decipher k, so just show its value.
+    winBuffer.Format("Joy %d (%d)", d, k);
   }
 
   return winBuffer;

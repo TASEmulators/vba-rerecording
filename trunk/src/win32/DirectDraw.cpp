@@ -70,7 +70,6 @@ public:
   virtual bool changeRenderSize(int w, int h);
   virtual DISPLAY_TYPE getType() { return DIRECT_DRAW; };
   virtual void setOption(const char *, int) {}
-  virtual bool isSkinSupported() { return true; }
   virtual int selectFullScreenMode(GUID **);  
 };
 
@@ -802,7 +801,7 @@ void DirectDrawDisplay::render()
       gbaLoopEnd:
       }
     }
-    if(theApp.showSpeed && (theApp.videoOption > VIDEO_4X || theApp.skin != NULL)) {
+    if(theApp.showSpeed && theApp.videoOption > VIDEO_4X) {
       char buffer[30];
       if(theApp.showSpeed == 1)
         sprintf(buffer, "%3d%%", systemSpeed);

@@ -1060,56 +1060,6 @@ bool MainWnd::writeSaveGame(const char *name)
 void MainWnd::OnContextMenu(CWnd* pWnd, CPoint point) 
 {
   winMouseOn();
-  if(theApp.skin) {
-    if(theApp.popup == NULL) {
-      theApp.winAccelMgr.UpdateMenu(theApp.menu);
-      theApp.popup = CreatePopupMenu();
-      if(theApp.menu != NULL) {
-        int count = GetMenuItemCount(theApp.menu);
-        OSVERSIONINFO info;
-        info.dwOSVersionInfoSize = sizeof(info);
-        GetVersionEx(&info);
-
-        if(info.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
-          for(int i = 0; i < count; i++) {
-            char buffer[256];
-            MENUITEMINFO info;
-            ZeroMemory(&info, sizeof(info));
-            info.cbSize = sizeof(info) - sizeof(HBITMAP);
-            info.fMask = MIIM_STRING | MIIM_SUBMENU;
-            info.dwTypeData = buffer;
-            info.cch = 256;
-            if(!GetMenuItemInfo(theApp.menu, i, MF_BYPOSITION, &info)) {
-            }
-            if(!AppendMenu(theApp.popup, MF_POPUP|MF_STRING, (UINT)info.hSubMenu, buffer)) {
-            }
-          }
-        } else {
-          for(int i = 0; i < count; i++) {
-            wchar_t buffer[256];
-            MENUITEMINFOW info;
-            ZeroMemory(&info, sizeof(info));
-            info.cbSize = sizeof(info) - sizeof(HBITMAP);
-            info.fMask = MIIM_STRING | MIIM_SUBMENU;
-            info.dwTypeData = buffer;
-            info.cch = 256;
-            if(!GetMenuItemInfoW(theApp.menu, i, MF_BYPOSITION, &info)) {
-            }
-            if(!AppendMenuW(theApp.popup, MF_POPUP|MF_STRING, (UINT)info.hSubMenu, buffer)) {
-            }
-          }
-        }
-      }
-    }
-    int x = point.x;
-    int y = point.y;
-    if(x == -1 && y == -1) {
-      x = (theApp.dest.left + theApp.dest.right) / 2;
-      y = (theApp.dest.top + theApp.dest.bottom) / 2;
-    }
-    if(!TrackPopupMenu(theApp.popup, 0, x, y, 0, m_hWnd, NULL)) {
-    }
-  }
 }
 
 void MainWnd::OnSystemMinimize()
