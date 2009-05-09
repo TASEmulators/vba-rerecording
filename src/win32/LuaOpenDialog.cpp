@@ -82,7 +82,7 @@ BOOL LuaOpenDialog::OnInitDialog()
 void LuaOpenDialog::OnBnClickedBrowse()
 {
 	extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-	CString capdir = regQueryStringValue("luaDir", "");
+	CString capdir = regQueryStringValue(IDS_LUA_DIR, "");
 	CString luaName;
 	CString captureBuffer;
 
@@ -128,7 +128,7 @@ void LuaOpenDialog::OnBnClickedBrowse()
 		captureBuffer = captureBuffer.Left(len-1);
 
 	extern void regSetStringValue(const char * key, const char * value); // from Reg.cpp
-	regSetStringValue("luaDir", captureBuffer);
+	regSetStringValue(IDS_LUA_DIR, captureBuffer);
 
 	GetDlgItem(IDC_LUA_FILENAME)->SetWindowText(luaName);
 }

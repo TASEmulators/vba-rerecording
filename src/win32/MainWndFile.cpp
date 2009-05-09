@@ -19,6 +19,9 @@
 #include "stdafx.h"
 #include "MainWnd.h"
 
+#include "../Port.h"
+
+#include "resource.h"
 #include "ExportGSASnapshot.h"
 #include "FileDlg.h"
 #include "GSACodeSelect.h"
@@ -26,6 +29,7 @@
 #include "Reg.h"
 #include "WinResUtil.h"
 #include "LuaOpenDialog.h"
+#include "VBA.h"
 
 #include "../GBA.h"
 #include "../Globals.h"
@@ -44,6 +48,18 @@ extern void remoteCleanUp();
 void MainWnd::OnFileOpen() 
 {
   theApp.winCheckFullscreen();
+  theApp.cartridgeType = 0;
+  if(fileOpenSelect()) {
+	if(VBAMovieActive())
+		VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
+    FileRun();
+  }
+}
+
+void MainWnd::OnFileOpenGBx() 
+{
+  theApp.winCheckFullscreen();
+  theApp.cartridgeType = 1;
   if(fileOpenSelect()) {
 	if(VBAMovieActive())
 		VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
@@ -212,7 +228,7 @@ void MainWnd::OnFileLoad()
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -260,7 +276,7 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -323,7 +339,7 @@ void MainWnd::OnFileSave()
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -368,7 +384,7 @@ BOOL MainWnd::OnFileSaveSlot(UINT nID)
   else
     buffer = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -407,7 +423,7 @@ void MainWnd::OnFileImportBatteryfile()
   CString filter = winLoadFilter(IDS_FILTER_SAV);
   CString title = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
-  CString saveDir = regQueryStringValue("batteryDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -523,7 +539,7 @@ void MainWnd::OnFileExportBatteryfile()
   CString filter = winLoadFilter(IDS_FILTER_SAV);
   CString title = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
-  CString saveDir = regQueryStringValue("batteryDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -620,7 +636,7 @@ void MainWnd::OnFileScreencapture()
   else
     name = theApp.filename;
 
-  CString capdir = regQueryStringValue("captureDir", "");
+  CString capdir = regQueryStringValue(IDS_CAPTURE_DIR, "");
   if(capdir.IsEmpty())
     capdir = getDirFromFile(name);
 
@@ -774,7 +790,7 @@ void MainWnd::OnFileSavegameOldestslot()
   else
     filename = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -818,7 +834,7 @@ void MainWnd::OnUpdateFileSavegameOldestslot(CCmdUI* pCmdUI)
     else
       filename = theApp.filename;
 
-    CString saveDir = regQueryStringValue("saveDir", NULL);
+    CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
     if(saveDir.IsEmpty())
       saveDir = getDirFromFile(theApp.filename);
@@ -878,7 +894,7 @@ void MainWnd::OnFileLoadgameMostrecent()
   else
     filename = theApp.filename;
 
-  CString saveDir = regQueryStringValue("saveDir", NULL);
+  CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
   if(saveDir.IsEmpty())
     saveDir = getDirFromFile(theApp.filename);
@@ -922,7 +938,7 @@ void MainWnd::OnUpdateFileLoadgameMostrecent(CCmdUI* pCmdUI)
     else
       filename = theApp.filename;
 
-    CString saveDir = regQueryStringValue("saveDir", NULL);
+    CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
     if(saveDir.IsEmpty())
       saveDir = getDirFromFile(theApp.filename);
@@ -1036,7 +1052,7 @@ void MainWnd::OnUpdateFileLoadgameCurrent(CCmdUI* pCmdUI)
     else
       filename = theApp.filename;
 
-    CString saveDir = regQueryStringValue("saveDir", NULL);
+    CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
     if(saveDir.IsEmpty())
       saveDir = getDirFromFile(theApp.filename);

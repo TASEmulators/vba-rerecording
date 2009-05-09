@@ -108,6 +108,7 @@ class MainWnd : public CWnd
   afx_msg void OnHelpAbout();
   afx_msg void OnHelpFaq();
   afx_msg void OnFileOpen();
+  afx_msg void OnFileOpenGBx();
   afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
   afx_msg void OnFilePause();
   afx_msg void OnUpdateFilePause(CCmdUI* pCmdUI);

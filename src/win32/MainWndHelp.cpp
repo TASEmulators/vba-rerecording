@@ -18,9 +18,9 @@
 
 #include "stdafx.h"
 #include "MainWnd.h"
-
 #include "AboutDialog.h"
 #include "BugReport.h"
+#include "VBA.h"
 
 extern int emulating;
 

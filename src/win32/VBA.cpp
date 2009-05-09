@@ -22,13 +22,16 @@
 #include <mmsystem.h>
 #include <assert.h>
 
+#include "../Port.h"
+
+#include "resource.h"
 #include "AVIWrite.h"
 #include "LangSelect.h"
 #include "MainWnd.h"
 #include "Reg.h"
-#include "resource.h"
 #include "WavWriter.h"
 #include "WinResUtil.h"
+#include "VBA.h"
 
 #include "../System.h"
 #include "../agbprint.h"
@@ -514,7 +517,7 @@ static void CorrectPath (CString & path)
 	}
 	else
 	{
-		for(int i = 0 ; i < 10 ; i++)
+		for(int i = 0 ; i < 11 ; i++)
 		{
 			switch(i)
 			{
@@ -524,20 +527,27 @@ static void CorrectPath (CString & path)
 					curDir[_MAX_PATH-1] = '\0';
 					tempStr = curDir;
 				}	break;
-				case 1: tempStr = regQueryStringValue("romdir","."); break;
-				case 2: tempStr = regQueryStringValue("moviesdir","."); break;
-				case 3: tempStr = regQueryStringValue("batteryDir","."); break;
-				case 4: tempStr = regQueryStringValue("saveDir","."); break;
-				case 5: tempStr = regQueryStringValue("captureDir","."); break;
-				case 6: tempStr = regQueryStringValue("soundRecordDir","."); break;
-				case 7: tempStr = regQueryStringValue("aviRecordDir","."); break;
-				case 8: tempStr = "C:";
-				case 9: {
-					tempStr = regQueryStringValue("romdir",".");
-					char * slash = (char*)strrchr(tempStr, '\\');
+				case 1: tempStr = regQueryStringValue(IDS_ROM_DIR,"."); break;
+				case 2: tempStr = regQueryStringValue(IDS_GBXROM_DIR,"."); break;
+				case 3: tempStr = regQueryStringValue(IDS_BATTERY_DIR,"."); break;
+				case 4: tempStr = regQueryStringValue(IDS_SAVE_DIR,"."); break;
+				case 5: tempStr = regQueryStringValue(IDS_MOVIE_DIR,"."); break;
+				case 6: tempStr = regQueryStringValue(IDS_CHEAT_DIR,"."); break;
+				case 7: tempStr = regQueryStringValue(IDS_IPS_DIR,"."); break;
+				case 8: tempStr = regQueryStringValue(IDS_AVI_DIR,"."); break;
+				case 9: tempStr = regQueryStringValue(IDS_WAV_DIR,"."); break;
+				case 10: tempStr = regQueryStringValue(IDS_CAPTURE_DIR,"."); break;
+/*
+				// what do these do?
+				case 11: tempStr = "C:";
+				case 12: {
+					tempStr = regQueryStringValue(IDS_ROM_DIR,".");
+					char * slash = (char*)strrchr(tempStr, '\\'); // should use member func intstead
 					if(slash)
 						slash[0] = '\0';
 				}	break;
+*/
+				default: break;
 			}
 			tempStr += "\\";
 			tempStr += path;

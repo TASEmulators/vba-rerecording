@@ -32,6 +32,7 @@
 #include "../Sound.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
+#include "../vbalua.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -216,9 +217,10 @@ CString BugReport::createReport()
   AppendFormat(report, "Using BIOS   : %d\r\n", theApp.useBiosFile);
   AppendFormat(report, "Skip BIOS    : %d\r\n", theApp.skipBiosFile);
   AppendFormat(report, "Disable SFX  : %d\r\n", cpuDisableSfx);
-  AppendFormat(report, "Skip intro   : %d\r\n", theApp.removeIntros);
+///  AppendFormat(report, "Skip intro   : %d\r\n", theApp.removeIntros);
   AppendFormat(report, "Throttle     : %d\r\n", theApp.throttle);
   AppendFormat(report, "Rewind       : %d\r\n", theApp.rewindTimer);
+  AppendFormat(report, "Lua          : %d\r\n", VBALuaRunning());
 ///  AppendFormat(report, "Auto frame   : %d\r\n", theApp.autoFrameSkip);
   AppendFormat(report, "Video option : %d\r\n", theApp.videoOption);
   AppendFormat(report, "Render type  : %d\r\n", theApp.renderMethod);
@@ -234,7 +236,7 @@ CString BugReport::createReport()
   AppendFormat(report, "RTC          : %d (%d)\r\n", theApp.winRtcEnable,
                rtcIsEnabled());
   AppendFormat(report, "AGBPrint     : %d\r\n", agbPrintIsEnabled());
-  AppendFormat(report, "Speed toggle : %d\r\n", theApp.speedupToggle);
+  AppendFormat(report, "Turbo Mode   : %d\r\n", theApp.speedupToggle);
   AppendFormat(report, "Synchronize  : %d\r\n", synchronize);
   AppendFormat(report, "Sound OFF    : %d\r\n", soundOffFlag);
   AppendFormat(report, "Channels     : %04x\r\n", soundGetEnable() & 0x30f);

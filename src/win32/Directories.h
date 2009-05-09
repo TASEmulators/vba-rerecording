@@ -40,11 +40,19 @@ class Directories : public CDialog
   // Dialog Data
   //{{AFX_DATA(Directories)
   enum { IDD = IDD_DIRECTORIES };
-  CEdit  m_savePath;
   CEdit  m_romPath;
-  CEdit  m_gbromPath;
-  CEdit  m_capturePath;
+  CEdit  m_gbxromPath;
   CEdit  m_batteryPath;
+  CEdit  m_savePath;
+  CEdit  m_moviePath;
+  CEdit  m_cheatPath;
+  CEdit  m_ipsPath;
+  CEdit  m_luaPath;
+//  CEdit  m_watchPath;
+//  CEdit  m_pluginPath;
+  CEdit  m_aviPath;
+  CEdit  m_wavPath;
+  CEdit  m_capturePath;
   //}}AFX_DATA
 
 
@@ -61,16 +69,28 @@ class Directories : public CDialog
   // Generated message map functions
   //{{AFX_MSG(Directories)
   virtual BOOL OnInitDialog();
-  afx_msg void OnBatteryDir();
-  afx_msg void OnBatteryDirReset();
-  afx_msg void OnCaptureDir();
-  afx_msg void OnCaptureDirReset();
-  afx_msg void OnMoviesDir();
-  afx_msg void OnMoviesDirReset();
   afx_msg void OnRomDir();
   afx_msg void OnRomDirReset();
+  afx_msg void OnGBxRomDir();
+  afx_msg void OnGBxRomDirReset();
+  afx_msg void OnBatteryDir();
+  afx_msg void OnBatteryDirReset();
   afx_msg void OnSaveDir();
   afx_msg void OnSaveDirReset();
+  afx_msg void OnMovieDir();
+  afx_msg void OnMovieDirReset();
+  afx_msg void OnCheatDir();
+  afx_msg void OnCheatDirReset();
+  afx_msg void OnIpsDir();
+  afx_msg void OnIpsDirReset();
+  afx_msg void OnLuaDir();
+  afx_msg void OnLuaDirReset();
+  afx_msg void OnAviDir();
+  afx_msg void OnAviDirReset();
+  afx_msg void OnWavDir();
+  afx_msg void OnWavDirReset();
+  afx_msg void OnCaptureDir();
+  afx_msg void OnCaptureDirReset();
   virtual void OnCancel();
   virtual void OnOK();
   //}}AFX_MSG
