@@ -48,23 +48,29 @@ extern void remoteCleanUp();
 void MainWnd::OnFileOpen() 
 {
   theApp.winCheckFullscreen();
+  int cartType = theApp.cartridgeType;
   theApp.cartridgeType = 0;
   if(fileOpenSelect()) {
 	if(VBAMovieActive())
 		VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
     FileRun();
   }
+  else
+	  theApp.cartridgeType = cartType;
 }
 
 void MainWnd::OnFileOpenGBx() 
 {
   theApp.winCheckFullscreen();
+  int cartType = theApp.cartridgeType;
   theApp.cartridgeType = 1;
   if(fileOpenSelect()) {
 	if(VBAMovieActive())
 		VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
     FileRun();
   }
+  else
+	  theApp.cartridgeType = cartType;
 }
 
 void MainWnd::OnFilePause() 
