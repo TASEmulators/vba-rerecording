@@ -25,20 +25,20 @@
 // some build target defines:
 
 #ifndef _WIN32_WINDOWS
-#	define _WIN32_WINDOWS 0x0410 // Windows 98 +
-///#	define _WIN32_WINDOWS 0x0500 // Windows NT +
+///#	define _WIN32_WINDOWS 0x0410 // Windows 98 +
+#	define _WIN32_WINDOWS 0x0500 // Windows NT +
 ///#	define _WIN32_WINDOWS 0x0501 // Windows XP +
 #endif
 
 #ifndef _WIN32_WINNT
-#	define _WIN32_WINNT 0x0410 // Windows 98 +
-///#	define _WIN32_WINNT 0x0500 // Windows NT +
+///#	define _WIN32_WINNT 0x0410 // Windows 98 +
+#	define _WIN32_WINNT 0x0500 // Windows NT +
 ///#	define _WIN32_WINNT 0x0501 // Windows XP +
 #endif
 
 #ifndef WINVER
 ///#	define WINVER 0x0410 // Windows 98 +
-#define WINVER 0x0500 // Windows NT +
+#	define WINVER 0x0500 // Windows NT +
 ///#	define WINVER 0x0501 // Windows XP +
 #endif
 

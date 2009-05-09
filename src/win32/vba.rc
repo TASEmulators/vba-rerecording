@@ -1930,11 +1930,6 @@ BEGIN
             MENUITEM "File &Associate...",          ID_OPTIONS_EMULATOR_ASSOCIATE
 
             MENUITEM SEPARATOR
-            MENUITEM "Use Skin",                    ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN
-
-            MENUITEM "Select Skin...",              ID_OPTIONS_VIDEO_RENDEROPTIONS_SELECTSKIN
-
-            MENUITEM SEPARATOR
             POPUP "UI &Language"
             BEGIN
                 MENUITEM "&System",                     ID_OPTIONS_LANGUAGE_SYSTEM

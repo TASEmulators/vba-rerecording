@@ -28,7 +28,6 @@
 #include "ModeConfirm.h"
 #include "Reg.h"
 #include "RewindInterval.h"
-#include "skin.h"
 #include "Throttle.h"
 #include "TextOptions.h"
 #include "WinResUtil.h"
@@ -660,58 +659,18 @@ void MainWnd::OnUpdateOptionsVideoRenderoptionsGlquads(CCmdUI* pCmdUI)
 
 void MainWnd::OnOptionsVideoRenderoptionsSelectskin() 
 {
-  LPCTSTR exts[] = {".ini" };
-  CString filter = winLoadFilter(IDS_FILTER_INI);
-  CString title = winResLoadString(IDS_SELECT_SKIN_FILE);
-
-  FileDlg dlg(this,
-              theApp.skinName,
-              filter,
-              0,
-              "INI",
-              exts,
-              "", 
-              title,
-              false);
-
-  if(dlg.DoModal() == IDCANCEL) {
-    return;
-  }
-
-  bool result = false;
-  if(!theApp.skinEnabled) {
-    theApp.skinEnabled = !theApp.skinEnabled;    
-    regSetDwordValue("skinEnabled", theApp.skinEnabled);
-  }
-
-  if(theApp.skin && theApp.skinEnabled) {
-    delete theApp.skin;
-    theApp.skin = NULL;
-  }
-
-  theApp.skinName = dlg.GetPathName();
-
-  theApp.winUpdateSkin();
-  theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoRenderoptionsSelectskin(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(theApp.display && theApp.display->isSkinSupported() &&
-                 theApp.videoOption <= VIDEO_4X);
 }
 
 void MainWnd::OnOptionsVideoRenderoptionsSkin() 
 {
-  theApp.skinEnabled = !theApp.skinEnabled;
-  theApp.updateRenderMethod(true);
-  theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoRenderoptionsSkin(CCmdUI* pCmdUI) 
 {
-  pCmdUI->SetCheck(theApp.skinEnabled);
-  pCmdUI->Enable(theApp.display && theApp.display->isSkinSupported() && theApp.videoOption <= VIDEO_4X);
 }
 
 void MainWnd::OnOptionsEmulatorAssociate() 

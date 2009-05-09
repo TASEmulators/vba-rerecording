@@ -57,7 +57,6 @@ enum {
 
 #define MAINWND_TITLE_STRING "VBA rerecording v21+ (interim)"
 
-class CSkin;
 class AVIWrite;
 class WavWriter;
 
@@ -151,10 +150,6 @@ class VBA : public CWinApp
   int d3dFilter;
   int glFilter;
   int glType;
-  CSkin *skin;
-  CString skinName;
-  bool skinEnabled;
-  int skinButtons;
   bool pauseWhenInactive;
   bool speedupToggle;
   bool useOldSync;
@@ -259,7 +254,6 @@ class VBA : public CWinApp
 #ifdef MMX
 #endif
   void updatePriority();
-  void winUpdateSkin();
   void directXMessage(const char *msg);
   void shutdownDisplay();
   void winCheckFullscreen();

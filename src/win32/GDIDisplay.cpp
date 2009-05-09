@@ -58,7 +58,6 @@ public:
   virtual void clear();
   virtual DISPLAY_TYPE getType() { return GDI; };
   virtual void setOption(const char *, int) {}
-  virtual bool isSkinSupported() { return true; }
   virtual int selectFullScreenMode(GUID **);
 };
 
@@ -354,7 +353,7 @@ void GDIDisplay::render()
                                filterHeight);
   }
 
-  if(theApp.showSpeed && (theApp.videoOption > VIDEO_4X || theApp.skin != NULL)) {
+  if(theApp.showSpeed && theApp.videoOption > VIDEO_4X) {
     char buffer[30];
     if(theApp.showSpeed == 1)
       sprintf(buffer, "%3d%%", systemSpeed);
