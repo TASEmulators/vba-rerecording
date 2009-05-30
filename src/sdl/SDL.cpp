@@ -1942,6 +1942,84 @@ Long options only:\n\
 ");
 }
 
+static char *szFile;
+
+void file_run()
+{
+    utilGetBaseName(szFile, filename);
+    char *p = strrchr(filename, '.');
+
+    if(p)
+      *p = 0;
+
+    if(ipsname[0] == 0)
+      sprintf(ipsname, "%s.ips", filename);
+    
+    bool failed = false;
+
+    IMAGE_TYPE type = utilFindType(szFile);
+
+    if(type == IMAGE_UNKNOWN) {
+      systemMessage(0, "Unknown file type %s", szFile);
+      exit(-1);
+    }
+    cartridgeType = (int)type;
+
+    if(type == IMAGE_GB) {
+      failed = !gbLoadRom(szFile);
+      if(!failed) {
+        cartridgeType = 1;
+        emulator = GBSystem;
+        if(sdlAutoIPS) {
+          int size = gbRomSize;
+          utilApplyIPS(ipsname, &gbRom, &size);
+          if(size != gbRomSize) {
+            extern bool gbUpdateSizes();
+            gbUpdateSizes();
+            gbReset();
+          }
+        }
+      }
+    } else if(type == IMAGE_GBA) {
+      int size = CPULoadRom(szFile);
+      failed = (size == 0);
+      if(!failed) {
+        //        if(cpuEnhancedDetection && cpuSaveType == 0) {
+        //          utilGBAFindSave(rom, size);
+        //        }
+
+        sdlApplyPerImagePreferences();
+        
+        cartridgeType = 0;
+        emulator = GBASystem;
+
+        /* disabled due to problems
+        if(removeIntros && rom != NULL) {
+          WRITE32LE(&rom[0], 0xea00002e);
+        }
+        */
+        
+        CPUInit(biosFileName, useBios);
+        CPUReset();
+        if(sdlAutoIPS) {
+          int size = 0x2000000;
+          utilApplyIPS(ipsname, &rom, &size);
+          if(size != 0x2000000) {
+            CPUReset();
+          }
+        }
+      }
+    }
+    
+    if(failed) {
+      systemMessage(0, "Failed to load file %s", szFile);
+      exit(-1);
+    }
+  
+  emulating = 1;
+  renderedFrames = 0;
+  }
+
 int main(int argc, char **argv)
 {
   fprintf(stderr, "VisualBoyAdvance version %s [SDL]\n", VERSION);
@@ -2091,6 +2169,7 @@ int main(int argc, char **argv)
         useMovie = 1;
       break;
     case 'p': // play without read-only (editable)
+      fprintf (stderr, "-p got called!\n");
       if(optarg == NULL) {
         fprintf(stderr, "ERROR: --playMovie ('p') needs movie filename as option\n");
         exit(-1);
@@ -2099,6 +2178,7 @@ int main(int argc, char **argv)
         useMovie = 2;
       break;
     case 'w': // play with read-only
+     fprintf (stderr, "-w got called!\n"); 
       if(optarg == NULL) {
         fprintf(stderr, "ERROR: --watchMovie ('w') needs movie filename as option\n");
         exit(-1);
@@ -2214,79 +2294,13 @@ int main(int argc, char **argv)
 
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
-  if(optind < argc) {
-    char *szFile = argv[optind];
-
-    utilGetBaseName(szFile, filename);
-    char *p = strrchr(filename, '.');
-
-    if(p)
-      *p = 0;
-
-    if(ipsname[0] == 0)
-      sprintf(ipsname, "%s.ips", filename);
-    
-    bool failed = false;
-
-    IMAGE_TYPE type = utilFindType(szFile);
-
-    if(type == IMAGE_UNKNOWN) {
-      systemMessage(0, "Unknown file type %s", szFile);
-      exit(-1);
-    }
-    cartridgeType = (int)type;
-
-    if(type == IMAGE_GB) {
-      failed = !gbLoadRom(szFile);
-      if(!failed) {
-        cartridgeType = 1;
-        emulator = GBSystem;
-        if(sdlAutoIPS) {
-          int size = gbRomSize;
-          utilApplyIPS(ipsname, &gbRom, &size);
-          if(size != gbRomSize) {
-            extern bool gbUpdateSizes();
-            gbUpdateSizes();
-            gbReset();
-          }
-        }
-      }
-    } else if(type == IMAGE_GBA) {
-      int size = CPULoadRom(szFile);
-      failed = (size == 0);
-      if(!failed) {
-        //        if(cpuEnhancedDetection && cpuSaveType == 0) {
-        //          utilGBAFindSave(rom, size);
-        //        }
-
-        sdlApplyPerImagePreferences();
-        
-        cartridgeType = 0;
-        emulator = GBASystem;
-
-        /* disabled due to problems
-        if(removeIntros && rom != NULL) {
-          WRITE32LE(&rom[0], 0xea00002e);
-        }
-        */
-        
-        CPUInit(biosFileName, useBios);
-        CPUReset();
-        if(sdlAutoIPS) {
-          int size = 0x2000000;
-          utilApplyIPS(ipsname, &rom, &size);
-          if(size != 0x2000000) {
-            CPUReset();
-          }
-        }
-      }
-    }
-    
-    if(failed) {
-      systemMessage(0, "Failed to load file %s", szFile);
-      exit(-1);
-    }
-  } else {
+  if(optind < argc) 
+  {
+      szFile = argv[optind];
+      file_run();
+  }
+   else 
+  {
     cartridgeType = 0;
     strcpy(filename, "gnu_stub");
     rom = (u8 *)malloc(0x2000000);
@@ -2578,9 +2592,6 @@ int main(int argc, char **argv)
     delta = (u8*)malloc(322*242*4);
     memset(delta, 255, 322*242*4);
   }
-  
-  emulating = 1;
-  renderedFrames = 0;
 
   if(!soundOffFlag)
     soundInit();
@@ -2607,6 +2618,14 @@ int main(int argc, char **argv)
   }
   
   SDL_WM_SetCaption("VisualBoyAdvance", NULL);
+  
+  char *moviefile = getenv("AUTODEMO");
+//  fprintf (stderr, "Checking for AUTODEMO...\n");
+  if (moviefile)
+  {
+//    fprintf (stderr, "I got a filename OMG!\nCalling VBAMovieOpen...\n");
+    VBAMovieOpen(moviefile, true);
+  }
 
   while(emulating) {
     if(!paused && active) {
@@ -2806,11 +2825,15 @@ bool systemReadJoypads()
   return true;
 }
 
+bool sensorOn = false;
+
 u32 systemReadJoypad(int which, bool sensor)
 {
+    sensorOn = sensor;
   if(which < 0 || which > 3)
     which = sdlDefaultJoypad;
   
+  VBAMovieUpdate(which);
   u32 res = 0;
   
   if(sdlButtons[which][KEY_BUTTON_A])
@@ -2897,7 +2920,7 @@ void systemShowSpeed(int speed)
   }
 }
 
-void systemFrame()
+void systemFrame(int)
 {
 }
 
@@ -3513,4 +3536,32 @@ void systemGbBorderOn()
     else
       srcPitch = srcWidth*3;
   }
+}
+
+u16 checksumBIOS()
+{
+	bool hasBIOS = false;
+	u8 * tempBIOS;
+	if(useBios)
+	{
+		tempBIOS = (u8 *)malloc(0x4000);
+		int size = 0x4000;
+		extern bool CPUIsGBABios(const char * file);
+		if(utilLoad(biosFileName,
+					CPUIsGBABios,
+					tempBIOS,
+					size)) {
+		if(size == 0x4000)
+			hasBIOS = true;
+		}
+	}
+
+	u16 biosCheck = 0;
+	if(hasBIOS) {
+		for(int i = 0; i < 0x4000; i += 4)
+			biosCheck += *((u32 *)&tempBIOS[i]);
+		free(tempBIOS);
+	}
+
+	return biosCheck;
 }
