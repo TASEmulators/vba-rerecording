@@ -757,138 +757,48 @@
 				Name="zlib">
 				<File
 					RelativePath=".\lib\zlib\adler32.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\compress.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\crc32.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\deflate.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\example.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\gzio.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\infblock.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\infcodes.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\inffast.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\inflate.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\inftrees.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\infutil.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\trees.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\uncompr.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\lib\zlib\zutil.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							SmallerTypeCheck="FALSE"/>
-					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -1160,10 +1070,10 @@
 				RelativePath="..\src\win32\GBPaletteView.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h">
+				RelativePath="..\src\gb\gbPrinter.h">
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h">
+				RelativePath="..\src\win32\GBPrinter.h">
 			</File>
 			<File
 				RelativePath="..\src\win32\GBPrinterDlg.h">

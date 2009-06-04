@@ -3706,17 +3706,37 @@ void CPULoop(int _ticks)
       }
       cpuDmaTicksToUpdate = -cpuLoopTicks;
 
-updateLoop:
-
-#ifdef _DEBUG
-	  static s32 db_last_ticks = 0;
-	  static s32 db_ticks = 0;
-	  db_ticks += clockTicks;
-#endif
-
+    updateLoop:
       lcdTicks -= clockTicks;
-
+      
       if(lcdTicks <= 0) {
+        if(DISPSTAT & 1) { // V-BLANK
+          // if in V-Blank mode, keep computing...
+          if(DISPSTAT & 2) {
+            lcdTicks += 960;
+            VCOUNT++;
+            UPDATE_REG(0x06, VCOUNT);
+            DISPSTAT &= 0xFFFD;
+            UPDATE_REG(0x04, DISPSTAT);
+            CPUCompareVCOUNT();
+          } else {
+            lcdTicks += 272;
+            DISPSTAT |= 2;
+            UPDATE_REG(0x04, DISPSTAT);
+            if(DISPSTAT & 16) {
+              IF |= 2;
+              UPDATE_REG(0x202, IF);
+            }
+          }
+          
+          if(VCOUNT >= 228) {
+            DISPSTAT &= 0xFFFC;
+            UPDATE_REG(0x04, DISPSTAT);
+            VCOUNT = 0;
+            UPDATE_REG(0x06, VCOUNT);
+            CPUCompareVCOUNT();
+          }
+        } else {
 		  bool fastForward = speedup;
           int framesToSkip = systemFrameSkip;
 		#if (defined(WIN32) && !defined(SDL))
@@ -3739,135 +3759,6 @@ updateLoop:
           }
 #endif
 
-        if(DISPSTAT & 1) { // V-BLANK
-          // if in V-Blank mode, keep computing...
-          if(DISPSTAT & 2) {
-            lcdTicks += 960;
-            VCOUNT++;
-            UPDATE_REG(0x06, VCOUNT);
-            DISPSTAT &= 0xFFFD;
-            UPDATE_REG(0x04, DISPSTAT);
-            CPUCompareVCOUNT();
-          } else {
-            lcdTicks += 272;
-            DISPSTAT |= 2;
-            UPDATE_REG(0x04, DISPSTAT);
-            if(DISPSTAT & 16) {
-              IF |= 2;
-              UPDATE_REG(0x202, IF);
-            }
-          }
-
-          if(VCOUNT >= 228) {
-            // FIXME: proper fix???
-		    count++;
-            systemFrame(60);
-            soundFrameSoundWritten = 0;
-
-            GBASystem.frameCount++;
-            if (GBASystem.lagged) {
-              GBASystem.lagCount++;
-            }
-            GBASystem.laggedLast = GBASystem.lagged;
-            CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-            GBASystem.lagged = true;
-
-            if(count == 60) {
-              u32 time = systemGetClock();
-              if(time != lastTime) {
-                u32 t = 100000/(time - lastTime);
-                systemShowSpeed(t);
-              } else
-              systemShowSpeed(0);
-              lastTime = time;
-              count = 0;
-            }
-
-		    // FIXME: proper position?
-		    // update joystick information
-            u32 joy = 0;
-            if(systemReadJoypads())
-              // read default joystick
-              joy = systemReadJoypad(-1,cpuEEPROMSensorEnabled);
-
-		    frameBoundary = true;
-
-            CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION); // FIXME: proper position?
-
-			P1 = 0x03FF ^ (joy & 0x3FF);
-
-            UPDATE_REG(0x130, P1);
-            u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
-            // this seems wrong, but there are cases where the game
-            // can enter the stop state without requesting an IRQ from
-            // the joypad.
-            if((P1CNT & 0x4000) || stopState) {
-              u16 p1 = (0x3FF ^ P1) & 0x3FF;
-              if(P1CNT & 0x8000) {
-                if(p1 == (P1CNT & 0x3FF)) {
-                  IF |= 0x1000;
-                  UPDATE_REG(0x202, IF);
-                }
-              } else {
-                if(p1 & P1CNT) {
-                  IF |= 0x1000;
-                  UPDATE_REG(0x202, IF);
-                }
-              }
-            }
-              
-            u32 ext = (joy >> 10);
-            int cheatTicks = 0;
-            if(cheatsEnabled)
-              cheatsCheckKeys(P1^0x3FF, ext);
-            cpuDmaTicksToUpdate += cheatTicks;
-            speedup = (ext & 1) ? true : false;
-            capture = (ext & 2) ? true : false;
-              
-            if(capture && !capturePrevious) {
-              captureNumber++;
-              systemScreenCapture(captureNumber);
-            }
-            capturePrevious = capture;
- 
-			pauseAfterFrameAdvance = systemPauseOnFrame();
-
-			if(frameCount >= framesToSkip || pauseAfterFrameAdvance) {
-              systemDrawScreen();
-              frameCount = 0;
-            } else  {
-              frameCount++;
-            }
-///         if(systemPauseOnFrame())
-///           ticks = 0;
-            if(pauseAfterFrameAdvance)
-			{
-#if (defined(WIN32) && !defined(SDL))
-              if(theApp.muteFrameAdvance)
-			    theApp.frameAdvanceMuteNow = true;
-			    theApp.paused = true;
-				if(theApp.sound)
-				  theApp.sound->pause(); // prevents the sound from looping annoyingly after a frame advance in GBA games
-#else
-		      extern bool paused; // from SDL.cpp
-			  paused = true;
-			  systemSoundPause();
-#endif
-            }
-		    else
-		    {
-#if (defined(WIN32) && !defined(SDL))
-			  theApp.frameAdvanceMuteNow = false;
-#endif
-		    }
-
-			DISPSTAT &= 0xFFFC;
-            UPDATE_REG(0x04, DISPSTAT);
-            VCOUNT = 0;
-            UPDATE_REG(0x06, VCOUNT);
-            CPUCompareVCOUNT();
-          }
-        } else {
           if(DISPSTAT & 2) {
             // if in H-Blank, leave it and move to drawing mode
             VCOUNT++;
@@ -3876,6 +3767,75 @@ updateLoop:
             lcdTicks += (960);
             DISPSTAT &= 0xFFFD;
             if(VCOUNT == 160) {
+              count++;
+              systemFrame(60);
+              soundFrameSoundWritten = 0;
+
+              GBASystem.frameCount++;
+              if (GBASystem.lagged) {
+                GBASystem.lagCount++;
+              }
+              GBASystem.laggedLast = GBASystem.lagged;
+              CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+              GBASystem.lagged = true;
+
+              if(count == 60) {
+                u32 time = systemGetClock();
+                if(time != lastTime) {
+                  u32 t = 100000/(time - lastTime);
+                  systemShowSpeed(t);
+                } else
+                  systemShowSpeed(0);
+                lastTime = time;
+                count = 0;
+              }
+              u32 joy = 0;
+
+			  // update joystick information
+              if(systemReadJoypads())
+                // read default joystick
+                joy = systemReadJoypad(-1,cpuEEPROMSensorEnabled);
+
+			  frameBoundary = true;
+
+              CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION); // FIXME: proper position?
+
+			  P1 = 0x03FF ^ (joy & 0x3FF);
+
+              UPDATE_REG(0x130, P1);
+              u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
+              // this seems wrong, but there are cases where the game
+              // can enter the stop state without requesting an IRQ from
+              // the joypad.
+              if((P1CNT & 0x4000) || stopState) {
+                u16 p1 = (0x3FF ^ P1) & 0x3FF;
+                if(P1CNT & 0x8000) {
+                  if(p1 == (P1CNT & 0x3FF)) {
+                    IF |= 0x1000;
+                    UPDATE_REG(0x202, IF);
+                  }
+                } else {
+                  if(p1 & P1CNT) {
+                    IF |= 0x1000;
+                    UPDATE_REG(0x202, IF);
+                  }
+                }
+              }
+              
+              u32 ext = (joy >> 10);
+              int cheatTicks = 0;
+              if(cheatsEnabled)
+                cheatsCheckKeys(P1^0x3FF, ext);
+              cpuDmaTicksToUpdate += cheatTicks;
+              speedup = (ext & 1) ? true : false;
+              capture = (ext & 2) ? true : false;
+              
+              if(capture && !capturePrevious) {
+                captureNumber++;
+                systemScreenCapture(captureNumber);
+              }
+              capturePrevious = capture;
+              
               DISPSTAT |= 1;
               DISPSTAT &= 0xFFFD;
               UPDATE_REG(0x04, DISPSTAT);
@@ -3884,6 +3844,37 @@ updateLoop:
                 UPDATE_REG(0x202, IF);
               }
               CPUCheckDMA(1, 0x0f);
+
+			  pauseAfterFrameAdvance = systemPauseOnFrame();
+
+			  if(frameCount >= framesToSkip || pauseAfterFrameAdvance) {
+                systemDrawScreen();
+                frameCount = 0;
+              } else  {
+                frameCount++;
+              }
+///              if(systemPauseOnFrame())
+///                ticks = 0;
+              if(pauseAfterFrameAdvance)
+			  {
+				#if (defined(WIN32) && !defined(SDL))
+				    if(theApp.muteFrameAdvance)
+				      theApp.frameAdvanceMuteNow = true;
+					theApp.paused = true;
+					if(theApp.sound)
+						theApp.sound->pause(); // prevents the sound from looping annoyingly after a frame advance in GBA games
+				#else
+				    extern bool paused; // from SDL.cpp
+					paused = true;
+					systemSoundPause();
+				#endif
+			  }
+			  else
+			  {
+				#if (defined(WIN32) && !defined(SDL))
+				  theApp.frameAdvanceMuteNow = false;
+				#endif
+			  }
             }
             
             UPDATE_REG(0x04, DISPSTAT);
@@ -4263,10 +4254,6 @@ updateLoop:
 		{
 			if(frameBoundary)
 			{
-#ifdef _DEBUG
-				s32 db_frame_len = db_ticks - db_last_ticks;
-				db_last_ticks = db_ticks;
-#endif
 				frameBoundary = false;
 				return;
 			}

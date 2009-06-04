@@ -108,6 +108,13 @@ MemoryViewerDlg::MemoryViewerDlg(CWnd* pParent /*=NULL*/)
   //{{AFX_DATA_INIT(MemoryViewerDlg)
   m_size = -1;
   //}}AFX_DATA_INIT
+  autoUpdate = false;
+
+  autoUpdate = !regQueryDwordValue("memViewerAutoUpdate", 1);
+  OnAutoUpdate(); // FIXME: how to make this actually change the check mark? GetDlgItem(IDC_AUTO_UPDATE) returns NULL.
+
+  decimalDisplay = !regQueryDwordValue("memViewerDecimalDisplay", 0);
+  OnDecimalDisplay(); // FIXME: how to make this actually change the check mark? GetDlgItem(IDC_DECIMAL_DISPLAY) returns NULL.
 }
 
 
@@ -150,34 +157,22 @@ BOOL MemoryViewerDlg::OnInitDialog()
   CDialog::OnInitDialog();
   
   DIALOG_SIZER_START( sz )
-  DIALOG_SIZER_ENTRY( IDC_VIEWER, DS_SizeX | DS_SizeY )
-  DIALOG_SIZER_ENTRY( IDC_REFRESH, DS_MoveY)
-  DIALOG_SIZER_ENTRY( IDC_CLOSE, DS_MoveY)
-  DIALOG_SIZER_ENTRY( IDC_LOAD, DS_MoveY)
-  DIALOG_SIZER_ENTRY( IDC_SAVE, DS_MoveY)
-  DIALOG_SIZER_ENTRY( IDC_AUTO_UPDATE, DS_MoveY)
-  DIALOG_SIZER_ENTRY( IDC_DECIMALDISPLAY, DS_MoveY)
-  DIALOG_SIZER_ENTRY( IDC_CURRENT_ADDRESS_LABEL, DS_MoveY | DS_MoveX)
-  DIALOG_SIZER_ENTRY( IDC_CURRENT_ADDRESS, DS_MoveY | DS_MoveX)
-  DIALOG_SIZER_END()
-/*
-// ???????
-	SetData(sz,
+    DIALOG_SIZER_ENTRY( IDC_VIEWER, DS_SizeX | DS_SizeY )
+    DIALOG_SIZER_ENTRY( IDC_REFRESH, DS_MoveY)
+    DIALOG_SIZER_ENTRY( IDC_CLOSE, DS_MoveY)
+    DIALOG_SIZER_ENTRY( IDC_LOAD, DS_MoveY)
+    DIALOG_SIZER_ENTRY( IDC_SAVE, DS_MoveY)
+    DIALOG_SIZER_ENTRY( IDC_AUTO_UPDATE, DS_MoveY)
+    DIALOG_SIZER_ENTRY( IDC_DECIMALDISPLAY, DS_MoveY)
+    DIALOG_SIZER_ENTRY( IDC_CURRENT_ADDRESS_LABEL, DS_MoveY | DS_MoveX)
+    DIALOG_SIZER_ENTRY( IDC_CURRENT_ADDRESS, DS_MoveY | DS_MoveX)
+    DIALOG_SIZER_END()
+    SetData(sz,
             TRUE,
             HKEY_CURRENT_USER,
             "Software\\Emulators\\VisualBoyAdvance\\Viewer\\MemoryView",
             NULL);
-*/
-  autoUpdate = regQueryDwordValue("memViewerAutoUpdate", 1);
-  if(autoUpdate) {
-    theApp.winAddUpdateListener(this);
-  } else {
-    theApp.winRemoveUpdateListener(this);    
-  }  
-
-  decimalDisplay = regQueryDwordValue("memViewerDecimalDisplay", 0);
-  m_viewer.setDecimal(decimalDisplay ? true : false);
-
+  
   m_viewer.setDialog(this);
   m_viewer.ShowScrollBar(SB_VERT, TRUE);
   m_viewer.EnableScrollBar(SB_VERT, ESB_ENABLE_BOTH);
@@ -276,6 +271,8 @@ void MemoryViewerDlg::OnAutoUpdate()
   } else {
     theApp.winRemoveUpdateListener(this);    
   }  
+  if(GetDlgItem(IDC_AUTO_UPDATE))
+	  ((CButton *)GetDlgItem(IDC_AUTO_UPDATE))->SetCheck(autoUpdate ? TRUE : FALSE);
   regSetDwordValue("memViewerAutoUpdate", autoUpdate);
 }
 
@@ -283,6 +280,9 @@ void MemoryViewerDlg::OnDecimalDisplay()
 {
   decimalDisplay = !decimalDisplay;
   m_viewer.setDecimal(decimalDisplay ? true : false);
+  if(GetDlgItem(IDC_DECIMAL_DISPLAY))
+	 ((CButton *)GetDlgItem(IDC_DECIMAL_DISPLAY))->SetCheck(decimalDisplay ? TRUE : FALSE);
+
   regSetDwordValue("memViewerDecimalDisplay", decimalDisplay);
 }
 
