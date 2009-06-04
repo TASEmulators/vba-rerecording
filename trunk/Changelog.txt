@@ -1,21 +1,21 @@
-TODO: Update and filter?
+TODO: Update and filter logs.
+TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
-06-04-2009 aquanull - Major change - Fixed the length of the first frame right after starting a GBA game, which used to be too short (~197120 instead of ~280896 cycles). Oscillation still occurs at times though. Some GBA movies recorded with previous revisions desyncs. All GBx movies recorded with previous release are supposed to stay in sync. Reviews and verifications are required.
-06-04-2009 aquanull - Fixed small bugs in src/win32/MemoryViewerDlg.cpp.
+06-04-2009 aquanull - Fixed small bugs in trunk/src/win32/MemoryViewerDlg.cpp.
 05-09-2009 gochaism - Probably the gbx SRAM issue ( issue 29 ) is now fixed.
 05-09-2009 aquanull - Added directory overrides for GBx rom, cheats, ips, LUA scritps, AVI and sound recording.
 05-09-2009 aquanull - Re-added the "Open GBx ROM..." menu command. "Open ROM..." changed to "Open GBA ROM...".
 05-09-2009 aquanull - Cleaned hotkeys (somehow). Old hotkeys settings might fail.
 05-09-2009 aquanull - Rearranged/renamed menu items in a more sensible way.
+05-09-2009 gochaism - Changed the URL of AboutDialog.
+05-09-2009 gochaism - Unfreezed GBx "from SRAM" check for the time being. VBA now tells you that the feature might be problematic.
+05-09-2009 gochaism - Removed all the skin functions and CxImage.
 04-27-2009 aquanull - Provided several options for what to do at movie end (buggy right now). 
-04-09-2009 gochaism - Changed the URL of AboutDialog.
-04-09-2009 gochaism - Unfreezed GBx "from SRAM" check for the time being. VBA now tells you that the feature might be problematic. To be verified.
-04-09-2009 gochaism - Removed all the skin functions and CxImage.
 04-27-2009 aquanull - Added multiple options of what to do after movie playback ended.
 04-26-2009 aquanull - Fixed copied strings for VBAWacth/VBxWatch.
-04-20-2009 gochaism - add input.get()
-04-20-2009 gochaism - Replaced math.random and math.randomseed with SFMT version
+04-20-2009 gochaism - Replaced math.random and math.randomseed with SFMT version.
+04-20-2009 gochaism - Added input.get().
 04-20-2009 gochaism - gui.gdscreenshot, gui.gdoverlay code changes. removed the upper limit of opacity.
 04-20-2009 gochaism - Changed the draw timing of Lua GUI (use gui.register to display something).
 04-20-2009 gochaism - Changed version number string for the time being.
