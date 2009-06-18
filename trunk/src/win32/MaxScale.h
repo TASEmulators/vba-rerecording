@@ -33,25 +33,23 @@ class MaxScale : public CDialog
 {
 // Construction
 public:
-	MaxScale(CWnd* pParent = NULL);   // standard constructor
+	MaxScale(CWnd*pParent = NULL);    // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(MaxScale)
 	enum { IDD = IDD_MAX_SCALE };
-	CEdit	m_value;
+	CEdit m_value;
 	//}}AFX_DATA
-
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(MaxScale)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+protected:
+	virtual void DoDataExchange(CDataExchange*pDX);     // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
-
 	// Generated message map functions
 	//{{AFX_MSG(MaxScale)
 	afx_msg void OnCancel();

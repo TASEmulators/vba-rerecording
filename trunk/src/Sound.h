@@ -17,8 +17,14 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifndef VBA_SOUND_H
-#define VBA_SOUND_H
+#ifndef VBA_GBA_SOUND_H
+#define VBA_GBA_SOUND_H
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "zlib.h"
 
 #define NR10 0x60
 #define NR11 0x62
@@ -67,19 +73,19 @@ typedef int32 soundtick_t;
 
 extern soundtick_t SOUND_CLOCK_TICKS;
 extern soundtick_t soundTicks;
-extern int32 soundPaused;
-extern bool8 soundOffFlag;
-extern int32 soundQuality;
-extern int32 soundBufferLen;
-extern int32 soundBufferTotalLen;
-extern u32 soundNextPosition;
-extern u16 soundFinalWave[1470];
-extern u16 soundFrameSound[735*30*2];
-extern int32 soundFrameSoundWritten;
-extern int32 soundVolume;
+extern int32       soundPaused;
+extern bool8       soundOffFlag;
+extern int32       soundQuality;
+extern int32       soundBufferLen;
+extern int32       soundBufferTotalLen;
+extern u32         soundNextPosition;
+extern u16         soundFinalWave[1470];
+extern u16         soundFrameSound[735*30*2];
+extern int32       soundFrameSoundWritten;
+extern int32       soundVolume;
 
 extern bool8 soundEcho;
 extern bool8 soundLowPass;
 extern bool8 soundReverse;
 
-#endif // VBA_SOUND_H
+#endif // VBA_GBA_SOUND_H

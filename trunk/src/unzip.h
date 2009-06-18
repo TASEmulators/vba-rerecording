@@ -131,8 +131,8 @@ typedef struct unz_file_info_s
 } unz_file_info;
 
 extern int ZEXPORT  unzStringFileNameCompare OF ((const char* fileName1,
-                                                                                                 const char* fileName2,
-                                                                                                 int iCaseSensitivity));
+                                                 const char* fileName2,
+                                                 int iCaseSensitivity));
 /*
    Compare two filename (fileName1,fileName2).
    If iCaseSenisivity = 1, comparision is case sensitivity (like strcmp)
@@ -170,7 +170,7 @@ extern int ZEXPORT  unzGetGlobalInfo OF((unzFile file,
 
 
 extern int ZEXPORT  unzGetGlobalComment OF((unzFile file,
-                                                                                   char *szComment,
+                                           char *szComment,
                                            uLong uSizeBuf));
 /*
   Get the global comment string of the ZipFile, in the szComment buffer.
@@ -272,8 +272,8 @@ extern int ZEXPORT  unzeof OF((unzFile file));
 */
 
 extern int ZEXPORT  unzGetLocalExtrafield OF((unzFile file,
-                                                                                         voidp buf,
-                                                                                         unsigned len));
+                                             voidp buf,
+                                             unsigned len));
 /*
   Read extra field from the current file (opened by unzOpenCurrentFile)
   This is the local-header version of the extra field (sometimes, there is

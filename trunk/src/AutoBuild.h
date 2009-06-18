@@ -17,15 +17,22 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifndef __AUTOBUILD_H__
-#define __AUTOBUILD_H__
+#ifndef VBA_AUTOBUILD_H
+#define VBA_AUTOBUILD_H
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
 #ifndef VERSION
 #define VERSION       "1.7.2 re-recording v21+ (interim)"
 #endif
+
 //change the FALSE to TRUE for autoincrement of build number
 #define INCREMENT_VERSION FALSE
-#define FILEVER        1,7,2,560
-#define PRODUCTVER     1,7,2,560
+#define FILEVER        1, 7, 2, 560
+#define PRODUCTVER     1, 7, 2, 560
 #define STRFILEVER     "1, 7, 2, 560\0"
 #define STRPRODUCTVER  "1, 7, 2, 560\0"
-#endif //__AUTOBUILD_H__
+
+#endif // VBA_AUTOBUILD_H

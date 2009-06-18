@@ -20,8 +20,9 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
+#include "resource.h"
 #include "ModeConfirm.h"
+#include "VBA.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

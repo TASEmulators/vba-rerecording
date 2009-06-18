@@ -45,12 +45,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="Nafxcw.lib Libcmt.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="lib/win32"
-				IgnoreDefaultLibraryNames="libci.lib"
+				IgnoreDefaultLibraryNames="libci.lib;Nafxcw.lib;Libcmt.lib"
 				GenerateDebugInformation="FALSE"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				GenerateMapFile="TRUE"
@@ -113,18 +113,17 @@
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4244;4996;4800"/>
+				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="Nafxcwd.lib Libcmtd.lib directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="lib/win32"
-				IgnoreDefaultLibraryNames="libci.lib"
+				IgnoreDefaultLibraryNames="libci.lib;Nafxcwd.lib;Libcmtd.lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				GenerateMapFile="TRUE"
@@ -168,86 +167,16 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\src\i386\2xSaImmx.asm">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
-"
-						Outputs="$(OutDir)\$(InputName).obj"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
-"
-						Outputs="$(OutDir)\$(InputName).obj"/>
-				</FileConfiguration>
+				RelativePath="..\src\CheatSearch.cpp">
 			</File>
 			<File
-				RelativePath="..\src\win32\AVIWrite.cpp">
-			</File>
-			<File
-				RelativePath="..\src\Blip_Buffer.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						SmallerTypeCheck="FALSE"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\win32\BugReport.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\CmdAccelOb.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\Direct3D.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\DirectDraw.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\DirectInput.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\DirectSound.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\GDIDisplay.cpp">
+				RelativePath="..\src\Gfx.cpp">
 			</File>
 			<File
 				RelativePath="..\src\lua-engine.cpp">
 			</File>
 			<File
-				RelativePath="..\src\win32\LuaOpenDialog.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWnd.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWndCheats.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWndFile.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWndHelp.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWndOptions.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWndTools.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MaxScale.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\MemoryViewer.cpp">
+				RelativePath="..\src\memgzio.c">
 			</File>
 			<File
 				RelativePath="..\src\movie.cpp">
@@ -262,64 +191,13 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\win32\OpenGL.cpp">
+				RelativePath="..\src\Text.cpp">
 			</File>
 			<File
-				RelativePath="..\src\win32\Reg.cpp">
-			</File>
-			<File
-				RelativePath="..\src\SFMT\SFMT.c">
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\win32\stdafx.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\StringTokenizer.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\VBA.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\VBA.rc">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\win32\WavWriter.cpp">
-			</File>
-			<File
-				RelativePath="..\src\win32\WinResUtil.cpp">
+				RelativePath="..\src\unzip.cpp">
 			</File>
 			<Filter
 				Name="GBA">
-				<File
-					RelativePath="..\src\2xSaI.cpp">
-				</File>
-				<File
-					RelativePath="..\src\admame.cpp">
-				</File>
 				<File
 					RelativePath="..\src\agbprint.cpp">
 				</File>
@@ -327,16 +205,10 @@
 					RelativePath="..\src\armdis.cpp">
 				</File>
 				<File
-					RelativePath="..\src\bilinear.cpp">
-				</File>
-				<File
 					RelativePath="..\src\bios.cpp">
 				</File>
 				<File
 					RelativePath="..\src\Cheats.cpp">
-				</File>
-				<File
-					RelativePath="..\src\CheatSearch.cpp">
 				</File>
 				<File
 					RelativePath="..\src\EEprom.cpp">
@@ -351,31 +223,7 @@
 					RelativePath="..\src\GBA.cpp">
 				</File>
 				<File
-					RelativePath="..\src\Gfx.cpp">
-				</File>
-				<File
 					RelativePath="..\src\Globals.cpp">
-				</File>
-				<File
-					RelativePath="..\src\hq2x.cpp">
-				</File>
-				<File
-					RelativePath="..\src\hq3x32.cpp">
-				</File>
-				<File
-					RelativePath="..\src\hq3x32.h">
-				</File>
-				<File
-					RelativePath="..\src\hq_shared32.cpp">
-				</File>
-				<File
-					RelativePath="..\src\hq_shared32.h">
-				</File>
-				<File
-					RelativePath="..\src\interframe.cpp">
-				</File>
-				<File
-					RelativePath="..\src\memgzio.c">
 				</File>
 				<File
 					RelativePath="..\src\Mode0.cpp">
@@ -396,34 +244,16 @@
 					RelativePath="..\src\Mode5.cpp">
 				</File>
 				<File
-					RelativePath="..\src\motionblur.cpp">
-				</File>
-				<File
-					RelativePath="..\src\pixel.cpp">
-				</File>
-				<File
 					RelativePath="..\src\remote.cpp">
 				</File>
 				<File
 					RelativePath="..\src\RTC.cpp">
 				</File>
 				<File
-					RelativePath="..\src\scanline.cpp">
-				</File>
-				<File
-					RelativePath="..\src\simple2x.cpp">
-				</File>
-				<File
 					RelativePath="..\src\Sound.cpp">
 				</File>
 				<File
 					RelativePath="..\src\Sram.cpp">
-				</File>
-				<File
-					RelativePath="..\src\Text.cpp">
-				</File>
-				<File
-					RelativePath="..\src\unzip.cpp">
 				</File>
 				<File
 					RelativePath="..\src\Util.cpp">
@@ -457,153 +287,6 @@
 				</File>
 				<File
 					RelativePath="..\src\gb\gbSound.cpp">
-				</File>
-			</Filter>
-			<Filter
-				Name="Dialogs">
-				<File
-					RelativePath="..\src\win32\AboutDialog.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\AccelEditor.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\AcceleratorManager.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Associate.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Commands.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Directories.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Disassemble.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\ExportGSASnapshot.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\FileDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBACheats.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBCheatsDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBColorDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBDisassemble.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBMapView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBMemoryViewerDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBOamView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBPaletteView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBPrinterDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GBTileView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GDBConnection.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\GSACodeSelect.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\IOViewer.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Joypad.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\LangSelect.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Logging.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\MapView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\MemoryViewerAddressSize.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\MemoryViewerDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\ModeConfirm.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\MovieCreate.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\MovieOpen.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\OamView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\PaletteView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\ResizeDlg.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\RewindInterval.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\RomInfo.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\TextOptions.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Throttle.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\TileView.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\VideoMode.cpp">
-				</File>
-			</Filter>
-			<Filter
-				Name="Controls">
-				<File
-					RelativePath="..\src\win32\BitmapControl.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\ColorButton.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\ColorControl.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\Hyperlink.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\KeyboardEdit.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\PaletteViewControl.cpp">
-				</File>
-				<File
-					RelativePath="..\src\win32\ZoomControl.cpp">
 				</File>
 			</Filter>
 			<Filter
@@ -1032,81 +715,336 @@
 					RelativePath=".\lib\libjpeg\jutils.c">
 				</File>
 			</Filter>
+			<Filter
+				Name="Win32"
+				Filter="">
+				<File
+					RelativePath="..\src\win32\AVIWrite.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\CmdAccelOb.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\Direct3D.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\DirectDraw.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\DirectInput.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\DirectSound.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\GDIDisplay.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWnd.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWndCheats.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWndFile.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWndHelp.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWndOptions.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWndTools.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\OpenGL.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\Reg.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\stdafx.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\StringTokenizer.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\VBA.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\VBA.rc">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\src\win32\WavWriter.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\WinResUtil.cpp">
+				</File>
+				<Filter
+					Name="Dialogs">
+					<File
+						RelativePath="..\src\win32\AboutDialog.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\AccelEditor.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\AcceleratorManager.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Associate.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\BugReport.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Commands.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Directories.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Disassemble.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\ExportGSASnapshot.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\FileDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBACheats.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBCheatsDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBColorDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBDisassemble.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBMapView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBMemoryViewerDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBOamView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBPaletteView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBPrinterDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GBTileView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GDBConnection.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\GSACodeSelect.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\IOViewer.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Joypad.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\LangSelect.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Logging.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\LuaOpenDialog.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MapView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MaxScale.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MemoryViewer.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MemoryViewerAddressSize.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MemoryViewerDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\ModeConfirm.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MovieCreate.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\MovieOpen.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\OamView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\PaletteView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\ResizeDlg.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\RewindInterval.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\RomInfo.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\TextOptions.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Throttle.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\TileView.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\VideoMode.cpp">
+					</File>
+				</Filter>
+				<Filter
+					Name="Controls">
+					<File
+						RelativePath="..\src\win32\BitmapControl.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\ColorButton.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\ColorControl.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\Hyperlink.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\KeyboardEdit.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\PaletteViewControl.cpp">
+					</File>
+					<File
+						RelativePath="..\src\win32\ZoomControl.cpp">
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Filters"
+				Filter="">
+				<File
+					RelativePath="..\src\2xSaI.cpp">
+				</File>
+				<File
+					RelativePath="..\src\i386\2xSaImmx.asm">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+							Outputs="$(OutDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+							Outputs="$(OutDir)\$(InputName).obj"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\src\admame.cpp">
+				</File>
+				<File
+					RelativePath="..\src\bilinear.cpp">
+				</File>
+				<File
+					RelativePath="..\src\Blip_Buffer.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							SmallerTypeCheck="FALSE"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\src\hq2x.cpp">
+				</File>
+				<File
+					RelativePath="..\src\hq3x32.cpp">
+				</File>
+				<File
+					RelativePath="..\src\hq_shared32.cpp">
+				</File>
+				<File
+					RelativePath="..\src\interframe.cpp">
+				</File>
+				<File
+					RelativePath="..\src\motionblur.cpp">
+				</File>
+				<File
+					RelativePath="..\src\pixel.cpp">
+				</File>
+				<File
+					RelativePath="..\src\scanline.cpp">
+				</File>
+				<File
+					RelativePath="..\src\simple2x.cpp">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\src\win32\AboutDialog.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\AccelEditor.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\AcceleratorManager.h">
-			</File>
-			<File
 				RelativePath="..\src\agbprint.h">
-			</File>
-			<File
-				RelativePath="..\src\arm-new.h">
 			</File>
 			<File
 				RelativePath="..\src\armdis.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\Associate.h">
-			</File>
-			<File
 				RelativePath="..\src\AutoBuild.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\AVIWrite.h">
 			</File>
 			<File
 				RelativePath="..\src\bios.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\BitmapControl.h">
-			</File>
-			<File
 				RelativePath="..\src\Blip_Buffer.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\BugReport.h">
-			</File>
-			<File
 				RelativePath="..\src\Cheats.h">
-			</File>
-			<File
-				RelativePath="..\src\CheatSearch.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\CmdAccelOb.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\ColorButton.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\ColorControl.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Directories.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Disassemble.h">
 			</File>
 			<File
 				RelativePath="..\src\EEprom.h">
 			</File>
 			<File
 				RelativePath="..\src\elf.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\ExportGSASnapshot.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\FileDlg.h">
 			</File>
 			<File
 				RelativePath="..\src\Flash.h">
@@ -1118,55 +1056,19 @@
 				RelativePath="..\src\GBA.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\GBACheats.h">
-			</File>
-			<File
 				RelativePath="..\src\GBAinline.h">
 			</File>
 			<File
 				RelativePath="..\src\gb\gbCheats.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\GBCheatsDlg.h">
-			</File>
-			<File
-				RelativePath="..\src\gb\gbCodes.h">
-			</File>
-			<File
-				RelativePath="..\src\gb\gbCodesCB.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBColorDlg.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBDisassemble.h">
-			</File>
-			<File
 				RelativePath="..\src\gb\gbGlobals.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBMapView.h">
 			</File>
 			<File
 				RelativePath="..\src\gb\gbMemory.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\GBMemoryViewerDlg.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBOamView.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBPaletteView.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBPrinter.h">
-			</File>
-			<File
 				RelativePath="..\src\gb\gbPrinter.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GBPrinterDlg.h">
 			</File>
 			<File
 				RelativePath="..\src\gb\gbSGB.h">
@@ -1175,79 +1077,25 @@
 				RelativePath="..\src\gb\gbSound.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\GBTileView.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\GDBConnection.h">
-			</File>
-			<File
 				RelativePath="..\src\Gfx.h">
 			</File>
 			<File
 				RelativePath="..\src\Globals.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\GSACodeSelect.h">
+				RelativePath="..\src\hq_shared32.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\Hyperlink.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Input.h">
+				RelativePath="..\src\inputGlobal.h">
 			</File>
 			<File
 				RelativePath="..\src\interp.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\IOViewer.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Joypad.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\KeyboardEdit.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\LangSelect.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Logging.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\LuaOpenDialog.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MainWnd.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MapView.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MaxScale.h">
-			</File>
-			<File
 				RelativePath="..\src\memgzio.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\MemoryViewer.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MemoryViewerAddressSize.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MemoryViewerDlg.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\ModeConfirm.h">
-			</File>
-			<File
 				RelativePath="..\src\movie.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MovieCreate.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\MovieOpen.h">
 			</File>
 			<File
 				RelativePath="..\src\nesvideos-piece.h">
@@ -1256,31 +1104,7 @@
 				RelativePath="..\src\NLS.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\OamView.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\PaletteView.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\PaletteViewControl.h">
-			</File>
-			<File
 				RelativePath="..\src\Port.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Reg.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\ResizeDlg.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\resource.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\RewindInterval.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\RomInfo.h">
 			</File>
 			<File
 				RelativePath="..\src\RTC.h">
@@ -1289,16 +1113,7 @@
 				RelativePath="..\src\Sound.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\Sound.h">
-			</File>
-			<File
 				RelativePath="..\src\Sram.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\stdafx.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\StringTokenizer.h">
 			</File>
 			<File
 				RelativePath="..\src\System.h">
@@ -1307,47 +1122,281 @@
 				RelativePath="..\src\Text.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\TextOptions.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\Throttle.h">
-			</File>
-			<File
-				RelativePath="..\src\thumb.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\TileView.h">
-			</File>
-			<File
 				RelativePath="..\src\unzip.h">
 			</File>
 			<File
 				RelativePath="..\src\Util.h">
 			</File>
 			<File
-				RelativePath="..\src\win32\VBA.h">
-			</File>
-			<File
 				RelativePath="..\src\vbalua.h">
 			</File>
-			<File
-				RelativePath="..\src\win32\VideoMode.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\WavWriter.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\WinResUtil.h">
-			</File>
-			<File
-				RelativePath="..\src\win32\ZoomControl.h">
-			</File>
+			<Filter
+				Name="Win32"
+				Filter="">
+				<File
+					RelativePath="..\src\win32\AboutDialog.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\AccelEditor.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\AcceleratorManager.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Associate.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\AVIWrite.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\BitmapControl.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\BugReport.h">
+				</File>
+				<File
+					RelativePath="..\src\CheatSearch.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\CmdAccelOb.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\ColorButton.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\ColorControl.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Directories.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Disassemble.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Display.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\ExportGSASnapshot.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\FileDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBACheats.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBCheatsDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBColorDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBDisassemble.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBMapView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBMemoryViewerDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBOamView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBPaletteView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBPrinterDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GBTileView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GDBConnection.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\GSACodeSelect.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Hyperlink.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Input.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\IOViewer.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\IOViewerRegs.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\IUpdate.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Joypad.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\KeyboardEdit.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\LangSelect.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Logging.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\LuaOpenDialog.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MainWnd.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MapView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MaxScale.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MemoryViewer.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MemoryViewerAddressSize.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MemoryViewerDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\ModeConfirm.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MovieCreate.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\MovieOpen.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\OamView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\PaletteView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\PaletteViewControl.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\PerfTimer.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Reg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\ResizeDlg.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\resource.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\RewindInterval.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\RomInfo.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Sound.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\stdafx.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\StringTokenizer.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\TextOptions.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\Throttle.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\TileView.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\VBA.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\VideoMode.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\WavWriter.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\WinHelper.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\WinResUtil.h">
+				</File>
+				<File
+					RelativePath="..\src\win32\ZoomControl.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="excluded"
+				Filter="">
+				<File
+					RelativePath="..\src\expr.cpp.h">
+				</File>
+				<File
+					RelativePath="..\src\exprNode.h">
+				</File>
+				<File
+					RelativePath="..\src\getopt.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
 				RelativePath="..\src\win32\gbadvance.ico">
+			</File>
+		</Filter>
+		<Filter
+			Name="Inserted Source Files"
+			Filter="">
+			<File
+				RelativePath="..\src\arm-new.h">
+			</File>
+			<File
+				RelativePath="..\src\gb\gbCodes.h">
+			</File>
+			<File
+				RelativePath="..\src\gb\gbCodesCB.h">
+			</File>
+			<File
+				RelativePath="..\src\hq2x.h">
+			</File>
+			<File
+				RelativePath="..\src\hq3x32.h">
+			</File>
+			<File
+				RelativePath="..\src\lq2x.h">
+			</File>
+			<File
+				RelativePath="..\src\SFMT\SFMT.c">
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\thumb.h">
 			</File>
 		</Filter>
 		<File

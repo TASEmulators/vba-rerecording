@@ -38,7 +38,8 @@ static const unsigned FPS_SCALE = (0x1000000);
 // general-purpose A/V sync debugging, ignored unless explicitly enabled with NESVideoEnableDebugging
 static void (*debugVideoMessageFunc)(const char *msg) = NULL;
 static void (*debugAudioMessageFunc)(const char *msg) = NULL;
-static unsigned audioFramesWritten=0, videoFramesWritten=1; // logo adds 1 "frame" to audio, so offset that (A/V frames shouldn't necessarily match up depending on the rates, but should at least make them start out matching in case they do)
+// logo adds 1 "frame" to audio, so offset that (A/V frames shouldn't necessarily match up depending on the rates, but should at least make them start out matching in case they do)
+static unsigned audioFramesWritten=0, videoFramesWritten=1;
 static double audioSecondsWritten=0, videoSecondsWritten=0;
 
 

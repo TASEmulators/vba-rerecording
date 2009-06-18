@@ -20,10 +20,10 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
+#include "resource.h"
 #include "GDBConnection.h"
 
-#include <winsock.h>
+#include "../System.h"
 
 #define SOCKET_MESSAGE WM_APP+1
 
@@ -38,224 +38,235 @@ static bool initialized = false;
 /////////////////////////////////////////////////////////////////////////////
 // GDBPortDlg dialog
 
-
-GDBPortDlg::GDBPortDlg(CWnd* pParent /*=NULL*/)
-  : CDialog(GDBPortDlg::IDD, pParent)
+GDBPortDlg::GDBPortDlg(CWnd*pParent /*=NULL*/)
+	: CDialog(GDBPortDlg::IDD, pParent)
 {
-  //{{AFX_DATA_INIT(GDBPortDlg)
-  // NOTE: the ClassWizard will add member initialization here
-  //}}AFX_DATA_INIT
-  port = 55555;
-  sock = INVALID_SOCKET;
-  
-  if(!initialized) {
-    WSADATA wsaData;
+	//{{AFX_DATA_INIT(GDBPortDlg)
+	// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+	port = 55555;
+	sock = INVALID_SOCKET;
 
-    int error = WSAStartup(MAKEWORD(1,1), &wsaData);
+	if (!initialized)
+	{
+		WSADATA wsaData;
 
-    initialized = true;
-  }
+		int error = WSAStartup(MAKEWORD(1, 1), &wsaData);
+
+		initialized = true;
+	}
 }
 
-
-void GDBPortDlg::DoDataExchange(CDataExchange* pDX)
+void GDBPortDlg::DoDataExchange(CDataExchange*pDX)
 {
-  CDialog::DoDataExchange(pDX);
-  //{{AFX_DATA_MAP(GDBPortDlg)
-  DDX_Control(pDX, IDC_PORT, m_port);
-  //}}AFX_DATA_MAP
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(GDBPortDlg)
+	DDX_Control(pDX, IDC_PORT, m_port);
+	//}}AFX_DATA_MAP
 }
-
 
 BEGIN_MESSAGE_MAP(GDBPortDlg, CDialog)
-  //{{AFX_MSG_MAP(GDBPortDlg)
-  ON_BN_CLICKED(ID_OK, OnOk)
-  ON_BN_CLICKED(ID_CANCEL, OnCancel)
-  ON_WM_CLOSE()
-  //}}AFX_MSG_MAP
-  END_MESSAGE_MAP()
+//{{AFX_MSG_MAP(GDBPortDlg)
+ON_BN_CLICKED(ID_OK, OnOk)
+ON_BN_CLICKED(ID_CANCEL, OnCancel)
+ON_WM_CLOSE()
+//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
-  /////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // GDBPortDlg message handlers
 
 int GDBPortDlg::getPort()
 {
-  return port;
+	return port;
 }
-
 
 SOCKET GDBPortDlg::getSocket()
 {
-  return sock;
+	return sock;
 }
 
-
-BOOL GDBPortDlg::OnInitDialog() 
+BOOL GDBPortDlg::OnInitDialog()
 {
-  CDialog::OnInitDialog();
-  
-  CString buffer;
+	CDialog::OnInitDialog();
 
-  buffer.Format("%d", port);
+	CString buffer;
 
-  m_port.SetWindowText(buffer);
+	buffer.Format("%d", port);
 
-  CenterWindow();
-  
-  return TRUE;  // return TRUE unless you set the focus to a control
-                // EXCEPTION: OCX Property Pages should return FALSE
+	m_port.SetWindowText(buffer);
+
+	CenterWindow();
+
+	return TRUE; // return TRUE unless you set the focus to a control
+	             // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void GDBPortDlg::OnOk() 
+void GDBPortDlg::OnOk()
 {
-  CString buffer;
+	CString buffer;
 
-  m_port.GetWindowText(buffer);
-  
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  address.sin_addr.s_addr = inet_addr("0.0.0.0");
-  address.sin_port = htons(atoi(buffer));
-  port = ntohs(address.sin_port);
+	m_port.GetWindowText(buffer);
 
-  SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
+	sockaddr_in address;
+	address.sin_family      = AF_INET;
+	address.sin_addr.s_addr = inet_addr("0.0.0.0");
+	address.sin_port        = htons(atoi(buffer));
+	port = ntohs(address.sin_port);
 
-  if(s != INVALID_SOCKET) {
-    int error = bind(s, (sockaddr *)&address, sizeof(address));
+	SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
 
-    if(error) {
-      systemMessage(IDS_ERROR_BINDING, "Error binding socket. Port probably in use.");
-      error = closesocket(s);
-      EndDialog(FALSE);
-    } else {
-      error = listen(s, 1);
-      if(!error) {
-        sock = s;
-        EndDialog(TRUE);
-      } else {
-        systemMessage(IDS_ERROR_LISTENING, "Error listening on socket.");
-        closesocket(s);
-        EndDialog(FALSE);
-      }
-    }
-  } else {
-    systemMessage(IDS_ERROR_CREATING_SOCKET, "Error creating socket.");
-    EndDialog(FALSE);
-  }
+	if (s != INVALID_SOCKET)
+	{
+		int error = bind(s, (sockaddr *)&address, sizeof(address));
+
+		if (error)
+		{
+			systemMessage(IDS_ERROR_BINDING, "Error binding socket. Port probably in use.");
+			error = closesocket(s);
+			EndDialog(FALSE);
+		}
+		else
+		{
+			error = listen(s, 1);
+			if (!error)
+			{
+				sock = s;
+				EndDialog(TRUE);
+			}
+			else
+			{
+				systemMessage(IDS_ERROR_LISTENING, "Error listening on socket.");
+				closesocket(s);
+				EndDialog(FALSE);
+			}
+		}
+	}
+	else
+	{
+		systemMessage(IDS_ERROR_CREATING_SOCKET, "Error creating socket.");
+		EndDialog(FALSE);
+	}
 }
 
-void GDBPortDlg::OnCancel() 
+void GDBPortDlg::OnCancel()
 {
-  OnClose();
+	OnClose();
 }
 
-void GDBPortDlg::OnClose() 
+void GDBPortDlg::OnClose()
 {
-  EndDialog(FALSE);
+	EndDialog(FALSE);
 }
+
 /////////////////////////////////////////////////////////////////////////////
 // GDBWaitingDlg dialog
 
-
-GDBWaitingDlg::GDBWaitingDlg(SOCKET s, int p, CWnd* pParent /*=NULL*/)
-  : CDialog(GDBWaitingDlg::IDD, pParent)
+GDBWaitingDlg::GDBWaitingDlg(SOCKET s, int p, CWnd*pParent /*=NULL*/)
+	: CDialog(GDBWaitingDlg::IDD, pParent)
 {
-  //{{AFX_DATA_INIT(GDBWaitingDlg)
-  //}}AFX_DATA_INIT
-  port = p & 65535;
-  listenSocket = s;
+	//{{AFX_DATA_INIT(GDBWaitingDlg)
+	//}}AFX_DATA_INIT
+	port         = p & 65535;
+	listenSocket = s;
 }
 
-
-void GDBWaitingDlg::DoDataExchange(CDataExchange* pDX)
+void GDBWaitingDlg::DoDataExchange(CDataExchange*pDX)
 {
-  CDialog::DoDataExchange(pDX);
-  //{{AFX_DATA_MAP(GDBWaitingDlg)
-  DDX_Control(pDX, IDC_PORT, m_port);
-  //}}AFX_DATA_MAP
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(GDBWaitingDlg)
+	DDX_Control(pDX, IDC_PORT, m_port);
+	//}}AFX_DATA_MAP
 }
-
 
 BEGIN_MESSAGE_MAP(GDBWaitingDlg, CDialog)
-  //{{AFX_MSG_MAP(GDBWaitingDlg)
-  ON_BN_CLICKED(ID_CANCEL, OnCancel)
-  ON_WM_CLOSE()
-  //}}AFX_MSG_MAP
-  END_MESSAGE_MAP()
+//{{AFX_MSG_MAP(GDBWaitingDlg)
+ON_BN_CLICKED(ID_CANCEL, OnCancel)
+ON_WM_CLOSE()
+//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
-  /////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // GDBWaitingDlg message handlers
 
-BOOL GDBWaitingDlg::OnInitDialog() 
+BOOL GDBWaitingDlg::OnInitDialog()
 {
-  CDialog::OnInitDialog();
-  
-  CString buffer;
+	CDialog::OnInitDialog();
 
-  buffer.Format("%d", port);
+	CString buffer;
 
-  m_port.SetWindowText(buffer);
+	buffer.Format("%d", port);
 
-  CenterWindow();
+	m_port.SetWindowText(buffer);
 
-  int error = WSAAsyncSelect(listenSocket,
-                             (HWND )*this,
-                             SOCKET_MESSAGE,
-                             FD_ACCEPT);
-  
-  return TRUE;  // return TRUE unless you set the focus to a control
-                // EXCEPTION: OCX Property Pages should return FALSE
+	CenterWindow();
+
+	int error = WSAAsyncSelect(listenSocket,
+	                           (HWND)*this,
+	                           SOCKET_MESSAGE,
+	                           FD_ACCEPT);
+
+	return TRUE; // return TRUE unless you set the focus to a control
+	             // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 LRESULT GDBWaitingDlg::OnSocketAccept(WPARAM wParam, LPARAM lParam)
 {
-  if(LOWORD(lParam) == FD_ACCEPT) {
-    WSAAsyncSelect(listenSocket, (HWND)*this, 0, 0);
-    
-    int flag = 0;    
-    ioctlsocket(listenSocket, FIONBIO, (unsigned long *)&flag);
-    
-    SOCKET s = accept(listenSocket, NULL, NULL);
-    if(s != INVALID_SOCKET) {
-      char dummy;
-      recv(s, &dummy, 1, 0);
-      if(dummy != '+') {
-        systemMessage(IDS_ACK_NOT_RECEIVED, "ACK not received from GDB.");
-        OnClose(); // calls EndDialog
-      } else {
-        sock = s;
-        EndDialog(TRUE);
-      }
-    }
-  }
+	if (LOWORD(lParam) == FD_ACCEPT)
+	{
+		WSAAsyncSelect(listenSocket, (HWND)*this, 0, 0);
 
-  return TRUE;
+		int flag = 0;
+		ioctlsocket(listenSocket, FIONBIO, (unsigned long *)&flag);
+
+		SOCKET s = accept(listenSocket, NULL, NULL);
+		if (s != INVALID_SOCKET)
+		{
+			char dummy;
+			recv(s, &dummy, 1, 0);
+			if (dummy != '+')
+			{
+				systemMessage(IDS_ACK_NOT_RECEIVED, "ACK not received from GDB.");
+				OnClose(); // calls EndDialog
+			}
+			else
+			{
+				sock = s;
+				EndDialog(TRUE);
+			}
+		}
+	}
+
+	return TRUE;
 }
 
-void GDBWaitingDlg::OnCancel() 
+void GDBWaitingDlg::OnCancel()
 {
-  OnClose();
+	OnClose();
 }
 
-void GDBWaitingDlg::OnClose() 
+void GDBWaitingDlg::OnClose()
 {
-  if(sock != INVALID_SOCKET) {
-    closesocket(sock);
-    sock = INVALID_SOCKET;
-  }
-  if(listenSocket != INVALID_SOCKET) {
-    closesocket(listenSocket);
-    listenSocket = INVALID_SOCKET;
-  }
-  EndDialog(FALSE);
+	if (sock != INVALID_SOCKET)
+	{
+		closesocket(sock);
+		sock = INVALID_SOCKET;
+	}
+	if (listenSocket != INVALID_SOCKET)
+	{
+		closesocket(listenSocket);
+		listenSocket = INVALID_SOCKET;
+	}
+	EndDialog(FALSE);
 }
 
 SOCKET GDBWaitingDlg::getListenSocket()
 {
-  return listenSocket;
+	return listenSocket;
 }
 
 SOCKET GDBWaitingDlg::getSocket()
 {
-  return sock;
+	return sock;
 }
+

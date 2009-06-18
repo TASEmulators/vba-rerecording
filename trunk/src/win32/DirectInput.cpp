@@ -17,16 +17,18 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
-#include "VBA.h"
-#include "Input.h"
-#include "Reg.h"
-#include "WinResUtil.h"
-
-#include "../movie.h"
-#include "../vbalua.h"
 
 #define DIRECTINPUT_VERSION 0x0500
 #include "dinput.h"
+
+#include "resource.h"
+#include "Input.h"
+#include "Reg.h"
+#include "WinResUtil.h"
+#include "VBA.h"
+
+#include "../movie.h"
+#include "../vbalua.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

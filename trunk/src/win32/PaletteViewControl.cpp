@@ -20,7 +20,6 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
 #include "PaletteViewControl.h"
 
 #include "../Util.h"

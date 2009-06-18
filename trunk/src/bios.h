@@ -20,6 +20,12 @@
 #ifndef VBA_BIOS_H
 #define VBA_BIOS_H
 
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "Port.h"
+
 extern void BIOS_ArcTan();
 extern void BIOS_ArcTan2();
 extern void BIOS_BitUnPack();
@@ -43,4 +49,5 @@ extern void BIOS_SoftReset();
 extern void BIOS_Sqrt();
 extern void BIOS_MidiKey2Freq();
 extern void BIOS_SndDriverJmpTableCopy();
+
 #endif // VBA_BIOS_H

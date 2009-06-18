@@ -20,7 +20,6 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
 #include "ColorControl.h"
 
 #ifdef _DEBUG

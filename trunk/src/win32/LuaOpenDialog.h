@@ -34,44 +34,41 @@
 
 class LuaOpenDialog : public CDialog
 {
-  // Construction
- public:
-  LuaOpenDialog(CWnd* pParent = NULL);   // standard constructor
-  virtual ~LuaOpenDialog();
+	// Construction
+public:
+	LuaOpenDialog(CWnd*pParent = NULL);  // standard constructor
+	virtual ~LuaOpenDialog();
 
-  // Dialog Data
-  //{{AFX_DATA(LuaOpenDialog)
-  enum { IDD = IDD_LUA_ADD };
-  CEdit    m_filename;
-  // NOTE: the ClassWizard will add data members here
-  //}}AFX_DATA
+	// Dialog Data
+	//{{AFX_DATA(LuaOpenDialog)
+	enum { IDD = IDD_LUA_ADD };
+	CEdit m_filename;
+	// NOTE: the ClassWizard will add data members here
+	//}}AFX_DATA
 
+	// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(LuaOpenDialog)
+protected:
+	virtual void DoDataExchange(CDataExchange*pDX);   // DDX/DDV support
+	//}}AFX_VIRTUAL
 
-  // Overrides
-  // ClassWizard generated virtual function overrides
-  //{{AFX_VIRTUAL(LuaOpenDialog)
- protected:
-  virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-  //}}AFX_VIRTUAL
+	// Implementation
+protected:
+	// Generated message map functions
+	//{{AFX_MSG(LuaOpenDialog)
+	virtual BOOL OnInitDialog();
+	virtual void OnOK();
+	//}}AFX_MSG
 
-  // Implementation
- protected:
+	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnDropFiles(HDROP hDropInfo);
+	afx_msg void OnBnClickedBrowse();
+	afx_msg void OnBnClickedOk();
+};
 
-  // Generated message map functions
-  //{{AFX_MSG(LuaOpenDialog)
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
-  //}}AFX_MSG
-
- DECLARE_MESSAGE_MAP()
- public:
-  afx_msg void OnDropFiles(HDROP hDropInfo);
-  afx_msg void OnBnClickedBrowse();
-  afx_msg void OnBnClickedOk();
-
-    };
-
-    //{{AFX_INSERT_LOCATION}}
-    // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(VBA_WIN32_LUAOPENDIALOG_H_INCLUDED)

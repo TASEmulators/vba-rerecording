@@ -20,8 +20,9 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
+#include "resource.h"
 #include "LangSelect.h"
+#include "VBA.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,66 +33,67 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // LangSelect dialog
 
-
-LangSelect::LangSelect(CWnd* pParent /*=NULL*/)
-  : CDialog(LangSelect::IDD, pParent)
+LangSelect::LangSelect(CWnd*pParent /*=NULL*/)
+	: CDialog(LangSelect::IDD, pParent)
 {
-  //{{AFX_DATA_INIT(LangSelect)
-  // NOTE: the ClassWizard will add member initialization here
-  //}}AFX_DATA_INIT
+	//{{AFX_DATA_INIT(LangSelect)
+	// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
 }
 
-
-void LangSelect::DoDataExchange(CDataExchange* pDX)
+void LangSelect::DoDataExchange(CDataExchange*pDX)
 {
-  CDialog::DoDataExchange(pDX);
-  //{{AFX_DATA_MAP(LangSelect)
-  DDX_Control(pDX, IDC_LANG_STRING, m_langString);
-  DDX_Control(pDX, IDC_LANG_NAME, m_langName);
-  //}}AFX_DATA_MAP
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(LangSelect)
+	DDX_Control(pDX, IDC_LANG_STRING, m_langString);
+	DDX_Control(pDX, IDC_LANG_NAME, m_langName);
+	//}}AFX_DATA_MAP
 }
-
 
 BEGIN_MESSAGE_MAP(LangSelect, CDialog)
-  //{{AFX_MSG_MAP(LangSelect)
-  ON_BN_CLICKED(ID_CANCEL, OnCancel)
-  ON_BN_CLICKED(ID_OK, OnOk)
-  //}}AFX_MSG_MAP
-  END_MESSAGE_MAP()
+//{{AFX_MSG_MAP(LangSelect)
+ON_BN_CLICKED(ID_CANCEL, OnCancel)
+ON_BN_CLICKED(ID_OK, OnOk)
+//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
-  /////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // LangSelect message handlers
 
-void LangSelect::OnCancel() 
+void LangSelect::OnCancel()
 {
-  EndDialog(FALSE);
+	EndDialog(FALSE);
 }
 
-void LangSelect::OnOk() 
+void LangSelect::OnOk()
 {
-  m_langString.GetWindowText(theApp.languageName);
-  EndDialog(TRUE);
+	m_langString.GetWindowText(theApp.languageName);
+	EndDialog(TRUE);
 }
 
-BOOL LangSelect::OnInitDialog() 
+BOOL LangSelect::OnInitDialog()
 {
-  CDialog::OnInitDialog();
-  
-  char lbuffer[10];
-  if(GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SABBREVLANGNAME,
-                   lbuffer, 10)) {
-    m_langName.SetWindowText(lbuffer);
-  } else {
-    m_langName.SetWindowText("???");
-  }
-  
-  if(!theApp.languageName.IsEmpty())
-    m_langString.SetWindowText(theApp.languageName);
-      
-  m_langString.LimitText(3);
-  
-  CenterWindow();
-  
-  return TRUE;  // return TRUE unless you set the focus to a control
-                // EXCEPTION: OCX Property Pages should return FALSE
+	CDialog::OnInitDialog();
+
+	char lbuffer[10];
+	if (GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SABBREVLANGNAME,
+	                  lbuffer, 10))
+	{
+		m_langName.SetWindowText(lbuffer);
+	}
+	else
+	{
+		m_langName.SetWindowText("???");
+	}
+
+	if (!theApp.languageName.IsEmpty())
+		m_langString.SetWindowText(theApp.languageName);
+
+	m_langString.LimitText(3);
+
+	CenterWindow();
+
+	return TRUE; // return TRUE unless you set the focus to a control
+	             // EXCEPTION: OCX Property Pages should return FALSE
 }
+

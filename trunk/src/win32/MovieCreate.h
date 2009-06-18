@@ -1,8 +1,11 @@
-#pragma once
+#ifndef VBA_MOVIECREATE_H
+#define VBA_MOVIECREATE_H
 
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
 
 // MovieCreate dialog
-
 class MovieCreate : public CDialog
 {
 	DECLARE_DYNAMIC(MovieCreate)
@@ -10,7 +13,6 @@ class MovieCreate : public CDialog
 public:
 	MovieCreate(CWnd* pParent = NULL);   // standard constructor
 	virtual ~MovieCreate();
-
 	virtual BOOL OnInitDialog() ;
 
 // Dialog Data
@@ -46,3 +48,5 @@ public:
 	afx_msg void OnBnClickedRecGbabios();
 	afx_msg void OnBnClickedRecGbabiosintro();
 };
+
+#endif // VBA_MOVIECREATE_H

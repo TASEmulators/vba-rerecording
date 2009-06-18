@@ -20,7 +20,12 @@
 #ifndef VBA_GBA_H
 #define VBA_GBA_H
 
-#include "System.h"
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "Port.h"
+#include "zlib.h"
 
 #if (defined(WIN32) && !defined(SDL))
 #include <windows.h> // for HANDLE
@@ -45,45 +50,6 @@
 #define SAVE_GAME_VERSION_13 13
 #define SAVE_GAME_VERSION  SAVE_GAME_VERSION_13
 
-typedef struct {
-  u8 *address;
-  u32 mask;
-} memoryMap;
-
-typedef union {
-  struct {
-#ifdef WORDS_BIGENDIAN
-    u8 B3;
-    u8 B2;
-    u8 B1;
-    u8 B0;
-#else
-    u8 B0;
-    u8 B1;
-    u8 B2;
-    u8 B3;
-#endif
-  } B;
-  struct {
-#ifdef WORDS_BIGENDIAN
-    u16 W1;
-    u16 W0;
-#else
-    u16 W0;
-    u16 W1;
-#endif
-  } W;
-#ifdef WORDS_BIGENDIAN
-  volatile u32 I;
-#else
-	u32 I;
-#endif
-} reg_pair;
-
-#ifndef NO_GBA_MAP
-extern memoryMap map[256];
-#endif
-
 #if (defined(WIN32) && !defined(SDL))
 extern HANDLE mapROM;        // shared memory handles
 extern HANDLE mapWORKRAM;
@@ -96,8 +62,9 @@ extern HANDLE mapPIX;
 extern HANDLE mapIOMEM;
 #endif
 
+/*
 extern reg_pair reg[45];
-extern u8 biosProtected[4];
+extern u8       biosProtected[4];
 
 extern bool8 N_FLAG;
 extern bool8 Z_FLAG;
@@ -106,7 +73,8 @@ extern bool8 V_FLAG;
 extern bool8 armIrqEnable;
 extern bool8 armState;
 extern int32 armMode;
-extern void (*cpuSaveGameFunc)(u32,u8);
+*/
+extern void  (*cpuSaveGameFunc)(u32, u8);
 
 extern bool8 freezeWorkRAM[0x40000];
 extern bool8 freezeInternalRAM[0x8000];
@@ -132,10 +100,10 @@ extern int CPULoadRom(const char *);
 extern void CPUUpdateRegister(u32, u16);
 extern void CPUWriteHalfWord(u32, u16);
 extern void CPUWriteByte(u32, u8);
-extern void CPUInit(const char *,bool);
+extern void CPUInit(const char *, bool);
 extern void CPUReset();
 extern void CPULoop(int);
-extern void CPUCheckDMA(int,int);
+extern void CPUCheckDMA(int, int);
 extern bool CPUIsGBAImage(const char *);
 extern bool CPUIsZipFile(const char *);
 #ifdef PROFILING
@@ -168,9 +136,4 @@ extern struct EmulatedSystem GBASystem;
 #define R14_FIQ  43
 #define SPSR_FIQ 44
 
-#include "Cheats.h"
-#include "Globals.h"
-#include "EEprom.h"
-#include "Flash.h"
-
-#endif //VBA_GBA_H
+#endif // VBA_GBA_H

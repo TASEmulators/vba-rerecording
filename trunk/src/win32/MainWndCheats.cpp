@@ -17,9 +17,9 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
-#include "MainWnd.h"
 
 #include "resource.h"
+#include "MainWnd.h"
 #include "FileDlg.h"
 #include "GBACheats.h"
 #include "GBCheatsDlg.h"
@@ -34,178 +34,183 @@
 extern int emulating;
 
 GBACheatSearch gbaDlg;
-GBCheatSearch gbDlg;
+GBCheatSearch  gbDlg;
 
-void MainWnd::OnCheatsSearchforcheats() 
+void MainWnd::OnCheatsSearchforcheats()
 {
-  theApp.winCheckFullscreen();
+	theApp.winCheckFullscreen();
 
-  if(!theApp.pauseDuringCheatSearch && theApp.modelessCheatDialogIsOpen)
-  {
-    gbaDlg.DestroyWindow();
-    gbDlg.DestroyWindow();
-	theApp.modelessCheatDialogIsOpen = false;
-  }
-
-  if(theApp.cartridgeType == 0)
-  {
-	if(theApp.pauseDuringCheatSearch)
+	if (!theApp.pauseDuringCheatSearch && theApp.modelessCheatDialogIsOpen)
 	{
-		gbaDlg.DoModal();
+		gbaDlg.DestroyWindow();
+		gbDlg.DestroyWindow();
+		theApp.modelessCheatDialogIsOpen = false;
+	}
+
+	if (theApp.cartridgeType == 0)
+	{
+		if (theApp.pauseDuringCheatSearch)
+		{
+			gbaDlg.DoModal();
+		}
+		else
+		{
+			if (!theApp.modelessCheatDialogIsOpen)
+			{
+				theApp.modelessCheatDialogIsOpen = true;
+				gbaDlg.Create(GBACheatSearch::IDD, theApp.m_pMainWnd);
+			}
+		}
 	}
 	else
 	{
-		if(!theApp.modelessCheatDialogIsOpen)
+		if (theApp.pauseDuringCheatSearch)
 		{
-			theApp.modelessCheatDialogIsOpen = true;
-			gbaDlg.Create(GBACheatSearch::IDD, theApp.m_pMainWnd);
+			gbDlg.DoModal();
+		}
+		else
+		{
+			if (!theApp.modelessCheatDialogIsOpen)
+			{
+				theApp.modelessCheatDialogIsOpen = true;
+				gbDlg.Create(GBACheatSearch::IDD, theApp.m_pMainWnd);
+			}
 		}
 	}
-  }
-  else
-  {
-	if(theApp.pauseDuringCheatSearch)
+}
+
+void MainWnd::OnUpdateCheatsSearchforcheats(CCmdUI*pCmdUI)
+{
+	pCmdUI->Enable(emulating);
+}
+
+void MainWnd::OnCheatsCheatlist()
+{
+	theApp.winCheckFullscreen();
+	if (theApp.cartridgeType == 0)
 	{
-	    gbDlg.DoModal();
+		GBACheatList dlg;
+		dlg.DoModal();
 	}
 	else
 	{
-		if(!theApp.modelessCheatDialogIsOpen)
-		{
-			theApp.modelessCheatDialogIsOpen = true;
-			gbDlg.Create(GBACheatSearch::IDD, theApp.m_pMainWnd);
-		}
+		GBCheatList dlg;
+		dlg.DoModal();
 	}
-  }
 }
 
-void MainWnd::OnUpdateCheatsSearchforcheats(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateCheatsCheatlist(CCmdUI*pCmdUI)
 {
-  pCmdUI->Enable(emulating);
+	pCmdUI->Enable(emulating);
 }
 
-void MainWnd::OnCheatsCheatlist() 
+void MainWnd::OnCheatsAutomaticsaveloadcheats()
 {
-  theApp.winCheckFullscreen();
-  if(theApp.cartridgeType == 0) {
-    GBACheatList dlg;
-    dlg.DoModal();
-  } else {
-    GBCheatList dlg;
-    dlg.DoModal();
-  }
+	theApp.autoSaveLoadCheatList = !theApp.autoSaveLoadCheatList;
 }
 
-void MainWnd::OnUpdateCheatsCheatlist(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateCheatsAutomaticsaveloadcheats(CCmdUI*pCmdUI)
 {
-  pCmdUI->Enable(emulating);
+	pCmdUI->SetCheck(theApp.autoSaveLoadCheatList);
 }
 
-void MainWnd::OnCheatsAutomaticsaveloadcheats() 
+void MainWnd::OnCheatsPauseDuringCheatSearch()
 {
-  theApp.autoSaveLoadCheatList = !theApp.autoSaveLoadCheatList;
+	theApp.pauseDuringCheatSearch = !theApp.pauseDuringCheatSearch;
 }
 
-void MainWnd::OnUpdateCheatsAutomaticsaveloadcheats(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateCheatsPauseDuringCheatSearch(CCmdUI*pCmdUI)
 {
-  pCmdUI->SetCheck(theApp.autoSaveLoadCheatList);
+	pCmdUI->SetCheck(theApp.pauseDuringCheatSearch);
 }
 
-void MainWnd::OnCheatsPauseDuringCheatSearch() 
+void MainWnd::OnCheatsLoadcheatlist()
 {
-  theApp.pauseDuringCheatSearch = !theApp.pauseDuringCheatSearch;
+	theApp.winCheckFullscreen();
+	CString buffer;
+	CString filename;
+
+	int index = theApp.filename.ReverseFind('\\');
+
+	if (index != -1)
+		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
+	else
+		buffer = theApp.filename;
+
+	CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
+
+	if (cheatDir.IsEmpty())
+		cheatDir = getDirFromFile(theApp.filename);
+
+	if (isDriveRoot(cheatDir))
+		filename.Format("%s%s.clt", cheatDir, buffer);
+	else
+		filename.Format("%s\\%s.clt", cheatDir, buffer);
+
+	LPCTSTR exts[] = { ".clt" };
+	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
+	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
+
+	FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, false);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		winLoadCheatList(dlg.GetPathName());
+	}
 }
 
-void MainWnd::OnUpdateCheatsPauseDuringCheatSearch(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateCheatsLoadcheatlist(CCmdUI*pCmdUI)
 {
-  pCmdUI->SetCheck(theApp.pauseDuringCheatSearch);
+	pCmdUI->Enable(emulating);
 }
 
-void MainWnd::OnCheatsLoadcheatlist() 
+void MainWnd::OnCheatsSavecheatlist()
 {
-  theApp.winCheckFullscreen();
-  CString buffer;
-  CString filename;
+	theApp.winCheckFullscreen();
+	CString buffer;
+	CString filename;
 
-  int index = theApp.filename.ReverseFind('\\');
+	int index = theApp.filename.ReverseFind('\\');
 
-  if(index != -1)
-    buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-  else
-    buffer = theApp.filename;
+	if (index != -1)
+		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
+	else
+		buffer = theApp.filename;
 
-  CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
+	CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
 
-  if(cheatDir.IsEmpty())
-    cheatDir = getDirFromFile(theApp.filename);
+	if (cheatDir.IsEmpty())
+		cheatDir = getDirFromFile(theApp.filename);
 
-  if(isDriveRoot(cheatDir))
-    filename.Format("%s%s.clt", cheatDir, buffer);
-  else
-    filename.Format("%s\\%s.clt", cheatDir, buffer);
+	if (isDriveRoot(cheatDir))
+		filename.Format("%s%s.clt", cheatDir, buffer);
+	else
+		filename.Format("%s\\%s.clt", cheatDir, buffer);
 
-  LPCTSTR exts[] = { ".clt" };
-  CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
-  CString title = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
+	LPCTSTR exts[] = { ".clt" };
+	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
+	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-  FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, false);
+	FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, true);
 
-  if(dlg.DoModal() == IDOK) {
-    winLoadCheatList(dlg.GetPathName());
-  }
+	if (dlg.DoModal() == IDOK)
+	{
+		winSaveCheatList(dlg.GetPathName());
+	}
 }
 
-void MainWnd::OnUpdateCheatsLoadcheatlist(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateCheatsSavecheatlist(CCmdUI*pCmdUI)
 {
-  pCmdUI->Enable(emulating);
+	pCmdUI->Enable(emulating);
 }
 
-void MainWnd::OnCheatsSavecheatlist() 
+void MainWnd::OnCheatsDisablecheats()
 {
-  theApp.winCheckFullscreen();
-  CString buffer;
-  CString filename;
-
-  int index = theApp.filename.ReverseFind('\\');
-
-  if(index != -1)
-    buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-  else
-    buffer = theApp.filename;
-
-  CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
-
-  if(cheatDir.IsEmpty())
-    cheatDir = getDirFromFile(theApp.filename);
-
-  if(isDriveRoot(cheatDir))
-    filename.Format("%s%s.clt", cheatDir, buffer);
-  else
-    filename.Format("%s\\%s.clt", cheatDir, buffer);
-
-  LPCTSTR exts[] = { ".clt" };
-  CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
-  CString title = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
-
-  FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, true);
-
-  if(dlg.DoModal() == IDOK) {
-    winSaveCheatList(dlg.GetPathName());
-  }
+	cheatsEnabled = !cheatsEnabled;
 }
 
-void MainWnd::OnUpdateCheatsSavecheatlist(CCmdUI* pCmdUI) 
+void MainWnd::OnUpdateCheatsDisablecheats(CCmdUI*pCmdUI)
 {
-  pCmdUI->Enable(emulating);
-}
-
-void MainWnd::OnCheatsDisablecheats() 
-{
-  cheatsEnabled = !cheatsEnabled;
-}
-
-void MainWnd::OnUpdateCheatsDisablecheats(CCmdUI* pCmdUI) 
-{
-  pCmdUI->SetCheck(!cheatsEnabled);
+	pCmdUI->SetCheck(!cheatsEnabled);
 }
 

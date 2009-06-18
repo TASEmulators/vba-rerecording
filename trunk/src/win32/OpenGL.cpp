@@ -17,18 +17,16 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
-#include "MainWnd.h"
 #include <gl/GL.h>
 
-#include "../System.h"
-#include "../GBA.h"
-#include "../gb/gbGlobals.h"
-#include "../Globals.h"
-#include "../Text.h"
-
-#include "VBA.h"
-#include "Reg.h"
 #include "resource.h"
+#include "MainWnd.h"
+#include "Reg.h"
+#include "VBA.h"
+
+#include "../Globals.h"
+#include "../gb/gbGlobals.h"
+#include "../Text.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,600 +41,643 @@ extern bool detectMMX();
 #endif
 
 extern int Init_2xSaI(u32);
-extern void winlog(const char *,...);
+extern void winlog(const char *, ...);
 extern int systemSpeed;
 
-class OpenGLDisplay : public IDisplay {
+class OpenGLDisplay : public IDisplay
+{
 private:
-  HDC hDC;
-  HGLRC hglrc;
-  GLuint texture;
-  int width;
-  int height;
-  float size;
-  u8 *filterData;
-  bool failed;
-  
-  bool initializeTexture(int w, int h);
-  void updateFiltering(int);
-public:
-  OpenGLDisplay();
-  virtual ~OpenGLDisplay();
+	HDC    hDC;
+	HGLRC  hglrc;
+	GLuint texture;
+	int    width;
+	int    height;
+	float  size;
+	u8 *   filterData;
+	bool   failed;
 
-  virtual bool initialize();
-  virtual void cleanup();
-  virtual void render();
-  virtual void checkFullScreen();
-  virtual void renderMenu();
-  virtual void clear();
-  virtual bool changeRenderSize(int w, int h);
-  virtual void resize(int w, int h);
-  virtual DISPLAY_TYPE getType() { return OPENGL; };
-  virtual void setOption(const char *, int);
-  virtual int selectFullScreenMode(GUID **);  
+	bool initializeTexture(int w, int h);
+	void updateFiltering(int);
+public:
+	OpenGLDisplay();
+	virtual ~OpenGLDisplay();
+
+	virtual bool initialize();
+	virtual void cleanup();
+	virtual void render();
+	virtual void checkFullScreen();
+	virtual void renderMenu();
+	virtual void clear();
+	virtual bool changeRenderSize(int w, int h);
+	virtual void resize(int w, int h);
+	virtual DISPLAY_TYPE getType() { return OPENGL; };
+	virtual void setOption(const char *, int);
+	virtual int selectFullScreenMode(GUID * *);
 };
 
 OpenGLDisplay::OpenGLDisplay()
 {
-  hDC = NULL;
-  hglrc = NULL;
-  texture = 0;
-  width = 0;
-  height = 0;
-  size = 0.0f;
-  filterData = (u8 *)malloc(4*4*256*240);
-  failed = false;
+	hDC        = NULL;
+	hglrc      = NULL;
+	texture    = 0;
+	width      = 0;
+	height     = 0;
+	size       = 0.0f;
+	filterData = (u8 *)malloc(4*4*256*240);
+	failed     = false;
 }
 
 OpenGLDisplay::~OpenGLDisplay()
 {
-  cleanup();
+	cleanup();
 }
 
 void OpenGLDisplay::cleanup()
 {
-  if(texture != 0) {
-    glDeleteTextures(1, &texture);
-    texture = 0;
-  }
-  if(hglrc != NULL) {
-    wglDeleteContext(hglrc);
-    wglMakeCurrent(NULL, NULL);
-    hglrc = NULL;
-  }
-  if(hDC != NULL) {
-    ReleaseDC(*theApp.m_pMainWnd, hDC);
-    hDC = NULL;
-  }
-  if(filterData) {
-    free(filterData);
-    filterData = NULL;
-  }
-  width = 0;
-  height = 0;
-  size = 0.0f;
+	if (texture != 0)
+	{
+		glDeleteTextures(1, &texture);
+		texture = 0;
+	}
+	if (hglrc != NULL)
+	{
+		wglDeleteContext(hglrc);
+		wglMakeCurrent(NULL, NULL);
+		hglrc = NULL;
+	}
+	if (hDC != NULL)
+	{
+		ReleaseDC(*theApp.m_pMainWnd, hDC);
+		hDC = NULL;
+	}
+	if (filterData)
+	{
+		free(filterData);
+		filterData = NULL;
+	}
+	width  = 0;
+	height = 0;
+	size   = 0.0f;
 }
 
 bool OpenGLDisplay::initialize()
 {
-  theApp.sizeX = 240;
-  theApp.sizeY = 160;
+	theApp.sizeX = 240;
+	theApp.sizeY = 160;
 
-  switch(theApp.videoOption) {
-  case VIDEO_1X:
-    theApp.surfaceSizeX = theApp.sizeX;
-    theApp.surfaceSizeY = theApp.sizeY;
-    break;
-  case VIDEO_2X:
-    theApp.surfaceSizeX = theApp.sizeX * 2;
-    theApp.surfaceSizeY = theApp.sizeY * 2;
-    break;
-  case VIDEO_3X:
-    theApp.surfaceSizeX = theApp.sizeX * 3;
-    theApp.surfaceSizeY = theApp.sizeY * 3;
-    break;
-  case VIDEO_4X:
-    theApp.surfaceSizeX = theApp.sizeX * 4;
-    theApp.surfaceSizeY = theApp.sizeY * 4;
-    break;
-  case VIDEO_320x240:
-  case VIDEO_640x480:
-  case VIDEO_800x600:
-  case VIDEO_OTHER:
-    {
-      RECT r;
-      ::GetWindowRect(GetDesktopWindow(), &r);
-      theApp.fsWidth = r.right - r.left;
-      theApp.fsHeight = r.bottom - r.top;
+	switch (theApp.videoOption)
+	{
+	case VIDEO_1X:
+		theApp.surfaceSizeX = theApp.sizeX;
+		theApp.surfaceSizeY = theApp.sizeY;
+		break;
+	case VIDEO_2X:
+		theApp.surfaceSizeX = theApp.sizeX * 2;
+		theApp.surfaceSizeY = theApp.sizeY * 2;
+		break;
+	case VIDEO_3X:
+		theApp.surfaceSizeX = theApp.sizeX * 3;
+		theApp.surfaceSizeY = theApp.sizeY * 3;
+		break;
+	case VIDEO_4X:
+		theApp.surfaceSizeX = theApp.sizeX * 4;
+		theApp.surfaceSizeY = theApp.sizeY * 4;
+		break;
+	case VIDEO_320x240:
+	case VIDEO_640x480:
+	case VIDEO_800x600:
+	case VIDEO_OTHER:
+	{
+		RECT r;
+		::GetWindowRect(GetDesktopWindow(), &r);
+		theApp.fsWidth  = r.right - r.left;
+		theApp.fsHeight = r.bottom - r.top;
 
-      /* Need to fix this code later. For now, Fullscreen takes the whole
-         screen.
-         int scaleX = (fsWidth / sizeX);
-         int scaleY = (fsHeight / sizeY);
-         int min = scaleX < scaleY ? scaleX : scaleY;
-         surfaceSizeX = sizeX * min;
-         surfaceSizeY = sizeY * min;
-         if(fullScreenStretch) {
-      */
-      theApp.surfaceSizeX = theApp.fsWidth;
-      theApp.surfaceSizeY = theApp.fsHeight;
-      //      }
-    }
-    break;
-  }
-  
-  theApp.rect.left = 0;
-  theApp.rect.top = 0;
-  theApp.rect.right = theApp.sizeX;
-  theApp.rect.bottom = theApp.sizeY;
+		/* Need to fix this code later. For now, Fullscreen takes the whole
+		   screen.
+		   int scaleX = (fsWidth / sizeX);
+		   int scaleY = (fsHeight / sizeY);
+		   int min = scaleX < scaleY ? scaleX : scaleY;
+		   surfaceSizeX = sizeX * min;
+		   surfaceSizeY = sizeY * min;
+		   if(fullScreenStretch) {
+		 */
+		theApp.surfaceSizeX = theApp.fsWidth;
+		theApp.surfaceSizeY = theApp.fsHeight;
+		//      }
+		break;
+	}
+	}
 
-  theApp.dest.left = 0;
-  theApp.dest.top = 0;
-  theApp.dest.right = theApp.surfaceSizeX;
-  theApp.dest.bottom = theApp.surfaceSizeY;
+	theApp.rect.left   = 0;
+	theApp.rect.top    = 0;
+	theApp.rect.right  = theApp.sizeX;
+	theApp.rect.bottom = theApp.sizeY;
 
-  DWORD style = WS_POPUP | WS_VISIBLE;
-  DWORD styleEx = 0;
-  
-  if(theApp.videoOption <= VIDEO_4X)
-    style |= WS_OVERLAPPEDWINDOW;
-  else
-    styleEx = 0;
+	theApp.dest.left   = 0;
+	theApp.dest.top    = 0;
+	theApp.dest.right  = theApp.surfaceSizeX;
+	theApp.dest.bottom = theApp.surfaceSizeY;
 
-  if(theApp.videoOption <= VIDEO_4X)
-    AdjustWindowRectEx(&theApp.dest, style, TRUE, styleEx);
-  else
-    AdjustWindowRectEx(&theApp.dest, style, FALSE, styleEx);    
+	DWORD style   = WS_POPUP | WS_VISIBLE;
+	DWORD styleEx = 0;
 
-  int winSizeX = theApp.dest.right-theApp.dest.left;
-  int winSizeY = theApp.dest.bottom-theApp.dest.top;
+	if (theApp.videoOption <= VIDEO_4X)
+		style |= WS_OVERLAPPEDWINDOW;
+	else
+		styleEx = 0;
 
-  if(theApp.videoOption > VIDEO_4X) {
-    winSizeX = theApp.fsWidth;
-    winSizeY = theApp.fsHeight;
-  }
-  
-  int x = 0;
-  int y = 0;
+	if (theApp.videoOption <= VIDEO_4X)
+		AdjustWindowRectEx(&theApp.dest, style, TRUE, styleEx);
+	else
+		AdjustWindowRectEx(&theApp.dest, style, FALSE, styleEx);
 
-  if(theApp.videoOption <= VIDEO_4X) {
-    x = theApp.windowPositionX;
-    y = theApp.windowPositionY;
-  }
-  
-  // Create a window
-  MainWnd *pWnd = new MainWnd;
-  theApp.m_pMainWnd = pWnd;
+	int winSizeX = theApp.dest.right-theApp.dest.left;
+	int winSizeY = theApp.dest.bottom-theApp.dest.top;
 
-  pWnd->CreateEx(styleEx,
-                 theApp.wndClass,
-                 MAINWND_TITLE_STRING,
-                 style,
-                 x,y,winSizeX,winSizeY,
-                 NULL,
-                 0);
-  
-  if (!(HWND)*pWnd) {
-    winlog("Error creating Window %08x\n", GetLastError());
-    return FALSE;
-  }
-  
-  theApp.updateMenuBar();
-  
-  theApp.adjustDestRect();
-  
-  theApp.mode320Available = FALSE;
-  theApp.mode640Available = FALSE;
-  theApp.mode800Available = FALSE;
+	if (theApp.videoOption > VIDEO_4X)
+	{
+		winSizeX = theApp.fsWidth;
+		winSizeY = theApp.fsHeight;
+	}
 
-  CDC *dc = pWnd->GetDC();
-  HDC hDC = dc->GetSafeHdc();
- 
-  PIXELFORMATDESCRIPTOR pfd = { 
-    sizeof(PIXELFORMATDESCRIPTOR),  //  size of this pfd 
-    1,                     // version number 
-    PFD_DRAW_TO_WINDOW |   // support window 
-    PFD_SUPPORT_OPENGL |   // support OpenGL 
-    PFD_DOUBLEBUFFER,      // double buffered 
-    PFD_TYPE_RGBA,         // RGBA type 
-    16,                    // 16-bit color depth 
-    0, 0, 0, 0, 0, 0,      // color bits ignored 
-    0,                     // no alpha buffer 
-    0,                     // shift bit ignored 
-    0,                     // no accumulation buffer 
-    0, 0, 0, 0,            // accum bits ignored 
-    32,                    // 32-bit z-buffer     
-    0,                     // no stencil buffer 
-    0,                     // no auxiliary buffer 
-    PFD_MAIN_PLANE,        // main layer 
-    0,                     // reserved 
-    0, 0, 0                // layer masks ignored 
-  }; 
-  int  iPixelFormat; 
-  
-  if(!(iPixelFormat = ChoosePixelFormat(hDC, &pfd))) {
-    winlog("Failed ChoosePixelFormat\n");
-    return false;
-  }
+	int x = 0;
+	int y = 0;
 
-  // obtain detailed information about 
-  // the device context's first pixel format
-  if(!(DescribePixelFormat(hDC, iPixelFormat,  
-                           sizeof(PIXELFORMATDESCRIPTOR), &pfd))) {
-    winlog("Failed DescribePixelFormat\n");
-    return false;
-  }
+	if (theApp.videoOption <= VIDEO_4X)
+	{
+		x = theApp.windowPositionX;
+		y = theApp.windowPositionY;
+	}
 
-  if(!SetPixelFormat(hDC, iPixelFormat, &pfd)) {
-    winlog("Failed SetPixelFormat\n");
-    return false;
-  }
+	// Create a window
+	MainWnd *pWnd = new MainWnd;
+	theApp.m_pMainWnd = pWnd;
 
-  if(!(hglrc = wglCreateContext(hDC))) {
-    winlog("Failed wglCreateContext\n");
-    return false;
-  }
+	pWnd->CreateEx(styleEx,
+	               theApp.wndClass,
+	               MAINWND_TITLE_STRING,
+	               style,
+	               x, y, winSizeX, winSizeY,
+	               NULL,
+	               0);
 
-  if(!wglMakeCurrent(hDC, hglrc)) {
-    winlog("Failed wglMakeCurrent\n");
-    return false;
-  }
-  pWnd->ReleaseDC(dc);
-  
-  // setup 2D gl environment
-  glPushAttrib(GL_ENABLE_BIT);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
-  glEnable(GL_TEXTURE_2D);
+	if (!(HWND)*pWnd)
+	{
+		winlog("Error creating Window %08x\n", GetLastError());
+		return FALSE;
+	}
 
-  glViewport(0, 0, theApp.surfaceSizeX, theApp.surfaceSizeY);
+	theApp.updateMenuBar();
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
+	theApp.adjustDestRect();
 
-  glOrtho(0.0, (GLdouble)(theApp.surfaceSizeX), (GLdouble)(theApp.surfaceSizeY),
-          0.0, 0.0,1.0);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+	theApp.mode320Available = FALSE;
+	theApp.mode640Available = FALSE;
+	theApp.mode800Available = FALSE;
 
-  systemRedShift = 3;
-  systemGreenShift = 11;
-  systemBlueShift = 19;
-  systemColorDepth = 32;
-  theApp.fsColorDepth = 32;
-  
-  Init_2xSaI(32);
+	CDC *dc  = pWnd->GetDC();
+	HDC  hDC = dc->GetSafeHdc();
+
+	PIXELFORMATDESCRIPTOR pfd = {
+		sizeof(PIXELFORMATDESCRIPTOR), //  size of this pfd
+		1, // version number
+		PFD_DRAW_TO_WINDOW | // support window
+		PFD_SUPPORT_OPENGL | // support OpenGL
+		PFD_DOUBLEBUFFER, // double buffered
+		PFD_TYPE_RGBA, // RGBA type
+		16, // 16-bit color depth
+		0, 0, 0, 0, 0, 0,  // color bits ignored
+		0, // no alpha buffer
+		0, // shift bit ignored
+		0, // no accumulation buffer
+		0, 0, 0, 0, // accum bits ignored
+		32, // 32-bit z-buffer
+		0, // no stencil buffer
+		0, // no auxiliary buffer
+		PFD_MAIN_PLANE, // main layer
+		0, // reserved
+		0, 0, 0            // layer masks ignored
+	};
+	int iPixelFormat;
+
+	if (!(iPixelFormat = ChoosePixelFormat(hDC, &pfd)))
+	{
+		winlog("Failed ChoosePixelFormat\n");
+		return false;
+	}
+
+	// obtain detailed information about
+	// the device context's first pixel format
+	if (!(DescribePixelFormat(hDC, iPixelFormat,
+	                          sizeof(PIXELFORMATDESCRIPTOR), &pfd)))
+	{
+		winlog("Failed DescribePixelFormat\n");
+		return false;
+	}
+
+	if (!SetPixelFormat(hDC, iPixelFormat, &pfd))
+	{
+		winlog("Failed SetPixelFormat\n");
+		return false;
+	}
+
+	if (!(hglrc = wglCreateContext(hDC)))
+	{
+		winlog("Failed wglCreateContext\n");
+		return false;
+	}
+
+	if (!wglMakeCurrent(hDC, hglrc))
+	{
+		winlog("Failed wglMakeCurrent\n");
+		return false;
+	}
+	pWnd->ReleaseDC(dc);
+
+	// setup 2D gl environment
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_2D);
+
+	glViewport(0, 0, theApp.surfaceSizeX, theApp.surfaceSizeY);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glOrtho(0.0, (GLdouble)(theApp.surfaceSizeX), (GLdouble)(theApp.surfaceSizeY),
+	        0.0, 0.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	systemRedShift      = 3;
+	systemGreenShift    = 11;
+	systemBlueShift     = 19;
+	systemColorDepth    = 32;
+	theApp.fsColorDepth = 32;
+
+	Init_2xSaI(32);
 #ifdef MMX
-  if(!theApp.disableMMX)
-    cpu_mmx = theApp.detectMMX();
-  else
-    cpu_mmx = 0;
+	if (!theApp.disableMMX)
+		cpu_mmx = theApp.detectMMX();
+	else
+		cpu_mmx = 0;
 #endif
-  
-  if(theApp.ddrawDebug) {
-    winlog("R shift: %d\n", systemRedShift);
-    winlog("G shift: %d\n", systemGreenShift);
-    winlog("B shift: %d\n", systemBlueShift);
-  }
-         
-  switch(systemColorDepth) {
-  case 16:
-    {
-      for(int i = 0; i < 0x10000; i++) {
-        systemColorMap16[i] = ((i & 0x1f) << systemRedShift) |
-          (((i & 0x3e0) >> 5) << systemGreenShift) |
-          (((i & 0x7c00) >> 10) << systemBlueShift);
-      }
-    }
-    break;
-  case 24:
-  case 32:
-    {
-      for(int i = 0; i < 0x10000; i++) {
-        systemColorMap32[i] = ((i & 0x1f) << systemRedShift) |
-          (((i & 0x3e0) >> 5) << systemGreenShift) |
-          (((i & 0x7c00) >> 10) << systemBlueShift);
-      }      
-    }
-    break;
-  }
-  theApp.updateFilter();
-  theApp.updateIFB();
 
-  if(failed)
-    return false;
-  
-  pWnd->DragAcceptFiles(TRUE);
-  
-  return TRUE;  
+	if (theApp.ddrawDebug)
+	{
+		winlog("R shift: %d\n", systemRedShift);
+		winlog("G shift: %d\n", systemGreenShift);
+		winlog("B shift: %d\n", systemBlueShift);
+	}
+
+	switch (systemColorDepth)
+	{
+	case 16:
+	{
+		for (int i = 0; i < 0x10000; i++)
+		{
+			systemColorMap16[i] = ((i & 0x1f) << systemRedShift) |
+			                      (((i & 0x3e0) >> 5) << systemGreenShift) |
+			                      (((i & 0x7c00) >> 10) << systemBlueShift);
+		}
+		break;
+	}
+	case 24:
+	case 32:
+	{
+		for (int i = 0; i < 0x10000; i++)
+		{
+			systemColorMap32[i] = ((i & 0x1f) << systemRedShift) |
+			                      (((i & 0x3e0) >> 5) << systemGreenShift) |
+			                      (((i & 0x7c00) >> 10) << systemBlueShift);
+		}
+		break;
+	}
+	}
+	theApp.updateFilter();
+	theApp.updateIFB();
+
+	if (failed)
+		return false;
+
+	pWnd->DragAcceptFiles(TRUE);
+
+	return TRUE;
 }
 
 void OpenGLDisplay::clear()
-{
-}
+{}
 
 void OpenGLDisplay::renderMenu()
 {
-  checkFullScreen();
-  if(theApp.m_pMainWnd)
-    theApp.m_pMainWnd->DrawMenuBar();
+	checkFullScreen();
+	if (theApp.m_pMainWnd)
+		theApp.m_pMainWnd->DrawMenuBar();
 }
 
 void OpenGLDisplay::checkFullScreen()
 {
-  //  if(tripleBuffering)
-  //    pOpenGL->FlipToGDISurface();
+	//  if(tripleBuffering)
+	//    pOpenGL->FlipToGDISurface();
 }
 
 void OpenGLDisplay::render()
 {
-  void (*filterFunction)(u8*,u32,u8*,u8*,u32,int,int) = theApp.filterFunction;
-  int filterWidth = theApp.filterWidth, filterHeight = theApp.filterHeight;
+	void (*filterFunction)(u8 *, u32, u8 *, u8 *, u32, int, int) = theApp.filterFunction;
+	int  filterWidth = theApp.filterWidth, filterHeight = theApp.filterHeight;
 /*
-  	if(textMethod == 1)
-	{
-		int copyX = 240, copyY = 160;
-		if(theApp.cartridgeType == 1)
-			if(gbBorderOn) copyX = 256, copyY = 224;
-			else           copyX = 160, copyY = 144;
+    if(textMethod == 1)
+    {
+        int copyX = 240, copyY = 160;
+        if(theApp.cartridgeType == 1)
+            if(gbBorderOn) copyX = 256, copyY = 224;
+            else           copyX = 160, copyY = 144;
 
-		extern void Simple1x(u8*,u32,u8*,u8*,u32,int,int);
-		filterFunction = Simple1x;
-		filterWidth = copyX;
-		filterHeight = copyY;
+        extern void Simple1x(u8*,u32,u8*,u8*,u32,int,int);
+        filterFunction = Simple1x;
+        filterWidth = copyX;
+        filterHeight = copyY;
+    }
+ */
+	int pitch = filterWidth * 4 + 4;
+	u8 *data  = pix + (theApp.sizeX+1)*4;
+
+	if (textMethod == 1 && !filterFunction)
+	{
+		textMethod = 0; // must not be after systemMessage!
+		systemMessage(
+		    0,
+		    "The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
 	}
-*/
-  int pitch = filterWidth * 4 + 4;
-  u8 *data = pix + (theApp.sizeX+1)*4;
-  
-  if(textMethod == 1 && !filterFunction)
-  {
-	  textMethod = 0; // must not be after systemMessage!
-	  systemMessage(0,"The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
-  }
 
 	// moved to VBA.cpp
 	/*
-	if(textMethod == 0)
+	   if(textMethod == 0)
+	   {
+	    int copyX = 240, copyY = 160;
+	    if(theApp.cartridgeType == 1)
+	        if(gbBorderOn) copyX = 256, copyY = 224;
+	        else           copyX = 160, copyY = 144;
+
+	    DrawTextMessages((u8*)pix, (copyX+1)*(systemColorDepth/8), 0, copyY);
+	   }
+	 */
+
+	if (filterFunction)
 	{
-		int copyX = 240, copyY = 160;
-		if(theApp.cartridgeType == 1)
-			if(gbBorderOn) copyX = 256, copyY = 224;
-			else           copyX = 160, copyY = 144;
-
-		DrawTextMessages((u8*)pix, (copyX+1)*(systemColorDepth/8), 0, copyY);
+		data = filterData;
+		filterFunction(pix+pitch,
+		               pitch,
+		               (u8 *)theApp.delta,
+		               (u8 *)filterData,
+		               filterWidth*4*2,
+		               filterWidth,
+		               filterHeight);
 	}
-	*/
 
-  if(filterFunction) {
-    data = filterData;
-    filterFunction(pix+pitch,
-                          pitch,
-                          (u8*)theApp.delta,
-                          (u8*)filterData,
-                          filterWidth*4*2,
-                          filterWidth,
-                          filterHeight);
-  }
+	if (theApp.videoOption > VIDEO_4X && theApp.showSpeed)
+	{
+		char buffer[30];
+		if (theApp.showSpeed == 1)
+			sprintf(buffer, "%3d%%", systemSpeed);
+		else
+			sprintf(buffer, "%3d%%(%d, %d fps)", systemSpeed,
+			        systemFrameSkip,
+			        theApp.showRenderedFrames);
 
-  if(theApp.videoOption > VIDEO_4X && theApp.showSpeed) {
-    char buffer[30];
-    if(theApp.showSpeed == 1)
-      sprintf(buffer, "%3d%%", systemSpeed);
-    else
-      sprintf(buffer, "%3d%%(%d, %d fps)", systemSpeed,
-              systemFrameSkip,
-              theApp.showRenderedFrames);
-
-    if(filterFunction) {
-      int p = filterWidth * 4;
-      if(systemColorDepth == 24)
-        p = filterWidth * 6;
-      else if(systemColorDepth == 32)
-        p = filterWidth * 8;
-      if(theApp.showSpeedTransparent)
-        drawTextTransp((u8*)filterData,
-                       p,
-                       10,
-                       filterHeight*2-10,
-                       buffer);
-      else
-        drawText((u8*)filterData,
-                 p,
-                 10,
-                 filterHeight*2-10,
-                 buffer);      
-
-	} else {
-      if(theApp.showSpeedTransparent)
-        drawTextTransp((u8*)pix,
-                       pitch,
-                       10,
-                       filterHeight-10,
-                       buffer);
-      else
-        drawText((u8*)pix,
-                 pitch,
-                 10,
-                 filterHeight-10,
-                 buffer);
+		if (filterFunction)
+		{
+			int p = filterWidth * 4;
+			if (systemColorDepth == 24)
+				p = filterWidth * 6;
+			else if (systemColorDepth == 32)
+				p = filterWidth * 8;
+			if (theApp.showSpeedTransparent)
+				drawTextTransp((u8 *)filterData,
+				               p,
+				               10,
+				               filterHeight*2-10,
+				               buffer);
+			else
+				drawText((u8 *)filterData,
+				         p,
+				         10,
+				         filterHeight*2-10,
+				         buffer);
+		}
+		else
+		{
+			if (theApp.showSpeedTransparent)
+				drawTextTransp((u8 *)pix,
+				               pitch,
+				               10,
+				               filterHeight-10,
+				               buffer);
+			else
+				drawText((u8 *)pix,
+				         pitch,
+				         10,
+				         filterHeight-10,
+				         buffer);
+		}
 	}
-  }
 
-	if(textMethod == 1 && filterFunction)
-		DrawTextMessages((u8*)filterData, filterWidth*systemColorDepth/4, 0, filterHeight*2);
+	if (textMethod == 1 && filterFunction)
+		DrawTextMessages((u8 *)filterData, filterWidth*systemColorDepth/4, 0, filterHeight*2);
 
- 
-  // Texturemap complete texture to surface so we have free scaling 
-  // and antialiasing
-  int mult = 1;
-  if(filterFunction) {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 2*theApp.sizeX);
-    mult = 2;
-  } else {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, theApp.sizeX+1);
-  }
+	// Texturemap complete texture to surface so we have free scaling
+	// and antialiasing
+	int mult = 1;
+	if (filterFunction)
+	{
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 2*theApp.sizeX);
+		mult = 2;
+	}
+	else
+	{
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, theApp.sizeX+1);
+	}
 
-  glTexSubImage2D( GL_TEXTURE_2D,0,
-                   0,0, mult*theApp.sizeX,mult*theApp.sizeY,
-                   GL_RGBA,GL_UNSIGNED_BYTE,data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0,
+	                0, 0, mult*theApp.sizeX, mult*theApp.sizeY,
+	                GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-  if(theApp.glType == 0) {
-    glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
-    glTexCoord2f(mult*theApp.sizeX/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
-    glTexCoord2f(0.0, mult*theApp.sizeY/size); glVertex3i(0, theApp.surfaceSizeY, 0);
-    glTexCoord2f(mult*theApp.sizeX/size, mult*theApp.sizeY/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
-    glEnd();
-  } else {
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
-    glTexCoord2f(mult*theApp.sizeX/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
-    glTexCoord2f(mult*theApp.sizeX/size, mult*theApp.sizeY/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
-    glTexCoord2f(0.0, mult*theApp.sizeY/size); glVertex3i(0, theApp.surfaceSizeY, 0);
-    glEnd();
-  }
+	if (theApp.glType == 0)
+	{
+		glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
+		glTexCoord2f(mult*theApp.sizeX/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
+		glTexCoord2f(0.0, mult*theApp.sizeY/size); glVertex3i(0, theApp.surfaceSizeY, 0);
+		glTexCoord2f(mult*theApp.sizeX/size, mult*theApp.sizeY/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
+		glEnd();
+	}
+	else
+	{
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
+		glTexCoord2f(mult*theApp.sizeX/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
+		glTexCoord2f(mult*theApp.sizeX/size, mult*theApp.sizeY/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
+		glTexCoord2f(0.0, mult*theApp.sizeY/size); glVertex3i(0, theApp.surfaceSizeY, 0);
+		glEnd();
+	}
 
-  CDC *dc = theApp.m_pMainWnd->GetDC();
+	CDC *dc = theApp.m_pMainWnd->GetDC();
 
-  if(textMethod == 2)
-  {
-	  for(int slot = 0 ; slot < SCREEN_MESSAGE_SLOTS ; slot++)
-	  {
-		  if(theApp.screenMessage[slot])
-		  {
-			  if(((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
-				  (!theApp.disableStatusMessage || slot == 1 || slot == 2))
-			  {
-				  dc->SetBkMode(TRANSPARENT);
+	if (textMethod == 2)
+	{
+		for (int slot = 0; slot < SCREEN_MESSAGE_SLOTS; slot++)
+		{
+			if (theApp.screenMessage[slot])
+			{
+				if (((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+				    (!theApp.disableStatusMessage || slot == 1 || slot == 2))
+				{
+					dc->SetBkMode(TRANSPARENT);
 
-				  if(outlinedText)
-				  {
-					dc->SetTextColor(textColor != 7 ? RGB(0,0,0) : RGB(255,255,255));
-					// draw black outline
-					const static int xd [8] = {-1,0,1,1,1,0,-1,-1};
-					const static int yd [8] = {-1,-1,-1,0,1,1,1,0};
-					for(int i = 0 ; i < 8 ; i++)
+					if (outlinedText)
 					{
-						dc->TextOut(10+xd[i], theApp.surfaceSizeY - 20*(slot+1)+yd[i], theApp.screenMessageBuffer[slot]);
+						dc->SetTextColor(textColor != 7 ? RGB(0, 0, 0) : RGB(255, 255, 255));
+						// draw black outline
+						const static int xd [8] = {-1, 0, 1, 1, 1, 0, -1, -1};
+						const static int yd [8] = {-1, -1, -1, 0, 1, 1, 1, 0};
+						for (int i = 0; i < 8; i++)
+						{
+							dc->TextOut(10+xd[i], theApp.surfaceSizeY - 20*(slot+1)+yd[i], theApp.screenMessageBuffer[slot]);
+						}
 					}
-				  }
 
 					COLORREF color;
-					switch(textColor)
+					switch (textColor)
 					{
-						case 0: color = RGB(255, 255, 255); break;
-						case 1: color = RGB(255, 0, 0); break;
-						case 2: color = RGB(255, 255, 0); break;
-						case 3: color = RGB(0, 255, 0); break;
-						case 4: color = RGB(0, 255, 255); break;
-						case 5: color = RGB(0, 0, 255); break;
-						case 6: color = RGB(255, 0, 255); break;
-						case 7: color = RGB(0, 0, 0); break;
+					case 0:
+						color = RGB(255, 255, 255); break;
+					case 1:
+						color = RGB(255, 0, 0); break;
+					case 2:
+						color = RGB(255, 255, 0); break;
+					case 3:
+						color = RGB(0, 255, 0); break;
+					case 4:
+						color = RGB(0, 255, 255); break;
+					case 5:
+						color = RGB(0, 0, 255); break;
+					case 6:
+						color = RGB(255, 0, 255); break;
+					case 7:
+						color = RGB(0, 0, 0); break;
 					}
 					dc->SetTextColor(color);
 
-				  // draw center text
-				  dc->TextOut(10, theApp.surfaceSizeY - 20*(slot+1), theApp.screenMessageBuffer[slot]);
-			  } else {
-				  theApp.screenMessage[slot] = false;
-			  }
-		  }  
-	  }
-  }
+					// draw center text
+					dc->TextOut(10, theApp.surfaceSizeY - 20*(slot+1), theApp.screenMessageBuffer[slot]);
+				}
+				else
+				{
+					theApp.screenMessage[slot] = false;
+				}
+			}
+		}
+	}
 
-  SwapBuffers(dc->GetSafeHdc());
-    
-  theApp.m_pMainWnd->ReleaseDC(dc);
+	SwapBuffers(dc->GetSafeHdc());
+
+	theApp.m_pMainWnd->ReleaseDC(dc);
 }
 
 void OpenGLDisplay::resize(int w, int h)
 {
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 
-  glOrtho(0.0, (GLdouble)(w), (GLdouble)(h),
-          0.0, 0.0,1.0);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+	glOrtho(0.0, (GLdouble)(w), (GLdouble)(h),
+	        0.0, 0.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void OpenGLDisplay::updateFiltering(int value)
 {
-  switch(value) {
-  case 0:
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    break;
-  case 1:
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    break;
-  }
+	switch (value)
+	{
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		break;
+	}
 }
 
 bool OpenGLDisplay::initializeTexture(int w, int h)
 {
-  int mySize = 256;
-  size = 256.0f;
-  if(w > 255 || h > 255) {
-    size = 512.0f;
-    mySize = 512;
-  }
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+	int mySize = 256;
+	size = 256.0f;
+	if (w > 255 || h > 255)
+	{
+		size   = 512.0f;
+		mySize = 512;
+	}
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
-  int filter = regQueryDwordValue("glFilter", 0);
-  if(filter < 0 || filter > 1)
-    filter = 0;
-  updateFiltering(filter);
-  
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mySize, mySize, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, NULL );
-  width = w;
-  height = h;
+	int filter = regQueryDwordValue("glFilter", 0);
+	if (filter < 0 || filter > 1)
+		filter = 0;
+	updateFiltering(filter);
 
-  return true;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mySize, mySize, 0, GL_RGBA,
+	             GL_UNSIGNED_BYTE, NULL);
+	width  = w;
+	height = h;
+
+	return true;
 }
 
 bool OpenGLDisplay::changeRenderSize(int w, int h)
 {
-  if(width != w || height != h) {
-    if(texture != 0) {
-      glDeleteTextures(1, &texture);
-      texture = 0;
-    }
-    if(!initializeTexture(w, h)) {
-      failed = true;
-      return false;
-    }
-  }
-  return true;
+	if (width != w || height != h)
+	{
+		if (texture != 0)
+		{
+			glDeleteTextures(1, &texture);
+			texture = 0;
+		}
+		if (!initializeTexture(w, h))
+		{
+			failed = true;
+			return false;
+		}
+	}
+	return true;
 }
 
 void OpenGLDisplay::setOption(const char *option, int value)
 {
-  if(!strcmp(option, "glFilter"))
-    updateFiltering(value);
+	if (!strcmp(option, "glFilter"))
+		updateFiltering(value);
 }
 
-int OpenGLDisplay::selectFullScreenMode(GUID **)
+int OpenGLDisplay::selectFullScreenMode(GUID * *)
 {
-  HWND wnd = GetDesktopWindow();
-  RECT r;
-  GetWindowRect(wnd, &r);
-  int w = (r.right - r.left) & 4095;
-  int h = (r.bottom - r.top) & 4095;
-  HDC dc = GetDC(wnd);
-  int c = GetDeviceCaps(dc, BITSPIXEL);
-  ReleaseDC(wnd, dc);
+	HWND wnd = GetDesktopWindow();
+	RECT r;
+	GetWindowRect(wnd, &r);
+	int w  = (r.right - r.left) & 4095;
+	int h  = (r.bottom - r.top) & 4095;
+	HDC dc = GetDC(wnd);
+	int c  = GetDeviceCaps(dc, BITSPIXEL);
+	ReleaseDC(wnd, dc);
 
-  return (c << 24) | (w << 12) | h;
+	return (c << 24) | (w << 12) | h;
 }
 
 IDisplay *newOpenGLDisplay()
 {
-  return new OpenGLDisplay();
+	return new OpenGLDisplay();
 }
 
