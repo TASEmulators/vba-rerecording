@@ -17,6 +17,13 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#ifndef VBA_GB_SOUND_H
+#define VBA_GB_SOUND_H
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
 #define NR10 0xff10
 #define NR11 0xff11
 #define NR12 0xff12
@@ -39,8 +46,8 @@
 #define NR51 0xff25
 #define NR52 0xff26
 
-#define SOUND_EVENT(address,value) \
-    gbSoundEvent(address,value)
+#define SOUND_EVENT(address, value) \
+    gbSoundEvent(address, value)
 
 extern void gbSoundTick();
 extern void gbSoundPause();
@@ -50,12 +57,14 @@ extern void gbSoundDisable(int);
 extern int gbSoundGetEnable();
 extern void gbSoundReset();
 extern void gbSoundSaveGame(gzFile);
-extern void gbSoundReadGame(int,gzFile);
+extern void gbSoundReadGame(int, gzFile);
 extern void gbSoundEvent(register u16, register int);
 extern void gbSoundSetQuality(int);
 
 typedef int32 soundtick_t;
 
 extern soundtick_t soundTicks;
-extern int32 soundQuality;
+extern int32       soundQuality;
 extern soundtick_t SOUND_CLOCK_TICKS;
+
+#endif // VBA_GB_SOUND_H

@@ -17,4 +17,13 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#ifndef VBA_GB_PRINTER_H
+#define VBA_GB_PRINTER_H
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
 extern u8 gbPrinterSend(u8 b);
+
+#endif // VBA_GB_PRINTER_H

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+
 //#include <unistd.h> // for unlink
 #include <ctype.h>
 #include <assert.h>
@@ -10,61 +11,59 @@
 #include <time.h>
 
 #ifdef __linux
-#include <sys/types.h>
-#include <sys/wait.h>
+	#include <sys/types.h>
+	#include <sys/wait.h>
 #endif
-
 #if (defined(WIN32) && !defined(SDL))
-#	include "win32/stdafx.h"
-#	include "win32/vba.h"
-#	include "win32/resource.h"
-#	include "win32/WinResUtil.h"
-#	include "win32/MainWnd.h"
-#	include "win32/Reg.h"
-#	define theEmulator (theApp.emulator)
+	#include "win32/stdafx.h"
+	#include "win32/resource.h"
+	#include "win32/Input.h"
+	#include "win32/Sound.h"
+	#include "win32/WinResUtil.h"
+	#include "win32/MainWnd.h"
+	#include "win32/Reg.h"
+	#include "win32/VBA.h"
+	#define theEmulator (theApp.emulator)
 #else
-	extern struct EmulatedSystem emulator;
-#	define theEmulator (emulator)
+extern struct EmulatedSystem	emulator;
+	#define theEmulator (emulator)
 #endif
-
 #include "Port.h"
 #include "System.h"
 #include "GBA.h"
-#include "gb/GB.h"
 #include "Globals.h"
-#include "Sound.h"
+#include "gb/GB.h"
 #include "gb/gbGlobals.h"
+#include "Sound.h"
 #include "movie.h"
 
-extern "C" {
-	#include "lua.h"
-	#include "lauxlib.h"
-	#include "lualib.h"
-	#include "lstate.h"
+extern "C"
+{
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+#include "lstate.h"
 }
-
 #include "vbalua.h"
 
 #include "SFMT/SFMT.c"
 
 #ifndef countof
-#define countof(a)  (sizeof(a) / sizeof(a[0]))
+	#define countof(a)	(sizeof(a) / sizeof(a[0]))
 #endif
-
-static lua_State *LUA;
-
-// Are we running any code right now?
-static char *luaScriptName = NULL;
+static lua_State	*LUA;
 
 // Are we running any code right now?
-static bool8 luaRunning = false;
+static char			*luaScriptName = NULL;
+
+// Are we running any code right now?
+static bool8		luaRunning = false;
 
 // True at the frame boundary, false otherwise.
-static bool8 frameBoundary = false;
-
+static bool8		frameBoundary = false;
 
 // The execution speed we're running at.
-static enum {SPEED_NORMAL, SPEED_NOTHROTTLE, SPEED_TURBO, SPEED_MAXIMUM} speedmode = SPEED_NORMAL;
+static enum { SPEED_NORMAL, SPEED_NOTHROTTLE, SPEED_TURBO, SPEED_MAXIMUM } speedmode = SPEED_NORMAL;
 
 // Rerecord count skip mode
 static bool8 skipRerecords = false;
@@ -87,12 +86,11 @@ static int transparencyModifier = 255;
 static uint32 lua_joypads[4];
 static uint8 lua_joypads_used = 0;
 
-
 // NON-static. This is a listing of memory addresses we're watching as bitfields
 // in order to speed up emulation, at the cost of memory usage.
-// 
+//
 // GBA Memory Map (see GBATEK for details):
-// 
+//
 // Section      Start Addr  End Addr    Size
 // ---------------------------------------------
 // System ROM   0000:0000h  0000:3fffh  16kB
@@ -106,55 +104,73 @@ static uint8 lua_joypads_used = 0;
 // PAK ROM #1   0a00:0000h  0bff:ffffh  32MB
 // PAK ROM #2   0c00:0000h  0dff:ffffh  32MB
 // Cart RAM *   0e00:0000h  0e00:ffffh  64kB
-// 
+//
 // We care only starred areas (515kB in total).
 // 515 * 1024 / 8 = 65920 entries with bit-level precision.
-// 
+//
 // Gameboy has only 64k of memory.
 // 64 * 1024 / 8 = 8192 entries with bit-level precision.
-uint8 lua_watch_bitfield[65920] = { 0 };
-static struct { uint32 start; uint32 end; } lua_watch_gba_map[] = {
-	{ 0x02000000, 0x0203ffff }, // EWRAM
-	{ 0x03000000, 0x03007fff }, // IWRAM
-	{ 0x04000000, 0x040103ff }, // IO RAM
-	{ 0x05000000, 0x050003ff }, // PAL RAM
-	{ 0x06000000, 0x06017fff }, // VRAM
-	{ 0x07000000, 0x070003ff }, // OAM
-	{ 0x0e000000, 0x0e00ffff }  // Cart RAM
+uint8 lua_watch_bitfield[65920] = { 0};
+static struct
+{
+	uint32	start;
+	uint32	end;
+}
+lua_watch_gba_map[] =
+{
+	{ 0x02000000, 0x0203ffff },
+
+	// EWRAM
+	{ 0x03000000, 0x03007fff },
+
+	// IWRAM
+	{ 0x04000000, 0x040103ff },
+
+	// IO RAM
+	{ 0x05000000, 0x050003ff },
+
+	// PAL RAM
+	{ 0x06000000, 0x06017fff },
+
+	// VRAM
+	{ 0x07000000, 0x070003ff },
+
+	// OAM
+	{ 0x0e000000, 0x0e00ffff }			// Cart RAM
 };
 
-static bool8 gui_used = false;
-static uint8 *gui_data = NULL; // BGRA
-
+static bool8		gui_used = false;
+static uint8		*gui_data = NULL;	// BGRA
 
 // Protects Lua calls from going nuts.
 // We set this to a big number like 1000 and decrement it
 // over time. The script gets knifed once this reaches zero.
-static int numTries;
-
+static int			numTries;
 
 // Look in inputglobal.h for macros named like BUTTON_MASK_UP to determine the order.
-static const char *button_mappings[] = {
+static const char	*button_mappings[] = {
 	"A", "B", "select", "start", "right", "left", "up", "down", "R", "L"
 };
 
-static const char* luaCallIDStrings [] =
+static const char	*luaCallIDStrings[] =
 {
 	"CALL_BEFOREEMULATION",
 	"CALL_AFTEREMULATION",
 	"CALL_BEFOREEXIT",
 };
-static const int _makeSureWeHaveTheRightNumberOfStrings [sizeof(luaCallIDStrings)/sizeof(*luaCallIDStrings) == LUACALL_COUNT ? 1 : 0];
-
-static inline bool vbaRunsGBA () {
+static const int	_makeSureWeHaveTheRightNumberOfStrings[sizeof(luaCallIDStrings) / sizeof
+	(*luaCallIDStrings) == LUACALL_COUNT ? 1 :
+	0]; static inline bool vbaRunsGBA(void)
+{
 #if (defined(WIN32) && !defined(SDL))
-	return (theApp.cartridgeType == 0);
+	return(theApp.cartridgeType == 0);
 #else
-	return (rom != NULL);
+	return(rom != NULL);
 #endif
 }
 
-static inline int vbaDefaultJoypad() {
+static inline int vbaDefaultJoypad(void)
+{
 #if (defined(WIN32) && !defined(SDL))
 	return theApp.joypadDefault;
 #else
@@ -163,64 +179,97 @@ static inline int vbaDefaultJoypad() {
 }
 
 // GBA memory I/O functions copied from win32/MemoryViewerDlg.cpp
-static inline u8 CPUReadByteQuick(u32 addr) {
-	return ::map[addr>>24].address[addr & ::map[addr>>24].mask];
+static inline u8 CPUReadByteQuick(u32 addr)
+{
+	return ::map[addr >> 24].address[addr &::map[addr >> 24].mask];
 }
-static inline void CPUWriteByteQuick(u32 addr, u8 b) {
-	::map[addr>>24].address[addr & ::map[addr>>24].mask] = b;
+
+static inline void CPUWriteByteQuick(u32 addr, u8 b)
+{
+	::map[addr >> 24].address[addr &::map[addr >> 24].mask] = b;
 }
-static inline u16 CPUReadHalfWordQuick(u32 addr) {
-	return *((u16 *)&::map[addr>>24].address[addr & ::map[addr>>24].mask]);
+
+static inline u16 CPUReadHalfWordQuick(u32 addr)
+{
+	return *((u16 *) &::map[addr >> 24].address[addr &::map[addr >> 24].mask]);
 }
-static inline void CPUWriteHalfWordQuick(u32 addr, u16 b) {
-	*((u16 *)&::map[addr>>24].address[addr & ::map[addr>>24].mask]) = b;
+
+static inline void CPUWriteHalfWordQuick(u32 addr, u16 b)
+{
+	*((u16 *) &::map[addr >> 24].address[addr &::map[addr >> 24].mask]) = b;
 }
-static inline u32 CPUReadMemoryQuick(u32 addr) {
-	return *((u32 *)&::map[addr>>24].address[addr & ::map[addr>>24].mask]);
+
+static inline u32 CPUReadMemoryQuick(u32 addr)
+{
+	return *((u32 *) &::map[addr >> 24].address[addr &::map[addr >> 24].mask]);
 }
-static inline void CPUWriteMemoryQuick(u32 addr, u32 b) {
-	*((u32 *)&::map[addr>>24].address[addr & ::map[addr>>24].mask]) = b;
+
+static inline void CPUWriteMemoryQuick(u32 addr, u32 b)
+{
+	*((u32 *) &::map[addr >> 24].address[addr &::map[addr >> 24].mask]) = b;
 }
+
 // GB
-static inline u8 gbReadMemoryQuick8(u16 addr) {
+static inline u8 gbReadMemoryQuick8(u16 addr)
+{
 	return gbReadMemoryQuick(addr);
 }
-static inline void gbWriteMemoryQuick8(u16 addr, u8 b) {
+
+static inline void gbWriteMemoryQuick8(u16 addr, u8 b)
+{
 	gbWriteMemoryQuick(addr, b);
 }
-static inline u16 gbReadMemoryQuick16(u16 addr) {
-	return (gbReadMemoryQuick(addr+1)<<8) | gbReadMemoryQuick(addr);
-}
-static inline void gbWriteMemoryQuick16(u16 addr, u16 b) {
-	gbWriteMemoryQuick(addr, b & 0xff);
-	gbWriteMemoryQuick(addr+1, (b>>8) & 0xff);
-}
-static inline u32 gbReadMemoryQuick32(u16 addr) {
-	return (gbReadMemoryQuick(addr+3)<<24) | (gbReadMemoryQuick(addr+2)<<16) | (gbReadMemoryQuick(addr+1)<<8) | gbReadMemoryQuick(addr);
-}
-static inline void gbWriteMemoryQuick32(u16 addr, u32 b) {
-	gbWriteMemoryQuick(addr, b & 0xff);
-	gbWriteMemoryQuick(addr+1, (b>>8) & 0xff);
-	gbWriteMemoryQuick(addr+2, (b>>16) & 0xff);
-	gbWriteMemoryQuick(addr+1, (b>>24) & 0xff);
+
+static inline u16 gbReadMemoryQuick16(u16 addr)
+{
+	return(gbReadMemoryQuick(addr + 1) << 8) | gbReadMemoryQuick(addr);
 }
 
-typedef void (*GetColorFunc) (const uint8*, uint8*, uint8*, uint8*);
-typedef void (*SetColorFunc) (uint8*, uint8, uint8, uint8);
+static inline void gbWriteMemoryQuick16(u16 addr, u16 b)
+{
+	gbWriteMemoryQuick(addr, b & 0xff);
+	gbWriteMemoryQuick(addr + 1, (b >> 8) & 0xff);
+}
+
+static inline u32 gbReadMemoryQuick32(u16 addr)
+{
+	return(gbReadMemoryQuick(addr + 3) << 24) |
+		(gbReadMemoryQuick(addr + 2) << 16) |
+		(gbReadMemoryQuick(addr + 1) << 8) |
+		gbReadMemoryQuick(addr);
+}
+
+static inline void gbWriteMemoryQuick32(u16 addr, u32 b)
+{
+	gbWriteMemoryQuick(addr, b & 0xff);
+	gbWriteMemoryQuick(addr + 1, (b >> 8) & 0xff);
+	gbWriteMemoryQuick(addr + 2, (b >> 16) & 0xff);
+	gbWriteMemoryQuick(addr + 1, (b >> 24) & 0xff);
+}
+
+typedef void (*GetColorFunc) (const uint8 *, uint8 *, uint8 *, uint8 *);
+typedef void (*SetColorFunc) (uint8 *, uint8, uint8, uint8);
 
 // Returns -1 if addr is invalid.
-static int getLuaMemWatchBitIndex(uint32 addr) {
-	if(vbaRunsGBA()) {
+static int getLuaMemWatchBitIndex(uint32 addr)
+{
+	if (vbaRunsGBA())
+	{
 		int offset = 0;
-		for (int i = 0; i < countof(lua_watch_gba_map); i++) {
-			if (addr >= lua_watch_gba_map[i].start && addr <= lua_watch_gba_map[i].end) {
+		for (int i = 0; i < countof(lua_watch_gba_map); i++)
+		{
+			if (addr >= lua_watch_gba_map[i].start && addr <= lua_watch_gba_map[i].end)
+			{
 				return offset + (addr - lua_watch_gba_map[i].start);
 			}
+
 			offset += (lua_watch_gba_map[i].end - lua_watch_gba_map[i].start + 1);
 		}
+
 		return -1;
 	}
-	else {
+	else
+	{
 		if (addr >= 0x0000 && addr <= 0xffff)
 			return addr;
 		else
@@ -228,50 +277,62 @@ static int getLuaMemWatchBitIndex(uint32 addr) {
 	}
 }
 
-static void getColor16(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
-	u16 v = *(const uint16*)s;
+static void getColor16(const uint8 *s, uint8 *r, uint8 *g, uint8 *b)
+{
+	u16 v = *(const uint16 *)s;
 	*r = ((v >> systemBlueShift) & 0x001f) << 3;
 	*g = ((v >> systemGreenShift) & 0x001f) << 3;
 	*b = ((v >> systemRedShift) & 0x001f) << 3;
 }
 
-static void getColor24(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
-	if(systemRedShift > systemBlueShift)
+static void getColor24(const uint8 *s, uint8 *r, uint8 *g, uint8 *b)
+{
+	if (systemRedShift > systemBlueShift)
 		*b = s[0], *g = s[1], *r = s[2];
 	else
 		*r = s[0], *g = s[1], *b = s[2];
 }
 
-static void getColor32(const uint8 *s, uint8 *r, uint8 *g, uint8 *b) {
-	u32 v = *(const uint32*)s;
+static void getColor32(const uint8 *s, uint8 *r, uint8 *g, uint8 *b)
+{
+	u32 v = *(const uint32 *)s;
 	*b = ((v >> systemBlueShift) & 0x001f) << 3;
 	*g = ((v >> systemGreenShift) & 0x001f) << 3;
 	*r = ((v >> systemRedShift) & 0x001f) << 3;
 }
 
-static void setColor16(uint8 *s, uint8 r, uint8 g, uint8 b) {
-	*(uint16*)s = 
-		((b >> 3) & 0x01f) << systemBlueShift | 
-		((g >> 3) & 0x01f) << systemGreenShift | 
-		((r >> 3) & 0x01f) << systemRedShift;
+static void setColor16(uint8 *s, uint8 r, uint8 g, uint8 b)
+{
+	*(uint16 *)s = ((b >> 3) & 0x01f) <<
+		systemBlueShift |
+		((g >> 3) & 0x01f) <<
+		systemGreenShift |
+		((r >> 3) & 0x01f) <<
+		systemRedShift;
 }
 
-static void setColor24(uint8 *s, uint8 r, uint8 g, uint8 b) {
-	if(systemRedShift > systemBlueShift)
+static void setColor24(uint8 *s, uint8 r, uint8 g, uint8 b)
+{
+	if (systemRedShift > systemBlueShift)
 		s[0] = b, s[1] = g, s[2] = r;
 	else
 		s[0] = r, s[1] = g, s[2] = b;
 }
 
-static void setColor32(uint8 *s, uint8 r, uint8 g, uint8 b) {
-	*(uint32*)s = 
-		((b >> 3) & 0x01f) << systemBlueShift | 
-		((g >> 3) & 0x01f) << systemGreenShift | 
-		((r >> 3) & 0x01f) << systemRedShift;
+static void setColor32(uint8 *s, uint8 r, uint8 g, uint8 b)
+{
+	*(uint32 *)s = ((b >> 3) & 0x01f) <<
+		systemBlueShift |
+		((g >> 3) & 0x01f) <<
+		systemGreenShift |
+		((r >> 3) & 0x01f) <<
+		systemRedShift;
 }
 
-static bool getColorIOFunc(int depth, GetColorFunc *getColor, SetColorFunc *setColor) {
-	switch(depth) {
+static bool getColorIOFunc(int depth, GetColorFunc *getColor, SetColorFunc *setColor)
+{
+	switch (depth)
+	{
 	case 16:
 		if (getColor)
 			*getColor = getColor16;
@@ -295,44 +356,49 @@ static bool getColorIOFunc(int depth, GetColorFunc *getColor, SetColorFunc *setC
 	}
 }
 
-static bool vbaIsPaused() {
+static bool vbaIsPaused(void)
+{
 #if (defined(WIN32) && !defined(SDL))
 	return theApp.paused;
 #else
-	extern bool paused; // from SDL.cpp
+	extern bool paused;		// from SDL.cpp
 	return paused;
 #endif
 }
 
-static void vbaSetPause(bool pause) {
-	if (pause) {
-#		if (defined(WIN32) && !defined(SDL))
-			theApp.paused = true;
-			if(theApp.sound)
-				theApp.sound->pause();
-			theApp.speedupToggle = false;
-#		else
-			extern bool paused; // from SDL.cpp
-			paused = true;
-			systemSoundPause();
-#		endif
+static void vbaSetPause(bool pause)
+{
+	if (pause)
+	{
+#if (defined(WIN32) && !defined(SDL))
+		theApp.paused = true;
+		if (theApp.sound)
+			theApp.sound->pause();
+		theApp.speedupToggle = false;
+#else
+		extern bool paused; // from SDL.cpp
+		paused = true;
+		systemSoundPause();
+#endif
 	}
-	else {
-#		if (defined(WIN32) && !defined(SDL))
-			theApp.paused = false;
-			soundResume();
-#		else
-			extern bool paused; // from SDL.cpp
-			paused = false;
-			systemSoundResume();
-#		endif
+	else
+	{
+#if (defined(WIN32) && !defined(SDL))
+		theApp.paused = false;
+		soundResume();
+#else
+		extern bool paused; // from SDL.cpp
+		paused = false;
+		systemSoundResume();
+#endif
 	}
 }
 
 /**
  * Resets emulator speed / pause states after script exit.
  */
-static void VBALuaOnStop() {
+static void VBALuaOnStop(void)
+{
 	luaRunning = false;
 	lua_joypads_used = 0;
 	gui_used = false;
@@ -347,14 +413,15 @@ static void VBALuaOnStop() {
  * IPPU's settings for speed ourselves, so the calling code
  * need not do anything.
  */
-int VBALuaSpeed() {
+int VBALuaSpeed(void)
+{
 	if (!LUA || !luaRunning)
 		return 0;
 
 	//printf("%d\n", speedmode);
-
-	switch (speedmode) {
-/*
+	switch (speedmode)
+	{
+	/*
 	case SPEED_NORMAL:
 		return 0;
 	case SPEED_NOTHROTTLE:
@@ -378,10 +445,10 @@ int VBALuaSpeed() {
 		IPPU.RenderThisFrame = false;
 		return 1;
 */
+	case 0: // FIXME: to get rid of the warning
 	default:
 		assert(false);
 		return 0;
-	
 	}
 }
 
@@ -390,194 +457,213 @@ int VBALuaSpeed() {
  * we call this to invoke code.
  *
  */
-void VBALuaWrite(uint32 addr) {
+void VBALuaWrite(uint32 addr)
+{
 	// Nuke the stack, just in case.
-	lua_settop(LUA,0);
+	lua_settop(LUA, 0);
 
 	lua_getfield(LUA, LUA_REGISTRYINDEX, memoryWatchTable);
-	lua_pushinteger(LUA,addr);
+	lua_pushinteger(LUA, addr);
 	lua_gettable(LUA, 1);
 
 	// Invoke the Lua
 	numTries = 1000;
+
 	int res = lua_pcall(LUA, 0, 0, 0);
-	if (res) {
-		const char *err = lua_tostring(LUA, -1);
-		
+	if (res)
+	{
+		const char	*err = lua_tostring(LUA, -1);
+
 #if (defined(WIN32) && !defined(SDL))
 		AfxGetApp()->m_pMainWnd->MessageBox(err, "Lua Engine", MB_OK);
 #else
 		fprintf(stderr, "Lua error: %s\n", err);
 #endif
-		
 	}
-	lua_settop(LUA,0);
+
+	lua_settop(LUA, 0);
 }
 
-void VBALuaWriteInform(uint32 addr) {
+void VBALuaWriteInform(uint32 addr)
+{
 	int bitindex = getLuaMemWatchBitIndex(addr);
 	if (bitindex < 0)
 		// Not supported
 		return;
-	
+
 	// These might be better using binary arithmatic -- a shift and an AND
 	int slot = bitindex / 8;
 	int bits = bitindex % 8;
-	
+
 	// Check the slot
 	if (lua_watch_bitfield[slot] & (1 << bits))
 		VBALuaWrite(addr);
 }
 
 ///////////////////////////
-
-
-
 // vba.speedmode(string mode)
 //
 //   Takes control of the emulation speed
 //   of the system. Normal is normal speed (60fps, 50 for PAL),
 //   nothrottle disables speed control but renders every frame,
 //   turbo renders only a few frames in order to speed up emulation,
+
 //   maximum renders no frames
-static int vba_speedmode(lua_State *L) {
-	const char *mode = luaL_checkstring(L,1);
-	
-	if (strcasecmp(mode, "normal")==0) {
+static int vba_speedmode(lua_State *L)
+{
+	const char	*mode = luaL_checkstring(L, 1);
+
+	if (strcasecmp(mode, "normal") == 0)
+	{
 		speedmode = SPEED_NORMAL;
-	} else if (strcasecmp(mode, "nothrottle")==0) {
+	}
+	else if (strcasecmp(mode, "nothrottle") == 0)
+	{
 		speedmode = SPEED_NOTHROTTLE;
-	} else if (strcasecmp(mode, "turbo")==0) {
+	}
+	else if (strcasecmp(mode, "turbo") == 0)
+	{
 		speedmode = SPEED_TURBO;
-	} else if (strcasecmp(mode, "maximum")==0) {
+	}
+	else if (strcasecmp(mode, "maximum") == 0)
+	{
 		speedmode = SPEED_MAXIMUM;
-	} else
-		luaL_error(L, "Invalid mode %s to vba.speedmode",mode);
-	
+	}
+	else
+		luaL_error(L, "Invalid mode %s to vba.speedmode", mode);
+
 	//printf("new speed mode:  %d\n", speedmode);
-
 	return 0;
-
 }
-
 
 // vba.frameadvnace()
 //
 //  Executes a frame advance. Occurs by yielding the coroutine, then re-running
-//  when we break out.
-static int vba_frameadvance(lua_State *L) {
-	// We're going to sleep for a frame-advance. Take notes.
 
-	if (frameAdvanceWaiting) 
+//  when we break out.
+static int vba_frameadvance(lua_State *L)
+{
+	// We're going to sleep for a frame-advance. Take notes.
+	if (frameAdvanceWaiting)
 		return luaL_error(L, "can't call vba.frameadvance() from here");
 
 	frameAdvanceWaiting = true;
 
 	// Don't do this! The user won't like us sending their emulator out of control!
-//	Settings.FrameAdvance = true;
-	
-	// Now we can yield to the main 
+	//	Settings.FrameAdvance = true;
+	// Now we can yield to the main
 	return lua_yield(L, 0);
-
 
 	// It's actually rather disappointing...
 }
-
 
 // vba.pause()
 //
 //  Pauses the emulator, function "waits" until the user unpauses.
 //  This function MAY be called from a non-frame boundary, but the frame
+
 //  finishes executing anwyays. In this case, the function returns immediately.
-static int vba_pause(lua_State *L) {
-	
+static int vba_pause(lua_State *L)
+{
 	vbaSetPause(true);
 	speedmode = SPEED_NORMAL;
 
 	// Return control if we're midway through a frame. We can't pause here.
-	if (frameAdvanceWaiting) {
+	if (frameAdvanceWaiting)
+	{
 		return 0;
 	}
 
 	// If it's on a frame boundary, we also yield.	
 	frameAdvanceWaiting = true;
 	return lua_yield(L, 0);
-	
 }
 
-static int vba_registerbefore(lua_State *L) {
-	if (!lua_isnil(L,1))
+static int vba_registerbefore(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
 		luaL_checktype(L, 1, LUA_TFUNCTION);
-	lua_settop(L,1);
+	lua_settop(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEMULATION]);
-	lua_insert(L,1);
+	lua_insert(L, 1);
 	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEMULATION]);
+
 	//StopScriptIfFinished(luaStateToUIDMap[L]);
 	return 1;
 }
 
-static int vba_registerafter(lua_State *L) {
-	if (!lua_isnil(L,1))
+static int vba_registerafter(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
 		luaL_checktype(L, 1, LUA_TFUNCTION);
-	lua_settop(L,1);
+	lua_settop(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTEREMULATION]);
-	lua_insert(L,1);
+	lua_insert(L, 1);
 	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTEREMULATION]);
+
 	//StopScriptIfFinished(luaStateToUIDMap[L]);
 	return 1;
 }
 
-static int vba_registerexit(lua_State *L) {
-	if (!lua_isnil(L,1))
+static int vba_registerexit(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
 		luaL_checktype(L, 1, LUA_TFUNCTION);
-	lua_settop(L,1);
+	lua_settop(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEXIT]);
-	lua_insert(L,1);
+	lua_insert(L, 1);
 	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREEXIT]);
+
 	//StopScriptIfFinished(luaStateToUIDMap[L]);
 	return 1;
 }
 
 // vba.message(string msg)
 //
+
 //  Displays the given message on the screen.
-static int vba_message(lua_State *L) {
-
-	const char *msg = luaL_checkstring(L,1);
+static int vba_message(lua_State *L)
+{
+	const char	*msg = luaL_checkstring(L, 1);
 	systemScreenMessage(msg);
-	
-	return 0;
 
+	return 0;
 }
 
 //int vba.lagcount
 //
+
 //Returns the lagcounter variable
-static int vba_getlagcount(lua_State *L) {
-	struct EmulatedSystem &emu = vbaRunsGBA() ? GBASystem : GBSystem;
+static int vba_getlagcount(lua_State *L)
+{
+	struct EmulatedSystem	&emu = vbaRunsGBA() ? GBASystem : GBSystem;
 	lua_pushinteger(L, emu.lagCount);
 	return 1;
 }
 
 //int vba.lagged
 //
+
 //Returns true if the current frame is a lag frame
-static int vba_lagged(lua_State *L) {
-	struct EmulatedSystem &emu = vbaRunsGBA() ? GBASystem : GBSystem;
+static int vba_lagged(lua_State *L)
+{
+	struct EmulatedSystem	&emu = vbaRunsGBA() ? GBASystem : GBSystem;
 	lua_pushboolean(L, emu.laggedLast);
 	return 1;
 }
 
-
-static int memory_readbyte(lua_State *L) {
+static int memory_readbyte(lua_State *L)
+{
 	u32 addr;
-	u8 val;
+	u8	val;
 
-	addr = luaL_checkinteger(L,1);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	if (vbaRunsGBA())
+	{
 		val = CPUReadByteQuick(addr);
 	}
-	else {
+	else
+	{
 		val = gbReadMemoryQuick8(addr);
 	}
 
@@ -585,15 +671,18 @@ static int memory_readbyte(lua_State *L) {
 	return 1;
 }
 
-static int memory_readbytesigned(lua_State *L) {
+static int memory_readbytesigned(lua_State *L)
+{
 	u32 addr;
-	s8 val;
+	s8	val;
 
-	addr = luaL_checkinteger(L,1);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	if (vbaRunsGBA())
+	{
 		val = (s8) CPUReadByteQuick(addr);
 	}
-	else {
+	else
+	{
 		val = (s8) gbReadMemoryQuick8(addr);
 	}
 
@@ -601,15 +690,18 @@ static int memory_readbytesigned(lua_State *L) {
 	return 1;
 }
 
-static int memory_readword(lua_State *L) {
+static int memory_readword(lua_State *L)
+{
 	u32 addr;
 	u16 val;
 
-	addr = luaL_checkinteger(L,1);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	if (vbaRunsGBA())
+	{
 		val = CPUReadHalfWordQuick(addr);
 	}
-	else {
+	else
+	{
 		val = gbReadMemoryQuick16(addr);
 	}
 
@@ -617,15 +709,18 @@ static int memory_readword(lua_State *L) {
 	return 1;
 }
 
-static int memory_readwordsigned(lua_State *L) {
+static int memory_readwordsigned(lua_State *L)
+{
 	u32 addr;
 	s16 val;
 
-	addr = luaL_checkinteger(L,1);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	if (vbaRunsGBA())
+	{
 		val = (s16) CPUReadHalfWordQuick(addr);
 	}
-	else {
+	else
+	{
 		val = (s16) gbReadMemoryQuick16(addr);
 	}
 
@@ -633,15 +728,18 @@ static int memory_readwordsigned(lua_State *L) {
 	return 1;
 }
 
-static int memory_readdword(lua_State *L) {
+static int memory_readdword(lua_State *L)
+{
 	u32 addr;
 	u32 val;
 
-	addr = luaL_checkinteger(L,1);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	if (vbaRunsGBA())
+	{
 		val = CPUReadMemoryQuick(addr);
 	}
-	else {
+	else
+	{
 		val = gbReadMemoryQuick32(addr);
 	}
 
@@ -653,15 +751,18 @@ static int memory_readdword(lua_State *L) {
 	return 1;
 }
 
-static int memory_readdwordsigned(lua_State *L) {
+static int memory_readdwordsigned(lua_State *L)
+{
 	u32 addr;
 	s32 val;
 
-	addr = luaL_checkinteger(L,1);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	if (vbaRunsGBA())
+	{
 		val = (s32) CPUReadMemoryQuick(addr);
 	}
-	else {
+	else
+	{
 		val = (s32) gbReadMemoryQuick32(addr);
 	}
 
@@ -669,11 +770,12 @@ static int memory_readdwordsigned(lua_State *L) {
 	return 1;
 }
 
-static int memory_readbyterange(lua_State *L) {
-	uint32 address = luaL_checkinteger(L,1);
-	int length = luaL_checkinteger(L,2);
+static int memory_readbyterange(lua_State *L)
+{
+	uint32	address = luaL_checkinteger(L, 1);
+	int		length = luaL_checkinteger(L, 2);
 
-	if(length < 0)
+	if (length < 0)
 	{
 		address += length;
 		length = -length;
@@ -683,16 +785,19 @@ static int memory_readbyterange(lua_State *L) {
 	lua_createtable(L, abs(length), 0);
 
 	// put all the values into the (1-based) array
-	for(int a = address, n = 1; n <= length; a++, n++)
+	for (int a = address, n = 1; n <= length; a++, n++)
 	{
-		unsigned char value;
+		unsigned char	value;
 
-		if (vbaRunsGBA()) {
+		if (vbaRunsGBA())
+		{
 			value = CPUReadByteQuick(a);
 		}
-		else {
+		else
+		{
 			value = gbReadMemoryQuick8(a);
 		}
+
 		lua_pushinteger(L, value);
 		lua_rawseti(L, -2, n);
 	}
@@ -700,197 +805,214 @@ static int memory_readbyterange(lua_State *L) {
 	return 1;
 }
 
-static int memory_writebyte(lua_State *L) {
+static int memory_writebyte(lua_State *L)
+{
 	u32 addr;
 	int val;
 
-	addr = luaL_checkinteger(L,1);
-	val = luaL_checkinteger(L,2);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	val = luaL_checkinteger(L, 2);
+	if (vbaRunsGBA())
+	{
 		CPUWriteByteQuick(addr, val);
 	}
-	else {
+	else
+	{
 		gbWriteMemoryQuick8(addr, val);
 	}
+
 	VBALuaWriteInform(addr);
 	return 0;
 }
 
-static int memory_writeword(lua_State *L) {
+static int memory_writeword(lua_State *L)
+{
 	u32 addr;
 	int val;
 
-	addr = luaL_checkinteger(L,1);
-	val = luaL_checkinteger(L,2);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	val = luaL_checkinteger(L, 2);
+	if (vbaRunsGBA())
+	{
 		CPUWriteHalfWordQuick(addr, val);
 	}
-	else {
+	else
+	{
 		gbWriteMemoryQuick16(addr, val);
 	}
+
 	VBALuaWriteInform(addr);
 	return 0;
 }
 
-static int memory_writedword(lua_State *L) {
+static int memory_writedword(lua_State *L)
+{
 	u32 addr;
 	int val;
 
-	addr = luaL_checkinteger(L,1);
-	val = luaL_checkinteger(L,2);
-	if (vbaRunsGBA()) {
+	addr = luaL_checkinteger(L, 1);
+	val = luaL_checkinteger(L, 2);
+	if (vbaRunsGBA())
+	{
 		CPUWriteMemoryQuick(addr, val);
 	}
-	else {
+	else
+	{
 		gbWriteMemoryQuick32(addr, val);
 	}
+
 	VBALuaWriteInform(addr);
 	return 0;
 }
-
 
 // memory.registerwrite(int address, function func)
 //
 //  Calls the given function when the indicated memory address is
 //  written to. No args are given to the function. The write has already
-//  occurred, so the new address is readable.
-static int memory_registerwrite(lua_State *L) {
 
+//  occurred, so the new address is readable.
+static int memory_registerwrite(lua_State *L)
+{
 	// Check args
-	unsigned int addr = luaL_checkinteger(L, 1);
-	if (lua_type(L,2) != LUA_TNIL && lua_type(L,2) != LUA_TFUNCTION)
+	unsigned int	addr = luaL_checkinteger(L, 1);
+	if (lua_type(L, 2) != LUA_TNIL && lua_type(L, 2) != LUA_TFUNCTION)
 		luaL_error(L, "function or nil expected in arg 2 to memory.register");
-	
+
 	int bitindex = getLuaMemWatchBitIndex(addr);
+
 	// Check the address range
 	if (bitindex < 0)
 		luaL_error(L, "arg 1 points to invalid/unsupported memory area");
-	
+
 	// Commit it to the registery
 	lua_getfield(L, LUA_REGISTRYINDEX, memoryWatchTable);
-	lua_pushvalue(L,1);
-	lua_pushvalue(L,2);
+	lua_pushvalue(L, 1);
+	lua_pushvalue(L, 2);
 	lua_settable(L, -3);
-	
+
 	// Now, set the bitfield accordingly
-	if (lua_type(L,2) == LUA_TNIL) {
+	if (lua_type(L, 2) == LUA_TNIL)
+	{
 		lua_watch_bitfield[bitindex / 8] &= ~(1 << (bitindex & 7));
-	} else {
-		lua_watch_bitfield[bitindex / 8] |= 1 << (bitindex & 7);
-	
 	}
-	
+	else
+	{
+		lua_watch_bitfield[bitindex / 8] |= 1 << (bitindex & 7);
+	}
+
 	return 0;
 }
-
 
 // table joypad.get(int which = 0)
 //
 //  Reads the joypads as inputted by the user.
-//  This is really the only way to get input to the system.
-static int joypad_get(lua_State *L) {
 
+//  This is really the only way to get input to the system.
+static int joypad_get(lua_State *L)
+{
 	// Reads the joypads as inputted by the user
-	int which = luaL_checkinteger(L,1);
-	
-	if (which < 0 || which > 4) {
-		luaL_error(L,"Invalid input port (valid range 0-4, specified %d)", which);
+	int which = luaL_checkinteger(L, 1);
+
+	if (which < 0 || which > 4)
+	{
+		luaL_error(L, "Invalid input port (valid range 0-4, specified %d)", which);
 	}
-	
-	uint32 buttons = 0;
+
+	uint32	buttons = 0;
 #if (defined(WIN32) && !defined(SDL))
-	if(theApp.input/* || VBALuaUsingJoypad(which-1)*/)
-		buttons = theApp.input->readDevice(which-1,false,true);
+	if (theApp.input /* || VBALuaUsingJoypad(which-1)*/ )
+		buttons = theApp.input->readDevice(which - 1, false, true);
 #else
 	buttons = systemReadJoypad(which - 1, false);
 #endif
-	
 	lua_newtable(L);
-	
+
 	int i;
-	for (i = 0; i < 10; i++) {
-		if (buttons & (1<<i)) {
-			lua_pushinteger(L,1);
+	for (i = 0; i < 10; i++)
+	{
+		if (buttons & (1 << i))
+		{
+			lua_pushinteger(L, 1);
 			lua_setfield(L, -2, button_mappings[i]);
 		}
 	}
-	
+
 	return 1;
 }
-
 
 // joypad.set(int which, table buttons)
 //
 //   Sets the given buttons to be pressed during the next
-//   frame advance. The table should have the right 
-//   keys (no pun intended) set.
-static int joypad_set(lua_State *L) {
+//   frame advance. The table should have the right
 
+//   keys (no pun intended) set.
+static int joypad_set(lua_State *L)
+{
 	// Which joypad we're tampering with
-	int which = luaL_checkinteger(L,1);
-	if (which < 0 || which > 4) {
-		luaL_error(L,"Invalid output port (valid range 0-4, specified %d)", which);
+	int which = luaL_checkinteger(L, 1);
+	if (which < 0 || which > 4)
+	{
+		luaL_error(L, "Invalid output port (valid range 0-4, specified %d)", which);
 	}
+
 	if (which == 0)
 		which = vbaDefaultJoypad();
 
 	// And the table of buttons.
-	luaL_checktype(L,2,LUA_TTABLE);
+	luaL_checktype(L, 2, LUA_TTABLE);
 
 	// Set up for taking control of the indicated controller
-	lua_joypads_used |= 1 << (which-1);
-	lua_joypads[which-1] = 0;
+	lua_joypads_used |= 1 << (which - 1);
+	lua_joypads[which - 1] = 0;
 
 	int i;
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 10; i++)
+	{
 		lua_getfield(L, 2, button_mappings[i]);
-		if (!lua_isnil(L,-1))
-			lua_joypads[which-1] |= 1 << i;
-		lua_pop(L,1);
+		if (!lua_isnil(L, -1))
+			lua_joypads[which - 1] |= 1 << i;
+		lua_pop(L, 1);
 	}
-	
+
 	return 0;
 }
 
-
-
-
 // Helper function to convert a savestate object to the filename it represents.
-static const char *savestateobj2filename(lua_State *L, int offset) {
-	
+static const char *savestateobj2filename(lua_State *L, int offset)
+{
 	// First we get the metatable of the indicated object
 	int result = lua_getmetatable(L, offset);
 
 	if (!result)
 		luaL_error(L, "object not a savestate object");
-	
+
 	// Also check that the type entry is set
 	lua_getfield(L, -1, "__metatable");
-	if (strcmp(lua_tostring(L,-1), "vba Savestate") != 0)
+	if (strcmp(lua_tostring(L, -1), "vba Savestate") != 0)
 		luaL_error(L, "object not a savestate object");
-	lua_pop(L,1);
-	
+	lua_pop(L, 1);
+
 	// Now, get the field we want
 	lua_getfield(L, -1, "filename");
-	
+
 	// Return it
 	return lua_tostring(L, -1);
 }
 
-
 // Helper function for garbage collection.
-static int savestate_gc(lua_State *L) {
+static int savestate_gc(lua_State *L)
+{
 	// The object we're collecting is on top of the stack
-	lua_getmetatable(L,1);
-	
+	lua_getmetatable(L, 1);
+
 	// Get the filename
-	const char *filename;
+	const char	*filename;
 	lua_getfield(L, -1, "filename");
-	filename = lua_tostring(L,-1);
+	filename = lua_tostring(L, -1);
 
 	// Delete the file
 	remove(filename);
-	
+
 	// We exit, and the garbage collector takes care of the rest.
 	// Edit: Visual Studio needs a return value anyway, so returns 0.
 	return 0;
@@ -900,37 +1022,40 @@ static int savestate_gc(lua_State *L) {
 //
 //  Creates an object used for savestates.
 //  The object can be associated with a player-accessible savestate
+
 //  ("which" between 1 and 12) or not (which == nil).
-static int savestate_create(lua_State *L) {
+static int savestate_create(lua_State *L)
+{
 	int which = -1;
-	if (lua_gettop(L) >= 1) {
+	if (lua_gettop(L) >= 1)
+	{
 		which = luaL_checkinteger(L, 1);
-		if (which < 1 || which > 12) {
+		if (which < 1 || which > 12)
+		{
 			luaL_error(L, "invalid player's savestate %d", which);
 		}
 	}
-	
 
-	char stateName[2048];
+	char	stateName[2048];
 
-	if (which > 0) {
+	if (which > 0)
+	{
 		// Find an appropriate filename. This is OS specific, unfortunately.
 #if (defined(WIN32) && !defined(SDL))
 		CString buffer;
+		int		index = theApp.filename.ReverseFind('\\');
 
-		int index = theApp.filename.ReverseFind('\\');
-
-		if(index != -1)
-			buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
+		if (index != -1)
+			buffer = theApp.filename.Right(theApp.filename.GetLength() - index - 1);
 		else
 			buffer = theApp.filename;
 
 		CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
 
-		if(saveDir.IsEmpty())
+		if (saveDir.IsEmpty())
 			saveDir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
 
-		if(((MainWnd *)theApp.m_pMainWnd)->isDriveRoot(saveDir))
+		if (((MainWnd *)theApp.m_pMainWnd)->isDriveRoot(saveDir))
 			sprintf(stateName, "%s%s%d.sgm", saveDir, buffer, which);
 		else
 			sprintf(stateName, "%s\\%s%d.sgm", saveDir, buffer, which);
@@ -939,26 +1064,26 @@ static int savestate_create(lua_State *L) {
 		extern char filename[2048];
 		extern char *sdlGetFilename(char *name);
 
-		if(saveDir[0])
-			sprintf(stateName, "%s/%s%d.sgm", saveDir, sdlGetFilename(filename),
-			        which);
+		if (saveDir[0])
+			sprintf(stateName, "%s/%s%d.sgm", saveDir, sdlGetFilename(filename), which);
 		else
-			sprintf(stateName,"%s%d.sgm", filename, which);
+			sprintf(stateName, "%s%d.sgm", filename, which);
 #endif
 	}
-	else {
-		char *stateNameTemp = tempnam(NULL, "snlua");
+	else
+	{
+		char	*stateNameTemp = tempnam(NULL, "snlua");
 		strcpy(stateName, stateNameTemp);
 		if (stateNameTemp)
 			free(stateNameTemp);
 	}
-	
+
 	// Our "object". We don't care about the type, we just need the memory and GC services.
-	lua_newuserdata(L,1);
-	
+	lua_newuserdata(L, 1);
+
 	// The metatable we use, protected from Lua and contains garbage collection info and stuff.
 	lua_newtable(L);
-	
+
 	// First, we must protect it
 	lua_pushstring(L, "vba Savestate");
 	lua_setfield(L, -2, "__metatable");
@@ -966,83 +1091,91 @@ static int savestate_create(lua_State *L) {
 	// Now we need to save the file itself.
 	lua_pushstring(L, stateName);
 	lua_setfield(L, -2, "filename");
-	
+
 	// If it's an anonymous savestate, we must delete the file from disk should it be gargage collected
-	if (which < 0) {
+	if (which < 0)
+	{
 		lua_pushcfunction(L, savestate_gc);
 		lua_setfield(L, -2, "__gc");
-		
 	}
-	
+
 	// Set the metatable
 	lua_setmetatable(L, -2);
 
 	// Awesome. Return the object
 	return 1;
-	
 }
-
 
 // savestate.save(object state)
 //
+
 //   Saves a state to the given object.
-static int savestate_save(lua_State *L) {
+static int savestate_save(lua_State *L)
+{
+	const char	*filename = savestateobj2filename(L, 1);
 
-	const char *filename = savestateobj2filename(L,1);
-
-//	printf("saving %s\n", filename);
-
+	//	printf("saving %s\n", filename);
 	// Save states are very expensive. They take time.
 	numTries--;
 
-	bool8 retvalue = theEmulator.emuWriteState ? theEmulator.emuWriteState(filename) : FALSE;
-	if (!retvalue) {
+	bool8	retvalue = theEmulator.emuWriteState ? theEmulator.emuWriteState(filename) : FALSE;
+	if (!retvalue)
+	{
 		// Uh oh
 		luaL_error(L, "savestate failed");
 	}
-	return 0;
 
+	return 0;
 }
 
 // savestate.load(object state)
 //
-//   Loads the given state
-static int savestate_load(lua_State *L) {
 
-	const char *filename = savestateobj2filename(L,1);
+//   Loads the given state
+static int savestate_load(lua_State *L)
+{
+	const char	*filename = savestateobj2filename(L, 1);
 
 	numTries--;
 
-//	printf("loading %s\n", filename);
-	bool8 retvalue = theEmulator.emuReadState ? theEmulator.emuReadState(filename) : FALSE;
-	if (!retvalue) {
+	//	printf("loading %s\n", filename);
+	bool8	retvalue = theEmulator.emuReadState ? theEmulator.emuReadState(filename) : FALSE;
+	if (!retvalue)
+	{
 		// Uh oh
 		luaL_error(L, "loadstate failed");
 	}
+
 	return 0;
-
 }
-
 
 // int vba.framecount()
 //
+
 //   Gets the frame counter for the movie, or the number of frames since last reset.
-int vba_framecount(lua_State *L) {
-	struct EmulatedSystem &emu = vbaRunsGBA() ? GBASystem : GBSystem;
-	if (!VBAMovieActive()) {
+int vba_framecount(lua_State *L)
+{
+	struct EmulatedSystem	&emu = vbaRunsGBA() ? GBASystem : GBSystem;
+	if (!VBAMovieActive())
+	{
 		lua_pushinteger(L, emu.frameCount);
 	}
-	else {
+	else
+	{
 		lua_pushinteger(L, VBAMovieGetFrameCounter());
 	}
+
 	return 1;
 }
 
 //string movie.getauthor
 //
+
 // returns author info field of .vbm file
-int movie_getauthor(lua_State *L) {
-	if (!VBAMovieActive()) {
+int movie_getauthor(lua_State *L)
+{
+	if (!VBAMovieActive())
+	{
 		lua_pushnil(L);
 		return 1;
 	}
@@ -1052,8 +1185,10 @@ int movie_getauthor(lua_State *L) {
 }
 
 //string movie.filename
-int movie_getfilename(lua_State *L) {
-	if (!VBAMovieActive()) {
+int movie_getfilename(lua_State *L)
+{
+	if (!VBAMovieActive())
+	{
 		lua_pushnil(L);
 		return 1;
 	}
@@ -1064,14 +1199,17 @@ int movie_getfilename(lua_State *L) {
 
 // string movie.mode()
 //
+
 //   "record", "playback" or nil
-int movie_mode(lua_State *L) {
+int movie_mode(lua_State *L)
+{
 	assert(!VBAMovieLoading());
-	if (!VBAMovieActive()) {
+	if (!VBAMovieActive())
+	{
 		lua_pushnil(L);
 		return 1;
 	}
-	
+
 	if (VBAMovieRecording())
 		lua_pushstring(L, "record");
 	else
@@ -1079,49 +1217,57 @@ int movie_mode(lua_State *L) {
 	return 1;
 }
 
-
-static int movie_rerecordcounting(lua_State *L) {
+static int movie_rerecordcounting(lua_State *L)
+{
 	if (lua_gettop(L) == 0)
 		luaL_error(L, "no parameters specified");
 
-	skipRerecords = lua_toboolean(L,1);
+	skipRerecords = lua_toboolean(L, 1);
 	return 0;
 }
 
 // movie.stop()
 //
+
 //   Stops movie playback/recording. Bombs out if movie is not running.
-static int movie_stop(lua_State *L) {
+static int movie_stop(lua_State *L)
+{
 	if (!VBAMovieActive())
 		luaL_error(L, "no movie");
-	
+
 	VBAMovieStop(false);
 	return 0;
-
 }
 
-
-
-#define LUA_SCREEN_WIDTH    256
-#define LUA_SCREEN_HEIGHT   239
+#define LUA_SCREEN_WIDTH	256
+#define LUA_SCREEN_HEIGHT	239
 
 // Common code by the gui library: make sure the screen array is ready
-static void gui_prepare() {
+static void gui_prepare(void)
+{
 	if (!gui_data)
-		gui_data = (uint8*) malloc(LUA_SCREEN_WIDTH*LUA_SCREEN_HEIGHT*4);
+		gui_data = (uint8 *)malloc(LUA_SCREEN_WIDTH * LUA_SCREEN_HEIGHT * 4);
 	if (!gui_used)
-		memset(gui_data, 0, LUA_SCREEN_WIDTH*LUA_SCREEN_HEIGHT*4);
+		memset(gui_data, 0, LUA_SCREEN_WIDTH * LUA_SCREEN_HEIGHT * 4);
 	gui_used = true;
 }
 
 // pixform for lua graphics
-#define BUILD_PIXEL_ARGB8888(A,R,G,B) (((int) (A) << 24) | ((int) (R) << 16) | ((int) (G) << 8) | (int) (B))
-#define DECOMPOSE_PIXEL_ARGB8888(PIX,A,R,G,B) { (A) = ((PIX) >> 24) & 0xff; (R) = ((PIX) >> 16) & 0xff; (G) = ((PIX) >> 8) & 0xff; (B) = (PIX) & 0xff; }
-#define LUA_BUILD_PIXEL BUILD_PIXEL_ARGB8888
+#define BUILD_PIXEL_ARGB8888(A, R, G, B)	(((int)(A) << 24) | ((int)(R) << 16) | ((int)(G) << 8) | (int)(B))
+#define DECOMPOSE_PIXEL_ARGB8888(PIX, A, R, G, B) \
+	{											  \
+		(A) = ((PIX) >> 24) & 0xff;				  \
+		(R) = ((PIX) >> 16) & 0xff;				  \
+		(G) = ((PIX) >> 8) & 0xff;				  \
+		(B) = (PIX) & 0xff;						  \
+	}
+#define LUA_BUILD_PIXEL		BUILD_PIXEL_ARGB8888
 #define LUA_DECOMPOSE_PIXEL DECOMPOSE_PIXEL_ARGB8888
 
-template <class T> static void swap(T &one, T &two) {
-	T temp = one;
+template<class T>
+static void swap(T &one, T &two)
+{
+	T	temp = one;
 	one = two;
 	two = temp;
 }
@@ -1129,128 +1275,148 @@ template <class T> static void swap(T &one, T &two) {
 // write a pixel to buffer
 static inline void blend32(uint32 *dstPixel, uint32 colour)
 {
-	uint8 *dst = (uint8*) dstPixel;
-	int a, r, g, b;
+	uint8	*dst = (uint8 *)dstPixel;
+	int		a, r, g, b;
 	LUA_DECOMPOSE_PIXEL(colour, a, r, g, b);
 
-	if (a == 255 || dst[3] == 0) {
+	if (a == 255 || dst[3] == 0)
+	{
 		// direct copy
-		*(uint32*)(dst) = colour;
+		*(uint32 *) (dst) = colour;
 	}
-	else if (a == 0) {
+	else if (a == 0)
+	{
 		// do not copy
 	}
-	else {
+	else
+	{
 		// alpha-blending
 		int a_dst = ((255 - a) * dst[3] + 128) / 255;
 		int a_new = a + a_dst;
 
-		dst[0] = (uint8) ((( dst[0] * a_dst + b * a) + (a_new / 2)) / a_new);
-		dst[1] = (uint8) ((( dst[1] * a_dst + g * a) + (a_new / 2)) / a_new);
-		dst[2] = (uint8) ((( dst[2] * a_dst + r * a) + (a_new / 2)) / a_new);
+		dst[0] = (uint8) (((dst[0] * a_dst + b * a) + (a_new / 2)) / a_new);
+		dst[1] = (uint8) (((dst[1] * a_dst + g * a) + (a_new / 2)) / a_new);
+		dst[2] = (uint8) (((dst[2] * a_dst + r * a) + (a_new / 2)) / a_new);
 		dst[3] = (uint8) a_new;
 	}
 }
+
 // check if a pixel is in the lua canvas
-static inline bool gui_check_boundary(int x, int y) {
+static inline bool gui_check_boundary(int x, int y)
+{
 	return !(x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= LUA_SCREEN_HEIGHT);
 }
 
 // write a pixel to gui_data (do not check boundaries for speedup)
-static inline void gui_drawpixel_fast(int x, int y, uint32 colour) {
+static inline void gui_drawpixel_fast(int x, int y, uint32 colour)
+{
 	//gui_prepare();
-	blend32((uint32*) &gui_data[(y*LUA_SCREEN_WIDTH+x)*4], colour);
+	blend32((uint32 *) &gui_data[(y * LUA_SCREEN_WIDTH + x) * 4], colour);
 }
 
 // write a pixel to gui_data (check boundaries)
-static inline void gui_drawpixel_internal(int x, int y, uint32 colour) {
+static inline void gui_drawpixel_internal(int x, int y, uint32 colour)
+{
 	//gui_prepare();
 	if (gui_check_boundary(x, y))
 		gui_drawpixel_fast(x, y, colour);
 }
 
 // draw a line on gui_data (checks boundaries)
-static void gui_drawline_internal(int x1, int y1, int x2, int y2, bool lastPixel, uint32 colour) {
-
+static void gui_drawline_internal(int x1, int y1, int x2, int y2, bool lastPixel, uint32 colour)
+{
 	//gui_prepare();
-
 	// Note: New version of Bresenham's Line Algorithm
 	// http://groups.google.co.jp/group/rec.games.roguelike.development/browse_thread/thread/345f4c42c3b25858/29e07a3af3a450e6?show_docid=29e07a3af3a450e6
-
 	int swappedx = 0;
 	int swappedy = 0;
 
-	int xtemp = x1-x2;
-	int ytemp = y1-y2;
-	if (xtemp == 0 && ytemp == 0) {
+	int xtemp = x1 - x2;
+	int ytemp = y1 - y2;
+	if (xtemp == 0 && ytemp == 0)
+	{
 		gui_drawpixel_internal(x1, y1, colour);
 		return;
 	}
-	if (xtemp < 0) {
+
+	if (xtemp < 0)
+	{
 		xtemp = -xtemp;
 		swappedx = 1;
 	}
-	if (ytemp < 0) {
+
+	if (ytemp < 0)
+	{
 		ytemp = -ytemp;
 		swappedy = 1;
 	}
 
-	int delta_x = xtemp << 1;
-	int delta_y = ytemp << 1;
+	int			delta_x = xtemp << 1;
+	int			delta_y = ytemp << 1;
 
-	signed char ix = x1 > x2?1:-1;
-	signed char iy = y1 > y2?1:-1;
+	signed char ix = x1 > x2 ? 1 : -1;
+	signed char iy = y1 > y2 ? 1 : -1;
 
 	if (lastPixel)
 		gui_drawpixel_internal(x2, y2, colour);
 
-	if (delta_x >= delta_y) {
+	if (delta_x >= delta_y)
+	{
 		int error = delta_y - (delta_x >> 1);
 
-		while (x2 != x1) {
+		while (x2 != x1)
+		{
 			if (error == 0 && !swappedx)
-				gui_drawpixel_internal(x2+ix, y2, colour);
-			if (error >= 0) {
-				if (error || (ix > 0)) {
+				gui_drawpixel_internal(x2 + ix, y2, colour);
+			if (error >= 0)
+			{
+				if (error || (ix > 0))
+				{
 					y2 += iy;
 					error -= delta_x;
 				}
 			}
+
 			x2 += ix;
 			gui_drawpixel_internal(x2, y2, colour);
 			if (error == 0 && swappedx)
-				gui_drawpixel_internal(x2, y2+iy, colour);
+				gui_drawpixel_internal(x2, y2 + iy, colour);
 			error += delta_y;
 		}
 	}
-	else {
+	else
+	{
 		int error = delta_x - (delta_y >> 1);
 
-		while (y2 != y1) {
+		while (y2 != y1)
+		{
 			if (error == 0 && !swappedy)
-				gui_drawpixel_internal(x2, y2+iy, colour);
-			if (error >= 0) {
-				if (error || (iy > 0)) {
+				gui_drawpixel_internal(x2, y2 + iy, colour);
+			if (error >= 0)
+			{
+				if (error || (iy > 0))
+				{
 					x2 += ix;
 					error -= delta_y;
 				}
 			}
+
 			y2 += iy;
 			gui_drawpixel_internal(x2, y2, colour);
 			if (error == 0 && swappedy)
-				gui_drawpixel_internal(x2+ix, y2, colour);
+				gui_drawpixel_internal(x2 + ix, y2, colour);
 			error += delta_x;
 		}
 	}
 }
 
 // draw a rect on gui_data
-static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour) {
-
-	if (x1 > x2) 
-		swap<int>(x1, x2);
-	if (y1 > y2) 
-		swap<int>(y1, y2);
+static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour)
+{
+	if (x1 > x2)
+		swap<int> (x1, x2);
+	if (y1 > y2)
+		swap<int> (y1, y2);
 	if (x1 < 0)
 		x1 = -1;
 	if (y1 < 0)
@@ -1261,7 +1427,6 @@ static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour) 
 		y2 = LUA_SCREEN_HEIGHT;
 
 	//gui_prepare();
-
 	gui_drawline_internal(x1, y1, x2, y1, true, colour);
 	gui_drawline_internal(x1, y2, x2, y2, true, colour);
 	gui_drawline_internal(x1, y1, x1, y2, true, colour);
@@ -1269,21 +1434,20 @@ static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour) 
 }
 
 // draw a circle on gui_data
-static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour) {
-
+static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour)
+{
 	//gui_prepare();
-
 	if (radius < 0)
 		radius = -radius;
 	if (radius == 0)
 		return;
-	if (radius == 1) {
+	if (radius == 1)
+	{
 		gui_drawpixel_internal(x0, y0, colour);
 		return;
 	}
 
 	// http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
-
 	int f = 1 - radius;
 	int ddF_x = 1;
 	int ddF_y = -2 * radius;
@@ -1294,25 +1458,27 @@ static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour) {
 	gui_drawpixel_internal(x0, y0 - radius, colour);
 	gui_drawpixel_internal(x0 + radius, y0, colour);
 	gui_drawpixel_internal(x0 - radius, y0, colour);
- 
+
 	// same pixel shouldn't be drawed twice,
 	// because each pixel has opacity.
 	// so now the routine gets ugly.
-	while(true)
+	while (true)
 	{
 		assert(ddF_x == 2 * x + 1);
 		assert(ddF_y == -2 * y);
-		assert(f == x*x + y*y - radius*radius + 2*x - y + 1);
-		if(f >= 0) 
+		assert(f == x * x + y * y - radius * radius + 2 * x - y + 1);
+		if (f >= 0)
 		{
 			y--;
 			ddF_y += 2;
 			f += ddF_y;
 		}
+
 		x++;
 		ddF_x += 2;
 		f += ddF_x;
-		if (x < y) {
+		if (x < y)
+		{
 			gui_drawpixel_internal(x0 + x, y0 + y, colour);
 			gui_drawpixel_internal(x0 - x, y0 + y, colour);
 			gui_drawpixel_internal(x0 + x, y0 - y, colour);
@@ -1322,7 +1488,8 @@ static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour) {
 			gui_drawpixel_internal(x0 + y, y0 - x, colour);
 			gui_drawpixel_internal(x0 - y, y0 - x, colour);
 		}
-		else if (x == y) {
+		else if (x == y)
+		{
 			gui_drawpixel_internal(x0 + x, y0 + y, colour);
 			gui_drawpixel_internal(x0 - x, y0 + y, colour);
 			gui_drawpixel_internal(x0 + x, y0 - y, colour);
@@ -1335,12 +1502,12 @@ static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour) {
 }
 
 // draw fill rect on gui_data
-static void gui_fillbox_internal(int x1, int y1, int x2, int y2, uint32 colour) {
-
-	if (x1 > x2) 
-		swap<int>(x1, x2);
-	if (y1 > y2) 
-		swap<int>(y1, y2);
+static void gui_fillbox_internal(int x1, int y1, int x2, int y2, uint32 colour)
+{
+	if (x1 > x2)
+		swap<int> (x1, x2);
+	if (y1 > y2)
+		swap<int> (y1, y2);
 	if (x1 < 0)
 		x1 = 0;
 	if (y1 < 0)
@@ -1351,31 +1518,31 @@ static void gui_fillbox_internal(int x1, int y1, int x2, int y2, uint32 colour) 
 		y2 = LUA_SCREEN_HEIGHT - 1;
 
 	//gui_prepare();
-
 	int ix, iy;
-	for (iy = y1; iy <= y2; iy++) {
-		for (ix = x1; ix <= x2; ix++) {
+	for (iy = y1; iy <= y2; iy++)
+	{
+		for (ix = x1; ix <= x2; ix++)
+		{
 			gui_drawpixel_fast(ix, iy, colour);
 		}
 	}
 }
 
 // fill a circle on gui_data
-static void gui_fillcircle_internal(int x0, int y0, int radius, uint32 colour) {
-
+static void gui_fillcircle_internal(int x0, int y0, int radius, uint32 colour)
+{
 	//gui_prepare();
-
 	if (radius < 0)
 		radius = -radius;
 	if (radius == 0)
 		return;
-	if (radius == 1) {
+	if (radius == 1)
+	{
 		gui_drawpixel_internal(x0, y0, colour);
 		return;
 	}
 
 	// http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
-
 	int f = 1 - radius;
 	int ddF_x = 1;
 	int ddF_y = -2 * radius;
@@ -1383,31 +1550,35 @@ static void gui_fillcircle_internal(int x0, int y0, int radius, uint32 colour) {
 	int y = radius;
 
 	gui_drawline_internal(x0, y0 - radius, x0, y0 + radius, true, colour);
- 
-	while(true)
+
+	while (true)
 	{
 		assert(ddF_x == 2 * x + 1);
 		assert(ddF_y == -2 * y);
-		assert(f == x*x + y*y - radius*radius + 2*x - y + 1);
-		if(f >= 0) 
+		assert(f == x * x + y * y - radius * radius + 2 * x - y + 1);
+		if (f >= 0)
 		{
 			y--;
 			ddF_y += 2;
 			f += ddF_y;
 		}
+
 		x++;
 		ddF_x += 2;
 		f += ddF_x;
 
-		if (x < y) {
+		if (x < y)
+		{
 			gui_drawline_internal(x0 + x, y0 - y, x0 + x, y0 + y, true, colour);
 			gui_drawline_internal(x0 - x, y0 - y, x0 - x, y0 + y, true, colour);
-			if (f >= 0) {
+			if (f >= 0)
+			{
 				gui_drawline_internal(x0 + y, y0 - x, x0 + y, y0 + x, true, colour);
 				gui_drawline_internal(x0 - y, y0 - x, x0 - y, y0 + x, true, colour);
 			}
 		}
-		else if (x == y) {
+		else if (x == y)
+		{
 			gui_drawline_internal(x0 + x, y0 - y, x0 + x, y0 + y, true, colour);
 			gui_drawline_internal(x0 - x, y0 - y, x0 - x, y0 + y, true, colour);
 			break;
@@ -1418,9 +1589,10 @@ static void gui_fillcircle_internal(int x0, int y0, int radius, uint32 colour) {
 }
 
 // Helper for a simple hex parser
-static int hex2int(lua_State *L, char c) {
+static int hex2int(lua_State *L, char c)
+{
 	if (c >= '0' && c <= '9')
-		return c-'0';
+		return c - '0';
 	if (c >= 'a' && c <= 'f')
 		return c - 'a' + 10;
 	if (c >= 'A' && c <= 'F')
@@ -1430,26 +1602,26 @@ static int hex2int(lua_State *L, char c) {
 
 static const struct ColorMapping
 {
-	const char* name;
+	const char	*name;
 	int value;
 }
-s_colorMapping [] =
+s_colorMapping[] =
 {
-	{"white",     0xFFFFFFFF},
-	{"black",     0x000000FF},
-	{"clear",     0x00000000},
-	{"gray",      0x7F7F7FFF},
-	{"grey",      0x7F7F7FFF},
-	{"red",       0xFF0000FF},
-	{"orange",    0xFF7F00FF},
-	{"yellow",    0xFFFF00FF},
-	{"chartreuse",0x7FFF00FF},
-	{"green",     0x00FF00FF},
-	{"teal",      0x00FF7FFF},
-	{"cyan" ,     0x00FFFFFF},
-	{"blue",      0x0000FFFF},
-	{"purple",    0x7F00FFFF},
-	{"magenta",   0xFF00FFFF},
+	{ "white", 0xFFFFFFFF },
+	{ "black", 0x000000FF },
+	{ "clear", 0x00000000 },
+	{ "gray", 0x7F7F7FFF },
+	{ "grey", 0x7F7F7FFF },
+	{ "red", 0xFF0000FF },
+	{ "orange", 0xFF7F00FF },
+	{ "yellow", 0xFFFF00FF },
+	{ "chartreuse", 0x7FFF00FF },
+	{ "green", 0x00FF00FF },
+	{ "teal", 0x00FF7FFF },
+	{ "cyan", 0x00FFFFFF },
+	{ "blue", 0x0000FFFF },
+	{ "purple", 0x7F00FFFF },
+	{ "magenta", 0xFF00FFFF },
 };
 
 /**
@@ -1458,52 +1630,68 @@ s_colorMapping [] =
  * The user may construct their own RGB value, given a simple colour name,
  * or an HTML-style "#09abcd" colour. 16 bit reduction doesn't occur at this time.
  */
-static inline bool str2colour(uint32 *colour, lua_State *L, const char *str) {
-	if (str[0] == '#') {
+static inline bool str2colour(uint32 *colour, lua_State *L, const char *str)
+{
+	if (str[0] == '#')
+	{
 		int color;
-		sscanf(str+1, "%X", &color);
-		int len = strlen(str+1);
-		int missing = max(0, 8-len);
+		sscanf(str + 1, "%X", &color);
+
+		int len = strlen(str + 1);
+		int missing = max(0, 8 - len);
 		color <<= missing << 2;
-		if(missing >= 2) color |= 0xFF;
+		if (missing >= 2)
+			color |= 0xFF;
 		*colour = color;
 		return true;
 	}
-	else {
-		if(!strnicmp(str, "rand", 4)) {
-			*colour = gen_rand32() | 0xFF; //((rand()*255/RAND_MAX) << 8) | ((rand()*255/RAND_MAX) << 16) | ((rand()*255/RAND_MAX) << 24) | 0xFF;
+	else
+	{
+		if (!strnicmp(str, "rand", 4))
+		{
+			*colour = gen_rand32() | 0xFF;	//((rand()*255/RAND_MAX) << 8) | ((rand()*255/RAND_MAX) << 16) | ((rand()*255/RAND_MAX) << 24) | 0xFF;
 			return true;
 		}
-		for(int i = 0; i < sizeof(s_colorMapping)/sizeof(*s_colorMapping); i++) {
-			if(!stricmp(str,s_colorMapping[i].name)) {
+
+		for (int i = 0; i < sizeof(s_colorMapping) / sizeof(*s_colorMapping); i++)
+		{
+			if (!stricmp(str, s_colorMapping[i].name))
+			{
 				*colour = s_colorMapping[i].value;
 				return true;
 			}
 		}
 	}
+
 	return false;
 }
-static inline uint32 gui_getcolour_wrapped(lua_State *L, int offset, bool hasDefaultValue, uint32 defaultColour) {
-	switch (lua_type(L,offset)) {
+
+static inline uint32 gui_getcolour_wrapped(lua_State *L, int offset, bool hasDefaultValue, uint32 defaultColour)
+{
+	switch (lua_type(L, offset))
+	{
 	case LUA_TSTRING:
 		{
-			const char *str = lua_tostring(L,offset);
+			const char	*str = lua_tostring(L, offset);
 			uint32 colour;
 
 			if (str2colour(&colour, L, str))
 				return colour;
-			else {
+			else
+			{
 				if (hasDefaultValue)
 					return defaultColour;
 				else
 					return luaL_error(L, "unknown colour %s", str);
 			}
 		}
+
 	case LUA_TNUMBER:
 		{
-			uint32 colour = (uint32) lua_tointeger(L,offset);
+			uint32 colour = (uint32) lua_tointeger(L, offset);
 			return colour;
 		}
+
 	default:
 		if (hasDefaultValue)
 			return defaultColour;
@@ -1511,19 +1699,24 @@ static inline uint32 gui_getcolour_wrapped(lua_State *L, int offset, bool hasDef
 			return luaL_error(L, "invalid colour");
 	}
 }
-static uint32 gui_getcolour(lua_State *L, int offset) {
+
+static uint32 gui_getcolour(lua_State *L, int offset)
+{
 	uint32 colour;
 	int a, r, g, b;
 
 	colour = gui_getcolour_wrapped(L, offset, false, 0);
 	a = ((colour & 0xff) * transparencyModifier) / 255;
-	if (a > 255) a = 255;
+	if (a > 255)
+		a = 255;
 	b = (colour >> 8) & 0xff;
 	g = (colour >> 16) & 0xff;
 	r = (colour >> 24) & 0xff;
 	return LUA_BUILD_PIXEL(a, r, g, b);
 }
-static uint32 gui_optcolour(lua_State *L, int offset, uint32 defaultColour) {
+
+static uint32 gui_optcolour(lua_State *L, int offset, uint32 defaultColour)
+{
 	uint32 colour;
 	int a, r, g, b;
 	uint8 defA, defB, defG, defR;
@@ -1533,7 +1726,8 @@ static uint32 gui_optcolour(lua_State *L, int offset, uint32 defaultColour) {
 
 	colour = gui_getcolour_wrapped(L, offset, true, defaultColour);
 	a = ((colour & 0xff) * transparencyModifier) / 255;
-	if (a > 255) a = 255;
+	if (a > 255)
+		a = 255;
 	b = (colour >> 8) & 0xff;
 	g = (colour >> 16) & 0xff;
 	r = (colour >> 24) & 0xff;
@@ -1541,16 +1735,15 @@ static uint32 gui_optcolour(lua_State *L, int offset, uint32 defaultColour) {
 }
 
 // gui.drawpixel(x,y,colour)
-static int gui_drawpixel(lua_State *L) {
-
+static int gui_drawpixel(lua_State *L)
+{
 	int x = luaL_checkinteger(L, 1);
-	int y = luaL_checkinteger(L,2);
+	int y = luaL_checkinteger(L, 2);
 
-	uint32 colour = gui_getcolour(L,3);
+	uint32 colour = gui_getcolour(L, 3);
 
-//	if (!gui_check_boundary(x, y))
-//		luaL_error(L,"bad coordinates");
-
+	//	if (!gui_check_boundary(x, y))
+	//		luaL_error(L,"bad coordinates");
 	gui_prepare();
 
 	gui_drawpixel_internal(x, y, colour);
@@ -1559,22 +1752,21 @@ static int gui_drawpixel(lua_State *L) {
 }
 
 // gui.drawline(x1,y1,x2,y2,type colour)
-static int gui_drawline(lua_State *L) {
-
-	int x1,y1,x2,y2;
+static int gui_drawline(lua_State *L)
+{
+	int x1, y1, x2, y2;
 	uint32 colour;
-	x1 = luaL_checkinteger(L,1);
-	y1 = luaL_checkinteger(L,2);
-	x2 = luaL_checkinteger(L,3);
-	y2 = luaL_checkinteger(L,4);
-	colour = gui_getcolour(L,5);
+	x1 = luaL_checkinteger(L, 1);
+	y1 = luaL_checkinteger(L, 2);
+	x2 = luaL_checkinteger(L, 3);
+	y2 = luaL_checkinteger(L, 4);
+	colour = gui_getcolour(L, 5);
 
-//	if (!gui_check_boundary(x1, y1))
-//		luaL_error(L,"bad coordinates");
-//
-//	if (!gui_check_boundary(x2, y2))
-//		luaL_error(L,"bad coordinates");
-
+	//	if (!gui_check_boundary(x1, y1))
+	//		luaL_error(L,"bad coordinates");
+	//
+	//	if (!gui_check_boundary(x2, y2))
+	//		luaL_error(L,"bad coordinates");
 	gui_prepare();
 
 	gui_drawline_internal(x1, y1, x2, y2, true, colour);
@@ -1583,23 +1775,22 @@ static int gui_drawline(lua_State *L) {
 }
 
 // gui.drawbox(x1, y1, x2, y2, colour)
-static int gui_drawbox(lua_State *L) {
-
-	int x1,y1,x2,y2;
+static int gui_drawbox(lua_State *L)
+{
+	int x1, y1, x2, y2;
 	uint32 colour;
 
-	x1 = luaL_checkinteger(L,1);
-	y1 = luaL_checkinteger(L,2);
-	x2 = luaL_checkinteger(L,3);
-	y2 = luaL_checkinteger(L,4);
-	colour = gui_getcolour(L,5);
+	x1 = luaL_checkinteger(L, 1);
+	y1 = luaL_checkinteger(L, 2);
+	x2 = luaL_checkinteger(L, 3);
+	y2 = luaL_checkinteger(L, 4);
+	colour = gui_getcolour(L, 5);
 
-//	if (!gui_check_boundary(x1, y1))
-//		luaL_error(L,"bad coordinates");
-//
-//	if (!gui_check_boundary(x2, y2))
-//		luaL_error(L,"bad coordinates");
-
+	//	if (!gui_check_boundary(x1, y1))
+	//		luaL_error(L,"bad coordinates");
+	//
+	//	if (!gui_check_boundary(x2, y2))
+	//		luaL_error(L,"bad coordinates");
 	gui_prepare();
 
 	gui_drawbox_internal(x1, y1, x2, y2, colour);
@@ -1608,15 +1799,15 @@ static int gui_drawbox(lua_State *L) {
 }
 
 // gui.drawcircle(x0, y0, radius, colour)
-static int gui_drawcircle(lua_State *L) {
-
+static int gui_drawcircle(lua_State *L)
+{
 	int x, y, r;
 	uint32 colour;
 
-	x = luaL_checkinteger(L,1);
-	y = luaL_checkinteger(L,2);
-	r = luaL_checkinteger(L,3);
-	colour = gui_getcolour(L,4);
+	x = luaL_checkinteger(L, 1);
+	y = luaL_checkinteger(L, 2);
+	r = luaL_checkinteger(L, 3);
+	colour = gui_getcolour(L, 4);
 
 	gui_prepare();
 
@@ -1626,23 +1817,22 @@ static int gui_drawcircle(lua_State *L) {
 }
 
 // gui.fillbox(x1, y1, x2, y2, colour)
-static int gui_fillbox(lua_State *L) {
-
-	int x1,y1,x2,y2;
+static int gui_fillbox(lua_State *L)
+{
+	int x1, y1, x2, y2;
 	uint32 colour;
 
-	x1 = luaL_checkinteger(L,1);
-	y1 = luaL_checkinteger(L,2);
-	x2 = luaL_checkinteger(L,3);
-	y2 = luaL_checkinteger(L,4);
-	colour = gui_getcolour(L,5);
+	x1 = luaL_checkinteger(L, 1);
+	y1 = luaL_checkinteger(L, 2);
+	x2 = luaL_checkinteger(L, 3);
+	y2 = luaL_checkinteger(L, 4);
+	colour = gui_getcolour(L, 5);
 
-//	if (!gui_check_boundary(x1, y1))
-//		luaL_error(L,"bad coordinates");
-//
-//	if (!gui_check_boundary(x2, y2))
-//		luaL_error(L,"bad coordinates");
-
+	//	if (!gui_check_boundary(x1, y1))
+	//		luaL_error(L,"bad coordinates");
+	//
+	//	if (!gui_check_boundary(x2, y2))
+	//		luaL_error(L,"bad coordinates");
 	gui_prepare();
 
 	gui_fillbox_internal(x1, y1, x2, y2, colour);
@@ -1651,15 +1841,15 @@ static int gui_fillbox(lua_State *L) {
 }
 
 // gui.fillcircle(x0, y0, radius, colour)
-static int gui_fillcircle(lua_State *L) {
-
+static int gui_fillcircle(lua_State *L)
+{
 	int x, y, r;
 	uint32 colour;
 
-	x = luaL_checkinteger(L,1);
-	y = luaL_checkinteger(L,2);
-	r = luaL_checkinteger(L,3);
-	colour = gui_getcolour(L,4);
+	x = luaL_checkinteger(L, 1);
+	y = luaL_checkinteger(L, 2);
+	r = luaL_checkinteger(L, 3);
+	colour = gui_getcolour(L, 4);
 
 	gui_prepare();
 
@@ -1677,35 +1867,39 @@ static int gui_fillcircle(lua_State *L) {
 //  I think...  Does lua support grabbing byte values from a string? // yes, string.byte(str,offset)
 //  Well, either way, just install gd and do what you like with it.
 //  It really is easier that way.
-// example: gd.createFromGdStr(gui.gdscreenshot()):png("outputimage.png")
-static int gui_gdscreenshot(lua_State *L) {
 
+// example: gd.createFromGdStr(gui.gdscreenshot()):png("outputimage.png")
+static int gui_gdscreenshot(lua_State *L)
+{
 	int xofs = 0, yofs = 0, ppl = 240, width = 240, height = 160;
-	if (!vbaRunsGBA()) {
-		if(gbBorderOn)
+	if (!vbaRunsGBA())
+	{
+		if (gbBorderOn)
 			xofs = 48, yofs = 40, ppl = 256;
 		else
 			ppl = 160;
 		width = 160, height = 144;
 	}
+
 	yofs++;
 
 	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
-	int pitch = ppl*(systemColorDepth/8)+(systemColorDepth==24?0:4);
-	uint8 *screen = &pix[yofs*pitch+xofs*(systemColorDepth/8)];
+	int pitch = ppl * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
+	uint8	*screen = &pix[yofs * pitch + xofs * (systemColorDepth / 8)];
 
 	int size = 11 + width * height * 4;
-	char* str = new char[size+1];
+	char	*str = new char[size + 1];
 	str[size] = 0;
-	unsigned char* ptr = (unsigned char*)str;
+
+	unsigned char	*ptr = (unsigned char *)str;
 
 	// GD format header for truecolor image (11 bytes)
 	*ptr++ = (65534 >> 8) & 0xFF;
-	*ptr++ = (65534     ) & 0xFF;
+	*ptr++ = (65534) & 0xFF;
 	*ptr++ = (width >> 8) & 0xFF;
-	*ptr++ = (width     ) & 0xFF;
+	*ptr++ = (width) & 0xFF;
 	*ptr++ = (height >> 8) & 0xFF;
-	*ptr++ = (height     ) & 0xFF;
+	*ptr++ = (height) & 0xFF;
 	*ptr++ = 1;
 	*ptr++ = 255;
 	*ptr++ = 255;
@@ -1715,10 +1909,12 @@ static int gui_gdscreenshot(lua_State *L) {
 	GetColorFunc getColor;
 	getColorIOFunc(systemColorDepth, &getColor, NULL);
 
-	int x,y;
-	for (y=0; y < height; y++) {
-		uint8 *s = &screen[y*pitch];
-		for (x=0; x < width; x++, s+=systemColorDepth/8) {
+	int x, y;
+	for (y = 0; y < height; y++)
+	{
+		uint8	*s = &screen[y * pitch];
+		for (x = 0; x < width; x++, s += systemColorDepth / 8)
+		{
 			uint8 r, g, b;
 			getColor(s, &r, &g, &b);
 
@@ -1734,17 +1930,18 @@ static int gui_gdscreenshot(lua_State *L) {
 	return 1;
 }
 
-
 // gui.opacity(number alphaValue)
 // sets the transparency of subsequent draw calls
 // 0.0 is completely transparent, 1.0 is completely opaque
 // non-integer values are supported and meaningful, as are values greater than 1.0
 // it is not necessary to use this function to get transparency (or the less-recommended gui.transparency() either),
 // because you can provide an alpha value in the color argument of each draw call.
+
 // however, it can be convenient to be able to globally modify the drawing transparency
-static int gui_setopacity(lua_State *L) {
-	double opacF = luaL_checknumber(L,1);
-	transparencyModifier = (int) (opacF * 255);
+static int gui_setopacity(lua_State *L)
+{
+	double opacF = luaL_checknumber(L, 1);
+	transparencyModifier = (int)(opacF * 255);
 	if (transparencyModifier < 0)
 		transparencyModifier = 0;
 	return 0;
@@ -1752,188 +1949,194 @@ static int gui_setopacity(lua_State *L) {
 
 // gui.transparency(int strength)
 //
-//  0 = solid, 
-static int gui_transparency(lua_State *L) {
-	double trans = luaL_checknumber(L,1);
-	transparencyModifier = (int) ((4.0 - trans) / 4.0 * 255);
+
+//  0 = solid,
+static int gui_transparency(lua_State *L)
+{
+	double trans = luaL_checknumber(L, 1);
+	transparencyModifier = (int)((4.0 - trans) / 4.0 * 255);
 	if (transparencyModifier < 0)
 		transparencyModifier = 0;
 	return 0;
 }
 
-
 static const uint32 Small_Font_Data[] =
 {
-	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,			// 32	 
-	0x00000000, 0x00000300, 0x00000400, 0x00000500, 0x00000000, 0x00000700, 0x00000000,			// 33	!
-	0x00000000, 0x00040002, 0x00050003, 0x00000000, 0x00000000, 0x00000000, 0x00000000,			// 34	"
-	0x00000000, 0x00040002, 0x00050403, 0x00060004, 0x00070605, 0x00080006, 0x00000000,			// 35	#
-	0x00000000, 0x00040300, 0x00000403, 0x00000500, 0x00070600, 0x00000706, 0x00000000,			// 36	$
-	0x00000000, 0x00000002, 0x00050000, 0x00000500, 0x00000005, 0x00080000, 0x00000000,			// 37	%
-	0x00000000, 0x00000300, 0x00050003, 0x00000500, 0x00070005, 0x00080700, 0x00000000,			// 38	&
-	0x00000000, 0x00000300, 0x00000400, 0x00000000, 0x00000000, 0x00000000, 0x00000000,			// 39	'
-	0x00000000, 0x00000300, 0x00000003, 0x00000004, 0x00000005, 0x00000700, 0x00000000,			// 40	(
-	0x00000000, 0x00000300, 0x00050000, 0x00060000, 0x00070000, 0x00000700, 0x00000000,			// 41	)
-	0x00000000, 0x00000000, 0x00000400, 0x00060504, 0x00000600, 0x00080006, 0x00000000,			// 42	*
-	0x00000000, 0x00000000, 0x00000400, 0x00060504, 0x00000600, 0x00000000, 0x00000000,			// 43	+
-	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000600, 0x00000700, 0x00000007,			// 44	,
-	0x00000000, 0x00000000, 0x00000000, 0x00060504, 0x00000000, 0x00000000, 0x00000000,			// 45	-
-	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000700, 0x00000000,			// 46	.
-	0x00030000, 0x00040000, 0x00000400, 0x00000500, 0x00000005, 0x00000006, 0x00000000,			// 47	/
-	0x00000000, 0x00000300, 0x00050003, 0x00060004, 0x00070005, 0x00000700, 0x00000000,			// 48	0
-	0x00000000, 0x00000300, 0x00000403, 0x00000500, 0x00000600, 0x00000700, 0x00000000,			// 49	1
-	0x00000000, 0x00000302, 0x00050000, 0x00000500, 0x00000005, 0x00080706, 0x00000000,			// 50	2
-	0x00000000, 0x00000302, 0x00050000, 0x00000504, 0x00070000, 0x00000706, 0x00000000,			// 51	3
-	0x00000000, 0x00000300, 0x00000003, 0x00060004, 0x00070605, 0x00080000, 0x00000000,			// 52	4
-	0x00000000, 0x00040302, 0x00000003, 0x00000504, 0x00070000, 0x00000706, 0x00000000,			// 53	5
-	0x00000000, 0x00000300, 0x00000003, 0x00000504, 0x00070005, 0x00000700, 0x00000000,			// 54	6
-	0x00000000, 0x00040302, 0x00050000, 0x00000500, 0x00000600, 0x00000700, 0x00000000,			// 55	7
-	0x00000000, 0x00000300, 0x00050003, 0x00000500, 0x00070005, 0x00000700, 0x00000000,			// 56	8
-	0x00000000, 0x00000300, 0x00050003, 0x00060500, 0x00070000, 0x00000700, 0x00000000,			// 57	9
-	0x00000000, 0x00000000, 0x00000400, 0x00000000, 0x00000000, 0x00000700, 0x00000000,			// 58	:
-	0x00000000, 0x00000000, 0x00000000, 0x00000500, 0x00000000, 0x00000700, 0x00000007,			// 59	;
-	0x00000000, 0x00040000, 0x00000400, 0x00000004, 0x00000600, 0x00080000, 0x00000000,			// 60	<
-	0x00000000, 0x00000000, 0x00050403, 0x00000000, 0x00070605, 0x00000000, 0x00000000,			// 61	=
-	0x00000000, 0x00000002, 0x00000400, 0x00060000, 0x00000600, 0x00000006, 0x00000000,			// 62	>
-	0x00000000, 0x00000302, 0x00050000, 0x00000500, 0x00000000, 0x00000700, 0x00000000,			// 63	?
-	0x00000000, 0x00000300, 0x00050400, 0x00060004, 0x00070600, 0x00000000, 0x00000000,			// 64	@
-	0x00000000, 0x00000300, 0x00050003, 0x00060504, 0x00070005, 0x00080006, 0x00000000,			// 65	A
-	0x00000000, 0x00000302, 0x00050003, 0x00000504, 0x00070005, 0x00000706, 0x00000000,			// 66	B
-	0x00000000, 0x00040300, 0x00000003, 0x00000004, 0x00000005, 0x00080700, 0x00000000,			// 67	C
-	0x00000000, 0x00000302, 0x00050003, 0x00060004, 0x00070005, 0x00000706, 0x00000000,			// 68	D
-	0x00000000, 0x00040302, 0x00000003, 0x00000504, 0x00000005, 0x00080706, 0x00000000,			// 69	E
-	0x00000000, 0x00040302, 0x00000003, 0x00000504, 0x00000005, 0x00000006, 0x00000000,			// 70	F
-	0x00000000, 0x00040300, 0x00000003, 0x00060004, 0x00070005, 0x00080700, 0x00000000,			// 71	G
-	0x00000000, 0x00040002, 0x00050003, 0x00060504, 0x00070005, 0x00080006, 0x00000000,			// 72	H
-	0x00000000, 0x00000300, 0x00000400, 0x00000500, 0x00000600, 0x00000700, 0x00000000,			// 73	I
-	0x00000000, 0x00040000, 0x00050000, 0x00060000, 0x00070005, 0x00000700, 0x00000000,			// 74	J
-	0x00000000, 0x00040002, 0x00050003, 0x00000504, 0x00070005, 0x00080006, 0x00000000,			// 75	K
-	0x00000000, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00080706, 0x00000000,			// 76	l
-	0x00000000, 0x00040002, 0x00050403, 0x00060004, 0x00070005, 0x00080006, 0x00000000,			// 77	M
-	0x00000000, 0x00000302, 0x00050003, 0x00060004, 0x00070005, 0x00080006, 0x00000000,			// 78	N
-	0x00000000, 0x00040302, 0x00050003, 0x00060004, 0x00070005, 0x00080706, 0x00000000,			// 79	O
-	0x00000000, 0x00000302, 0x00050003, 0x00000504, 0x00000005, 0x00000006, 0x00000000,			// 80	P
-	0x00000000, 0x00040302, 0x00050003, 0x00060004, 0x00070005, 0x00080706, 0x00090000,			// 81	Q
-	0x00000000, 0x00000302, 0x00050003, 0x00000504, 0x00070005, 0x00080006, 0x00000000,			// 82	R
-	0x00000000, 0x00040300, 0x00000003, 0x00000500, 0x00070000, 0x00000706, 0x00000000,			// 83	S
-	0x00000000, 0x00040302, 0x00000400, 0x00000500, 0x00000600, 0x00000700, 0x00000000,			// 84	T
-	0x00000000, 0x00040002, 0x00050003, 0x00060004, 0x00070005, 0x00080706, 0x00000000,			// 85	U
-	0x00000000, 0x00040002, 0x00050003, 0x00060004, 0x00000600, 0x00000700, 0x00000000,			// 86	V
-	0x00000000, 0x00040002, 0x00050003, 0x00060004, 0x00070605, 0x00080006, 0x00000000,			// 87	W
-	0x00000000, 0x00040002, 0x00050003, 0x00000500, 0x00070005, 0x00080006, 0x00000000,			// 88	X
-	0x00000000, 0x00040002, 0x00050003, 0x00000500, 0x00000600, 0x00000700, 0x00000000,			// 89	Y
-	0x00000000, 0x00040302, 0x00050000, 0x00000500, 0x00000005, 0x00080706, 0x00000000,			// 90	Z
-	0x00000000, 0x00040300, 0x00000400, 0x00000500, 0x00000600, 0x00080700, 0x00000000,			// 91	[
-	0x00000000, 0x00000002, 0x00000400, 0x00000500, 0x00070000, 0x00080000, 0x00000000,			// 92	'\'
-	0x00000000, 0x00000302, 0x00000400, 0x00000500, 0x00000600, 0x00000706, 0x00000000,			// 93	]
-	0x00000000, 0x00000300, 0x00050003, 0x00000000, 0x00000000, 0x00000000, 0x00000000,			// 94	^
-	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00080706, 0x00000000,			// 95	_
-	0x00000000, 0x00000002, 0x00000400, 0x00000000, 0x00000000, 0x00000000, 0x00000000,			// 96	`
-	0x00000000, 0x00000000, 0x00050400, 0x00060004, 0x00070005, 0x00080700, 0x00000000,			// 97	a
-	0x00000000, 0x00000002, 0x00000003, 0x00000504, 0x00070005, 0x00000706, 0x00000000,			// 98	b
-	0x00000000, 0x00000000, 0x00050400, 0x00000004, 0x00000005, 0x00080700, 0x00000000,			// 99	c
-	0x00000000, 0x00040000, 0x00050000, 0x00060500, 0x00070005, 0x00080700, 0x00000000,			// 100	d
-	0x00000000, 0x00000000, 0x00050400, 0x00060504, 0x00000005, 0x00080700, 0x00000000,			// 101	e
-	0x00000000, 0x00040300, 0x00000003, 0x00000504, 0x00000005, 0x00000006, 0x00000000,			// 102	f
-	0x00000000, 0x00000000, 0x00050400, 0x00060004, 0x00070600, 0x00080000, 0x00000807,			// 103	g
-	0x00000000, 0x00000002, 0x00000003, 0x00000504, 0x00070005, 0x00080006, 0x00000000,			// 104	h
-	0x00000000, 0x00000300, 0x00000000, 0x00000500, 0x00000600, 0x00000700, 0x00000000,			// 105	i
-	0x00000000, 0x00000300, 0x00000000, 0x00000500, 0x00000600, 0x00000700, 0x00000007,			// 106	j
-	0x00000000, 0x00000002, 0x00000003, 0x00060004, 0x00000605, 0x00080006, 0x00000000,			// 107	k
-	0x00000000, 0x00000300, 0x00000400, 0x00000500, 0x00000600, 0x00080000, 0x00000000,			// 108	l
-	0x00000000, 0x00000000, 0x00050003, 0x00060504, 0x00070005, 0x00080006, 0x00000000,			// 109	m
-	0x00000000, 0x00000000, 0x00000403, 0x00060004, 0x00070005, 0x00080006, 0x00000000,			// 110	n
-	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00070005, 0x00000700, 0x00000000,			// 111	o
-	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00000605, 0x00000006, 0x00000007,			// 112	p
-	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00070600, 0x00080000, 0x00090000,			// 113	q
-	0x00000000, 0x00000000, 0x00050003, 0x00000504, 0x00000005, 0x00000006, 0x00000000,			// 114	r
-	0x00000000, 0x00000000, 0x00050400, 0x00000004, 0x00070600, 0x00000706, 0x00000000,			// 115	s
-	0x00000000, 0x00000300, 0x00050403, 0x00000500, 0x00000600, 0x00080000, 0x00000000,			// 116	t
-	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00070005, 0x00080700, 0x00000000,			// 117	u
-	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00070005, 0x00000700, 0x00000000,			// 118	v
-	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00070605, 0x00080006, 0x00000000,			// 119	w
-	0x00000000, 0x00000000, 0x00050003, 0x00000500, 0x00070005, 0x00080006, 0x00000000,			// 120	x
-	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00000600, 0x00000700, 0x00000007,			// 121	y
-	0x00000000, 0x00000000, 0x00050403, 0x00000500, 0x00000005, 0x00080706, 0x00000000,			// 122	z
-	0x00000000, 0x00040300, 0x00000400, 0x00000504, 0x00000600, 0x00080700, 0x00000000,			// 123	{
-	0x00000000, 0x00000300, 0x00000400, 0x00000000, 0x00000600, 0x00000700, 0x00000000,			// 124	|
-	0x00000000, 0x00000302, 0x00000400, 0x00060500, 0x00000600, 0x00000706, 0x00000000,			// 125	}
-	0x00000000, 0x00000302, 0x00050000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,			// 126	~
-	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00070605, 0x00000000, 0x00000000,			// 127	
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, // 32	
+	0x00000000, 0x00000300, 0x00000400, 0x00000500, 0x00000000, 0x00000700, 0x00000000, // 33	!
+	0x00000000, 0x00040002, 0x00050003, 0x00000000, 0x00000000, 0x00000000, 0x00000000, // 34	"
+	0x00000000, 0x00040002, 0x00050403, 0x00060004, 0x00070605, 0x00080006, 0x00000000, // 35	#
+	0x00000000, 0x00040300, 0x00000403, 0x00000500, 0x00070600, 0x00000706, 0x00000000, // 36	$
+	0x00000000, 0x00000002, 0x00050000, 0x00000500, 0x00000005, 0x00080000, 0x00000000, // 37	%
+	0x00000000, 0x00000300, 0x00050003, 0x00000500, 0x00070005, 0x00080700, 0x00000000, // 38	&
+	0x00000000, 0x00000300, 0x00000400, 0x00000000, 0x00000000, 0x00000000, 0x00000000, // 39	'
+	0x00000000, 0x00000300, 0x00000003, 0x00000004, 0x00000005, 0x00000700, 0x00000000, // 40	(
+	0x00000000, 0x00000300, 0x00050000, 0x00060000, 0x00070000, 0x00000700, 0x00000000, // 41	)
+	0x00000000, 0x00000000, 0x00000400, 0x00060504, 0x00000600, 0x00080006, 0x00000000, // 42	*
+	0x00000000, 0x00000000, 0x00000400, 0x00060504, 0x00000600, 0x00000000, 0x00000000, // 43	+
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000600, 0x00000700, 0x00000007, // 44	,
+	0x00000000, 0x00000000, 0x00000000, 0x00060504, 0x00000000, 0x00000000, 0x00000000, // 45	-
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000700, 0x00000000, // 46	.
+	0x00030000, 0x00040000, 0x00000400, 0x00000500, 0x00000005, 0x00000006, 0x00000000, // 47	/
+	0x00000000, 0x00000300, 0x00050003, 0x00060004, 0x00070005, 0x00000700, 0x00000000, // 48	0
+	0x00000000, 0x00000300, 0x00000403, 0x00000500, 0x00000600, 0x00000700, 0x00000000, // 49	1
+	0x00000000, 0x00000302, 0x00050000, 0x00000500, 0x00000005, 0x00080706, 0x00000000, // 50	2
+	0x00000000, 0x00000302, 0x00050000, 0x00000504, 0x00070000, 0x00000706, 0x00000000, // 51	3
+	0x00000000, 0x00000300, 0x00000003, 0x00060004, 0x00070605, 0x00080000, 0x00000000, // 52	4
+	0x00000000, 0x00040302, 0x00000003, 0x00000504, 0x00070000, 0x00000706, 0x00000000, // 53	5
+	0x00000000, 0x00000300, 0x00000003, 0x00000504, 0x00070005, 0x00000700, 0x00000000, // 54	6
+	0x00000000, 0x00040302, 0x00050000, 0x00000500, 0x00000600, 0x00000700, 0x00000000, // 55	7
+	0x00000000, 0x00000300, 0x00050003, 0x00000500, 0x00070005, 0x00000700, 0x00000000, // 56	8
+	0x00000000, 0x00000300, 0x00050003, 0x00060500, 0x00070000, 0x00000700, 0x00000000, // 57	9
+	0x00000000, 0x00000000, 0x00000400, 0x00000000, 0x00000000, 0x00000700, 0x00000000, // 58	:
+	0x00000000, 0x00000000, 0x00000000, 0x00000500, 0x00000000, 0x00000700, 0x00000007, // 59	;
+	0x00000000, 0x00040000, 0x00000400, 0x00000004, 0x00000600, 0x00080000, 0x00000000, // 60	<
+	0x00000000, 0x00000000, 0x00050403, 0x00000000, 0x00070605, 0x00000000, 0x00000000, // 61	=
+	0x00000000, 0x00000002, 0x00000400, 0x00060000, 0x00000600, 0x00000006, 0x00000000, // 62	>
+	0x00000000, 0x00000302, 0x00050000, 0x00000500, 0x00000000, 0x00000700, 0x00000000, // 63	?
+	0x00000000, 0x00000300, 0x00050400, 0x00060004, 0x00070600, 0x00000000, 0x00000000, // 64	@
+	0x00000000, 0x00000300, 0x00050003, 0x00060504, 0x00070005, 0x00080006, 0x00000000, // 65	A
+	0x00000000, 0x00000302, 0x00050003, 0x00000504, 0x00070005, 0x00000706, 0x00000000, // 66	B
+	0x00000000, 0x00040300, 0x00000003, 0x00000004, 0x00000005, 0x00080700, 0x00000000, // 67	C
+	0x00000000, 0x00000302, 0x00050003, 0x00060004, 0x00070005, 0x00000706, 0x00000000, // 68	D
+	0x00000000, 0x00040302, 0x00000003, 0x00000504, 0x00000005, 0x00080706, 0x00000000, // 69	E
+	0x00000000, 0x00040302, 0x00000003, 0x00000504, 0x00000005, 0x00000006, 0x00000000, // 70	F
+	0x00000000, 0x00040300, 0x00000003, 0x00060004, 0x00070005, 0x00080700, 0x00000000, // 71	G
+	0x00000000, 0x00040002, 0x00050003, 0x00060504, 0x00070005, 0x00080006, 0x00000000, // 72	H
+	0x00000000, 0x00000300, 0x00000400, 0x00000500, 0x00000600, 0x00000700, 0x00000000, // 73	I
+	0x00000000, 0x00040000, 0x00050000, 0x00060000, 0x00070005, 0x00000700, 0x00000000, // 74	J
+	0x00000000, 0x00040002, 0x00050003, 0x00000504, 0x00070005, 0x00080006, 0x00000000, // 75	K
+	0x00000000, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00080706, 0x00000000, // 76	l
+	0x00000000, 0x00040002, 0x00050403, 0x00060004, 0x00070005, 0x00080006, 0x00000000, // 77	M
+	0x00000000, 0x00000302, 0x00050003, 0x00060004, 0x00070005, 0x00080006, 0x00000000, // 78	N
+	0x00000000, 0x00040302, 0x00050003, 0x00060004, 0x00070005, 0x00080706, 0x00000000, // 79	O
+	0x00000000, 0x00000302, 0x00050003, 0x00000504, 0x00000005, 0x00000006, 0x00000000, // 80	P
+	0x00000000, 0x00040302, 0x00050003, 0x00060004, 0x00070005, 0x00080706, 0x00090000, // 81	Q
+	0x00000000, 0x00000302, 0x00050003, 0x00000504, 0x00070005, 0x00080006, 0x00000000, // 82	R
+	0x00000000, 0x00040300, 0x00000003, 0x00000500, 0x00070000, 0x00000706, 0x00000000, // 83	S
+	0x00000000, 0x00040302, 0x00000400, 0x00000500, 0x00000600, 0x00000700, 0x00000000, // 84	T
+	0x00000000, 0x00040002, 0x00050003, 0x00060004, 0x00070005, 0x00080706, 0x00000000, // 85	U
+	0x00000000, 0x00040002, 0x00050003, 0x00060004, 0x00000600, 0x00000700, 0x00000000, // 86	V
+	0x00000000, 0x00040002, 0x00050003, 0x00060004, 0x00070605, 0x00080006, 0x00000000, // 87	W
+	0x00000000, 0x00040002, 0x00050003, 0x00000500, 0x00070005, 0x00080006, 0x00000000, // 88	X
+	0x00000000, 0x00040002, 0x00050003, 0x00000500, 0x00000600, 0x00000700, 0x00000000, // 89	Y
+	0x00000000, 0x00040302, 0x00050000, 0x00000500, 0x00000005, 0x00080706, 0x00000000, // 90	Z
+	0x00000000, 0x00040300, 0x00000400, 0x00000500, 0x00000600, 0x00080700, 0x00000000, // 91	[
+	0x00000000, 0x00000002, 0x00000400, 0x00000500, 0x00070000, 0x00080000, 0x00000000, // 92	'\'
+	0x00000000, 0x00000302, 0x00000400, 0x00000500, 0x00000600, 0x00000706, 0x00000000, // 93	]
+	0x00000000, 0x00000300, 0x00050003, 0x00000000, 0x00000000, 0x00000000, 0x00000000, // 94	^
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00080706, 0x00000000, // 95	_
+	0x00000000, 0x00000002, 0x00000400, 0x00000000, 0x00000000, 0x00000000, 0x00000000, // 96	`
+	0x00000000, 0x00000000, 0x00050400, 0x00060004, 0x00070005, 0x00080700, 0x00000000, // 97	a
+	0x00000000, 0x00000002, 0x00000003, 0x00000504, 0x00070005, 0x00000706, 0x00000000, // 98	b
+	0x00000000, 0x00000000, 0x00050400, 0x00000004, 0x00000005, 0x00080700, 0x00000000, // 99	c
+	0x00000000, 0x00040000, 0x00050000, 0x00060500, 0x00070005, 0x00080700, 0x00000000, // 100	d
+	0x00000000, 0x00000000, 0x00050400, 0x00060504, 0x00000005, 0x00080700, 0x00000000, // 101	e
+	0x00000000, 0x00040300, 0x00000003, 0x00000504, 0x00000005, 0x00000006, 0x00000000, // 102	f
+	0x00000000, 0x00000000, 0x00050400, 0x00060004, 0x00070600, 0x00080000, 0x00000807, // 103	g
+	0x00000000, 0x00000002, 0x00000003, 0x00000504, 0x00070005, 0x00080006, 0x00000000, // 104	h
+	0x00000000, 0x00000300, 0x00000000, 0x00000500, 0x00000600, 0x00000700, 0x00000000, // 105	i
+	0x00000000, 0x00000300, 0x00000000, 0x00000500, 0x00000600, 0x00000700, 0x00000007, // 106	j
+	0x00000000, 0x00000002, 0x00000003, 0x00060004, 0x00000605, 0x00080006, 0x00000000, // 107	k
+	0x00000000, 0x00000300, 0x00000400, 0x00000500, 0x00000600, 0x00080000, 0x00000000, // 108	l
+	0x00000000, 0x00000000, 0x00050003, 0x00060504, 0x00070005, 0x00080006, 0x00000000, // 109	m
+	0x00000000, 0x00000000, 0x00000403, 0x00060004, 0x00070005, 0x00080006, 0x00000000, // 110	n
+	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00070005, 0x00000700, 0x00000000, // 111	o
+	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00000605, 0x00000006, 0x00000007, // 112	p
+	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00070600, 0x00080000, 0x00090000, // 113	q
+	0x00000000, 0x00000000, 0x00050003, 0x00000504, 0x00000005, 0x00000006, 0x00000000, // 114	r
+	0x00000000, 0x00000000, 0x00050400, 0x00000004, 0x00070600, 0x00000706, 0x00000000, // 115	s
+	0x00000000, 0x00000300, 0x00050403, 0x00000500, 0x00000600, 0x00080000, 0x00000000, // 116	t
+	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00070005, 0x00080700, 0x00000000, // 117	u
+	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00070005, 0x00000700, 0x00000000, // 118	v
+	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00070605, 0x00080006, 0x00000000, // 119	w
+	0x00000000, 0x00000000, 0x00050003, 0x00000500, 0x00070005, 0x00080006, 0x00000000, // 120	x
+	0x00000000, 0x00000000, 0x00050003, 0x00060004, 0x00000600, 0x00000700, 0x00000007, // 121	y
+	0x00000000, 0x00000000, 0x00050403, 0x00000500, 0x00000005, 0x00080706, 0x00000000, // 122	z
+	0x00000000, 0x00040300, 0x00000400, 0x00000504, 0x00000600, 0x00080700, 0x00000000, // 123	{
+	0x00000000, 0x00000300, 0x00000400, 0x00000000, 0x00000600, 0x00000700, 0x00000000, // 124	|
+	0x00000000, 0x00000302, 0x00000400, 0x00060500, 0x00000600, 0x00000706, 0x00000000, // 125	}
+	0x00000000, 0x00000302, 0x00050000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, // 126	~
+	0x00000000, 0x00000000, 0x00000400, 0x00060004, 0x00070605, 0x00000000, 0x00000000, // 127	
 	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 };
 
-static void PutTextInternal (const char *str, int len, short x, short y, int color, int backcolor)
+static void PutTextInternal(const char *str, int len, short x, short y, int color, int backcolor)
 {
 	int Opac = (color >> 24) & 0xFF;
 	int backOpac = (backcolor >> 24) & 0xFF;
 	int origX = x;
 
-	if(!Opac && !backOpac)
+	if (!Opac && !backOpac)
 		return;
 
-	while(*str && len && y < LUA_SCREEN_HEIGHT)
+	while (*str && len && y < LUA_SCREEN_HEIGHT)
 	{
 		int c = *str++;
-		while (x > LUA_SCREEN_WIDTH && c != '\n') {
+		while (x > LUA_SCREEN_WIDTH && c != '\n')
+		{
 			c = *str;
 			if (c == '\0')
 				break;
 			str++;
 		}
-		if(c == '\n')
+
+		if (c == '\n')
 		{
 			x = origX;
 			y += 8;
 			continue;
 		}
-		else if(c == '\t') // just in case
+		else if (c == '\t') // just in case
 		{
 			const int tabSpace = 8;
-			x += (tabSpace-(((x-origX)/4)%tabSpace))*4;
+			x += (tabSpace - (((x - origX) / 4) % tabSpace)) * 4;
 			continue;
 		}
-		if((unsigned int)(c-32) >= 96)
-			continue;
-		const unsigned char* Cur_Glyph = (const unsigned char*)&Small_Font_Data + (c-32)*7*4;
 
-		for(int y2 = 0; y2 < 8; y2++)
+		if ((unsigned int)(c - 32) >= 96)
+			continue;
+
+		const unsigned char *Cur_Glyph = (const unsigned char *) &Small_Font_Data + (c - 32) * 7 * 4;
+
+		for (int y2 = 0; y2 < 8; y2++)
 		{
-			unsigned int glyphLine = *((unsigned int*)Cur_Glyph + y2);
-			for(int x2 = -1; x2 < 4; x2++)
+			unsigned int glyphLine = *((unsigned int *)Cur_Glyph + y2);
+			for (int x2 = -1; x2 < 4; x2++)
 			{
 				int shift = x2 << 3;
 				int mask = 0xFF << shift;
 				int intensity = (glyphLine & mask) >> shift;
 
-				if(intensity && x2 >= 0 && y2 < 7)
+				if (intensity && x2 >= 0 && y2 < 7)
 				{
 					//int xdraw = max(0,min(LUA_SCREEN_WIDTH - 1,x+x2));
 					//int ydraw = max(0,min(LUA_SCREEN_HEIGHT - 1,y+y2));
 					//gui_drawpixel_fast(xdraw, ydraw, color);
-					gui_drawpixel_internal(x+x2, y+y2, color);
+					gui_drawpixel_internal(x + x2, y + y2, color);
 				}
-				else if(backOpac)
+				else if (backOpac)
 				{
-					for(int y3 = max(0,y2-1); y3 <= min(6,y2+1); y3++)
+					for (int y3 = max(0, y2 - 1); y3 <= min(6, y2 + 1); y3++)
 					{
-						unsigned int glyphLine = *((unsigned int*)Cur_Glyph + y3);
-						for(int x3 = max(0,x2-1); x3 <= min(3,x2+1); x3++)
+						unsigned int glyphLine = *((unsigned int *)Cur_Glyph + y3);
+						for (int x3 = max(0, x2 - 1); x3 <= min(3, x2 + 1); x3++)
 						{
 							int shift = x3 << 3;
 							int mask = 0xFF << shift;
 							intensity |= (glyphLine & mask) >> shift;
 							if (intensity)
-								goto draw_outline; // speedup?
+								goto draw_outline;	// speedup?
 						}
 					}
+
 draw_outline:
-					if(intensity)
+					if (intensity)
 					{
 						//int xdraw = max(0,min(LUA_SCREEN_WIDTH - 1,x+x2));
 						//int ydraw = max(0,min(LUA_SCREEN_HEIGHT - 1,y+y2));
 						//gui_drawpixel_fast(xdraw, ydraw, backcolor);
-						gui_drawpixel_internal(x+x2, y+y2, backcolor);
+						gui_drawpixel_internal(x + x2, y + y2, backcolor);
 					}
 				}
 			}
@@ -1944,25 +2147,26 @@ draw_outline:
 	}
 }
 
-static int strlinelen(const char* string)
+static int strlinelen(const char *string)
 {
-	const char* s = string;
-	while(*s && *s != '\n')
+	const char	*s = string;
+	while (*s && *s != '\n')
 		s++;
-	if(*s)
+	if (*s)
 		s++;
 	return s - string;
 }
 
-static void LuaDisplayString (const char *string, int y, int x, uint32 color, uint32 outlineColor)
+static void LuaDisplayString(const char *string, int y, int x, uint32 color, uint32 outlineColor)
 {
-	if(!string)
+	if (!string)
 		return;
 
 	gui_prepare();
 
 	PutTextInternal(string, strlen(string), x, y, color, outlineColor);
-/*
+
+	/*
 	const char* ptr = string;
 	while(*ptr && y < LUA_SCREEN_HEIGHT)
 	{
@@ -2004,22 +2208,23 @@ static void LuaDisplayString (const char *string, int y, int x, uint32 color, ui
 // gui.text(int x, int y, string msg)
 //
 //  Displays the given text on the screen, using the same font and techniques as the
+
 //  main HUD.
-static int gui_text(lua_State *L) {
+static int gui_text(lua_State *L)
+{
 	//extern int font_height;
-	const char *msg;
+	const char	*msg;
 	int x, y;
 	uint32 colour, borderColour;
 
-	x = luaL_checkinteger(L,1);
-	y = luaL_checkinteger(L,2);
-	msg = luaL_checkstring(L,3);
+	x = luaL_checkinteger(L, 1);
+	y = luaL_checkinteger(L, 2);
+	msg = luaL_checkstring(L, 3);
 
-//	if (x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= (LUA_SCREEN_HEIGHT - font_height))
-//		luaL_error(L,"bad coordinates");
-
-	colour = gui_optcolour(L,4,LUA_BUILD_PIXEL(255, 255, 255, 255));
-	borderColour = gui_optcolour(L,5,LUA_BUILD_PIXEL(255, 0, 0, 0));
+	//	if (x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= (LUA_SCREEN_HEIGHT - font_height))
+	//		luaL_error(L,"bad coordinates");
+	colour = gui_optcolour(L, 4, LUA_BUILD_PIXEL(255, 255, 255, 255));
+	borderColour = gui_optcolour(L, 5, LUA_BUILD_PIXEL(255, 0, 0, 0));
 
 	gui_prepare();
 
@@ -2031,9 +2236,10 @@ static int gui_text(lua_State *L) {
 // gui.gdoverlay([int dx=0, int dy=0,] string str [, sx=0, sy=0, sw, sh] [, float alphamul=1.0])
 //
 //  Overlays the given image on the screen.
-// example: gui.gdoverlay(gd.createFromPng("myimage.png"):gdStr())
-static int gui_gdoverlay(lua_State *L) {
 
+// example: gui.gdoverlay(gd.createFromPng("myimage.png"):gdStr())
+static int gui_gdoverlay(lua_State *L)
+{
 	int argCount = lua_gettop(L);
 
 	int xStartDst = 0;
@@ -2042,131 +2248,161 @@ static int gui_gdoverlay(lua_State *L) {
 	int yStartSrc = 0;
 
 	int index = 1;
-	if(lua_type(L,index) == LUA_TNUMBER)
+	if (lua_type(L, index) == LUA_TNUMBER)
 	{
-		xStartDst = lua_tointeger(L,index++);
-		if(lua_type(L,index) == LUA_TNUMBER)
-			yStartDst = lua_tointeger(L,index++);
+		xStartDst = lua_tointeger(L, index++);
+		if (lua_type(L, index) == LUA_TNUMBER)
+			yStartDst = lua_tointeger(L, index++);
 	}
 
-	luaL_checktype(L,index,LUA_TSTRING);
-	const unsigned char* ptr = (const unsigned char*)lua_tostring(L,index++);
+	luaL_checktype(L, index, LUA_TSTRING);
+
+	const unsigned char *ptr = (const unsigned char *)lua_tostring(L, index++);
 
 	if (ptr[0] != 255 || (ptr[1] != 254 && ptr[1] != 255))
 		luaL_error(L, "bad image data");
+
 	bool trueColor = (ptr[1] == 254);
 	ptr += 2;
+
 	int imgwidth = *ptr++ << 8;
 	imgwidth |= *ptr++;
+
 	int width = imgwidth;
 	int imgheight = *ptr++ << 8;
 	imgheight |= *ptr++;
+
 	int height = imgheight;
 	if ((!trueColor && *ptr) || (trueColor && !*ptr))
 		luaL_error(L, "bad image data");
 	ptr++;
-	int pitch = imgwidth * (trueColor?4:1);
 
-	if ((argCount - index + 1) >= 4) {
-		xStartSrc = luaL_checkinteger(L,index++);
-		yStartSrc = luaL_checkinteger(L,index++);
-		width = luaL_checkinteger(L,index++);
-		height = luaL_checkinteger(L,index++);
+	int pitch = imgwidth * (trueColor ? 4 : 1);
+
+	if ((argCount - index + 1) >= 4)
+	{
+		xStartSrc = luaL_checkinteger(L, index++);
+		yStartSrc = luaL_checkinteger(L, index++);
+		width = luaL_checkinteger(L, index++);
+		height = luaL_checkinteger(L, index++);
 	}
 
 	int alphaMul = transparencyModifier;
-	if(lua_isnumber(L, index))
+	if (lua_isnumber(L, index))
 		alphaMul = (int)(alphaMul * lua_tonumber(L, index++));
-	if(alphaMul <= 0)
+	if (alphaMul <= 0)
 		return 0;
 
 	// since there aren't that many possible opacity levels,
 	// do the opacity modification calculations beforehand instead of per pixel
 	int opacMap[256];
-	for(int i = 0; i < 128; i++)
+	for (int i = 0; i < 128; i++)
 	{
-		int opac = 255 - ((i << 1) | (i & 1)); // gdAlphaMax = 127, not 255
+		int opac = 255 - ((i << 1) | (i & 1));	// gdAlphaMax = 127, not 255
 		opac = (opac * alphaMul) / 255;
-		if(opac < 0) opac = 0;
-		if(opac > 255) opac = 255;
+		if (opac < 0)
+			opac = 0;
+		if (opac > 255)
+			opac = 255;
 		opacMap[i] = opac;
 	}
-	for(int i = 128; i < 256; i++)
-		opacMap[i] = 0; // what should we do for them, actually?
 
+	for (int i = 128; i < 256; i++)
+		opacMap[i] = 0; // what should we do for them, actually?
 	int colorsTotal = 0;
-	if (!trueColor) {
+	if (!trueColor)
+	{
 		colorsTotal = *ptr++ << 8;
 		colorsTotal |= *ptr++;
 	}
+
 	int transparent = *ptr++ << 24;
 	transparent |= *ptr++ << 16;
 	transparent |= *ptr++ << 8;
 	transparent |= *ptr++;
-	struct { uint8 r, g, b, a; } pal[256];
-	if (!trueColor) for (int i = 0; i < 256; i++) {
-		pal[i].r = *ptr++;
-		pal[i].g = *ptr++;
-		pal[i].b = *ptr++;
-		pal[i].a = opacMap[*ptr++];
-	}
+	struct
+	{
+		uint8 r, g, b, a;
+	} pal[256];
+	if (!trueColor)
+		for (int i = 0; i < 256; i++)
+		{
+			pal[i].r = *ptr++;
+			pal[i].g = *ptr++;
+			pal[i].b = *ptr++;
+			pal[i].a = opacMap[*ptr++];
+		}
 
 	// some of clippings
-	if (xStartSrc < 0) {
+	if (xStartSrc < 0)
+	{
 		width += xStartSrc;
 		xStartDst -= xStartSrc;
 		xStartSrc = 0;
 	}
-	if (yStartSrc < 0) {
+
+	if (yStartSrc < 0)
+	{
 		height += yStartSrc;
 		yStartDst -= yStartSrc;
 		yStartSrc = 0;
 	}
-	if (xStartSrc+width >= imgwidth)
+
+	if (xStartSrc + width >= imgwidth)
 		width = imgwidth - xStartSrc;
-	if (yStartSrc+height >= imgheight)
+	if (yStartSrc + height >= imgheight)
 		height = imgheight - yStartSrc;
-	if (xStartDst < 0) {
+	if (xStartDst < 0)
+	{
 		width += xStartDst;
 		if (width <= 0)
 			return 0;
 		xStartSrc = -xStartDst;
 		xStartDst = 0;
 	}
-	if (yStartDst < 0) {
+
+	if (yStartDst < 0)
+	{
 		height += yStartDst;
 		if (height <= 0)
 			return 0;
 		yStartSrc = -yStartDst;
 		yStartDst = 0;
 	}
-	if (xStartDst+width >= LUA_SCREEN_WIDTH)
+
+	if (xStartDst + width >= LUA_SCREEN_WIDTH)
 		width = LUA_SCREEN_WIDTH - xStartDst;
-	if (yStartDst+height >= LUA_SCREEN_HEIGHT)
+	if (yStartDst + height >= LUA_SCREEN_HEIGHT)
 		height = LUA_SCREEN_HEIGHT - yStartDst;
 	if (width <= 0 || height <= 0)
-		return 0; // out of screen or invalid size
-
+		return 0;		// out of screen or invalid size
 	gui_prepare();
 
-	const uint8* pix = (const uint8*)(&ptr[yStartSrc*pitch + (xStartSrc*(trueColor?4:1))]);
-	int bytesToNextLine = pitch - (width * (trueColor?4:1));
+	const uint8 *pix = (const uint8 *)(&ptr[yStartSrc * pitch + (xStartSrc * (trueColor ? 4 : 1))]);
+	int bytesToNextLine = pitch - (width * (trueColor ? 4 : 1));
 	if (trueColor)
-		for (int y = yStartDst; y < height+yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine) {
-			for (int x = xStartDst; x < width+xStartDst && x < LUA_SCREEN_WIDTH; x++, pix += 4) {
+	{
+		for (int y = yStartDst; y < height + yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine)
+		{
+			for (int x = xStartDst; x < width + xStartDst && x < LUA_SCREEN_WIDTH; x++, pix += 4)
+			{
 				gui_drawpixel_fast(x, y, LUA_BUILD_PIXEL(opacMap[pix[0]], pix[1], pix[2], pix[3]));
 			}
 		}
+	}
 	else
-		for (int y = yStartDst; y < height+yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine) {
-			for (int x = xStartDst; x < width+xStartDst && x < LUA_SCREEN_WIDTH; x++, pix++) {
+	{
+		for (int y = yStartDst; y < height + yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine)
+		{
+			for (int x = xStartDst; x < width + xStartDst && x < LUA_SCREEN_WIDTH; x++, pix++)
+			{
 				gui_drawpixel_fast(x, y, LUA_BUILD_PIXEL(pal[*pix].a, pal[*pix].r, pal[*pix].g, pal[*pix].b));
 			}
 		}
+	}
 
 	return 0;
 }
-
 
 // function gui.register(function f)
 //
@@ -2174,38 +2410,38 @@ static int gui_gdoverlay(lua_State *L) {
 //  More complicated, but doesn't suffer any frame delays.
 //  Nil will be accepted in place of a function to erase
 //  a previously registered function, and the previous function
+
 //  (if any) is returned, or nil if none.
-static int gui_register(lua_State *L) {
-
+static int gui_register(lua_State *L)
+{
 	// We'll do this straight up.
-
-
 	// First set up the stack.
-	lua_settop(L,1);
-	
+	lua_settop(L, 1);
+
 	// Verify the validity of the entry
-	if (!lua_isnil(L,1))
+	if (!lua_isnil(L, 1))
 		luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	// Get the old value
 	lua_getfield(L, LUA_REGISTRYINDEX, guiCallbackTable);
-	
+
 	// Save the new value
-	lua_pushvalue(L,1);
+	lua_pushvalue(L, 1);
 	lua_setfield(L, LUA_REGISTRYINDEX, guiCallbackTable);
-	
+
 	// The old value is on top of the stack. Return it.
 	return 1;
-
 }
 
 // string gui.popup(string message, [string type = "ok"])
 //
+
 //  Popup dialog!
-int gui_popup(lua_State *L) {
-	const char *message = luaL_checkstring(L, 1);
-	const char *type = luaL_optstring(L, 2, "ok");
-	
+int gui_popup(lua_State *L)
+{
+	const char	*message = luaL_checkstring(L, 1);
+	const char	*type = luaL_optstring(L, 2, "ok");
+
 #if (defined(WIN32) && !defined(SDL))
 	int t;
 	if (strcmp(type, "ok") == 0)
@@ -2218,10 +2454,11 @@ int gui_popup(lua_State *L) {
 		return luaL_error(L, "invalid popup type \"%s\"", type);
 
 	int result = AfxGetApp()->m_pMainWnd->MessageBox(message, "Lua Script Pop-up", t);
-	
-	lua_settop(L,1);
 
-	if (t != MB_OK) {
+	lua_settop(L, 1);
+
+	if (t != MB_OK)
+	{
 		if (result == IDYES)
 			lua_pushstring(L, "yes");
 		else if (result == IDNO)
@@ -2236,18 +2473,15 @@ int gui_popup(lua_State *L) {
 	// else, we don't care.
 	return 0;
 #else
-
-	char *t;
-#ifdef __linux
-
+	char	*t;
+	#ifdef __linux
 	// The Linux backend has a "FromPause" variable.
 	// If set to 1, assume some known external event has screwed with the flow of time.
 	// Since this pauses the emulator waiting for a response, we set it to 1.
 	extern int FromPause;
 	FromPause = 1;
 
-
-	int pid; // appease compiler
+	int pid;	// appease compiler
 
 	// Before doing any work, verify the correctness of the parameters.
 	if (strcmp(type, "ok") == 0)
@@ -2260,35 +2494,35 @@ int gui_popup(lua_State *L) {
 		return luaL_error(L, "invalid popup type \"%s\"", type);
 
 	// Can we find a copy of xmessage? Search the path.
-	
-	char *path = strdup(getenv("PATH"));
+	char	*path = strdup(getenv("PATH"));
 
-	char *current = path;
-	
-	char *colon;
+	char	*current = path;
+
+	char	*colon;
 
 	int found = 0;
 
-	while (current) {
+	while (current)
+	{
 		colon = strchr(current, ':');
-		
+
 		// Clip off the colon.
 		*colon++ = 0;
-		
+
 		int len = strlen(current);
-		char *filename = (char*)malloc(len + 12); // always give excess
-		snprintf(filename, len+12, "%s/xmessage", current);
-		
-		if (access(filename, X_OK) == 0) {
+		char	*filename = (char *)malloc(len + 12);	// always give excess
+		snprintf(filename, len + 12, "%s/xmessage", current);
+
+		if (access(filename, X_OK) == 0)
+		{
 			free(filename);
 			found = 1;
 			break;
 		}
-		
+
 		// Failed, move on.
 		current = colon;
 		free(filename);
-		
 	}
 
 	free(path);
@@ -2298,60 +2532,68 @@ int gui_popup(lua_State *L) {
 		goto use_console;
 
 	pid = fork();
-	if (pid == 0) {// I'm the virgin sacrifice
-	
+	if (pid == 0)
+	{	// I'm the virgin sacrifice
 		// I'm gonna be dead in a matter of microseconds anyways, so wasted memory doesn't matter to me.
 		// Go ahead and abuse strdup.
-		char * parameters[] = {"xmessage", "-buttons", t, strdup(message), NULL};
+		char	*parameters[] = {"xmessage", "-buttons", t, strdup(message), NULL};
 
 		execvp("xmessage", parameters);
-		
+
 		// Aw shitty
 		perror("exec xmessage");
 		exit(1);
 	}
-	else if (pid < 0) // something went wrong!!! Oh hell... use the console
+	else if (pid < 0)	// something went wrong!!! Oh hell... use the console
 		goto use_console;
-	else {
+	else
+	{
 		// We're the parent. Watch for the child.
 		int r;
 		int res = waitpid(pid, &r, 0);
-		if (res < 0) // wtf?
+		if (res < 0)	// wtf?
 			goto use_console;
-		
+
 		// The return value gets copmlicated...
-		if (!WIFEXITED(r)) {
+		if (!WIFEXITED(r))
+		{
 			luaL_error(L, "don't screw with my xmessage process!");
 		}
+
 		r = WEXITSTATUS(r);
-		
+
 		// We assume it's worked.
 		if (r == 0)
 		{
-			return 0; // no parameters for an OK
+			return 0;	// no parameters for an OK
 		}
-		if (r == 100) {
+
+		if (r == 100)
+		{
 			lua_pushstring(L, "yes");
 			return 1;
 		}
-		if (r == 101) {
+
+		if (r == 101)
+		{
 			lua_pushstring(L, "no");
 			return 1;
 		}
-		if (r == 102) {
+
+		if (r == 102)
+		{
 			lua_pushstring(L, "cancel");
 			return 1;
 		}
-		
+
 		// Wtf?
 		return luaL_error(L, "popup failed due to unknown results involving xmessage (%d)", r);
 	}
 
 use_console:
-#endif
+	#endif
 
 	// All else has failed
-
 	if (strcmp(type, "ok") == 0)
 		t = "";
 	else if (strcmp(type, "yesno") == 0)
@@ -2363,23 +2605,28 @@ use_console:
 
 	fprintf(stderr, "Lua Message: %s\n", message);
 
-	while (true) {
+	while (true)
+	{
 		char buffer[64];
 
 		// We don't want parameters
-		if (!t[0]) {
+		if (!t[0])
+		{
 			fprintf(stderr, "[Press Enter]");
 			fgets(buffer, sizeof(buffer), stdin);
+
 			// We're done
 			return 0;
-
 		}
+
 		fprintf(stderr, "(%s): ", t);
 		fgets(buffer, sizeof(buffer), stdin);
-		
+
 		// Check if the option is in the list
-		if (strchr(t, tolower(buffer[0]))) {
-			switch (tolower(buffer[0])) {
+		if (strchr(t, tolower(buffer[0])))
+		{
+			switch (tolower(buffer[0]))
+			{
 			case 'y':
 				lua_pushstring(L, "yes");
 				return 1;
@@ -2391,21 +2638,18 @@ use_console:
 				return 1;
 			default:
 				luaL_error(L, "internal logic error in console based prompts for gui.popup");
-			
 			}
 		}
-		
+
 		// We fell through, so we assume the user answered wrong and prompt again.
-	
 	}
 
 	// Nothing here, since the only way out is in the loop.
 #endif
-
 }
 
 #if (defined(WIN32) && !defined(SDL))
-const char* s_keyToName[256] =
+const char	*s_keyToName[256] =
 {
 	NULL,
 	"leftclick",
@@ -2423,7 +2667,7 @@ const char* s_keyToName[256] =
 	"enter",
 	NULL,
 	NULL,
-	"shift", // 0x10
+	"shift",			// 0x10
 	"control",
 	"alt",
 	"pause",
@@ -2439,7 +2683,7 @@ const char* s_keyToName[256] =
 	NULL,
 	NULL,
 	NULL,
-	"space", // 0x20
+	"space",			// 0x20
 	"pageup",
 	"pagedown",
 	"end",
@@ -2481,12 +2725,12 @@ const char* s_keyToName[256] =
 	NULL,
 	"numlock",
 	"scrolllock",
-	NULL, // 0x92
+	NULL,	// 0x92
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, // 0xB9
+	NULL,	// 0xB9
 	"semicolon",
 	"plus",
 	"comma",
@@ -2494,17 +2738,16 @@ const char* s_keyToName[256] =
 	"period",
 	"slash",
 	"tilde",
-	NULL, // 0xC1
+	NULL,	// 0xC1
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, // 0xDA
+	NULL,	// 0xDA
 	"leftbracket",
 	"backslash",
 	"rightbracket",
 	"quote",
 };
-
 #endif
 
 // input.get()
@@ -2513,25 +2756,27 @@ const char* s_keyToName[256] =
 // for example:
 //   if the user is holding the W key and the left mouse button
 //   and has the mouse at the bottom-right corner of the game screen,
+
 //   then this would return {W=true, leftclick=true, xmouse=255, ymouse=223}
-static int input_getcurrentinputstatus(lua_State *L) {
+static int input_getcurrentinputstatus(lua_State *L)
+{
 	lua_newtable(L);
 
 #if (defined(WIN32) && !defined(SDL))
 	// keyboard and mouse button status
 	{
-		unsigned char keys [256];
-		if(true /*!GUI.BackgroundInput*/) // TODO: background input
+		unsigned char keys[256];
+		if (true /*!GUI.BackgroundInput*/ ) // TODO: background input
 		{
-			if(GetKeyboardState(keys))
+			if (GetKeyboardState(keys))
 			{
-				for(int i = 1; i < 255; i++)
+				for (int i = 1; i < 255; i++)
 				{
 					int mask = (i == VK_CAPITAL || i == VK_NUMLOCK || i == VK_SCROLL) ? 0x01 : 0x80;
-					if(keys[i] & mask)
+					if (keys[i] & mask)
 					{
-						const char* name = s_keyToName[i];
-						if(name)
+						const char	*name = s_keyToName[i];
+						if (name)
 						{
 							lua_pushboolean(L, true);
 							lua_setfield(L, -2, name);
@@ -2540,19 +2785,19 @@ static int input_getcurrentinputstatus(lua_State *L) {
 				}
 			}
 		}
-		else // use a slightly different method that will detect background input:
+		else	// use a slightly different method that will detect background input:
 		{
-			for(int i = 1; i < 255; i++)
+			for (int i = 1; i < 255; i++)
 			{
-				const char* name = s_keyToName[i];
-				if(name)
+				const char	*name = s_keyToName[i];
+				if (name)
 				{
 					int active;
-					if(i == VK_CAPITAL || i == VK_NUMLOCK || i == VK_SCROLL)
+					if (i == VK_CAPITAL || i == VK_NUMLOCK || i == VK_SCROLL)
 						active = GetKeyState(i) & 0x01;
 					else
 						active = GetAsyncKeyState(i) & 0x8000;
-					if(active)
+					if (active)
 					{
 						lua_pushboolean(L, true);
 						lua_setfield(L, -2, name);
@@ -2561,13 +2806,15 @@ static int input_getcurrentinputstatus(lua_State *L) {
 			}
 		}
 	}
+
 	// mouse position in game screen pixel coordinates
 	{
 		POINT mouse;
 
 		int xofs = 0, yofs = 0, width = 240, height = 160;
-		if (!vbaRunsGBA()) {
-			if(gbBorderOn)
+		if (!vbaRunsGBA())
+		{
+			if (gbBorderOn)
 				width = 256, height = 224, xofs = 48, yofs = 40;
 			else
 				width = 160, height = 144;
@@ -2580,55 +2827,69 @@ static int input_getcurrentinputstatus(lua_State *L) {
 		// with no aspect rate correction, or something like that.
 		RECT clientRect;
 		AfxGetApp()->m_pMainWnd->GetClientRect(&clientRect);
+
 		int wndWidth = clientRect.right - clientRect.left;
 		int wndHeight = clientRect.bottom - clientRect.top;
-		mouse.x = (LONG)(mouse.x * ((float) width / wndWidth)) - xofs;
-		mouse.y = (LONG)(mouse.y * ((float) height / wndHeight)) - yofs;
+		mouse.x = (LONG) (mouse.x * ((float)width / wndWidth)) - xofs;
+		mouse.y = (LONG) (mouse.y * ((float)height / wndHeight)) - yofs;
 
 		lua_pushinteger(L, mouse.x);
 		lua_setfield(L, -2, "xmouse");
 		lua_pushinteger(L, mouse.y);
 		lua_setfield(L, -2, "ymouse");
 	}
+
 #else
 	// NYI (well, return an empty table)
 #endif
-
 	return 1;
 }
 
 // same as math.random, but uses SFMT instead of C rand()
 // FIXME: this function doesn't care multi-instance,
+
 //        original math.random either though (Lua 5.1)
-static int sfmt_random (lua_State *L) {
+static int sfmt_random(lua_State *L)
+{
 	lua_Number r = (lua_Number) genrand_real2();
-	switch (lua_gettop(L)) {  // check number of arguments
-		case 0: {  // no arguments
-			lua_pushnumber(L, r);  // Number between 0 and 1
+	switch (lua_gettop(L))
+	{		// check number of arguments
+	case 0:
+		{	// no arguments
+			lua_pushnumber(L, r);	// Number between 0 and 1
 			break;
 		}
-		case 1: {  // only upper limit
+
+	case 1:
+		{	// only upper limit
 			int u = luaL_checkint(L, 1);
-			luaL_argcheck(L, 1<=u, 1, "interval is empty");
-			lua_pushnumber(L, floor(r*u)+1);  // int between 1 and `u'
+			luaL_argcheck(L, 1 <= u, 1, "interval is empty");
+			lua_pushnumber(L, floor(r * u) + 1);	// int between 1 and `u'
 			break;
 		}
-		case 2: {  // lower and upper limits
+
+	case 2:
+		{	// lower and upper limits
 			int l = luaL_checkint(L, 1);
 			int u = luaL_checkint(L, 2);
-			luaL_argcheck(L, l<=u, 2, "interval is empty");
-			lua_pushnumber(L, floor(r*(u-l+1))+l);  // int between `l' and `u'
+			luaL_argcheck(L, l <= u, 2, "interval is empty");
+			lua_pushnumber(L, floor(r * (u - l + 1)) + l);	// int between `l' and `u'
 			break;
 		}
-		default: return luaL_error(L, "wrong number of arguments");
+
+	default:
+		return luaL_error(L, "wrong number of arguments");
 	}
+
 	return 1;
 }
 
 // same as math.randomseed, but uses SFMT instead of C srand()
 // FIXME: this function doesn't care multi-instance,
+
 //        original math.randomseed either though (Lua 5.1)
-static int sfmt_randomseed (lua_State *L) {
+static int sfmt_randomseed(lua_State *L)
+{
 	init_gen_rand(luaL_checkint(L, 1));
 	return 0;
 }
@@ -2638,73 +2899,80 @@ static int sfmt_randomseed (lua_State *L) {
 //  Since Lua doesn't provide binary, I provide this function.
 //  Does a full binary AND on all parameters and returns the result.
 //  A single element is okay, and it's returned straight, but it does you
+
 //  little good.
-static int base_AND(lua_State *L) {
+static int base_AND(lua_State *L)
+{
 	int count = lua_gettop(L);
-	
+
 	if (count == 0)
 		luaL_error(L, "Binary AND called empty.");
-	
-	int result = luaL_checkinteger(L,1);
+
+	int result = luaL_checkinteger(L, 1);
 	int i;
-	for (i=2; i <= count; i++)
-		result &= luaL_checkinteger(L,i);
-	lua_settop(L,0);
+	for (i = 2; i <= count; i++)
+		result &= luaL_checkinteger(L, i);
+	lua_settop(L, 0);
 	lua_pushinteger(L, result);
 	return 1;
 }
 
-
 // int OR(int one, int two, ..., int n)
 //
+
 //   ..and similarly for a binary OR
-static int base_OR(lua_State *L) {
+static int base_OR(lua_State *L)
+{
 	int count = lua_gettop(L);
-	
+
 	if (count == 0)
 		luaL_error(L, "Binary OR called empty.");
-	
-	int result = luaL_checkinteger(L,1);
+
+	int result = luaL_checkinteger(L, 1);
 	int i;
-	for (i=2; i <= count; i++)
-		result |= luaL_checkinteger(L,i);
-	lua_settop(L,0);
+	for (i = 2; i <= count; i++)
+		result |= luaL_checkinteger(L, i);
+	lua_settop(L, 0);
 	lua_pushinteger(L, result);
 	return 1;
 }
 
 // int XOR(int one, int two, ..., int n)
 //
+
 //   ..and so on
-static int base_XOR(lua_State *L) {
+static int base_XOR(lua_State *L)
+{
 	int count = lua_gettop(L);
-	
+
 	if (count == 0)
 		luaL_error(L, "Binary XOR called empty.");
-	
-	int result = luaL_checkinteger(L,1);
+
+	int result = luaL_checkinteger(L, 1);
 	int i;
-	for (i=2; i <= count; i++)
-		result ^= luaL_checkinteger(L,i);
-	lua_settop(L,0);
+	for (i = 2; i <= count; i++)
+		result ^= luaL_checkinteger(L, i);
+	lua_settop(L, 0);
 	lua_pushinteger(L, result);
 	return 1;
 }
 
-static int base_SHIFT(lua_State *L) {
-	int num = luaL_checkinteger(L,1);
-	int shift = luaL_checkinteger(L,2);
-	if(shift < 0)
+static int base_SHIFT(lua_State *L)
+{
+	int num = luaL_checkinteger(L, 1);
+	int shift = luaL_checkinteger(L, 2);
+	if (shift < 0)
 		num <<= -shift;
 	else
 		num >>= shift;
-	lua_settop(L,0);
-	lua_pushinteger(L,num);
+	lua_settop(L, 0);
+	lua_pushinteger(L, num);
 	return 1;
 }
 
-static int base_BIT(lua_State *L) {
-	int bit = luaL_checkinteger(L,1);
+static int base_BIT(lua_State *L)
+{
+	int bit = luaL_checkinteger(L, 1);
 	if (bit < 0 || bit > 30)
 		luaL_error(L, "range is 0 to 30 inclusive");
 	lua_settop(L, 0);
@@ -2712,40 +2980,44 @@ static int base_BIT(lua_State *L) {
 	return 1;
 }
 
-
-
 // The function called periodically to ensure Lua doesn't run amok.
-static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg) {
-	
-	if (numTries-- == 0) {
-
+static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg)
+{
+	if (numTries-- == 0)
+	{
 		int kill = 0;
 
 #if (defined(WIN32) && !defined(SDL))
 		// Uh oh
-		int ret = AfxGetApp()->m_pMainWnd->MessageBox("The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)", "Lua Script Gone Nuts?", MB_YESNO);
-		
-		if (ret == IDYES) {
+		int ret = AfxGetApp()->m_pMainWnd->MessageBox("The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)",
+												  "Lua Script Gone Nuts?", MB_YESNO);
+
+		if (ret == IDYES)
+		{
 			kill = 1;
 		}
 
 #else
-		fprintf(stderr, "The Lua script running has been running a long time.\nIt may have gone crazy. Kill it? (I won't ask again if you say No)\n");
+		fprintf(stderr,
+				"The Lua script running has been running a long time.\nIt may have gone crazy. Kill it? (I won't ask again if you say No)\n");
+
 		char buffer[64];
-		while (true) {
+		while (true)
+		{
 			fprintf(stderr, "(y/n): ");
 			fgets(buffer, sizeof(buffer), stdin);
-			if (buffer[0] == 'y' || buffer[0] == 'Y') {
+			if (buffer[0] == 'y' || buffer[0] == 'Y')
+			{
 				kill = 1;
 				break;
 			}
-			
+
 			if (buffer[0] == 'n' || buffer[0] == 'N')
 				break;
 		}
 #endif
-
-		if (kill) {
+		if (kill)
+		{
 			luaL_error(L, "Killed by user request.");
 			VBALuaOnStop();
 		}
@@ -2753,14 +3025,11 @@ static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg) {
 		// else, kill the debug hook.
 		lua_sethook(L, NULL, 0, 0);
 	}
-	
-
 }
 
+static const struct luaL_reg vbalib[] = {
 
-static const struct luaL_reg vbalib [] = {
-
-//	{"speedmode", vba_speedmode},	// TODO: NYI
+	//	{"speedmode", vba_speedmode},	// TODO: NYI
 	{"frameadvance", vba_frameadvance},
 	{"pause", vba_pause},
 	{"framecount", vba_framecount},
@@ -2773,7 +3042,7 @@ static const struct luaL_reg vbalib [] = {
 	{NULL,NULL}
 };
 
-static const struct luaL_reg memorylib [] = {
+static const struct luaL_reg memorylib[] = {
 
 	{"readbyte", memory_readbyte},
 	{"readbytesigned", memory_readbytesigned},
@@ -2785,6 +3054,7 @@ static const struct luaL_reg memorylib [] = {
 	{"writebyte", memory_writebyte},
 	{"writeword", memory_writeword},
 	{"writedword", memory_writedword},
+
 	// alternate naming scheme for word and double-word and unsigned
 	{"readbyteunsigned", memory_readbyte},
 	{"readwordunsigned", memory_readword},
@@ -2800,6 +3070,7 @@ static const struct luaL_reg memorylib [] = {
 
 	// memory hooks
 	{"registerwrite", memory_registerwrite},
+
 	// alternate names
 	{"register", memory_registerwrite},
 
@@ -2809,6 +3080,7 @@ static const struct luaL_reg memorylib [] = {
 static const struct luaL_reg joypadlib[] = {
 	{"get", joypad_get},
 	{"set", joypad_set},
+
 	// alternative names
 	{"read", joypad_get},
 	{"write", joypad_set},
@@ -2841,7 +3113,6 @@ static const struct luaL_reg movielib[] = {
 
 };
 
-
 static const struct luaL_reg guilib[] = {
 	{"register", gui_register},
 	{"text", gui_text},
@@ -2856,6 +3127,7 @@ static const struct luaL_reg guilib[] = {
 	{"popup", gui_popup},
 	{"gdscreenshot", gui_gdscreenshot},
 	{"gdoverlay", gui_gdoverlay},
+
 	// alternative names
 	{"drawtext", gui_text},
 	{"drawbox", gui_drawbox},
@@ -2873,31 +3145,33 @@ static const struct luaL_reg guilib[] = {
 
 static const struct luaL_reg inputlib[] = {
 	{"get", input_getcurrentinputstatus},
+
 	// alternative names
 	{"read", input_getcurrentinputstatus},
 	{NULL, NULL}
 };
 
-void HandleCallbackError(lua_State* L)
+void HandleCallbackError(lua_State *L)
 {
-	if(L->errfunc || L->errorJmp)
-		luaL_error(L, "%s", lua_tostring(L,-1));
-	else {
+	if (L->errfunc || L->errorJmp)
+		luaL_error(L, "%s", lua_tostring(L, -1));
+	else
+	{
 		lua_pushnil(LUA);
 		lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
 
 		// Error?
 #if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA,-1), "Lua run error", MB_OK | MB_ICONSTOP);
+		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua run error", MB_OK | MB_ICONSTOP);
 #else
-		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(LUA,-1));
+		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(LUA, -1));
 #endif
-
 		VBALuaStop();
 	}
 }
 
-void CallExitFunction() {
+void CallExitFunction(void)
+{
 	if (!LUA)
 		return;
 
@@ -2917,7 +3191,8 @@ void CallExitFunction() {
 void CallRegisteredLuaFunctions(LuaCallID calltype)
 {
 	assert((unsigned int)calltype < (unsigned int)LUACALL_COUNT);
-	const char* idstring = luaCallIDStrings[calltype];
+
+	const char	*idstring = luaCallIDStrings[calltype];
 
 	if (!LUA)
 		return;
@@ -2938,18 +3213,18 @@ void CallRegisteredLuaFunctions(LuaCallID calltype)
 	}
 }
 
-void VBALuaFrameBoundary() {
-
-//	printf("Lua Frame\n");
-
+void VBALuaFrameBoundary(void)
+{
+	//	printf("Lua Frame\n");
 	// HA!
 	if (!LUA || !luaRunning)
 		return;
 
 	// Our function needs calling
-	lua_settop(LUA,0);
+	lua_settop(LUA, 0);
 	lua_getfield(LUA, LUA_REGISTRYINDEX, frameAdvanceThread);
-	lua_State *thread = lua_tothread(LUA,1);	
+
+	lua_State	*thread = lua_tothread(LUA, 1);
 
 	// Lua calling C must know that we're busy inside a frame boundary
 	frameBoundary = true;
@@ -2958,11 +3233,15 @@ void VBALuaFrameBoundary() {
 	lua_joypads_used = 0;
 
 	numTries = 1000;
+
 	int result = lua_resume(thread, 0);
-	
-	if (result == LUA_YIELD) {
+
+	if (result == LUA_YIELD)
+	{
 		// Okay, we're fine with that.
-	} else if (result != 0) {
+	}
+	else if (result != 0)
+	{
 		// Done execution by bad causes
 		VBALuaOnStop();
 		lua_pushnil(LUA);
@@ -2972,11 +3251,13 @@ void VBALuaFrameBoundary() {
 
 		// Error?
 #if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(thread,-1), "Lua run error", MB_OK | MB_ICONSTOP);
+		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(thread, -1), "Lua run error", MB_OK | MB_ICONSTOP);
 #else
-		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(thread,-1));
+		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(thread, -1));
 #endif
-	} else {
+	}
+	else
+	{
 		VBALuaOnStop();
 		printf("Script died of natural causes.\n");
 	}
@@ -2985,10 +3266,10 @@ void VBALuaFrameBoundary() {
 	// not do anything too stupid, so let ourselves know.
 	frameBoundary = false;
 
-	if (!frameAdvanceWaiting) {
+	if (!frameAdvanceWaiting)
+	{
 		VBALuaOnStop();
 	}
-
 }
 
 /**
@@ -2998,16 +3279,19 @@ void VBALuaFrameBoundary() {
  *
  * Returns true on success, false on failure.
  */
-int VBALoadLuaCode(const char *filename) {
+int VBALoadLuaCode(const char *filename)
+{
 	static bool sfmtInitialized = false;
-	if (!sfmtInitialized) {
-		init_gen_rand((unsigned) time(NULL));
+	if (!sfmtInitialized)
+	{
+		init_gen_rand((unsigned)time(NULL));
 		sfmtInitialized = true;
 	}
 
 	if (filename != luaScriptName)
 	{
-		if (luaScriptName) free(luaScriptName);
+		if (luaScriptName)
+			free(luaScriptName);
 		luaScriptName = strdup(filename);
 	}
 
@@ -3022,12 +3306,14 @@ int VBALoadLuaCode(const char *filename) {
 	backslash = strrchr(dir, '\\');
 	if (!slash || (backslash && backslash < slash))
 		slash = backslash;
-	if (slash) {
-		slash[1] = '\0';    // keep slash itself for some reasons
+	if (slash)
+	{
+		slash[1] = '\0';		// keep slash itself for some reasons
 		_chdir(dir);
 	}
 
-	if (!LUA) {
+	if (!LUA)
+	{
 		LUA = lua_open();
 		luaL_openlibs(LUA);
 
@@ -3038,8 +3324,7 @@ int VBALoadLuaCode(const char *filename) {
 		luaL_register(LUA, "movie", movielib);
 		luaL_register(LUA, "gui", guilib);
 		luaL_register(LUA, "input", inputlib);
-		lua_settop(LUA, 0); // clean the stack, because each call to luaL_register leaves a table on top
-
+		lua_settop(LUA, 0);		// clean the stack, because each call to luaL_register leaves a table on top
 		lua_register(LUA, "AND", base_AND);
 		lua_register(LUA, "OR", base_OR);
 		lua_register(LUA, "XOR", base_XOR);
@@ -3060,43 +3345,40 @@ int VBALoadLuaCode(const char *filename) {
 
 	// We make our thread NOW because we want it at the bottom of the stack.
 	// If all goes wrong, we let the garbage collector remove it.
-	lua_State *thread = lua_newthread(LUA);
+	lua_State	*thread = lua_newthread(LUA);
 
 	// Load the data	
-	int result = luaL_loadfile(LUA,filename);
+	int result = luaL_loadfile(LUA, filename);
 
-	if (result) {
+	if (result)
+	{
 #if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA,-1), "Lua load error", MB_OK | MB_ICONSTOP);
+		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua load error", MB_OK | MB_ICONSTOP);
 #else
-		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA,-1));
+		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA, -1));
 #endif
 
 		// Wipe the stack. Our thread
-		lua_settop(LUA,0);
-		return 0; // Oh shit.
+		lua_settop(LUA, 0);
+		return 0;				// Oh shit.
 	}
 
-	
 	// Get our function into it
 	lua_xmove(LUA, thread, 1);
-	
+
 	// Save the thread to the registry. This is why I make the thread FIRST.
 	lua_setfield(LUA, LUA_REGISTRYINDEX, frameAdvanceThread);
-	
 
 	// Initialize settings
 	luaRunning = true;
 	skipRerecords = false;
 	transparencyModifier = 255; // opaque
-	lua_joypads_used = 0; // not used
-
+	lua_joypads_used = 0;		// not used
 	wasPaused = vbaIsPaused();
 	vbaSetPause(false);
 
 	// And run it right now. :)
 	//VBALuaFrameBoundary();
-
 	// Set up our protection hook to be executed once every 10,000 bytecode instructions.
 	lua_sethook(thread, VBALuaHookFunction, LUA_MASKCOUNT, 10000);
 
@@ -3107,9 +3389,10 @@ int VBALoadLuaCode(const char *filename) {
 /**
  * Equivalent to repeating the last VBALoadLuaCode() call.
  */
-int VBAReloadLuaCode()
+int VBAReloadLuaCode(void)
 {
-	if (!luaScriptName) {
+	if (!luaScriptName)
+	{
 		systemScreenMessage("There's no script to reload.");
 		return 0;
 	}
@@ -3123,22 +3406,22 @@ int VBAReloadLuaCode()
  * Always safe to call, except from within a lua call itself (duh).
  *
  */
-void VBALuaStop() {
+void VBALuaStop(void)
+{
 	//already killed
-	if (!LUA) return;
+	if (!LUA)
+		return;
 
 	//execute the user's shutdown callbacks
 	CallExitFunction();
 
 	//sometimes iup uninitializes com
 	//MBG TODO - test whether this is really necessary. i dont think it is
-	#if (defined(WIN32) && !defined(SDL))
+#if (defined(WIN32) && !defined(SDL))
 	CoInitialize(0);
-	#endif
+#endif
 
 	//lua_gc(LUA,LUA_GCCOLLECT,0);
-
-
 	lua_close(LUA); // this invokes our garbage collectors for us
 	LUA = NULL;
 	VBALuaOnStop();
@@ -3148,17 +3431,18 @@ void VBALuaStop() {
  * Returns true if there is a Lua script running.
  *
  */
-int VBALuaRunning() {
+int VBALuaRunning(void)
+{
 	return LUA && luaRunning;
 }
-
 
 /**
  * Returns true if Lua would like to steal the given joypad control.
  *
  * Range is 0 through 3
  */
-int VBALuaUsingJoypad(int which) {
+int VBALuaUsingJoypad(int which)
+{
 	if (which < 0 || which > 3)
 		which = vbaDefaultJoypad();
 	return lua_joypads_used & (1 << which);
@@ -3171,9 +3455,11 @@ int VBALuaUsingJoypad(int which) {
  * <del>This function must not be called more than once per frame. </del>Ideally exactly once
  * per frame (if VBALuaUsingJoypad says it's safe to do so)
  */
-int VBALuaReadJoypad(int which) {
+int VBALuaReadJoypad(int which)
+{
 	if (which < 0 || which > 3)
 		which = vbaDefaultJoypad();
+
 	//lua_joypads_used &= ~(1 << which);
 	return lua_joypads[which];
 }
@@ -3184,28 +3470,31 @@ int VBALuaReadJoypad(int which) {
  *
  * This function will not return true if a script is not running.
  */
-bool8 VBALuaRerecordCountSkip() {
+bool8 VBALuaRerecordCountSkip(void)
+{
 	return LUA && luaRunning && skipRerecords;
 }
-
 
 /**
  * Given a screen with the indicated resolution,
  * draw the current GUI onto it.
  */
-void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
-
+void VBALuaGui(uint8 *screen, int ppl, int width, int height)
+{
 	if (!LUA || !luaRunning)
 		return;
 
 	// First, check if we're being called by anybody
 	lua_getfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
-	
-	if (lua_isfunction(LUA, -1)) {
+
+	if (lua_isfunction(LUA, -1))
+	{
 		// We call it now
 		numTries = 1000;
+
 		int ret = lua_pcall(LUA, 0, 0, 0);
-		if (ret != 0) {
+		if (ret != 0)
+		{
 			// This is grounds for trashing the function
 			// Note: This must be done before the messagebox pops up,
 			//       otherwise the messagebox will cause a paint event which causes a weird
@@ -3230,9 +3519,10 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 
 	gui_used = false;
 
-	int x,y;
+	int x, y;
+
 	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
-	int pitch = ppl*(systemColorDepth/8)+(systemColorDepth==24?0:4);
+	int pitch = ppl * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
 	if (width > LUA_SCREEN_WIDTH)
 		width = LUA_SCREEN_WIDTH;
@@ -3243,43 +3533,50 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height) {
 	SetColorFunc setColor;
 	getColorIOFunc(systemColorDepth, &getColor, &setColor);
 
-	for (y = 0; y < height; y++) {
-		uint8 *scr = &screen[y*pitch];
-		for (x = 0; x < width; x++, scr += systemColorDepth/8) {
-			const uint8 gui_alpha = gui_data[(y*LUA_SCREEN_WIDTH+x)*4+3];
-			const uint8 gui_red   = gui_data[(y*LUA_SCREEN_WIDTH+x)*4+2];
-			const uint8 gui_green = gui_data[(y*LUA_SCREEN_WIDTH+x)*4+1];
-			const uint8 gui_blue  = gui_data[(y*LUA_SCREEN_WIDTH+x)*4];
+	for (y = 0; y < height; y++)
+	{
+		uint8	*scr = &screen[y * pitch];
+		for (x = 0; x < width; x++, scr += systemColorDepth / 8)
+		{
+			const uint8 gui_alpha = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 3];
+			const uint8 gui_red = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 2];
+			const uint8 gui_green = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 1];
+			const uint8 gui_blue = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4];
 			uint8 scr_red, scr_green, scr_blue;
 			int red, green, blue;
 
 			getColor(scr, &scr_red, &scr_green, &scr_blue);
 
-			if (gui_alpha == 0) {
+			if (gui_alpha == 0)
+			{
 				// do nothing
 				red = scr_red;
 				green = scr_green;
 				blue = scr_blue;
 			}
-			else if (gui_alpha == 255) {
+			else if (gui_alpha == 255)
+			{
 				// direct copy
 				red = gui_red;
 				green = gui_green;
 				blue = gui_blue;
 			}
-			else {
+			else
+			{
 				// alpha-blending
-				red   = (((int) gui_red   - scr_red)   * gui_alpha / 255 + scr_red)   & 255;
-				green = (((int) gui_green - scr_green) * gui_alpha / 255 + scr_green) & 255;
-				blue  = (((int) gui_blue  - scr_blue)  * gui_alpha / 255 + scr_blue)  & 255;
+				red = (((int)gui_red - scr_red) * gui_alpha / 255 + scr_red) & 255;
+				green = (((int)gui_green - scr_green) * gui_alpha / 255 + scr_green) & 255;
+				blue = (((int)gui_blue - scr_blue) * gui_alpha / 255 + scr_blue) & 255;
 			}
 
 			setColor(scr, (uint8) red, (uint8) green, (uint8) blue);
 		}
 	}
+
 	return;
 }
 
-void VBALuaClearGui() {
+void VBALuaClearGui(void)
+{
 	gui_used = false;
 }

@@ -20,6 +20,13 @@
 #ifndef VBA_FLASH_H
 #define VBA_FLASH_H
 
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "zlib.h"
+#include "Port.h"
+
 extern void flashSaveGame(gzFile gzFile);
 extern void flashReadGame(gzFile gzFile, int version);
 extern u8 flashRead(u32 address);
@@ -31,4 +38,5 @@ extern void flashErase();
 extern void flashSetSize(int size);
 
 extern int32 flashSize;
+
 #endif // VBA_FLASH_H

@@ -16,17 +16,18 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "GBA.h"
+#include "System.h"
 #include "Flash.h"
 #include "Sram.h"
 
 u8 sramRead(u32 address)
 {
-  return flashSaveMemory[address & 0xFFFF];
+	return flashSaveMemory[address & 0xFFFF];
 }
 
 void sramWrite(u32 address, u8 byte)
 {
-  flashSaveMemory[address & 0xFFFF] = byte;
-  systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
+	flashSaveMemory[address & 0xFFFF] = byte;
+	systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
 }
+

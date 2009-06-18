@@ -1,116 +1,110 @@
 // MovieOpen.cpp : implementation file
 //
 
-#include "../Port.h"
 #include "stdafx.h"
 #include "resource.h"
-#include "../GBA.h"
 #include "MovieOpen.h"
-#include "../movie.h"
-#include "mainwnd.h"
-#include "filedlg.h"
+#include "MainWnd.h"
+#include "FileDlg.h"
 #include "WinResUtil.h"
 #include "VBA.h"
+
+#include "../GBA.h"
 #include "../gb/gbGlobals.h"
 #include "../Util.h"
-#include "../GBAinline.h"
-#include "movieOpen.h"
 
 // MovieOpen dialog
 
 IMPLEMENT_DYNAMIC(MovieOpen, CDialog)
-MovieOpen::MovieOpen(CWnd* pParent /*=NULL*/)
+MovieOpen::MovieOpen(CWnd*pParent /*=NULL*/)
 	: CDialog(MovieOpen::IDD, pParent)
-{
-}
+{}
 
 MovieOpen::~MovieOpen()
+{}
+
+BOOL MovieOpen::OnInitDialog()
 {
+	CDialog::OnInitDialog();
+
+	GetDlgItem(IDC_CHECK_HIDEBORDER)->ShowWindow(FALSE);
+	GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText("");
+	GetDlgItem(IDC_LABEL_WARNING2)->SetWindowText("");
+	GetDlgItem(IDC_EDIT_PAUSEFRAME)->SetWindowText("");
+	GetDlgItem(IDC_EDIT_PAUSEFRAME)->EnableWindow(FALSE);
+	GetDlgItem(IDC_CHECK_PAUSEFRAME)->EnableWindow(FALSE);
+
+	CheckDlgButton(IDC_READONLY, theApp.movieReadOnly);
+	m_editDescription.SetReadOnly(theApp.movieReadOnly);
+
+	// convert the ROM filename into a default movie name
+	{
+		extern char *regQueryStringValue(const char *key, char *def); // from Reg.cpp
+		CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
+
+		if (capdir.IsEmpty())
+			capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
+
+		char str [_MAX_PATH];
+		strcpy(str, theApp.filename);
+		strcat(str, ".vbm");
+		char *strPtr = strrchr(str, (int)'\\');
+		if (strPtr == NULL)
+			strPtr = str;
+
+		movieName = capdir + strPtr;
+
+		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
+	}
+
+	m_editFilename.LimitText(_MAX_PATH);
+	m_editAuthor.LimitText(MOVIE_METADATA_AUTHOR_SIZE);
+	m_editDescription.LimitText(MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
+	m_editPauseFrame.LimitText(8);
+
+	OnBnClickedMovieRefresh();
+
+	return TRUE; // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
-BOOL MovieOpen::OnInitDialog() 
-{
-  CDialog::OnInitDialog();
-
-  GetDlgItem(IDC_CHECK_HIDEBORDER)->ShowWindow(FALSE);
-  GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText("");
-  GetDlgItem(IDC_LABEL_WARNING2)->SetWindowText("");
-  GetDlgItem(IDC_EDIT_PAUSEFRAME)->SetWindowText("");
-  GetDlgItem(IDC_EDIT_PAUSEFRAME)->EnableWindow(FALSE);
-  GetDlgItem(IDC_CHECK_PAUSEFRAME)->EnableWindow(FALSE);
-
-  CheckDlgButton(IDC_READONLY, theApp.movieReadOnly);
-  m_editDescription.SetReadOnly(theApp.movieReadOnly);
-
-  // convert the ROM filename into a default movie name
-  {
-	extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
-	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
-	  
-	if(capdir.IsEmpty())
-		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-	char str [_MAX_PATH];
-	strcpy(str, theApp.filename);
-	strcat(str, ".vbm");
-	char * strPtr = strrchr(str, (int)'\\');
-	if(strPtr == NULL)
-		strPtr = str;
-
-	movieName = capdir + strPtr;
-
-    GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
-  }
-
-  m_editFilename.LimitText(_MAX_PATH);
-  m_editAuthor.LimitText(MOVIE_METADATA_AUTHOR_SIZE);
-  m_editDescription.LimitText(MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
-  m_editPauseFrame.LimitText(8);
-
-  OnBnClickedMovieRefresh();
-
-  return TRUE;  // return TRUE unless you set the focus to a control
-  // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void MovieOpen::DoDataExchange(CDataExchange* pDX)
+void MovieOpen::DoDataExchange(CDataExchange*pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(MovieCreate)
-    DDX_Control(pDX, IDC_EDIT_AUTHOR, m_editAuthor);
-    DDX_Control(pDX, IDC_EDIT_DESCRIPTION, m_editDescription);
-    DDX_Control(pDX, IDC_MOVIE_FILENAME, m_editFilename);
-    DDX_Control(pDX, IDC_EDIT_PAUSEFRAME, m_editPauseFrame);
+	DDX_Control(pDX, IDC_EDIT_AUTHOR, m_editAuthor);
+	DDX_Control(pDX, IDC_EDIT_DESCRIPTION, m_editDescription);
+	DDX_Control(pDX, IDC_MOVIE_FILENAME, m_editFilename);
+	DDX_Control(pDX, IDC_EDIT_PAUSEFRAME, m_editPauseFrame);
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(MovieOpen, CDialog)
-	ON_BN_CLICKED(IDC_BROWSE, OnBnClickedBrowse)
-	ON_BN_CLICKED(IDOK, OnBnClickedOk)
-	ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
-	ON_BN_CLICKED(IDC_MOVIE_REFRESH, OnBnClickedMovieRefresh)
-	ON_BN_CLICKED(IDC_READONLY, OnBnClickedReadonly)
-	ON_BN_CLICKED(IDC_CHECK_PAUSEFRAME, OnBnClickedCheckPauseframe)
-	ON_BN_CLICKED(IDC_CHECK_HIDEBORDER, OnBnClickedHideborder)
-	ON_EN_CHANGE(IDC_MOVIE_FILENAME, OnEnChangeMovieFilename)
-END_MESSAGE_MAP() 
-
+ON_BN_CLICKED(IDC_BROWSE, OnBnClickedBrowse)
+ON_BN_CLICKED(IDOK, OnBnClickedOk)
+ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
+ON_BN_CLICKED(IDC_MOVIE_REFRESH, OnBnClickedMovieRefresh)
+ON_BN_CLICKED(IDC_READONLY, OnBnClickedReadonly)
+ON_BN_CLICKED(IDC_CHECK_PAUSEFRAME, OnBnClickedCheckPauseframe)
+ON_BN_CLICKED(IDC_CHECK_HIDEBORDER, OnBnClickedHideborder)
+ON_EN_CHANGE(IDC_MOVIE_FILENAME, OnEnChangeMovieFilename)
+END_MESSAGE_MAP()
 
 // MovieOpen message handlers
 
 void MovieOpen::OnBnClickedBrowse()
 {
-	extern char *regQueryStringValue(const char * key, char *def); // from Reg.cpp
+	extern char *regQueryStringValue(const char *key, char *def);  // from Reg.cpp
 	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
-	  
-	if(capdir.IsEmpty())
+
+	if (capdir.IsEmpty())
 		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
 
 	CString filename = "";
-	if (emulating) {
+	if (emulating)
+	{
 		filename = theApp.szFile;
-		int slash = filename.ReverseFind('/');
+		int slash     = filename.ReverseFind('/');
 		int backslash = filename.ReverseFind('\\');
 		if (slash == -1 || (backslash != -1 && backslash > slash))
 			slash = backslash;
@@ -123,13 +117,14 @@ void MovieOpen::OnBnClickedBrowse()
 	}
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
-	CString title = winResLoadString(IDS_SELECT_MOVIE_NAME);
+	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
 	LPCTSTR exts[] = { ".vbm" };
 
 	FileDlg dlg(this, filename, filter, 1, "vbm", exts, capdir, title, false, true);
-	  
-	if(dlg.DoModal() == IDCANCEL) {
+
+	if (dlg.DoModal() == IDCANCEL)
+	{
 		return;
 	}
 
@@ -145,23 +140,25 @@ u16 checksumBIOS()
 {
 	bool hasBIOS = false;
 	u8 * tempBIOS;
-	if(theApp.useBiosFile)
+	if (theApp.useBiosFile)
 	{
 		tempBIOS = (u8 *)malloc(0x4000);
-		int size = 0x4000;
-		extern bool CPUIsGBABios(const char * file);
-		if(utilLoad(theApp.biosFileName,
-					CPUIsGBABios,
-					tempBIOS,
-					size)) {
-		if(size == 0x4000)
-			hasBIOS = true;
+		int         size = 0x4000;
+		extern bool CPUIsGBABios(const char *file);
+		if (utilLoad(theApp.biosFileName,
+		             CPUIsGBABios,
+		             tempBIOS,
+		             size))
+		{
+			if (size == 0x4000)
+				hasBIOS = true;
 		}
 	}
 
 	u16 biosCheck = 0;
-	if(hasBIOS) {
-		for(int i = 0; i < 0x4000; i += 4)
+	if (hasBIOS)
+	{
+		for (int i = 0; i < 0x4000; i += 4)
 			biosCheck += *((u32 *)&tempBIOS[i]);
 		free(tempBIOS);
 	}
@@ -171,7 +168,7 @@ u16 checksumBIOS()
 
 void fillRomInfo(const SMovie & movieInfo, char romTitle [12], uint32 & romGameCode, uint16 & checksum, uint8 & crc)
 {
-	if(theApp.cartridgeType == 0) // GBA
+	if (theApp.cartridgeType == 0) // GBA
 	{
 		extern u8 *bios, *rom;
 		memcpy(romTitle, (const char *)&rom[0xa0], 12); // GBA TITLE
@@ -190,16 +187,16 @@ void fillRomInfo(const SMovie & movieInfo, char romTitle [12], uint32 & romGameC
 		romGameCode = (uint32)gbRom[0x146]; // GB ROM UNIT CODE
 
 		checksum = (gbRom[0x14e]<<8)|gbRom[0x14f]; // GB ROM CHECKSUM
-		crc = gbRom[0x14d]; // GB ROM CRC
+		crc      = gbRom[0x14d]; // GB ROM CRC
 	}
 }
 
 void MovieOpen::OnBnClickedMovieRefresh()
 {
 	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(movieName);
-	if(VBAMovieGetInfo(movieName, &movieInfo) == SUCCESS)
+	if (VBAMovieGetInfo(movieName, &movieInfo) == SUCCESS)
 	{
-		if(movieInfo.readOnly)
+		if (movieInfo.readOnly)
 		{
 			CheckDlgButton(IDC_READONLY, TRUE);
 			m_editDescription.SetReadOnly(TRUE);
@@ -216,29 +213,28 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		GetDlgItem(IDC_EDIT_DESCRIPTION)->SetWindowText(buffer);
 
 		int option = 2;
-		if(movieInfo.header.startFlags & MOVIE_START_FROM_SRAM)
+		if (movieInfo.header.startFlags & MOVIE_START_FROM_SRAM)
 			option = 1;
-		if(movieInfo.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
+		if (movieInfo.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
 			option = 0;
 		CheckRadioButton(IDC_RECNOW, IDC_RECSTART, IDC_RECNOW + option);
-		
-			option = 3;
-		if(movieInfo.header.typeFlags & MOVIE_TYPE_SGB)
+
+		option = 3;
+		if (movieInfo.header.typeFlags & MOVIE_TYPE_SGB)
 			option = 2;
-		if(movieInfo.header.typeFlags & MOVIE_TYPE_GBC)
+		if (movieInfo.header.typeFlags & MOVIE_TYPE_GBC)
 			option = 1;
-		if(movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
+		if (movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
 			option = 0;
 		CheckRadioButton(IDC_REC_GBA, IDC_REC_GB, IDC_REC_GBA + option);
 
 		GetDlgItem(IDC_CHECK_HIDEBORDER)->ShowWindow(option == 2 ? TRUE : FALSE);
 
-
-		if(movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
+		if (movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
 		{
-			if(movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)
+			if (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)
 			{
-				if(movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE)
+				if (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE)
 					option = 2;
 				else
 					option = 3;
@@ -251,23 +247,22 @@ void MovieOpen::OnBnClickedMovieRefresh()
 
 		CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_NOBIOS + option);
 
-
 		{
-			char* p;
+			char*  p;
 			time_t ttime = (time_t)movieInfo.header.uid;
 			strncpy(buffer, ctime(&ttime), 127);
-			buffer[127]='\0';
-			if((p=strrchr(buffer, '\n')))
-				*p='\0';
+			buffer[127] = '\0';
+			if ((p = strrchr(buffer, '\n')))
+				*p = '\0';
 			GetDlgItem(IDC_LABEL_DATE)->SetWindowText(buffer);
 
-			uint32 div = 60;
-			uint32 l=(movieInfo.header.length_frames+(div>>1))/div;
-			uint32 seconds=l%60;
-			l/=60;
-			uint32 minutes=l%60;
-			l/=60;
-			uint32 hours=l%60;
+			uint32 div     = 60;
+			uint32 l       = (movieInfo.header.length_frames+(div>>1))/div;
+			uint32 seconds = l%60;
+			l /= 60;
+			uint32 minutes = l%60;
+			l /= 60;
+			uint32 hours = l%60;
 			sprintf(buffer, "%02d:%02d:%02d", hours, minutes, seconds);
 			GetDlgItem(IDC_LABEL_LENGTH)->SetWindowText(buffer);
 			sprintf(buffer, "%ld", movieInfo.header.length_frames);
@@ -282,14 +277,15 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			strcpy(warning1, "");
 			strcpy(warning2, "");
 
-			char romTitle [12];
+			char   romTitle [12];
 			uint32 romGameCode;
 			uint16 checksum;
-			uint8 crc;
+			uint8  crc;
 
 			fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 
-			// rather than treat these as warnings, might as well always show the info in the dialog (it's probably more informative and reassuring)
+			// rather than treat these as warnings, might as well always show the info in the dialog (it's probably more
+			// informative and reassuring)
 ///			if(strncmp(movieInfo.header.romTitle,romTitle,12) != 0)
 			{
 				char str [13];
@@ -305,10 +301,15 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			}
 ///			if(((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (theApp.cartridgeType == 0))
 			{
-				sprintf(buffer, "type=%s  ", (movieInfo.header.typeFlags&MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags&MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.typeFlags&MOVIE_TYPE_SGB) ? "SGB" : "GB");
+				sprintf(buffer, "type=%s  ",
+				        (movieInfo.header.typeFlags&MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags&
+				                                                               MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.
+				                                                                                          typeFlags&
+				                                                                                          MOVIE_TYPE_SGB) ? "SGB" : "GB");
 				strcat(warning1, buffer);
 
-				sprintf(buffer, "type=%s  ", theApp.cartridgeType == 0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")) );
+				sprintf(buffer, "type=%s  ", theApp.cartridgeType ==
+				        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
 				strcat(warning2, buffer);
 			}
 ///			if(movieInfo.header.romCRC != crc)
@@ -322,7 +323,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 ///			if(movieInfo.header.romGameCode != romGameCode)
 			{
 				char code [5];
-				if(movieInfo.header.typeFlags&MOVIE_TYPE_GBA)
+				if (movieInfo.header.typeFlags&MOVIE_TYPE_GBA)
 				{
 					memcpy(code, &movieInfo.header.romGameCode, 4);
 					code[4] = '\0';
@@ -330,7 +331,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 					strcat(warning1, buffer);
 				}
 
-				if(theApp.cartridgeType == 0)
+				if (theApp.cartridgeType == 0)
 				{
 					memcpy(code, &romGameCode, 4);
 					code[4] = '\0';
@@ -338,16 +339,23 @@ void MovieOpen::OnBnClickedMovieRefresh()
 					strcat(warning2, buffer);
 				}
 			}
-///			if(movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0 && checksum==0))
+///			if(movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0
+// && checksum==0))
 			{
-				sprintf(buffer, movieInfo.header.typeFlags&MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0 ? "(bios=none)  " :  "(bios=%d)  ") : "check=%d  ", movieInfo.header.romOrBiosChecksum);
+				sprintf(buffer,
+				        movieInfo.header.typeFlags&
+				        MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) ==
+				                          0 ? "(bios=none)  " :  "(bios=%d)  ") : "check=%d  ",
+				        movieInfo.header.romOrBiosChecksum);
 				strcat(warning1, buffer);
 
-				sprintf(buffer, checksum==0 ? "(bios=none)  " : theApp.cartridgeType == 0 ? "(bios=%d)  " : "check=%d  ", checksum);
+				sprintf(buffer,
+				        checksum == 0 ? "(bios=none)  " : theApp.cartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
+				        checksum);
 				strcat(warning2, buffer);
 			}
-			
-			if(strlen(warning1) > 0)
+
+			if (strlen(warning1) > 0)
 			{
 				sprintf(buffer, "Movie ROM: %s", warning1);
 				GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText(buffer);
@@ -356,7 +364,8 @@ void MovieOpen::OnBnClickedMovieRefresh()
 
 				//if(movieInfo.header.romCRC != crc
 				//|| strncmp(movieInfo.header.romTitle,romTitle,12) != 0
-				//|| movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0 && checksum==0))
+				//|| movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags &
+				// MOVIE_SETTING_USEBIOSFILE)==0 && checksum==0))
 				//	strcat(buffer, "<-- MISMATCH");
 
 				GetDlgItem(IDC_LABEL_WARNING2)->SetWindowText(buffer);
@@ -385,39 +394,40 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		GetDlgItem(IDC_CHECK_PAUSEFRAME)->EnableWindow(FALSE);
 		CheckDlgButton(IDC_CHECK_PAUSEFRAME, FALSE);
 /*
-		/// FIXME: how to un-check all the radio buttons?
-		CheckRadioButton(IDC_RECNOW, IDC_RECSTART, -1);
-		CheckRadioButton(IDC_REC_GBA, IDC_REC_GB, -1);
-		CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, -1);*/
+        /// FIXME: how to un-check all the radio buttons?
+        CheckRadioButton(IDC_RECNOW, IDC_RECSTART, -1);
+        CheckRadioButton(IDC_REC_GBA, IDC_REC_GB, -1);
+        CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, -1);*/
 	}
 }
 
 BOOL MovieOpen::OnWndMsg(UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *res)
 {
-  switch( msg ) {
+	switch (msg)
+	{
 	case WM_CTLCOLORSTATIC:
 	{
 		//HWND hwndDlg = GetSafeHwnd();
 		HWND warnDlg = NULL;
 		GetDlgItem(IDC_LABEL_WARNING2, &warnDlg);
 
-		if((HWND)lParam == warnDlg)
+		if ((HWND)lParam == warnDlg)
 		{
-			char romTitle [12];
+			char   romTitle [12];
 			uint32 romGameCode;
 			uint16 checksum;
-			uint8 crc;
+			uint8  crc;
 
 			fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 
-			if(movieInfo.header.romCRC != crc
-			|| strncmp(movieInfo.header.romTitle,romTitle,12) != 0
-			|| movieInfo.header.romOrBiosChecksum != checksum
-			 && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) == 0 && checksum==0))
+			if (movieInfo.header.romCRC != crc
+			    || strncmp(movieInfo.header.romTitle, romTitle, 12) != 0
+			    || movieInfo.header.romOrBiosChecksum != checksum
+			    && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) == 0 && checksum == 0))
 			{
 				// draw the md5 sum in red if it's different from the md5 of the rom used in the replay
 				HDC hdcStatic = (HDC)wParam;
-				SetTextColor(hdcStatic, RGB(255,0,0));		// use red for a mismatch
+				SetTextColor(hdcStatic, RGB(255, 0, 0));      // use red for a mismatch
 
 				// I'm not sure why this doesn't work to make the background transparent... it turns white anyway
 				SetBkMode(hdcStatic, TRANSPARENT);
@@ -426,21 +436,21 @@ BOOL MovieOpen::OnWndMsg(UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *res)
 		}
 		return FALSE;
 	}
-  }
-  return CDialog::OnWndMsg(msg, wParam, lParam, res);
+	}
+	return CDialog::OnWndMsg(msg, wParam, lParam, res);
 }
 
 void MovieOpen::OnBnClickedOk()
 {
 	theApp.useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	if(theApp.useBiosFile)
+	if (theApp.useBiosFile)
 	{
 		extern bool checkBIOS(CString & biosFileName); // from MovieCreate.cpp
-		if(!checkBIOS(theApp.biosFileName))
+		if (!checkBIOS(theApp.biosFileName))
 		{
-			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");  
+			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 			((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-			if(!checkBIOS(theApp.biosFileName))
+			if (!checkBIOS(theApp.biosFileName))
 			{
 				systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 				return;
@@ -450,20 +460,18 @@ void MovieOpen::OnBnClickedOk()
 	extern void loadBIOS();
 	loadBIOS();
 
-
 	int code = VBAMovieOpen(movieName, IsDlgButtonChecked(IDC_READONLY));
 
-
-	if(code != SUCCESS)
+	if (code != SUCCESS)
 	{
-		if(code == FILE_NOT_FOUND)
-			systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieName);  
-		else if(code == WRONG_FORMAT)
-			systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieName);  
-		else if(code == WRONG_VERSION)
-			systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieName);  
+		if (code == FILE_NOT_FOUND)
+			systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieName);
+		else if (code == WRONG_FORMAT)
+			systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieName);
+		else if (code == WRONG_VERSION)
+			systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieName);
 		else
-			systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieName);  
+			systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieName);
 		return;
 	}
 	else
@@ -482,14 +490,14 @@ void MovieOpen::OnBnClickedOk()
 		VBAMovieSetMetadata(info);
 	}
 
-	if(IsDlgButtonChecked(IDC_CHECK_PAUSEFRAME))
+	if (IsDlgButtonChecked(IDC_CHECK_PAUSEFRAME))
 	{
 		char buffer [9];
 		GetDlgItem(IDC_EDIT_PAUSEFRAME)->GetWindowText(buffer, 8);
 		buffer[8] = '\0';
 
 		int pauseFrame = atoi(buffer);
-		if(pauseFrame >= 0)
+		if (pauseFrame >= 0)
 			VBAMovieSetPauseAt(pauseFrame);
 	}
 
@@ -510,7 +518,7 @@ void MovieOpen::OnBnClickedReadonly()
 
 void MovieOpen::OnBnClickedCheckPauseframe()
 {
-	if(IsDlgButtonChecked(IDC_CHECK_PAUSEFRAME))
+	if (IsDlgButtonChecked(IDC_CHECK_PAUSEFRAME))
 	{
 		char buffer [8];
 		_itoa(movieInfo.header.length_frames, buffer, 10);
@@ -524,7 +532,6 @@ void MovieOpen::OnBnClickedCheckPauseframe()
 	}
 }
 
-
 void MovieOpen::OnBnClickedHideborder()
 {
 	theApp.hideMovieBorder = IsDlgButtonChecked(IDC_CHECK_HIDEBORDER) != 0;
@@ -534,3 +541,4 @@ void MovieOpen::OnEnChangeMovieFilename()
 {
 	OnBnClickedMovieRefresh();
 }
+

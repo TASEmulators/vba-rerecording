@@ -20,12 +20,12 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
-#include "FileDlg.h"
+#include "resource.h"
 #include "GBPaletteView.h"
+#include "FileDlg.h"
 #include "WinResUtil.h"
+#include "VBA.h"
 
-#include "../System.h"
 #include "../gb/gbGlobals.h"
 
 #ifdef _DEBUG

@@ -1,17 +1,20 @@
-#ifndef _VBALUA_H
-#define _VBALUA_H
+#ifndef VBA_LUA_H
+#define VBA_LUA_H
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
 
 enum LuaCallID
 {
 	LUACALL_BEFOREEMULATION,
 	LUACALL_AFTEREMULATION,
 	LUACALL_BEFOREEXIT,
-
 	LUACALL_COUNT
 };
 void CallRegisteredLuaFunctions(LuaCallID calltype);
 
-// Just forward function declarations 
+// Just forward function declarations
 
 void VBALuaWrite(uint32 addr);
 void VBALuaFrameBoundary();
@@ -33,4 +36,4 @@ char *VBAGetFreezeFilename(int slot);
 
 void VBALuaWriteInform(uint32 addr);
 
-#endif
+#endif // VBA_LUA_H

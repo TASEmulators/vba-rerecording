@@ -20,7 +20,6 @@
 //
 
 #include "stdafx.h"
-#include "vba.h"
 #include "BitmapControl.h"
 
 #ifdef _DEBUG

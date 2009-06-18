@@ -17,6 +17,7 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
+#include "resource.h"
 #include "MainWnd.h"
 #include "AboutDialog.h"
 #include "BugReport.h"
@@ -24,23 +25,24 @@
 
 extern int emulating;
 
-void MainWnd::OnHelpAbout() 
+void MainWnd::OnHelpAbout()
 {
-  theApp.winCheckFullscreen();
-  AboutDialog dlg;
+	theApp.winCheckFullscreen();
+	AboutDialog dlg;
 
-  dlg.DoModal();
+	dlg.DoModal();
 }
 
-void MainWnd::OnHelpFaq() 
+void MainWnd::OnHelpFaq()
 {
-  ::ShellExecute(0, _T("open"), "http://vba.ngemu.com/faq.shtml", 
-                 0, 0, SW_SHOWNORMAL);
+	::ShellExecute(0, _T("open"), "http://vba.ngemu.com/faq.shtml",
+	               0, 0, SW_SHOWNORMAL);
 }
 
-void MainWnd::OnHelpBugreport() 
+void MainWnd::OnHelpBugreport()
 {
-  BugReport dlg(theApp.m_pMainWnd);
+	BugReport dlg(theApp.m_pMainWnd);
 
-  dlg.DoModal();
+	dlg.DoModal();
 }
+

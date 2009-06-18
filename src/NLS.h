@@ -17,6 +17,13 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#ifndef VBS_NLS_H
+#define VBA_NLS_H
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
 #define N_(String) (String)
 
 #define MSG_UNSUPPORTED_VBA_SGM             1
@@ -60,3 +67,5 @@
 #define MSG_INVALID_CBA_CODE               39
 #define MSG_CBA_CODE_WARNING               40
 #define MSG_OUT_OF_MEMORY                  41
+
+#endif // VBA_NLS_H
