@@ -1130,6 +1130,9 @@
 			<File
 				RelativePath="..\src\vbalua.h">
 			</File>
+			<File
+				RelativePath="..\src\zutil.h">
+			</File>
 			<Filter
 				Name="Win32"
 				Filter="">

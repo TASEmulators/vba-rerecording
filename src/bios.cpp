@@ -23,6 +23,7 @@
 #include "bios.h"
 #include "System.h"
 #include "GBA.h"
+#include "Cheats.h" // FIXME: SDL build requires this
 #include "GBAinline.h"
 #include "Globals.h"
 

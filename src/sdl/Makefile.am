@@ -64,14 +64,19 @@ VisualBoyAdvance_SOURCES = \
 	../interframe.cpp	\
 	../interp.h		\
 	../lq2x.h		\
+	../lua-engine.cpp	\
+	../vbalua.h		\
 	../memgzio.c		\
 	../memgzio.h		\
 	../motionblur.cpp	\
+	../movie.cpp		\
+	../movie.h		\
 	../pixel.cpp		\
 	../remote.cpp		\
 	../scanline.cpp		\
 	../simple2x.cpp		\
 	../thumb.h		\
+	../zutil.h		\
 	../unzip.cpp		\
 	../unzip.h
 
@@ -136,14 +141,19 @@ TestEmu_SOURCES = \
 	../hq2x.h		\
 	../interp.h		\
 	../lq2x.h		\
+	../lua-engine.cpp	\
+	../vbalua.h		\
 	../memgzio.c		\
 	../memgzio.h		\
 	../motionblur.cpp	\
+	../movie.cpp		\
+	../movie.h		\
 	../pixel.cpp		\
 	../remote.cpp		\
 	../scanline.cpp		\
 	../simple2x.cpp		\
 	../thumb.h		\
+	../zutil.h		\
 	../unzip.cpp		\
 	../unzip.h
 

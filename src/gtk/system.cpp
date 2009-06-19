@@ -23,8 +23,8 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 
-#include "../GBA.h"
-#include "../gb/GB.h"
+#include "../System.h"
+#include "../Globals.h"
 #include "../gb/gbGlobals.h"
 #include "../Util.h"
 #include "../Sound.h"
@@ -47,9 +47,53 @@ u16  systemColorMap16[0x10000];
 u16  systemGbPalette[24];
 bool systemSoundOn;
 
+char filename[2048];
+char biosFileName[2048];
+//char captureDir[2048];
+char saveDir[2048];
+char batteryDir[2048];
+
+int sensorX = 2047;
+int sensorY = 2047;
+bool sensorOn = false;
+
 int  emulating;
 bool debugger;
 int  RGB_LOW_BITS_MASK;
+
+int cartridgeType = 3;
+int sizeOption = 0;
+int captureFormat = 0;
+int throttle = 0;
+bool paused = false;
+bool removeIntros = false;
+int sdlFlashSize = 0;
+int sdlRtcEnable = 0;
+
+int sdlDefaultJoypad = 0;
+
+SDL_Joystick **sdlDevices = NULL;
+
+u16 motion[4] = {
+  SDLK_KP4, SDLK_KP6, SDLK_KP8, SDLK_KP2
+};
+
+struct EmulatedSystem emulator = {
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  false,
+  0
+};
 
 // Extra vars, only used for the GUI
 //
@@ -109,7 +153,7 @@ void system10Frames(int _iRate)
   GUI()->vComputeFrameskip(_iRate);
 }
 
-void systemFrame()
+void systemFrame(int)
 {
 }
 
@@ -336,6 +380,89 @@ void debuggerSignal(int, int)
 
 void debuggerOutput(char *, u32)
 {
+}
+
+char *sdlGetFilename(char *name)
+{
+  static char filebuffer[2048];
+
+  int len = strlen(name);
+  
+  char *p = name + len - 1;
+  
+  while(true) {
+    if(*p == '/' ||
+       *p == '\\') {
+      p++;
+      break;
+    }
+    len--;
+    p--;
+    if(len == 0)
+      break;
+  }
+  
+  if(len == 0)
+    strcpy(filebuffer, name);
+  else
+    strcpy(filebuffer, p);
+  return filebuffer;
+}
+
+bool sdlCheckJoyKey(int key)
+{
+  int dev = (key >> 12) - 1;
+  int what = key & 0xfff;
+
+  if(what >= 128) {
+    // joystick button
+    int button = what - 128;
+
+    if(button >= SDL_JoystickNumButtons(sdlDevices[dev]))
+      return false;
+  } else if (what < 0x20) {
+    // joystick axis    
+    what >>= 1;
+    if(what >= SDL_JoystickNumAxes(sdlDevices[dev]))
+      return false;
+  } else if (what < 0x30) {
+    // joystick hat
+    what = (what & 15);
+    what >>= 2;
+    if(what >= SDL_JoystickNumHats(sdlDevices[dev]))
+      return false;
+  }
+
+  // no problem found
+  return true;
+}
+
+u16 checksumBIOS()
+{
+	bool hasBIOS = false;
+	u8 * tempBIOS;
+	if(useBios)
+	{
+		tempBIOS = (u8 *)malloc(0x4000);
+		int size = 0x4000;
+		extern bool CPUIsGBABios(const char * file);
+		if(utilLoad(biosFileName,
+					CPUIsGBABios,
+					tempBIOS,
+					size)) {
+		if(size == 0x4000)
+			hasBIOS = true;
+		}
+	}
+
+	u16 biosCheck = 0;
+	if(hasBIOS) {
+		for(int i = 0; i < 0x4000; i += 4)
+			biosCheck += *((u32 *)&tempBIOS[i]);
+		free(tempBIOS);
+	}
+
+	return biosCheck;
 }
 
 void (*dbgMain)() = debuggerMain;

@@ -25,6 +25,7 @@
 #include <assert.h>
 
 #include "Sound.h"
+#include "System.h" // SDL build needs this
 #include "GBA.h"
 #include "Globals.h"
 #include "Util.h"
