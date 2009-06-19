@@ -25,11 +25,12 @@
 
 #include "AutoBuild.h"
 
+#include "Port.h"
 #include "SDL.h"
 #include "GBA.h"
+#include "Globals.h"
 #include "agbprint.h"
 #include "Flash.h"
-#include "Port.h"
 #include "debugger.h"
 #include "RTC.h"
 #include "Sound.h"
@@ -39,6 +40,7 @@
 #include "gb/GB.h"
 #include "gb/gbGlobals.h"
 #include "movie.h"
+#include "System.h"
 
 #define GBC_CAPABLE ((gbRom[0x143] & 0x80) != 0)
 #define SGB_CAPABLE (gbRom[0x146] == 0x03)
@@ -63,9 +65,9 @@
 #ifdef MMX
 extern "C" bool cpu_mmx;
 #endif
-extern bool soundEcho;
-extern bool soundLowPass;
-extern bool soundReverse;
+extern bool8 soundEcho;
+extern bool8 soundLowPass;
+extern bool8 soundReverse;
 extern int Init_2xSaI(u32);
 extern void _2xSaI(u8*,u32,u8*,u8*,u32,int,int);
 extern void _2xSaI32(u8*,u32,u8*,u8*,u32,int,int);  
@@ -153,6 +155,7 @@ int destHeight = 0;
 
 int sensorX = 2047;
 int sensorY = 2047;
+bool sensorOn = false;
 
 int filter = 0;
 u8 *delta = NULL;
@@ -2825,8 +2828,6 @@ bool systemReadJoypads()
   return true;
 }
 
-bool sensorOn = false;
-
 u32 systemReadJoypad(int which, bool sensor)
 {
     sensorOn = sensor;
@@ -2920,11 +2921,8 @@ void systemShowSpeed(int speed)
   }
 }
 
-void systemFrame(int)
-{
-}
-
-void system10Frames(int rate)
+// FIXME: the timing
+void systemFrame(int rate)
 {
   u32 time = systemGetClock();  
   if(!wasPaused && autoFrameSkip && !throttle) {

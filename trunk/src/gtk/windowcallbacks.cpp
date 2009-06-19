@@ -26,9 +26,11 @@
 #include <SDL.h>
 
 #include "../GBA.h"
+#include "../Globals.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
+#include "../Flash.h"
 #include "../Sound.h"
 #include "../Util.h"
 

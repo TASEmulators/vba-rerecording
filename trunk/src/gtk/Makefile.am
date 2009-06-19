@@ -92,9 +92,13 @@ libgba_a_SOURCES = \
 	../interframe.cpp	\
 	../interp.h		\
 	../lq2x.h		\
+	../lua-engine.cpp	\
+	../vbalua.h		\
 	../memgzio.c		\
 	../memgzio.h		\
 	../motionblur.cpp	\
+	../movie.cpp		\
+	../movie.h		\
 	../pixel.cpp		\
 	../remote.cpp		\
 	../scanline.cpp		\

@@ -102,6 +102,9 @@ AC_C_BIGENDIAN
 
 VBA_LIBS="../gb/libgb.a"
 
+VBA_SRC_EXTRA="$VBA_SRC_EXTRA lua"
+VBA_LIBS="$VBA_LIBS ../lua/libgblua.a"
+
 if test "x$enable_c_core" = xyes; then
   CXXFLAGS="$CXXFLAGS -DC_CORE"
 fi
@@ -174,6 +177,7 @@ src/gb/Makefile
 src/gtk/Makefile
 src/gtk/images/Makefile
 src/i386/Makefile
+src/lua/Makefile
 src/prof/Makefile
 src/sdl/Makefile
 win32/Makefile

@@ -1,5 +1,5 @@
 * Clean the code, including re-creation of the file structure, which is a whole mess at this moment.
-* Fix the SDL compilation/build malfunction.
+* Fix the SDL/gtk build malfunction.
 * Enable GBA mode recording for special GBC games like Shantae that can utilize GBA's hardware feature.
 * Fix the buggy stateful settings.
 * Fix the bugs with vba-over.ini settings.

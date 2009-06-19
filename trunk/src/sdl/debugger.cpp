@@ -16,12 +16,18 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
+} // FIXME: should use c++ headers instead
+
 #include <string.h>
 
-#include "GBA.h"
 #include "Port.h"
+#include "GBA.h"
+#include "Globals.h"
+#include "Cheats.h"
+#include "System.h"
 #include "armdis.h"
 #include "elf.h"
 #include "exprNode.h"
@@ -56,10 +62,10 @@ struct breakpointInfo {
 };
 
 struct DebuggerCommand {
-  char *name;
+  const char *name;
   void (*function)(int,char **);
-  char *help;
-  char *syntax;
+  const char *help;
+  const char *syntax;
 };
 
 void debuggerContinueAfterBreakpoint();
@@ -174,7 +180,7 @@ void debuggerEnableBreakpoints(bool skipPC)
   }  
 }
 
-void debuggerUsage(char *cmd)
+void debuggerUsage(const char *cmd)
 {
   for(int i = 0; ; i++) {
     if(debuggerCommands[i].name) {
@@ -433,7 +439,7 @@ void debuggerPrintEnum(Type *t, u32 value)
   for(i = 0; i < t->enumeration->count; i++) {
     EnumMember *m = (EnumMember *)&t->enumeration->members[i];
     if(value == m->value) {
-      printf(m->name);
+      puts(m->name);
       return;
     }
   }
@@ -531,7 +537,7 @@ void debuggerSymbols(int argc, char **argv)
           continue;
         }
       }
-      char *ts = "?";
+      const char *ts = "?";
       switch(type) {
       case 2:
         ts = "ARM";
@@ -1122,9 +1128,9 @@ void debuggerRegisters(int, char **)
          (armState ? '.' : 'T'),
          armMode);
   sprintf(buffer,"%08x", armState ? reg[15].I - 4 : reg[15].I - 2);
-  command[0]="m";
+  command[0]=const_cast<char *>("m");
   command[1]=buffer;
-  command[2]="1";
+  command[2]=const_cast<char *>("1");
   debuggerDisassemble(3, command);
 }
 
@@ -1400,7 +1406,7 @@ void debuggerQuit(int, char **)
 void debuggerOutput(char *s, u32 addr)
 {
   if(s)
-    printf(s);
+    puts(s);
   else {
     char c;
 

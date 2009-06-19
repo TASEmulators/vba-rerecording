@@ -1,20 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <malloc.h>
-#include <string.h>
+#include <string>
 
-//#include <unistd.h> // for unlink
-#include <ctype.h>
-#include <assert.h>
-#include <math.h>
-#include <direct.h>
-#include <time.h>
+#include <cctype>
+#include <cassert>
+#include <cmath>
+#include <ctime>
+
+using namespace std;
 
 #ifdef __linux
+	#include <unistd.h> // for unlink
 	#include <sys/types.h>
 	#include <sys/wait.h>
 #endif
 #if (defined(WIN32) && !defined(SDL))
+	#include <direct.h>
 	#include "win32/stdafx.h"
 	#include "win32/resource.h"
 	#include "win32/Input.h"
@@ -25,9 +27,13 @@
 	#include "win32/VBA.h"
 	#define theEmulator (theApp.emulator)
 #else
+extern int sdlDefaultJoypad;
 extern struct EmulatedSystem	emulator;
+	#define stricmp strcasecmp
+	#define strnicmp strncasecmp
 	#define theEmulator (emulator)
 #endif
+
 #include "Port.h"
 #include "System.h"
 #include "GBA.h"
@@ -39,10 +45,10 @@ extern struct EmulatedSystem	emulator;
 
 extern "C"
 {
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-#include "lstate.h"
+#include "./lua/src/lua.h"
+#include "./lua/src/lauxlib.h"
+#include "./lua/src/lualib.h"
+#include "./lua/src/lstate.h"
 }
 #include "vbalua.h"
 
@@ -51,6 +57,7 @@ extern "C"
 #ifndef countof
 	#define countof(a)	(sizeof(a) / sizeof(a[0]))
 #endif
+
 static lua_State	*LUA;
 
 // Are we running any code right now?
@@ -145,22 +152,24 @@ static uint8		*gui_data = NULL;	// BGRA
 // Protects Lua calls from going nuts.
 // We set this to a big number like 1000 and decrement it
 // over time. The script gets knifed once this reaches zero.
-static int			numTries;
+static int		numTries;
 
 // Look in inputglobal.h for macros named like BUTTON_MASK_UP to determine the order.
-static const char	*button_mappings[] = {
+static const char *button_mappings[] = {
 	"A", "B", "select", "start", "right", "left", "up", "down", "R", "L"
 };
 
-static const char	*luaCallIDStrings[] =
+static const char *luaCallIDStrings[] =
 {
 	"CALL_BEFOREEMULATION",
 	"CALL_AFTEREMULATION",
-	"CALL_BEFOREEXIT",
+	"CALL_BEFOREEXIT"
 };
-static const int	_makeSureWeHaveTheRightNumberOfStrings[sizeof(luaCallIDStrings) / sizeof
-	(*luaCallIDStrings) == LUACALL_COUNT ? 1 :
-	0]; static inline bool vbaRunsGBA(void)
+
+static const int _makeSureWeHaveTheRightNumberOfStrings[sizeof(luaCallIDStrings) / 
+	sizeof(*luaCallIDStrings) == LUACALL_COUNT ? 1 : 0] = {};
+
+static inline bool vbaRunsGBA(void)
 {
 #if (defined(WIN32) && !defined(SDL))
 	return(theApp.cartridgeType == 0);
@@ -1118,7 +1127,7 @@ static int savestate_save(lua_State *L)
 	// Save states are very expensive. They take time.
 	numTries--;
 
-	bool8	retvalue = theEmulator.emuWriteState ? theEmulator.emuWriteState(filename) : FALSE;
+	bool8	retvalue = theEmulator.emuWriteState ? theEmulator.emuWriteState(filename) : false;
 	if (!retvalue)
 	{
 		// Uh oh
@@ -1139,7 +1148,7 @@ static int savestate_load(lua_State *L)
 	numTries--;
 
 	//	printf("loading %s\n", filename);
-	bool8	retvalue = theEmulator.emuReadState ? theEmulator.emuReadState(filename) : FALSE;
+	bool8	retvalue = theEmulator.emuReadState ? theEmulator.emuReadState(filename) : false;
 	if (!retvalue)
 	{
 		// Uh oh
@@ -1414,9 +1423,9 @@ static void gui_drawline_internal(int x1, int y1, int x2, int y2, bool lastPixel
 static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour)
 {
 	if (x1 > x2)
-		swap<int> (x1, x2);
+		std::swap<int> (x1, x2);
 	if (y1 > y2)
-		swap<int> (y1, y2);
+		std::swap<int> (y1, y2);
 	if (x1 < 0)
 		x1 = -1;
 	if (y1 < 0)
@@ -1505,9 +1514,9 @@ static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour)
 static void gui_fillbox_internal(int x1, int y1, int x2, int y2, uint32 colour)
 {
 	if (x1 > x2)
-		swap<int> (x1, x2);
+		std::swap<int> (x1, x2);
 	if (y1 > y2)
-		swap<int> (y1, y2);
+		std::swap<int> (y1, y2);
 	if (x1 < 0)
 		x1 = 0;
 	if (y1 < 0)
@@ -2478,8 +2487,9 @@ int gui_popup(lua_State *L)
 	// The Linux backend has a "FromPause" variable.
 	// If set to 1, assume some known external event has screwed with the flow of time.
 	// Since this pauses the emulator waiting for a response, we set it to 1.
-	extern int FromPause;
-	FromPause = 1;
+// FIXME: Well, actually it doesn't
+//	extern int FromPause;
+//	FromPause = 1;
 
 	int pid;	// appease compiler
 
@@ -3309,7 +3319,7 @@ int VBALoadLuaCode(const char *filename)
 	if (slash)
 	{
 		slash[1] = '\0';		// keep slash itself for some reasons
-		_chdir(dir);
+		chdir(dir);
 	}
 
 	if (!LUA)

@@ -1,6 +1,4 @@
-
 #include "Port.h"
-#include <string>
 #include <string.h>
 #ifdef HAVE_STRINGS_H
 #   include <strings.h>
@@ -14,7 +12,12 @@
 #   include <sys/stat.h>
 #   include <limits.h>
 #   define stricmp strcasecmp
-#   define _MAX_PATH 128
+// FIXME: this is wrong, but we don't want buffer overflow
+#   if defined _MAX_PATH
+#       undef _MAX_PATH
+//#       define _MAX_PATH 128
+#       define _MAX_PATH 260
+#   endif
 #endif
 
 #include <time.h>
@@ -48,6 +51,7 @@ extern struct EmulatedSystem emulator;
 
 #endif
 
+#include "System.h"
 #include "GBA.h"
 #include "Globals.h"
 #include "gb/GB.h"
@@ -586,10 +590,10 @@ static void SetPlayEmuSettings()
 
 #   else
     extern int  saveType, sdlRtcEnable, sdlFlashSize;    // from SDL.cpp
-    extern bool useBios, skipBios, removeIntros;     // from SDL.cpp
+    extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
     useBios      = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
     skipBios     = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
-    removeIntros = (Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0;
+    removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
     sdlRtcEnable = (Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0;
     saveType     = Movie.header.saveType;
     sdlFlashSize = Movie.header.flashSize;
@@ -674,16 +678,16 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 
     // read the metadata / author info from file
     fread(Movie.authorInfo, 1, sizeof(char) * MOVIE_METADATA_SIZE, file);
-    fn = _dup(_fileno(file)); // XXX: why does this fail?? it returns -1 but errno == 0
+    fn = dup(fileno(file)); // XXX: why does this fail?? it returns -1 but errno == 0
     fclose(file);
 
     // apparently this lseek is necessary
-    _lseek(fn, Movie.header.offset_to_savestate, SEEK_SET);
+    lseek(fn, Movie.header.offset_to_savestate, SEEK_SET);
     if (!(stream = utilGzReopen(fn, "rb")))
 		if (!(stream = utilGzOpen(filename, "rb")))
 		{loadingMovie = false; return FILE_NOT_FOUND;}
 		else
-			fn = _dup(_fileno(file)); // in case the above dup failed but opening the file normally doesn't fail
+			fn = dup(fileno(file)); // in case the above dup failed but opening the file normally doesn't fail
 
     if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
     {
@@ -800,7 +804,7 @@ static void SetRecordEmuSettings()
     Movie.header.flashSize = theApp.winFlashSize;
 #   else
     extern int  saveType, sdlRtcEnable, sdlFlashSize;    // from SDL.cpp
-    extern bool useBios, skipBios;     // from SDL.cpp
+    extern bool8 useBios, skipBios;     // from SDL.cpp
     if (useBios)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
     if (skipBios)
@@ -871,7 +875,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
     STREAM stream;
     int    fn;
 
-    bool alreadyOpen = (Movie.file != NULL && _stricmp(filename, Movie.filename) == 0);
+    bool alreadyOpen = (Movie.file != NULL && stricmp(filename, Movie.filename) == 0);
 
     if (alreadyOpen)
 		change_state(MOVIE_STATE_NONE); // have to stop current movie before trying to re-open it
@@ -923,7 +927,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 
         // close the file and reopen it as a stream:
 
-        fn = _dup(_fileno(file));
+        fn = dup(fileno(file));
         fclose(file);
 
         if (!(stream = utilGzReopen(fn, "ab"))) // append mode to start at end, no seek necessary
@@ -1081,35 +1085,35 @@ void VBAUpdateFrameCountDisplay()
 	case MOVIE_STATE_PLAY :
 		{
 #           if (defined(WIN32) && !defined(SDL))
-		    if (theApp.frameCounter)
-#           else
-		    if (false)    /// SDL FIXME
-#           endif
-		    {
+			if (theApp.frameCounter)
+			{
 		        sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
 		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
 					strcat(frameDisplayString, lagFrameDisplayString);
 		        systemScreenMessage(frameDisplayString, 1, 600);
 			}
+#           else
+			/// SDL FIXME
+#           endif
+			break;
 		}
-		break;
 
 	case MOVIE_STATE_RECORD:
 		{
 #       if (defined(WIN32) && !defined(SDL))
-		    if (theApp.frameCounter)
-#       else
-		    if (false) /// SDL FIXME
-#       endif
-		    {
+			if (theApp.frameCounter)
+			{
 		        sprintf(frameDisplayString, "%d", Movie.currentFrame);
 		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
 					strcat(frameDisplayString, lagFrameDisplayString);
 		        systemScreenMessage(frameDisplayString, 1, 600);
 			}
-		    break;
+#       else
+			/// SDL FIXME
+#       endif
+			break;
 		}
 
 	default:
@@ -1146,16 +1150,15 @@ void VBAMovieUpdate(int controllerNum)
 		    if (Movie.currentFrame >= Movie.header.length_frames)
 		    {
 #if (defined(WIN32) && !defined(SDL))
-		        if (theApp.movieOnEndBehavior == 1)
+				if (theApp.movieOnEndBehavior == 1)
+				{
+					VBAMovieRestart();
+					willPause = theApp.movieOnEndPause;
+					break;
+				}
 #else
 		        // SDL FIXME
-		        if (false)
 #endif
-		        {
-		            VBAMovieRestart();
-		            willPause = theApp.movieOnEndPause;
-		            break;
-				}
 #if (defined(WIN32) && !defined(SDL))
 		        else if (theApp.movieOnEndBehavior == 2 && Movie.RecordedThisSession)
 #else
@@ -1197,8 +1200,12 @@ void VBAMovieUpdate(int controllerNum)
 		            // stop movie; it reached the end
 		            change_state(MOVIE_STATE_NONE);
 		            systemScreenMessage("Movie end");
-		            willPause = theApp.movieOnEndPause;
-		            break;
+#if (defined(WIN32) && !defined(SDL))
+ 		            willPause = theApp.movieOnEndPause;
+#else
+                        	willPause = false; // SDL FIXME
+#endif
+ 		            break;
 				}
 			}
 		    else
@@ -1292,7 +1299,7 @@ int VBAMovieGetInfo(const char*filename, SMovie*info)
     strncpy(local_movie.filename, filename, _MAX_PATH);
     local_movie.filename[_MAX_PATH-1] = '\0';
 
-    if (Movie.file != NULL && _stricmp(local_movie.filename, Movie.filename) == 0) // alreadyOpen
+    if (Movie.file != NULL && stricmp(local_movie.filename, Movie.filename) == 0) // alreadyOpen
     {
         local_movie.bytesPerFrame        = Movie.bytesPerFrame;
         local_movie.header.length_frames = Movie.header.length_frames;
@@ -1309,7 +1316,7 @@ int VBAMovieGetInfo(const char*filename, SMovie*info)
 
     fclose(file);
 
-    if (_access(filename, W_OK))
+    if (access(filename, W_OK))
 		info->readOnly = true;
 
     return SUCCESS;
@@ -1583,7 +1590,7 @@ void VBAMovieRestart()
         VBAMovieStop(true);
 
         char movieName [_MAX_PATH];
-        strcpy(movieName, Movie.filename);
+        strncpy(movieName, Movie.filename, _MAX_PATH);
         VBAMovieOpen(movieName, Movie.readOnly); // can't just pass in Movie.filename, since VBAMovieOpen clears out Movie's
                                                  // variables
 

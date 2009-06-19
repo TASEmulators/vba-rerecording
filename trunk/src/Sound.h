@@ -25,6 +25,7 @@
 #endif // _MSC_VER > 1000
 
 #include "zlib.h"
+#include "Port.h"
 
 #define NR10 0x60
 #define NR11 0x62

@@ -62,6 +62,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GMSGFMT = @GMSGFMT@
+GREP = @GREP@
 GTKMM_CFLAGS = @GTKMM_CFLAGS@
 GTKMM_CPPFLAGS = @GTKMM_CPPFLAGS@
 GTKMM_LIBS = @GTKMM_LIBS@
@@ -109,11 +110,11 @@ VBA_LIBS = @VBA_LIBS@
 VBA_SRC_EXTRA = @VBA_SRC_EXTRA@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
+XMKMF = @XMKMF@
 YACC = @YACC@
+YFLAGS = @YFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-ac_ct_RANLIB = @ac_ct_RANLIB@
-ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -128,22 +129,29 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
+datarootdir = @datarootdir@
+docdir = @docdir@
+dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
+htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 oldincludedir = @oldincludedir@
+pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
+psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -248,9 +256,13 @@ libgba_a_SOURCES = \
 	../interframe.cpp	\
 	../interp.h		\
 	../lq2x.h		\
+	../lua-engine.cpp	\
+	../vbalua.h		\
 	../memgzio.c		\
 	../memgzio.h		\
 	../motionblur.cpp	\
+	../movie.cpp		\
+	../movie.h		\
 	../pixel.cpp		\
 	../remote.cpp		\
 	../scanline.cpp		\
@@ -287,7 +299,8 @@ am_libgba_a_OBJECTS = libgba_a-2xSaI.$(OBJEXT) libgba_a-Cheats.$(OBJEXT) \
 	libgba_a-bios.$(OBJEXT) libgba_a-elf.$(OBJEXT) \
 	libgba_a-getopt.$(OBJEXT) libgba_a-getopt1.$(OBJEXT) \
 	libgba_a-hq2x.$(OBJEXT) libgba_a-interframe.$(OBJEXT) \
-	libgba_a-memgzio.$(OBJEXT) libgba_a-motionblur.$(OBJEXT) \
+	libgba_a-lua-engine.$(OBJEXT) libgba_a-memgzio.$(OBJEXT) \
+	libgba_a-motionblur.$(OBJEXT) libgba_a-movie.$(OBJEXT) \
 	libgba_a-pixel.$(OBJEXT) libgba_a-remote.$(OBJEXT) \
 	libgba_a-scanline.$(OBJEXT) libgba_a-simple2x.$(OBJEXT) \
 	libgba_a-unzip.$(OBJEXT)
@@ -344,8 +357,10 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-getopt1.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-hq2x.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-interframe.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/libgba_a-lua-engine.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-memgzio.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-motionblur.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/libgba_a-movie.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-pixel.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-remote.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libgba_a-scanline.Po \
@@ -463,8 +478,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-getopt1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-hq2x.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-interframe.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-lua-engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-memgzio.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-motionblur.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-movie.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-pixel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-remote.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgba_a-scanline.Po@am__quote@
@@ -1153,6 +1170,28 @@ libgba_a-interframe.obj: ../interframe.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -c -o libgba_a-interframe.obj `if test -f '../interframe.cpp'; then $(CYGPATH_W) '../interframe.cpp'; else $(CYGPATH_W) '$(srcdir)/../interframe.cpp'; fi`
 
+libgba_a-lua-engine.o: ../lua-engine.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -MT libgba_a-lua-engine.o -MD -MP -MF "$(DEPDIR)/libgba_a-lua-engine.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o libgba_a-lua-engine.o `test -f '../lua-engine.cpp' || echo '$(srcdir)/'`../lua-engine.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/libgba_a-lua-engine.Tpo" "$(DEPDIR)/libgba_a-lua-engine.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/libgba_a-lua-engine.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../lua-engine.cpp' object='libgba_a-lua-engine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/libgba_a-lua-engine.Po' tmpdepfile='$(DEPDIR)/libgba_a-lua-engine.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -c -o libgba_a-lua-engine.o `test -f '../lua-engine.cpp' || echo '$(srcdir)/'`../lua-engine.cpp
+
+libgba_a-lua-engine.obj: ../lua-engine.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -MT libgba_a-lua-engine.obj -MD -MP -MF "$(DEPDIR)/libgba_a-lua-engine.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o libgba_a-lua-engine.obj `if test -f '../lua-engine.cpp'; then $(CYGPATH_W) '../lua-engine.cpp'; else $(CYGPATH_W) '$(srcdir)/../lua-engine.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/libgba_a-lua-engine.Tpo" "$(DEPDIR)/libgba_a-lua-engine.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/libgba_a-lua-engine.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../lua-engine.cpp' object='libgba_a-lua-engine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/libgba_a-lua-engine.Po' tmpdepfile='$(DEPDIR)/libgba_a-lua-engine.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -c -o libgba_a-lua-engine.obj `if test -f '../lua-engine.cpp'; then $(CYGPATH_W) '../lua-engine.cpp'; else $(CYGPATH_W) '$(srcdir)/../lua-engine.cpp'; fi`
+
 libgba_a-motionblur.o: ../motionblur.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -MT libgba_a-motionblur.o -MD -MP -MF "$(DEPDIR)/libgba_a-motionblur.Tpo" \
 @am__fastdepCXX_TRUE@	  -c -o libgba_a-motionblur.o `test -f '../motionblur.cpp' || echo '$(srcdir)/'`../motionblur.cpp; \
@@ -1174,6 +1213,28 @@ libgba_a-motionblur.obj: ../motionblur.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/libgba_a-motionblur.Po' tmpdepfile='$(DEPDIR)/libgba_a-motionblur.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -c -o libgba_a-motionblur.obj `if test -f '../motionblur.cpp'; then $(CYGPATH_W) '../motionblur.cpp'; else $(CYGPATH_W) '$(srcdir)/../motionblur.cpp'; fi`
+
+libgba_a-movie.o: ../movie.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -MT libgba_a-movie.o -MD -MP -MF "$(DEPDIR)/libgba_a-movie.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o libgba_a-movie.o `test -f '../movie.cpp' || echo '$(srcdir)/'`../movie.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/libgba_a-movie.Tpo" "$(DEPDIR)/libgba_a-movie.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/libgba_a-movie.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../movie.cpp' object='libgba_a-movie.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/libgba_a-movie.Po' tmpdepfile='$(DEPDIR)/libgba_a-movie.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -c -o libgba_a-movie.o `test -f '../movie.cpp' || echo '$(srcdir)/'`../movie.cpp
+
+libgba_a-movie.obj: ../movie.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -MT libgba_a-movie.obj -MD -MP -MF "$(DEPDIR)/libgba_a-movie.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o libgba_a-movie.obj `if test -f '../movie.cpp'; then $(CYGPATH_W) '../movie.cpp'; else $(CYGPATH_W) '$(srcdir)/../movie.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/libgba_a-movie.Tpo" "$(DEPDIR)/libgba_a-movie.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/libgba_a-movie.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../movie.cpp' object='libgba_a-movie.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/libgba_a-movie.Po' tmpdepfile='$(DEPDIR)/libgba_a-movie.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -c -o libgba_a-movie.obj `if test -f '../movie.cpp'; then $(CYGPATH_W) '../movie.cpp'; else $(CYGPATH_W) '$(srcdir)/../movie.cpp'; fi`
 
 libgba_a-pixel.o: ../pixel.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgba_a_CPPFLAGS) $(CPPFLAGS) $(libgba_a_CXXFLAGS) $(CXXFLAGS) -MT libgba_a-pixel.o -MD -MP -MF "$(DEPDIR)/libgba_a-pixel.Tpo" \

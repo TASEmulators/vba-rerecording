@@ -25,7 +25,10 @@
 
 #include "AutoBuild.h"
 
+#include "SDL.h"
+#include "System.h"
 #include "GBA.h"
+#include "Globals.h"
 #include "debugger.h"
 #include "Sound.h"
 #include "unzip.h"
@@ -44,9 +47,9 @@
 #ifdef MMX
 extern "C" bool cpu_mmx;
 #endif
-extern bool soundEcho;
-extern bool soundLowPass;
-extern bool soundReverse;
+extern bool8 soundEcho;
+extern bool8 soundLowPass;
+extern bool8 soundReverse;
 
 extern void remoteInit();
 extern void remoteCleanUp();
@@ -67,6 +70,10 @@ int systemDebug = 0;
 int systemVerbose = 0;
 int systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+int sensorX = 2047;
+int sensorY = 2047;
+bool sensorOn = false;
+
 int cartridgeType = 3;
 int captureFormat = 0;
 
@@ -82,11 +89,23 @@ char captureDir[2048];
 char saveDir[2048];
 char batteryDir[2048];
 
+int throttle = 0;
+
 bool paused = false;
 bool debugger = true;
 bool debuggerStub = false;
 bool systemSoundOn = false;
 bool removeIntros = false;
+int sdlFlashSize = 0;
+int sdlAutoIPS = 1;
+int sdlRtcEnable = 0;
+int sdlAgbPrint = 0;
+
+int sdlDefaultJoypad = 0;
+
+u16 motion[4] = {
+  SDLK_KP4, SDLK_KP6, SDLK_KP8, SDLK_KP2
+};
 
 extern void debuggerSignal(int,int);
 
@@ -344,7 +363,7 @@ void system10Frames(int rate)
 {
 }
 
-void systemFrame()
+void systemFrame(int)
 {
 }
 
@@ -445,4 +464,37 @@ bool systemPauseOnFrame()
 
 void systemGbBorderOn()
 {
+}
+
+bool sdlCheckJoyKey(int)
+{
+  return true;
+}
+
+u16 checksumBIOS()
+{
+	bool hasBIOS = false;
+	u8 * tempBIOS;
+	if(useBios)
+	{
+		tempBIOS = (u8 *)malloc(0x4000);
+		int size = 0x4000;
+		extern bool CPUIsGBABios(const char * file);
+		if(utilLoad(biosFileName,
+					CPUIsGBABios,
+					tempBIOS,
+					size)) {
+		if(size == 0x4000)
+			hasBIOS = true;
+		}
+	}
+
+	u16 biosCheck = 0;
+	if(hasBIOS) {
+		for(int i = 0; i < 0x4000; i += 4)
+			biosCheck += *((u32 *)&tempBIOS[i]);
+		free(tempBIOS);
+	}
+
+	return biosCheck;
 }

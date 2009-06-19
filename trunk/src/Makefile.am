@@ -1,6 +1,6 @@
 CORE_SUBDIRS = gb
 
-EXTRA_SUBDIRS = i386 prof sdl gtk
+EXTRA_SUBDIRS = i386 prof sdl gtk lua
 
 SUBDIRS = $(CORE_SUBDIRS) @VBA_SRC_EXTRA@
 
