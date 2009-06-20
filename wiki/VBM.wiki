@@ -1,4 +1,4 @@
-#vbm is the movie capture format of Visual Boy Advance, a Game Boy / Super Game Boy / Game Boy Color / Game Boy Advance emulator. 
+#vbm is the movie capture format of Visual Boy Advance
 
 ==VBM file format description==
 
