@@ -48,31 +48,23 @@ extern void remoteCleanUp();
 void MainWnd::OnFileOpen()
 {
 	theApp.winCheckFullscreen();
-	int cartType = theApp.cartridgeType;
-	theApp.cartridgeType = 0;
-	if (fileOpenSelect())
+	if (fileOpenSelect(0))
 	{
 		if (VBAMovieActive())
 			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
 		FileRun();
 	}
-	else
-		theApp.cartridgeType = cartType;
 }
 
 void MainWnd::OnFileOpenGBx()
 {
 	theApp.winCheckFullscreen();
-	int cartType = theApp.cartridgeType;
-	theApp.cartridgeType = 1;
-	if (fileOpenSelect())
+	if (fileOpenSelect(1))
 	{
 		if (VBAMovieActive())
 			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
 		FileRun();
 	}
-	else
-		theApp.cartridgeType = cartType;
 }
 
 void MainWnd::OnFilePause()
@@ -420,11 +412,11 @@ BOOL MainWnd::OnFileSaveSlot(UINT nID)
 
 BOOL MainWnd::OnSelectSlot(UINT nID)
 {
-	nID = nID + 1 - ID_SELECT_SLOT1;
-	theApp.currentSlot = nID - 1;
+	nID -= ID_SELECT_SLOT1;
+	theApp.currentSlot = nID;
 
 	CString buffer;
-	buffer.Format("Slot %d selected", nID);
+	buffer.Format("Slot %d selected", nID + 1);
 	systemScreenMessage(buffer, 0, 600);
 
 	return true;
@@ -1045,7 +1037,7 @@ void MainWnd::OnUpdateFileSaveGameSlot(CCmdUI *pCmdUI)
 
 void MainWnd::OnUpdateSelectSlot(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(true);
+	pCmdUI->SetCheck(pCmdUI->m_nID - ID_SELECT_SLOT1 == theApp.currentSlot);
 }
 
 void MainWnd::OnFileLoadgameAutoloadmostrecent()

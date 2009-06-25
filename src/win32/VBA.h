@@ -132,8 +132,8 @@ public:
 	bool      autoSaveLoadCheatList;
 	bool      pauseDuringCheatSearch;
 	bool      modelessCheatDialogIsOpen;
-	FILE *    winout;
-	bool      removeIntros;
+//	FILE *    winout;
+//	bool      removeIntros;
 	bool      autoIPS;
 	int       winGbBorderOn;
 	bool      hideMovieBorder;
@@ -203,12 +203,11 @@ public:
 	bool       altAviRecordMethod;
 	bool       nvVideoLog;
 	bool       nvAudioLog;
-	bool       painting;
-	int        sensorX;
-	int        sensorY;
+	bool       painting;	// for systemDrawScreen()
+	int32        sensorX;
+	int32        sensorY;
 	int        mouseCounter;
 	bool       wasPaused;
-	int        frameskipadjust;
 	bool       autoLoadMostRecent;
 	bool       loadMakesRecent;
 	int        fsMaxScale;

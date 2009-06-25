@@ -460,7 +460,7 @@ void MovieOpen::OnBnClickedOk()
 	extern void loadBIOS();
 	loadBIOS();
 
-	int code = VBAMovieOpen(movieName, IsDlgButtonChecked(IDC_READONLY));
+	int code = VBAMovieOpen(movieName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
 
 	if (code != SUCCESS)
 	{

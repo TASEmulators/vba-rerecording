@@ -2,6 +2,9 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+06-25-2009 aquanull - Tweaked UI again.
+06-25-2009 aquanull - Fixed movie drag & drop behavior.
+06-25-2009 aquanull - Fixed Reset/Cancel in the Directories dialog.
 06-19-2009 aquanull - Fixed compilation with SDL and gtk. Still malfunctioning.
 06-18-2009 aquanull - Beautified the code with automatical tools. Halfly fixed header craze. Hopefully nothing got messed up.
 06-04-2009 aquanull - Fixed small bugs in trunk/src/win32/MemoryViewerDlg.cpp.

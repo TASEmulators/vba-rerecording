@@ -30,11 +30,10 @@ static bool initialized = false;
 
 struct
 {
-	const char *command;
+	const char *command;				// a (!) puts it in the "common hotkeys" list
 	WORD        id;
 } winAccelCommands[] = {
-	{ "OpenGBARom(!)",					ID_FILE_OPEN									}, // a (!) puts it in the "common
-                                                                                           // hotkeys" list
+	{ "OpenGBARom(!)",					ID_FILE_OPEN									},
 	{ "OpenGBxRom(!)",					ID_FILE_OPENGAMEBOY								},
 	{ "LoadFromFile",					ID_FILE_LOAD									},
 	{ "SaveToFile",						ID_FILE_SAVE									},
@@ -140,9 +139,9 @@ struct
 	{ "Video320x240",					ID_OPTIONS_VIDEO_FULLSCREEN320X240				},
 	{ "Video640x480",					ID_OPTIONS_VIDEO_FULLSCREEN640X480				},
 	{ "Video800x600",					ID_OPTIONS_VIDEO_FULLSCREEN800X600				},
-//  { "Video1024x768", ID_OPTIONS_VIDEO_FULLSCREEN1024X768 },
-//  { "Video1600x1200", ID_OPTIONS_VIDEO_FULLSCREEN1600X1200 },
-//  { "VideoFullscreenRecent", ID_OPTIONS_VIDEO_FULLSCREENRECENT }, // better idea than above
+//  { "Video1024x768",					ID_OPTIONS_VIDEO_FULLSCREEN1024X768				},
+//  { "Video1600x1200",					ID_OPTIONS_VIDEO_FULLSCREEN1600X1200			},
+//  { "VideoFullscreenRecent",			ID_OPTIONS_VIDEO_FULLSCREENRECENT				}, // better idea than above
 	{ "VideoFullscreen",				ID_OPTIONS_VIDEO_FULLSCREEN						},
 	{ "VideoFullscreenMaxScale",		ID_OPTIONS_VIDEO_FULLSCREENMAXSCALE				},
 	{ "VideoAutoHideMenu",				ID_OPTIONS_EMULATOR_AUTOHIDEMENU				},
@@ -165,7 +164,7 @@ struct
 	{ "EmulationSaveEEPROMSensor",		ID_OPTIONS_EMULATOR_SAVETYPE_EEPROMSENSOR		},
 	{ "EmulationSaveFlash64K",			ID_OPTIONS_EMULATOR_SAVETYPE_FLASH512K			},
 	{ "EmulationSaveFlash128K",			ID_OPTIONS_EMULATOR_SAVETYPE_FLASH1M			},
-//  { "EmulationRemoveIntros", ID_OPTIONS_EMULATOR_REMOVEINTROSGBA },
+//  { "EmulationRemoveIntros",			ID_OPTIONS_EMULATOR_REMOVEINTROSGBA				},
 	{ "EmulationUseBIOS",				ID_OPTIONS_EMULATOR_USEBIOSFILE					},
 	{ "EmulationSkipBIOSIntro",			ID_OPTIONS_EMULATOR_SKIPBIOS					},
 	{ "EmulationSelectBIOS",			ID_OPTIONS_EMULATOR_SELECTBIOSFILE				},
@@ -278,7 +277,7 @@ struct
 	{ "FrameCounter(!)",				ID_TOOLS_FRAMECOUNTER							},
 	{ "InputDisplay(!)",				ID_TOOLS_INPUTDISPLAY							},
 	{ "LagCounter(!)",					ID_TOOLS_LAGCOUNTER								},
-//  { "LagCounterReset(!)", ID_TOOLS_LAGCOUNTER_RESET },
+//  { "LagCounterReset(!)",				ID_TOOLS_LAGCOUNTER_RESET						},
 	{ "LuaLoad(!)",						ID_FILE_LUA_LOAD								},
 	{ "LuaReload(!)",					ID_FILE_LUA_RELOAD								},
 	{ "LuaStop(!)",						ID_FILE_LUA_STOP								},

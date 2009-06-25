@@ -54,7 +54,7 @@ public:
 	void winMouseOn();
 	void screenCapture(int captureNumber);
 	HACCEL m_hAccelTable;
-	bool fileOpenSelect();
+	bool fileOpenSelect(int cartridgeType);
 	afx_msg LRESULT OnConfirmMode(WPARAM, LPARAM);
 	afx_msg LRESULT OnMySysCommand(WPARAM, LPARAM);
 	afx_msg void OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI);

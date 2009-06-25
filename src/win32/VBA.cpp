@@ -280,8 +280,8 @@ VBA::VBA()
 	autoSaveLoadCheatList     = false;
 	pauseDuringCheatSearch    = true;
 	modelessCheatDialogIsOpen = false;
-	winout                    = NULL;
-	removeIntros              = false;
+//	winout                    = NULL;
+//	removeIntros              = false;
 	autoIPS                   = true;
 	winGbBorderOn             = 0;
 	hideMovieBorder           = false;
@@ -351,7 +351,6 @@ VBA::VBA()
 	sensorY              = 2047;
 	mouseCounter         = 0;
 	wasPaused            = false;
-	frameskipadjust      = 0;
 	autoLoadMostRecent   = false;
 	loadMakesRecent      = false;
 	fsMaxScale           = 0;
@@ -1197,12 +1196,11 @@ void winlog(const char *msg, ...)
 	va_start(valist, msg);
 	buffer.FormatV(msg, valist);
 
-	if (theApp.winout == NULL)
-	{
-		theApp.winout = fopen("vba-trace.log", "w");
-	}
+	FILE *winout = fopen("vba-trace.log", "w");
 
-	fputs(buffer, theApp.winout);
+	fputs(buffer, winout);
+
+	fclose(winout);
 
 	va_end(valist);
 }
@@ -1957,7 +1955,7 @@ void VBA::loadSettings()
 
 	captureFormat = regQueryDwordValue("captureFormat", 0);
 
-	removeIntros = regQueryDwordValue("removeIntros", false) ? true : false;
+//	removeIntros = regQueryDwordValue("removeIntros", false) ? true : false;
 
 	recentFreeze = regQueryDwordValue("recentFreeze", false) ? true : false;
 
@@ -2821,7 +2819,7 @@ void VBA::saveSettings()
 
 	regSetDwordValue("captureFormat", captureFormat);
 
-	regSetDwordValue("removeIntros", removeIntros);
+//	regSetDwordValue("removeIntros", removeIntros);
 
 	regSetDwordValue("recentFreeze", recentFreeze);
 

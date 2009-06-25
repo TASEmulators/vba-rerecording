@@ -413,7 +413,7 @@ void MainWnd::OnUpdateToolsDebugGdb(CCmdUI*pCmdUI)
 void MainWnd::OnToolsDebugLoadandwait()
 {
 	theApp.winCheckFullscreen();
-	if (fileOpenSelect())
+	if (fileOpenSelect(0))
 	{
 		if (FileRun())
 		{

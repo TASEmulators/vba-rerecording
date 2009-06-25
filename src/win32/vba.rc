@@ -176,7 +176,7 @@ BEGIN
     EDITTEXT        IDC_MOVIE_PATH,49,83,160,14,ES_AUTOHSCROLL | WS_DISABLED
     PUSHBUTTON      "...",IDC_MOVIE_DIR,213,83,24,14
     PUSHBUTTON      "Reset",IDC_MOVIE_DIR_RESET,242,83,35,14
-    LTEXT           "Cheat:",IDC_STATIC,7,104,40,8
+    LTEXT           "Cheats:",IDC_STATIC,7,104,40,8
     EDITTEXT        IDC_CHEAT_PATH,49,102,160,14,ES_AUTOHSCROLL | 
                     WS_DISABLED
     PUSHBUTTON      "...",IDC_CHEAT_DIR,213,102,24,14
@@ -1851,35 +1851,49 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Load Game"
         BEGIN
-            MENUITEM "Current slot",                ID_FILE_LOADGAME_CURRENT
-            MENUITEM "Most recent slot",            ID_FILE_LOADGAME_MOSTRECENT
+            MENUITEM "&Current Slot",               ID_FILE_LOADGAME_CURRENT
+            MENUITEM "Most &Recent Slot",           ID_FILE_LOADGAME_MOSTRECENT
 
-            MENUITEM "Load from file...",           ID_FILE_LOAD
+            MENUITEM "Load from &File...",          ID_FILE_LOAD
             MENUITEM SEPARATOR
-            MENUITEM "Slot #1",                     ID_FILE_LOADGAME_SLOT1
-            MENUITEM "Slot #2",                     ID_FILE_LOADGAME_SLOT2
-            MENUITEM "Slot #3",                     ID_FILE_LOADGAME_SLOT3
-            MENUITEM "Slot #4",                     ID_FILE_LOADGAME_SLOT4
-            MENUITEM "Slot #5",                     ID_FILE_LOADGAME_SLOT5
-            MENUITEM "Slot #6",                     ID_FILE_LOADGAME_SLOT6
-            MENUITEM "Slot #7",                     ID_FILE_LOADGAME_SLOT7
-            MENUITEM "Slot #8",                     ID_FILE_LOADGAME_SLOT8
-            MENUITEM "Slot #9",                     ID_FILE_LOADGAME_SLOT9
-            MENUITEM "Slot #10",                    ID_FILE_LOADGAME_SLOT10
+            MENUITEM "Import &Battery File...",     ID_FILE_IMPORT_BATTERYFILE
+
+            MENUITEM "Import &Gameshark Snapshot...", 
+                                                    ID_FILE_IMPORT_GAMESHARKSNAPSHOT
+
             MENUITEM SEPARATOR
-            MENUITEM "Auto load most recent",       ID_FILE_LOADGAME_AUTOLOADMOSTRECENT
+            MENUITEM "Slot #&1",                    ID_FILE_LOADGAME_SLOT1
+            MENUITEM "Slot #&2",                    ID_FILE_LOADGAME_SLOT2
+            MENUITEM "Slot #&3",                    ID_FILE_LOADGAME_SLOT3
+            MENUITEM "Slot #&4",                    ID_FILE_LOADGAME_SLOT4
+            MENUITEM "Slot #&5",                    ID_FILE_LOADGAME_SLOT5
+            MENUITEM "Slot #&6",                    ID_FILE_LOADGAME_SLOT6
+            MENUITEM "Slot #&7",                    ID_FILE_LOADGAME_SLOT7
+            MENUITEM "Slot #&8",                    ID_FILE_LOADGAME_SLOT8
+            MENUITEM "Slot #&9",                    ID_FILE_LOADGAME_SLOT9
+            MENUITEM "Slot #1&0",                   ID_FILE_LOADGAME_SLOT10
+            MENUITEM SEPARATOR
+            MENUITEM "&Make 'Current' on Load",     ID_FILE_LOADGAME_MAKECURRENT
 
-            MENUITEM "Make recent on load",         ID_FILE_LOADGAME_MAKERECENT
+            MENUITEM "Make 'Recent' on &Load",      ID_FILE_LOADGAME_MAKERECENT
 
-            MENUITEM "Make current on load",        ID_FILE_LOADGAME_MAKECURRENT
+            MENUITEM SEPARATOR
+            MENUITEM "&Auto Load Most Recent on Start", 
+                                                    ID_FILE_LOADGAME_AUTOLOADMOSTRECENT
 
         END
         POPUP "&Save Game"
         BEGIN
-            MENUITEM "Current slot",                ID_FILE_SAVEGAME_CURRENT
-            MENUITEM "Oldest slot",                 ID_FILE_SAVEGAME_OLDESTSLOT
+            MENUITEM "&Current Slot",               ID_FILE_SAVEGAME_CURRENT
+            MENUITEM "&Oldest Slot",                ID_FILE_SAVEGAME_OLDESTSLOT
 
-            MENUITEM "Save to file...",             ID_FILE_SAVE
+            MENUITEM "Save to &File...",            ID_FILE_SAVE
+            MENUITEM SEPARATOR
+            MENUITEM "Export &Battery File...",     ID_FILE_EXPORT_BATTERYFILE
+
+            MENUITEM "Export &Gameshark Snapshot...", 
+                                                    ID_FILE_EXPORT_GAMESHARKSNAPSHOT
+
             MENUITEM SEPARATOR
             MENUITEM "Slot #1",                     ID_FILE_SAVEGAME_SLOT1
             MENUITEM "Slot #2",                     ID_FILE_SAVEGAME_SLOT2
@@ -1892,43 +1906,39 @@ BEGIN
             MENUITEM "Slot #9",                     ID_FILE_SAVEGAME_SLOT9
             MENUITEM "Slot #10",                    ID_FILE_SAVEGAME_SLOT10
             MENUITEM SEPARATOR
-            MENUITEM "Increase current slot",       ID_FILE_SAVEGAME_INCREMENTSLOT
+            MENUITEM "&Make 'Current' on Save",     ID_FILE_SAVEGAME_MAKECURRENT
 
-            MENUITEM "Decrease current slot",       ID_FILE_SAVEGAME_DECREMENTSLOT
+        END
+        POPUP "C&urrent Slot"
+        BEGIN
+            MENUITEM "&Decrease Current Slot",      ID_FILE_SAVEGAME_DECREMENTSLOT
 
             MENUITEM SEPARATOR
-            MENUITEM "Make current on save",        ID_FILE_SAVEGAME_MAKECURRENT
+            MENUITEM "Slot #&1",                    ID_SELECT_SLOT1
+            MENUITEM "Slot #&2",                    ID_SELECT_SLOT2
+            MENUITEM "Slot #&3",                    ID_SELECT_SLOT3
+            MENUITEM "Slot #&4",                    ID_SELECT_SLOT4
+            MENUITEM "Slot #&5",                    ID_SELECT_SLOT5
+            MENUITEM "Slot #&6",                    ID_SELECT_SLOT6
+            MENUITEM "Slot #&7",                    ID_SELECT_SLOT7
+            MENUITEM "Slot #&8",                    ID_SELECT_SLOT8
+            MENUITEM "Slot #&9",                    ID_SELECT_SLOT9
+            MENUITEM "Slot #1&0",                   ID_SELECT_SLOT10
+            MENUITEM SEPARATOR
+            MENUITEM "&Increase Current Slot",      ID_FILE_SAVEGAME_INCREMENTSLOT
 
         END
         MENUITEM SEPARATOR
         MENUITEM "&Pause",                      ID_FILE_PAUSE
         MENUITEM "&Frame Advance",              ID_DEBUG_NEXTFRAME
+        MENUITEM "Re&wind",                     ID_TOOLS_REWIND
+        MENUITEM "Rewind Se&ttings...",         ID_OPTIONS_EMULATOR_REWINDINTERVAL
+
+        MENUITEM SEPARATOR
         MENUITEM "&Reset",                      ID_FILE_RESET
         MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
-        POPUP "&Import"
-        BEGIN
-            MENUITEM "&Battery file...",            ID_FILE_IMPORT_BATTERYFILE
-
-            MENUITEM "Gameshark &code file...",     ID_FILE_IMPORT_GAMESHARKCODEFILE
-
-            MENUITEM "&Gameshark Snapshot...",      ID_FILE_IMPORT_GAMESHARKSNAPSHOT
-
-        END
-        POPUP "&Export"
-        BEGIN
-            MENUITEM "&Battery file...",            ID_FILE_EXPORT_BATTERYFILE
-
-            MENUITEM "&Gameshark Snapshot...",      ID_FILE_EXPORT_GAMESHARKSNAPSHOT
-
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "&Toggle Menu",                ID_FILE_TOGGLEMENU
-        MENUITEM "Ro&m Information...",         ID_FILE_ROMINFORMATION
-        MENUITEM SEPARATOR
-        MENUITEM "Run Lua Script...",           ID_FILE_LUA_LOAD
-        MENUITEM "Reload Lua Script",           ID_FILE_LUA_RELOAD
-        MENUITEM "Stop Lua Script",             ID_FILE_LUA_STOP
+        MENUITEM "Rom &Information...",         ID_FILE_ROMINFORMATION
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
@@ -2077,50 +2087,6 @@ BEGIN
             MENUITEM "    Accurate &Emulation Speed", 
                                                     ID_OPTIONS_FRAMESKIP_ACCURATESPEED
 
-            MENUITEM SEPARATOR
-            POPUP "Sh&ow Speed"
-            BEGIN
-                MENUITEM "None",                        ID_OPTIONS_EMULATOR_SHOWSPEED_NONE
-
-                MENUITEM "Percentage",                  ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE
-
-                MENUITEM "Detailed",                    ID_OPTIONS_EMULATOR_SHOWSPEED_DETAILED
-
-                MENUITEM SEPARATOR
-                MENUITEM "Transparent",                 ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT
-
-            END
-        END
-        POPUP "&Emulator"
-        BEGIN
-            MENUITEM "Pause When &Inactive",        ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE
-
-            POPUP "Process &Priority"
-            BEGIN
-                MENUITEM "&Highest",                    ID_OPTIONS_PRIORITY_HIGHEST
-
-                MENUITEM "&Above Normal",               ID_OPTIONS_PRIORITY_ABOVENORMAL
-
-                MENUITEM "&Normal",                     ID_OPTIONS_PRIORITY_NORMAL
-
-                MENUITEM "&Below Normal",               ID_OPTIONS_PRIORITY_BELOWNORMAL
-
-            END
-            MENUITEM SEPARATOR
-            MENUITEM "&Directories...",             ID_OPTIONS_EMULATOR_DIRECTORIES
-
-            MENUITEM "&Associate...",               ID_OPTIONS_EMULATOR_ASSOCIATE
-
-            MENUITEM SEPARATOR
-            POPUP "UI &Language"
-            BEGIN
-                MENUITEM "&System",                     ID_OPTIONS_LANGUAGE_SYSTEM
-
-                MENUITEM "&English",                    ID_OPTIONS_LANGUAGE_ENGLISH
-
-                MENUITEM "&Other...",                   ID_OPTIONS_LANGUAGE_OTHER
-
-            END
         END
         MENUITEM SEPARATOR
         POPUP "&Video"
@@ -2175,16 +2141,12 @@ BEGIN
             MENUITEM "&Other Full Screen...",       ID_OPTIONS_VIDEO_FULLSCREEN
 
             MENUITEM SEPARATOR
-            MENUITEM "Full Screen Max Scale...",    ID_OPTIONS_VIDEO_FULLSCREENMAXSCALE
+            MENUITEM "Full Screen &Max Scale...",   ID_OPTIONS_VIDEO_FULLSCREENMAXSCALE
 
-            MENUITEM "Full Screen Stretch to Fit",  ID_OPTIONS_VIDEO_FULLSCREENSTRETCHTOFIT
+            MENUITEM "Full Screen &Ignore Ratio",   ID_OPTIONS_VIDEO_FULLSCREENSTRETCHTOFIT
 
-            MENUITEM "Auto &Hide Menu",             ID_OPTIONS_EMULATOR_AUTOHIDEMENU
-
-            MENUITEM SEPARATOR
-            MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
-
-            MENUITEM "Disable Status &Messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
+            MENUITEM "Full Screen &Hide Menu",      ID_FILE_TOGGLEMENU
+            MENUITEM "Full Screen &Auto Hide Menu", ID_OPTIONS_EMULATOR_AUTOHIDEMENU
 
             MENUITEM SEPARATOR
             MENUITEM "&Disable SFX",                ID_OPTIONS_VIDEO_DISABLESFX
@@ -2345,7 +2307,7 @@ BEGIN
             MENUITEM "Select &BIOS file...",        ID_OPTIONS_EMULATOR_SELECTBIOSFILE
 
         END
-        POPUP "&Gameboy Mode"
+        POPUP "Gameboy &Mode"
         BEGIN
             MENUITEM "Automatic &Detection",        ID_OPTIONS_GAMEBOY_AUTOMATIC
 
@@ -2360,7 +2322,8 @@ BEGIN
 
             MENUITEM "Border Al&ways",              ID_OPTIONS_GAMEBOY_BORDER
 
-            MENUITEM "Emulate &Printer",            ID_OPTIONS_GAMEBOY_PRINTER
+            MENUITEM SEPARATOR
+            MENUITEM "GB &Printer",                 ID_OPTIONS_GAMEBOY_PRINTER
 
             MENUITEM SEPARATOR
             MENUITEM "&Real Colors",                ID_OPTIONS_GAMEBOY_REALCOLORS
@@ -2370,17 +2333,77 @@ BEGIN
             MENUITEM "Customi&ze Colors...",        ID_OPTIONS_GAMEBOY_COLORS
 
         END
+        MENUITEM SEPARATOR
+        POPUP "&Head-Up Display"
+        BEGIN
+            MENUITEM "Frame Counter",               ID_TOOLS_FRAMECOUNTER
+            MENUITEM "Lag Counter",                 ID_TOOLS_LAGCOUNTER
+            MENUITEM "Input Display",               ID_TOOLS_INPUTDISPLAY
+            MENUITEM SEPARATOR
+            MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
+
+            MENUITEM "Disable Status &Messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
+
+            MENUITEM SEPARATOR
+            POPUP "Sh&ow Speed"
+            BEGIN
+                MENUITEM "None",                        ID_OPTIONS_EMULATOR_SHOWSPEED_NONE
+
+                MENUITEM "Percentage",                  ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE
+
+                MENUITEM "Detailed",                    ID_OPTIONS_EMULATOR_SHOWSPEED_DETAILED
+
+                MENUITEM SEPARATOR
+                MENUITEM "Transparent",                 ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT
+
+            END
+        END
+        POPUP "&Preferences"
+        BEGIN
+            MENUITEM "Pause When &Inactive",        ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE
+
+            POPUP "Process &Priority"
+            BEGIN
+                MENUITEM "&Highest",                    ID_OPTIONS_PRIORITY_HIGHEST
+
+                MENUITEM "&Above Normal",               ID_OPTIONS_PRIORITY_ABOVENORMAL
+
+                MENUITEM "&Normal",                     ID_OPTIONS_PRIORITY_NORMAL
+
+                MENUITEM "&Below Normal",               ID_OPTIONS_PRIORITY_BELOWNORMAL
+
+            END
+            MENUITEM SEPARATOR
+            MENUITEM "&Directories...",             ID_OPTIONS_EMULATOR_DIRECTORIES
+
+            MENUITEM "&Associate...",               ID_OPTIONS_EMULATOR_ASSOCIATE
+
+            MENUITEM SEPARATOR
+            POPUP "UI &Language"
+            BEGIN
+                MENUITEM "&System",                     ID_OPTIONS_LANGUAGE_SYSTEM
+
+                MENUITEM "&English",                    ID_OPTIONS_LANGUAGE_ENGLISH
+
+                MENUITEM "&Other...",                   ID_OPTIONS_LANGUAGE_OTHER
+
+            END
+        END
     END
     POPUP "&Cheats"
     BEGIN
-        MENUITEM "&Search for new cheats...",   ID_CHEATS_SEARCHFORCHEATS
+        MENUITEM "Search for new &cheats...",   ID_CHEATS_SEARCHFORCHEATS
         MENUITEM "&Pause during cheat search",  ID_CHEATS_PAUSEDURINGCHEATSEARCH
 
         MENUITEM SEPARATOR
-        MENUITEM "&Cheat list...",              ID_CHEATS_CHEATLIST
+        MENUITEM "&View cheat list...",         ID_CHEATS_CHEATLIST
         MENUITEM "&Load cheat list...",         ID_CHEATS_LOADCHEATLIST
-        MENUITEM "Sa&ve cheat list...",         ID_CHEATS_SAVECHEATLIST
+        MENUITEM "&Save cheat list...",         ID_CHEATS_SAVECHEATLIST
         MENUITEM "&Auto save/load cheats",      ID_CHEATS_AUTOMATICSAVELOADCHEATS
+
+        MENUITEM SEPARATOR
+        MENUITEM "Import &Gameshark code file...", 
+                                                ID_FILE_IMPORT_GAMESHARKCODEFILE
 
         MENUITEM SEPARATOR
         MENUITEM "&Disable all cheats",         ID_CHEATS_DISABLECHEATS
@@ -2389,37 +2412,35 @@ BEGIN
     BEGIN
         POPUP "&Debug"
         BEGIN
-            MENUITEM "Disassemble...",              ID_TOOLS_DISASSEMBLE
-            MENUITEM "Logging...",                  ID_TOOLS_LOGGING
+            MENUITEM "&Disassemble...",             ID_TOOLS_DISASSEMBLE
+            MENUITEM "&Logging...",                 ID_TOOLS_LOGGING
             MENUITEM "&IO Viewer...",               ID_TOOLS_IOVIEWER
-            MENUITEM "&Map Viewer...",              ID_TOOLS_MAPVIEW
-            MENUITEM "M&emory viewer...",           ID_TOOLS_MEMORYVIEWER
-            MENUITEM "OAM Viewer...",               ID_TOOLS_OAMVIEWER
+            MENUITEM "M&ap Viewer...",              ID_TOOLS_MAPVIEW
+            MENUITEM "&Memory Viewer...",           ID_TOOLS_MEMORYVIEWER
+            MENUITEM "&OAM Viewer...",              ID_TOOLS_OAMVIEWER
             MENUITEM "&Palette Viewer...",          ID_TOOLS_PALETTEVIEW
-            MENUITEM "Tile Viewer...",              ID_TOOLS_TILEVIEWER
-            POPUP "GDB"
-            BEGIN
-                MENUITEM "Wait for connection...",      ID_TOOLS_DEBUG_GDB
-                MENUITEM "Load and wait...",            ID_TOOLS_DEBUG_LOADANDWAIT
+            MENUITEM "&Tile Viewer...",             ID_TOOLS_TILEVIEWER
+            MENUITEM SEPARATOR
+            MENUITEM "&AGB Print",                  ID_OPTIONS_EMULATOR_AGBPRINT
 
-                MENUITEM "Break into GDB",              ID_TOOLS_DEBUG_BREAK
-                MENUITEM "Disconnect",                  ID_TOOLS_DEBUG_DISCONNECT
+            POPUP "&GDB"
+            BEGIN
+                MENUITEM "&Wait for Connection...",     ID_TOOLS_DEBUG_GDB
+                MENUITEM "&Load And Wait...",           ID_TOOLS_DEBUG_LOADANDWAIT
+
+                MENUITEM "&Break into GDB",             ID_TOOLS_DEBUG_BREAK
+                MENUITEM "&Disconnect",                 ID_TOOLS_DEBUG_DISCONNECT
 
             END
         END
-        MENUITEM "AGB &Print",                  ID_OPTIONS_EMULATOR_AGBPRINT
         MENUITEM SEPARATOR
-        MENUITEM "Frame Counter",               ID_TOOLS_FRAMECOUNTER
-        MENUITEM "Lag Counter",                 ID_TOOLS_LAGCOUNTER
-        MENUITEM "Input Display",               ID_TOOLS_INPUTDISPLAY
+        MENUITEM "Frame &Search",               ID_DEBUG_FRAMESEARCH
+        MENUITEM "Frame Search &Prev",          ID_DEBUG_FRAMESEARCHPREV
+        MENUITEM "Frame Search &End",           ID_DEBUG_FRAMESEARCHLOAD
         MENUITEM SEPARATOR
-        MENUITEM "Frame Search",                ID_DEBUG_FRAMESEARCH
-        MENUITEM "Frame Search Prev",           ID_DEBUG_FRAMESEARCHPREV
-        MENUITEM "Frame Search End",            ID_DEBUG_FRAMESEARCHLOAD
-        MENUITEM SEPARATOR
-        MENUITEM "&Rewind",                     ID_TOOLS_REWIND
-        MENUITEM "Rewind Se&ttings...",         ID_OPTIONS_EMULATOR_REWINDINTERVAL
-
+        MENUITEM "Run &Lua Script...",          ID_FILE_LUA_LOAD
+        MENUITEM "&Reload Lua Script",          ID_FILE_LUA_RELOAD
+        MENUITEM "Sto&p Lua Script",            ID_FILE_LUA_STOP
         MENUITEM SEPARATOR
         POPUP "&Movie"
         BEGIN
@@ -2434,7 +2455,7 @@ BEGIN
             BEGIN
                 MENUITEM "&Pause",                      ID_MOVIE_END_PAUSE
                 MENUITEM SEPARATOR
-                MENUITEM "&Stop movie",                 ID_MOVIE_END_STOP
+                MENUITEM "&Close movie",                ID_MOVIE_END_STOP
                 MENUITEM "&Replay from start",          ID_MOVIE_END_RESTART
                 MENUITEM "Resume record if &modified",  ID_MOVIE_END_RERECORD
 
@@ -2443,8 +2464,9 @@ BEGIN
             MENUITEM "&Stop movie",                 ID_MOVIE_STOP
         END
         MENUITEM "&AVI Recording...",           ID_TOOLS_AVIRECORDING
-        MENUITEM "&Sound Recording...",         ID_TOOLS_SOUNDRECORDING
-        MENUITEM "Screenshot Capt&ure...",      ID_FILE_SCREENCAPTURE
+        MENUITEM "&WAV Recording...",           ID_TOOLS_SOUNDRECORDING
+        MENUITEM SEPARATOR
+        MENUITEM "Screenshot &Capture...",      ID_FILE_SCREENCAPTURE
         POPUP "Screenshot &Format"
         BEGIN
             MENUITEM "&PNG",                        ID_OPTIONS_EMULATOR_PNGFORMAT
@@ -2458,8 +2480,8 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Bug Report",                 ID_HELP_BUGREPORT
         MENUITEM "&FAQ (website)",              ID_HELP_FAQ
+        MENUITEM "&Bug Report",                 ID_HELP_BUGREPORT
         MENUITEM SEPARATOR
         MENUITEM "&About...",                   ID_HELP_ABOUT
     END
