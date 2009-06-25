@@ -3,31 +3,34 @@
 ==VBM file format description==
 
 ===Header format:====
-000 4-byte signature: 56 42 4D 1A "VBM\x1A"
+    000 4-byte signature: 56 42 4D 1A "VBM\x1A"
+
     004 4-byte little-endian unsigned int: version number, must be 1
-    008 4-byte little-endian integer: movie "uid" - identifies the movie-savestate relationship,
-               also used as the recording time in Unix epoch format
+
+    008 4-byte little-endian integer: movie "uid" - identifies the movie-savestate relationship, also used as the recording time in Unix epoch format
+
     00C 4-byte little-endian unsigned int: number of frames
+
     010 4-byte little-endian unsigned int: rerecord count
-    014 1-byte flags (movie start flags):
+
+    014 1-byte flags: (movie start flags)
        bit 0: if "1", movie starts from an embedded "quicksave" snapshot; if "0", it doesn't
        bit 1: if "1", movie starts from reset with an embedded SRAM; if "0", it doesn't
-        (NOTE: if both bits 0 and 1 are "0", then movie begins from power on with no SRAM or save state.
-              if both bits 0 and 1 are "1", the movie file is invalid.)
+       (NOTE: if both bits 0 and 1 are "0", then movie begins from power on with no SRAM or save state. if both bits 0 and 1 are "1", the movie file is invalid.)
        other: reserved, set to 0
-    015 1-byte flags (controller flags):
+    015 1-byte flags: controller flags
        bit 0: controller 1 in use
        bit 1: controller 2 in use (SGB games can be 2-player multiplayer)
        bit 2: controller 3 in use (SGB games can be 3- or 4-player multiplayer with multitap)
        bit 3: controller 4 in use (SGB games can be 3- or 4-player multiplayer with multitap)
        other: reserved
-    016 1-byte flags:  (system flags - note that no matter what these are, the game always runs at 60 frames/sec)
+    016 1-byte flags: (system flags - note that no matter what these are, the game always runs at 60 frames/sec)
        bit 0: if "1", movie is for the GBA system; if "0", it isn't.
        bit 1: if "1", movie is for the GBC system; if "0", it isn't.
        bit 2: if "1", movie is for the SGB system; if "0", it isn't. (If all 3 of these bits are "0", it's for regular GB.)
-         (NOTE:  The above 3 bits are mutually exclusive, although a given ROM can be playable on multiple systems.)
+       (NOTE:  The above 3 bits are mutually exclusive, although a given ROM can be playable on multiple systems.)
        other: reserved, set to 0
-    017 1-byte flags:  (values of some boolean emulator options)
+    017 1-byte flags: (values of some boolean emulator options)
        bit 0: (useBiosFile)
          if "1" and the movie is of a GBA game, the movie was made using a GBA BIOS file, otherwise it wasn't.
        bit 1: (skipBiosFile)
@@ -41,21 +44,26 @@
        bit 5: (gbcHdma5Fix)
          if "0" and the movie is of a GBC game, the movie was made using the old buggy HDMA5 timing, otherwise it wasn't.
        bit 6: (later versions only)
-         TODO: explain what this bit does.
+         if "1", the movie was made with Echo RAM Fix on, otherwise it wasn't. (It only affects GB, GBC and SGB games.)
        other: reserved, set to 0
     018 4-byte little-endian unsigned int: theApp.winSaveType (value of that emulator option)
+
     01C 4-byte little-endian unsigned int: theApp.winFlashSize (value of that emulator option)
+
     020 4-byte little-endian unsigned int: gbEmulatorType (value of that emulator option)
-    024 12-byte character array: the internal game title of the ROM
-      used while recording, not necessarily null-terminated (ASCII?)
+
+    024 12-byte character array: the internal game title of the ROM used while recording, not necessarily null-terminated (ASCII?)
+
     030 1-byte: reserved, set to 0
+
     031 1-byte unsigned char: the internal CRC of the ROM used while recording
-    032 2-byte little-endian unsigned short: the internal Checksum of the ROM used
-       while recording, or a calculated CRC16 of the BIOS if GBA
-    034 4-byte little-endian unsigned int: the Game Code of the ROM used
-       while recording, or the Unit Code if not GBA
-    038 4-byte little-endian unsigned int: offset to the savestate
-       or SRAM inside file, set to 0 if unused
+
+    032 2-byte little-endian unsigned short: the internal Checksum of the ROM used while recording, or a calculated CRC16 of the BIOS if GBA
+
+    034 4-byte little-endian unsigned int: the Game Code of the ROM used while recording, or the Unit Code if not GBA
+
+    038 4-byte little-endian unsigned int: offset to the savestate or SRAM inside file, set to 0 if unused
+
     03C 4-byte little-endian unsigned int: offset to the controller data inside file
 
 ===Info (192 bytes)===
