@@ -172,7 +172,6 @@ void Directories::OnRomDir()
 
 void Directories::OnRomDirReset()
 {
-	regDeleteValue(IDS_ROM_DIR);
 	m_romPath.SetWindowText("");
 }
 
@@ -186,7 +185,6 @@ void Directories::OnGBxRomDir()
 
 void Directories::OnGBxRomDirReset()
 {
-	regDeleteValue(IDS_GBXROM_DIR);
 	m_gbxromPath.SetWindowText("");
 }
 
@@ -200,7 +198,6 @@ void Directories::OnBatteryDir()
 
 void Directories::OnBatteryDirReset()
 {
-	regDeleteValue(IDS_BATTERY_DIR);
 	m_batteryPath.SetWindowText("");
 }
 
@@ -214,7 +211,6 @@ void Directories::OnSaveDir()
 
 void Directories::OnSaveDirReset()
 {
-	regDeleteValue(IDS_SAVE_DIR);
 	m_savePath.SetWindowText("");
 }
 
@@ -228,7 +224,6 @@ void Directories::OnMovieDir()
 
 void Directories::OnMovieDirReset()
 {
-	regDeleteValue(IDS_MOVIE_DIR);
 	m_moviePath.SetWindowText("");
 }
 
@@ -242,7 +237,6 @@ void Directories::OnCheatDir()
 
 void Directories::OnCheatDirReset()
 {
-	regDeleteValue(IDS_CHEAT_DIR);
 	m_cheatPath.SetWindowText("");
 }
 
@@ -256,7 +250,6 @@ void Directories::OnLuaDir()
 
 void Directories::OnLuaDirReset()
 {
-	regDeleteValue(IDS_LUA_DIR);
 	m_luaPath.SetWindowText("");
 }
 
@@ -270,7 +263,6 @@ void Directories::OnAviDir()
 
 void Directories::OnAviDirReset()
 {
-	regDeleteValue(IDS_AVI_DIR);
 	m_aviPath.SetWindowText("");
 }
 
@@ -284,7 +276,6 @@ void Directories::OnWavDir()
 
 void Directories::OnWavDirReset()
 {
-	regDeleteValue(IDS_WAV_DIR);
 	m_wavPath.SetWindowText("");
 }
 
@@ -298,7 +289,6 @@ void Directories::OnCaptureDir()
 
 void Directories::OnCaptureDirReset()
 {
-	regDeleteValue(IDS_CAPTURE_DIR);
 	m_capturePath.SetWindowText("");
 }
 
@@ -312,25 +302,24 @@ void Directories::OnIpsDir()
 
 void Directories::OnIpsDirReset()
 {
-	regDeleteValue(IDS_IPS_DIR);
 	m_ipsPath.SetWindowText("");
 }
 
-/*
-   void Directories::OnWatchDir()
-   {
-   m_watchPath.GetWindowText(initialFolderDir);
-   CString p = browseForDir(winResLoadString(IDS_SELECT_WATCH_DIR));
-   if(!p.IsEmpty())
-    m_watchPath.SetWindowText(p);
-   }
+#if 0
+void Directories::OnWatchDir()
+{
+	m_watchPath.GetWindowText(initialFolderDir);
+	CString p = browseForDir(winResLoadString(IDS_SELECT_WATCH_DIR));
+	if(!p.IsEmpty())
+	m_watchPath.SetWindowText(p);
+}
 
-   void Directories::OnWatchDirReset()
-   {
-   regDeleteValue("watchDir");
-   m_watchPath.SetWindowText("");
-   }
- */
+void Directories::OnWatchDirReset()
+{
+	regDeleteValue("watchDir");
+	m_watchPath.SetWindowText("");
+}
+#endif
 
 void Directories::OnCancel()
 {
@@ -344,46 +333,68 @@ void Directories::OnOK()
 	m_romPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_ROM_DIR, buffer);
+	else
+		regDeleteValue(IDS_ROM_DIR);
 
 	m_gbxromPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_GBXROM_DIR, buffer);
+	else
+		regDeleteValue(IDS_GBXROM_DIR);
 
 	m_batteryPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_BATTERY_DIR, buffer);
+	else
+		regDeleteValue(IDS_BATTERY_DIR);
 
 	m_savePath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_SAVE_DIR, buffer);
+	else
+		regDeleteValue(IDS_SAVE_DIR);
 
 	m_moviePath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_MOVIE_DIR, buffer);
+	else
+		regDeleteValue(IDS_MOVIE_DIR);
 
 	m_cheatPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_CHEAT_DIR, buffer);
+	else
+		regDeleteValue(IDS_CHEAT_DIR);
 
 	m_ipsPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_IPS_DIR, buffer);
+	else
+		regDeleteValue(IDS_IPS_DIR);
 
 	m_luaPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_LUA_DIR, buffer);
+	else
+		regDeleteValue(IDS_LUA_DIR);
 
 	m_aviPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_AVI_DIR, buffer);
+	else
+		regDeleteValue(IDS_AVI_DIR);
 
 	m_wavPath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_WAV_DIR, buffer);
+	else
+		regDeleteValue(IDS_WAV_DIR);
 
 	m_capturePath.GetWindowText(buffer);
 	if (!buffer.IsEmpty())
 		regSetStringValue(IDS_CAPTURE_DIR, buffer);
+	else
+		regDeleteValue(IDS_CAPTURE_DIR);
 
 	EndDialog(TRUE);
 }

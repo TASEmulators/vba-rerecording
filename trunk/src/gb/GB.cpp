@@ -3410,14 +3410,12 @@ void gbEmulate(int ticksToStop)
 							if (theApp.muteFrameAdvance)
 								theApp.frameAdvanceMuteNow = true;
 							theApp.paused = true;
-							if (theApp.sound)
-								theApp.sound->pause(); // prevents the sound from looping annoyingly after a frame advance in
-                                                       // GBA games
 #else
 							extern bool paused; // from SDL.cpp
 							paused = true;
-							systemSoundPause();
 #endif
+							// prevents the sound from looping annoyingly after a frame advance in GBA games
+							systemSoundPause();
 						}
 						else
 						{

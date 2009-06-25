@@ -721,7 +721,6 @@ bool MainWnd::FileRun()
 	if (theApp.autoLoadMostRecent && !VBAMovieActive() && !VBAMovieLoading()) // would cause desync in movies...
 		OnFileLoadgameMostrecent();
 
-	theApp.frameskipadjust = 0;
 	theApp.renderedFrames  = 0;
 
 	theApp.rewindCount      = 0;
@@ -1124,10 +1123,10 @@ void MainWnd::OnSystemMinimize()
 	ShowWindow(SW_SHOWMINIMIZED);
 }
 
-bool MainWnd::fileOpenSelect()
+bool MainWnd::fileOpenSelect(int cartridgeType)
 {
 	theApp.dir = "";
-	CString initialDir = regQueryStringValue(theApp.cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
+	CString initialDir = regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
 	if (!initialDir.IsEmpty())
 		theApp.dir = initialDir;
 
@@ -1150,7 +1149,7 @@ bool MainWnd::fileOpenSelect()
 		theApp.dir    = theApp.szFile.Left(dlg.m_ofn.nFileOffset);
 		if (theApp.dir.GetLength() > 3 && theApp.dir[theApp.dir.GetLength()-1] == '\\')
 			theApp.dir = theApp.dir.Left(theApp.dir.GetLength()-1);
-		regSetStringValue(theApp.cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, theApp.dir);
+		regSetStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, theApp.dir);
 		return true;
 	}
 	return false;
@@ -1400,10 +1399,12 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			extern void fillRomInfo(const SMovie &movieInfo, char romTitle [12],
 			                        uint32 & romGameCode, uint16 & checksum, uint8 & crc); // from MovieOpen.cpp
 
+			int cartType = movieInfo.header.typeFlags & 1 ? 0 : 1;
+
 			if (!emulating)
 			{
 				theApp.winCheckFullscreen();
-				if (fileOpenSelect())
+				if (fileOpenSelect(cartType))
 				{
 					if (VBAMovieActive())
 						VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
@@ -1500,7 +1501,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					return;
 				case IDRETRY:
 					theApp.winCheckFullscreen();
-					if (fileOpenSelect())
+					if (fileOpenSelect(cartType))
 					{
 						if (VBAMovieActive())
 							VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie

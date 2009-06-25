@@ -5,7 +5,7 @@
 * Fix the bugs with vba-over.ini settings.
 * Fix the frame timing?
 * Implement the VBA-H-like cheat search engine?
-* Fix all issues on the tracker?
+* Resolve all issues on the tracker.
 * Convert the repository from Subversion to Mercurial?
 * Multiplayer re-recording support for GBA and/or GB games?
 * Documentation?

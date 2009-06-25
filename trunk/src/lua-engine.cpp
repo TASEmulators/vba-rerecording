@@ -381,14 +381,12 @@ static void vbaSetPause(bool pause)
 	{
 #if (defined(WIN32) && !defined(SDL))
 		theApp.paused = true;
-		if (theApp.sound)
-			theApp.sound->pause();
 		theApp.speedupToggle = false;
 #else
 		extern bool paused; // from SDL.cpp
 		paused = true;
-		systemSoundPause();
 #endif
+		systemSoundPause();
 	}
 	else
 	{

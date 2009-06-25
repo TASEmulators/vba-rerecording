@@ -545,7 +545,7 @@ static void SetPlayEmuSettings()
     ((MainWnd *)theApp.m_pMainWnd)->OnOptionsSound44khz();     // some GB/GBC games depend on the sound rate, so just use the
                                                                // highest one
     theApp.useOldGBTiming = false;
-    theApp.removeIntros   = false;
+//    theApp.removeIntros   = false;
     theApp.skipBiosFile   = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
     theApp.useBiosFile    = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
     rtcEnable((Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0);
@@ -835,7 +835,7 @@ static void SetRecordEmuSettings()
     ((MainWnd *)theApp.m_pMainWnd)->OnOptionsSound44khz();     // some GB/GBC games depend on the sound rate, so just use the
                                                                // highest one
     theApp.useOldGBTiming = false;
-    theApp.removeIntros   = false;
+//    theApp.removeIntros   = false;
 
     prevBorder     = gbBorderOn;
     prevWinBorder  = theApp.winGbBorderOn;
@@ -1181,15 +1181,13 @@ void VBAMovieUpdate(int controllerNum)
    SEEK_SET);
  #if (defined(WIN32) && !defined(SDL))
                         theApp.paused = true;
-                        if(theApp.sound)
-                            theApp.sound->pause();
                         theApp.speedupToggle = false;
  #else
                         extern bool paused; // from SDL.cpp
                         paused = true;
-                        systemSoundPause();
  #endif
- */
+                        systemSoundPause();
+*/
 		            VBAMovieSwitchToRecording();
 		            willPause = true;
 		            break;
@@ -1247,16 +1245,14 @@ void VBAMovieUpdate(int controllerNum)
     // if the movie's been set to pause at a certain frame
     if (willPause || VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
     {
-#       if (defined(WIN32) && !defined(SDL))
+#if (defined(WIN32) && !defined(SDL))
         theApp.paused = true;
-        if (theApp.sound)
-			theApp.sound->pause();
         theApp.speedupToggle = false;
-#       else
+#else
         extern bool paused;     // from SDL.cpp
         paused = true;
+#endif
         systemSoundPause();
-#       endif
         Movie.pauseFrame = -1;
 	}
 }

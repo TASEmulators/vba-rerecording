@@ -170,9 +170,6 @@
 				RelativePath="..\src\CheatSearch.cpp">
 			</File>
 			<File
-				RelativePath="..\src\Gfx.cpp">
-			</File>
-			<File
 				RelativePath="..\src\lua-engine.cpp">
 			</File>
 			<File
@@ -221,6 +218,9 @@
 				</File>
 				<File
 					RelativePath="..\src\GBA.cpp">
+				</File>
+				<File
+					RelativePath="..\src\Gfx.cpp">
 				</File>
 				<File
 					RelativePath="..\src\Globals.cpp">
@@ -1400,6 +1400,25 @@
 			</File>
 			<File
 				RelativePath="..\src\thumb.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Documents"
+			Filter="">
+			<File
+				RelativePath="..\ChangeLog">
+			</File>
+			<File
+				RelativePath="..\Changelog.txt">
+			</File>
+			<File
+				RelativePath="..\README">
+			</File>
+			<File
+				RelativePath="..\README-win.txt">
+			</File>
+			<File
+				RelativePath="..\TODO.txt">
 			</File>
 		</Filter>
 		<File
