@@ -87,7 +87,7 @@ void MemoryViewer::setAddress(u32 a)
 		if (addressSize)
 		{
 			u16 addr = address;
-			if ((u16)(addr+(displayedLines<<4)) < addr)
+			if ((u16)((addr+(displayedLines<<4)) & 0xFFFF) < addr)
 			{
 				address = 0xffff - (displayedLines<<4) + 1;
 			}

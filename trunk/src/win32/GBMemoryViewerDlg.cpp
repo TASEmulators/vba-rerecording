@@ -109,12 +109,6 @@ GBMemoryViewerDlg::GBMemoryViewerDlg(CWnd*pParent /*=NULL*/)
 	m_size = -1;
 	//}}AFX_DATA_INIT
 	autoUpdate = false;
-
-	autoUpdate = !regQueryDwordValue("memViewerAutoUpdate", 1);
-	OnAutoUpdate(); // inverts and update dialog
-
-	decimalDisplay = !regQueryDwordValue("memViewerDecimalDisplay", 0);
-	OnDecimalDisplay();
 }
 
 void GBMemoryViewerDlg::DoDataExchange(CDataExchange*pDX)
@@ -151,6 +145,12 @@ END_MESSAGE_MAP()
 BOOL GBMemoryViewerDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+
+	autoUpdate = !regQueryDwordValue("memViewerAutoUpdate", 1);
+	OnAutoUpdate(); // inverts and update dialog
+
+	decimalDisplay = !regQueryDwordValue("memViewerDecimalDisplay", 0);
+	OnDecimalDisplay();
 
 	DIALOG_SIZER_START(sz)
 	DIALOG_SIZER_ENTRY(IDC_VIEWER, DS_SizeX | DS_SizeY)
