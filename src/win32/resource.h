@@ -98,6 +98,7 @@
 #define IDD_MOVIEOPEN                   157
 #define IDD_TEXTCONFIG                  158
 #define IDD_LUA_ADD                     159
+#define IDD_ARCHIVEFILECHOOSER          160
 #define IDC_R0                          1000
 #define IDC_EDIT_UP                     1000
 #define IDC_R1                          1001
@@ -602,6 +603,7 @@
 #define IDC_WAV_DIR_RESET               1358
 #define IDC_CAPTURE_DIR_RESET           1359
 #define IDC_IPS_DIR_RESET               1360
+#define IDC_LIST1                       1361
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
 #define ID_OPTIONS_VIDEO_VSYNC          40009

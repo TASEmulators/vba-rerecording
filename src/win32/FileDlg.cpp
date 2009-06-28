@@ -176,9 +176,15 @@ void FileDlg::OnTypeChange(HWND hwnd)
 
 	LPCTSTR typeName = extensions[sel];
 
+	// sel could easily be an invalid index of extensions, so check for null guard
+	for(int i = 0; i <= sel; i++)
+		if(extensions[i] == NULL)
+			typeName = "";
+
 	if (filename.GetLength() == 0)
 	{
-		filename.Format("*%s", typeName);
+		if(*typeName)
+			filename.Format("*%s", typeName);
 	}
 	else
 	{

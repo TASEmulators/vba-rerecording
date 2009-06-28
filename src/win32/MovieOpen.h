@@ -25,7 +25,8 @@ public:
 	CEdit   m_editDescription;
 	CEdit   m_editFilename;
 	CEdit   m_editPauseFrame;
-	CString movieName;
+	CString moviePhysicalName;
+	CString movieLogicalName;
 	SMovie  movieInfo;
 	int     pauseFrame;
 	//}}AFX_DATA

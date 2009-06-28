@@ -130,7 +130,7 @@ void MainWnd::OnCheatsLoadcheatlist()
 	CString buffer;
 	CString filename;
 
-	int index = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
 	if (index != -1)
 		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
@@ -147,7 +147,7 @@ void MainWnd::OnCheatsLoadcheatlist()
 	else
 		filename.Format("%s\\%s.clt", cheatDir, buffer);
 
-	LPCTSTR exts[] = { ".clt" };
+	LPCTSTR exts[] = { ".clt", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
@@ -170,7 +170,7 @@ void MainWnd::OnCheatsSavecheatlist()
 	CString buffer;
 	CString filename;
 
-	int index = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
 	if (index != -1)
 		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
@@ -187,7 +187,7 @@ void MainWnd::OnCheatsSavecheatlist()
 	else
 		filename.Format("%s\\%s.clt", cheatDir, buffer);
 
-	LPCTSTR exts[] = { ".clt" };
+	LPCTSTR exts[] = { ".clt", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 

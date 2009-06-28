@@ -1028,7 +1028,7 @@ void MainWnd::OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI)
 void MainWnd::OnOptionsEmulatorSelectbiosfile()
 {
 	theApp.winCheckFullscreen();
-	LPCTSTR exts[] = { "" };
+	LPCTSTR exts[] = { NULL };
 	CString filter = winLoadFilter(IDS_FILTER_BIOS);
 	CString title  = winResLoadString(IDS_SELECT_BIOS_FILE);
 

@@ -168,7 +168,7 @@ void Logging::OnSave()
 
 	if (mem)
 	{
-		LPCTSTR exts[] = { ".txt" };
+		LPCTSTR exts[] = { ".txt", NULL };
 		m_log.GetWindowText(mem, len);
 		CString filter = "All Files|*.*||";
 		FileDlg dlg(this, "", filter, 0,

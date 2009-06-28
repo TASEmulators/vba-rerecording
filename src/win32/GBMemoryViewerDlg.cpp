@@ -347,7 +347,7 @@ void GBMemoryViewerDlg::OnSave()
 
 	dlg.setAddress(m_viewer.getCurrentAddress());
 
-	LPCTSTR exts[] = { ".dmp" };
+	LPCTSTR exts[] = { ".dmp", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
@@ -391,7 +391,7 @@ void GBMemoryViewerDlg::OnSave()
 void GBMemoryViewerDlg::OnLoad()
 {
 	CString buffer;
-	LPCTSTR exts[] = { ".dmp" };
+	LPCTSTR exts[] = { ".dmp", NULL };
 	CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 

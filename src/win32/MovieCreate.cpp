@@ -127,10 +127,7 @@ void MovieCreate::OnBnClickedBrowse()
 	if (emulating)
 	{
 		filename = theApp.szFile;
-		int slash     = filename.ReverseFind('/');
-		int backslash = filename.ReverseFind('\\');
-		if (slash == -1 || (backslash != -1 && backslash > slash))
-			slash = backslash;
+		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
 		if (slash != -1)
 			filename = filename.Right(filename.GetLength()-slash-1);
 		int dot = filename.Find('.');
@@ -142,7 +139,7 @@ void MovieCreate::OnBnClickedBrowse()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	LPCTSTR exts[] = { ".vbm" };
+	LPCTSTR exts[] = { ".vbm", NULL };
 
 	FileDlg dlg(this, filename, filter, 1, "vbm", exts, capdir, title, true);
 
