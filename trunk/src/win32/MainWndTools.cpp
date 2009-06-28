@@ -498,10 +498,7 @@ void MainWnd::OnToolsSoundStartrecording()
 	{
 		extern SMovie Movie;
 		filename = Movie.filename;
-		int slash     = filename.ReverseFind('/');
-		int backslash = filename.ReverseFind('\\');
-		if (slash == -1 || (backslash != -1 && backslash > slash))
-			slash = backslash;
+		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
 		if (slash != -1)
 			filename = filename.Right(filename.GetLength()-slash-1);
 		int dot = filename.Find('.');
@@ -512,10 +509,7 @@ void MainWnd::OnToolsSoundStartrecording()
 	else if (emulating)
 	{
 		filename = theApp.szFile;
-		int slash     = filename.ReverseFind('/');
-		int backslash = filename.ReverseFind('\\');
-		if (slash == -1 || (backslash != -1 && backslash > slash))
-			slash = backslash;
+		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
 		if (slash != -1)
 			filename = filename.Right(filename.GetLength()-slash-1);
 		int dot = filename.Find('.');
@@ -527,7 +521,7 @@ void MainWnd::OnToolsSoundStartrecording()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_WAV);
 	CString title  = winResLoadString(IDS_SELECT_WAV_NAME);
 
-	LPCTSTR exts[] = { ".wav" };
+	LPCTSTR exts[] = { ".wav", NULL };
 
 	FileDlg dlg(this, filename, filter, 1, "wav", exts, capdir, title, true);
 
@@ -593,10 +587,7 @@ void MainWnd::OnToolsStartAVIRecording()
 	{
 		extern SMovie Movie;
 		filename = Movie.filename;
-		int slash     = filename.ReverseFind('/');
-		int backslash = filename.ReverseFind('\\');
-		if (slash == -1 || (backslash != -1 && backslash > slash))
-			slash = backslash;
+		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
 		if (slash != -1)
 			filename = filename.Right(filename.GetLength()-slash-1);
 		int dot = filename.Find('.');
@@ -607,10 +598,7 @@ void MainWnd::OnToolsStartAVIRecording()
 	else if (emulating)
 	{
 		filename = theApp.szFile;
-		int slash     = filename.ReverseFind('/');
-		int backslash = filename.ReverseFind('\\');
-		if (slash == -1 || (backslash != -1 && backslash > slash))
-			slash = backslash;
+		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
 		if (slash != -1)
 			filename = filename.Right(filename.GetLength()-slash-1);
 		int dot = filename.Find('.');
@@ -622,7 +610,7 @@ void MainWnd::OnToolsStartAVIRecording()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_AVI);
 	CString title  = winResLoadString(IDS_SELECT_AVI_NAME);
 
-	LPCTSTR exts[] = { ".avi" };
+	LPCTSTR exts[] = { ".avi", NULL };
 
 	FileDlg dlg(this, filename, filter, 1, "avi", exts, capdir, title, true);
 

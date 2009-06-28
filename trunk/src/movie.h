@@ -110,7 +110,7 @@ struct SMovie
 	enum MovieState state;
 	char  filename [/*_MAX_PATH*/ 260]; // FIXME: should use a string instead
 	FILE* file;
-	bool8 readOnly;
+	uint8 readOnly;
 	int   pauseFrame;
 
 	SMovieFileHeader header;
@@ -147,7 +147,7 @@ bool8 VBAMovieLoading();
 bool8 VBAMoviePlaying();
 bool8 VBAMovieRecording();
 // the following accessors return 0/false if !VBAMovieActive()
-bool8 VBAMovieReadOnly();
+uint8 VBAMovieReadOnly();
 uint32 VBAMovieGetId();
 uint32 VBAMovieGetLength();
 uint32 VBAMovieGetFrameCounter();

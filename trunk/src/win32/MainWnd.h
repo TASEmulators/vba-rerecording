@@ -94,8 +94,9 @@ public:
 	void winLoadCheatListDefault();
 	void readBatteryFile();
 	void writeBatteryFile();
-	bool isDriveRoot(CString& file);
-	CString getDirFromFile(CString& file);
+	static bool isDriveRoot(const CString& file);
+	static CString getDirFromFile(const CString& file);
+	static CString getSavestateFilename(const CString& LogicalRomName, int nID);
 	void winSaveCheatList(const char *name);
 	void winSaveCheatListDefault();
 	virtual ~MainWnd();

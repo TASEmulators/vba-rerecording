@@ -53,7 +53,7 @@
 				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -156,7 +156,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
 				RuntimeLibrary="1"
@@ -254,6 +254,10 @@
 						Outputs="$(OutDir)\$(InputName).obj"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\win32\7zip\7zip.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\src\win32\AVIWrite.cpp"
@@ -354,6 +358,10 @@
 						WarningLevel="3"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\win32\7zip\OpenArchive.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\src\win32\OpenGL.cpp"
@@ -1893,6 +1901,14 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath="..\src\win32\7zip\7zip.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\win32\7zip\7zipstreams.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\win32\AboutDialog.h"
 				>
 			</File>
@@ -2189,6 +2205,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\win32\7zip\OpenArchive.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\win32\PaletteView.h"
 				>
 			</File>
@@ -2305,6 +2325,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
+			<File
+				RelativePath="..\src\win32\7zip\7zip.rc"
+				>
+			</File>
 			<File
 				RelativePath="..\src\win32\gbadvance.ico"
 				>

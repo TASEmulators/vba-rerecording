@@ -500,7 +500,7 @@ static void GetBatterySaveName(CString & filename)
 {
     CString buffer;
 
-    int index = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
     if (index != -1)
 		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
@@ -628,6 +628,7 @@ static void HardResetAndSRAMClear()
 int VBAMovieOpen(const char*filename, bool8 read_only)
 {
     loadingMovie = true;
+	uint8 movieReadOnly = read_only ? 1 : 0;
 
     FILE*  file;
     STREAM stream;
@@ -635,10 +636,10 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     int    fn;
 
     if (filename[0] == '\0')
-    {loadingMovie = false; return FILE_NOT_FOUND;}
+		{loadingMovie = false; return FILE_NOT_FOUND;}
 
     if (!emulating)
-    {loadingMovie = false; return UNKNOWN_ERROR;}
+		{loadingMovie = false; return UNKNOWN_ERROR;}
 
 //	bool alreadyOpen = (Movie.file != NULL && _stricmp(filename, Movie.filename) == 0);
 
@@ -646,13 +647,13 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     change_state(MOVIE_STATE_NONE);     // have to stop current movie before trying to re-open it
 
     if (filename[0] == '\0')
-    {loadingMovie = false; return FILE_NOT_FOUND;}
+		{loadingMovie = false; return FILE_NOT_FOUND;}
 
     if (!(file = fopen(filename, "rb+")))
 		if (!(file = fopen(filename, "rb")))
-		{loadingMovie = false; return FILE_NOT_FOUND;}
-		else
-			read_only = true;
+			{loadingMovie = false; return FILE_NOT_FOUND;}
+		//else
+		//	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
 
 //	if(!alreadyOpen)
 //		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
@@ -661,7 +662,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 //		if(!(file = fopen(filename, "rb")))
 //			{loadingMovie = false; return FILE_NOT_FOUND;}
 //		else
-//			read_only = true;
+//			movieReadOnly = 2;
 
     // clear out the current movie
     VBAMovieInit();
@@ -670,7 +671,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     if ((result = read_movie_header(file, Movie)) != SUCCESS)
     {
         fclose(file);
-        {loadingMovie = false; return result;}
+		{loadingMovie = false; return result;}
 	}
 
     // set emulator settings that make the movie more likely to stay synchronized
@@ -685,7 +686,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     lseek(fn, Movie.header.offset_to_savestate, SEEK_SET);
     if (!(stream = utilGzReopen(fn, "rb")))
 		if (!(stream = utilGzOpen(filename, "rb")))
-		{loadingMovie = false; return FILE_NOT_FOUND;}
+			{loadingMovie = false; return FILE_NOT_FOUND;}
 		else
 			fn = dup(fileno(file)); // in case the above dup failed but opening the file normally doesn't fail
 
@@ -713,7 +714,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     utilGzClose(stream);
 
     if (result != SUCCESS)
-    {loadingMovie = false; return result;}
+		{loadingMovie = false; return result;}
 
 //	if(!(file = fopen(filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
 //	{
@@ -722,9 +723,9 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 //	}
     if (!(file = fopen(filename, "rb+")))
 		if (!(file = fopen(filename, "rb")))
-		{loadingMovie = false; return FILE_NOT_FOUND;}
+			{loadingMovie = false; return FILE_NOT_FOUND;}
 		else
-			read_only = true;
+			movieReadOnly = 2;
 
     // recalculate length of movie from the file size
     Movie.bytesPerFrame = bytes_per_frame(Movie);
@@ -733,7 +734,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame - 1;
 
     if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
-    {loadingMovie = false; return WRONG_FORMAT;}
+	    {loadingMovie = false; return WRONG_FORMAT;}
 
     // read controller data
     Movie.file = file;
@@ -749,7 +750,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 
     strncpy(Movie.filename, filename, _MAX_PATH);
     Movie.filename[_MAX_PATH-1] = '\0';
-    Movie.readOnly = read_only;
+    Movie.readOnly = movieReadOnly;
     change_state(MOVIE_STATE_PLAY);
 
     Movie.RecordedThisSession = false;
@@ -881,10 +882,10 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 		change_state(MOVIE_STATE_NONE); // have to stop current movie before trying to re-open it
 
     if (filename[0] == '\0')
-    {loadingMovie = false; return FILE_NOT_FOUND;}
+		{loadingMovie = false; return FILE_NOT_FOUND;}
 
     if (!(file = fopen(filename, "wb")))
-    {loadingMovie = false; return FILE_NOT_FOUND;}
+		{loadingMovie = false; return FILE_NOT_FOUND;}
 
     if (!alreadyOpen)
 		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
@@ -931,7 +932,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
         fclose(file);
 
         if (!(stream = utilGzReopen(fn, "ab"))) // append mode to start at end, no seek necessary
-        {loadingMovie = false; return FILE_NOT_FOUND;}
+			{loadingMovie = false; return FILE_NOT_FOUND;}
 
         // write the save data:
         if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
@@ -961,7 +962,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
         // reopen the file and seek back to the end
 
         if (!(file = fopen(filename, "rb+")))
-        {loadingMovie = false; return FILE_NOT_FOUND;}
+			{loadingMovie = false; return FILE_NOT_FOUND;}
 
         fseek(file, 0, SEEK_END);
 	}
@@ -1351,9 +1352,16 @@ void VBAMovieToggleReadOnly()
     if (!VBAMovieActive())
 		return;
 
-    Movie.readOnly = !Movie.readOnly;
+	if(Movie.readOnly != 2)
+	{
+		Movie.readOnly = !Movie.readOnly;
 
-    systemScreenMessage(Movie.readOnly ? "Movie now read-only" : "Movie now editable");
+		systemScreenMessage(Movie.readOnly ? "Movie now read-only" : "Movie now editable");
+	}
+	else
+	{
+		systemScreenMessage("Can't toggle read-only movie");
+	}
 }
 
 uint32 VBAMovieGetId()

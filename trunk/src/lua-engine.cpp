@@ -1049,23 +1049,7 @@ static int savestate_create(lua_State *L)
 	{
 		// Find an appropriate filename. This is OS specific, unfortunately.
 #if (defined(WIN32) && !defined(SDL))
-		CString buffer;
-		int		index = theApp.filename.ReverseFind('\\');
-
-		if (index != -1)
-			buffer = theApp.filename.Right(theApp.filename.GetLength() - index - 1);
-		else
-			buffer = theApp.filename;
-
-		CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
-
-		if (saveDir.IsEmpty())
-			saveDir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-		if (((MainWnd *)theApp.m_pMainWnd)->isDriveRoot(saveDir))
-			sprintf(stateName, "%s%s%d.sgm", saveDir, buffer, which);
-		else
-			sprintf(stateName, "%s\\%s%d.sgm", saveDir, buffer, which);
+		CString stateName = MainWnd::getSavestateFilename(theApp.filename, which);
 #else
 		extern char saveDir[2048];
 		extern char filename[2048];

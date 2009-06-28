@@ -354,7 +354,7 @@ void MemoryViewerDlg::OnSave()
 
 	dlg.setAddress(m_viewer.getCurrentAddress());
 
-	LPCTSTR exts[] = { ".dmp" };
+	LPCTSTR exts[] = { ".dmp", NULL };
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -399,7 +399,7 @@ void MemoryViewerDlg::OnSave()
 void MemoryViewerDlg::OnLoad()
 {
 	CString buffer;
-	LPCTSTR exts[] = { ".dmp" };
+	LPCTSTR exts[] = { ".dmp", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);

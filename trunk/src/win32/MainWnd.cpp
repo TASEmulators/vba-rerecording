@@ -32,6 +32,8 @@
 #include "GBACheats.h"
 #include "GBCheatsDlg.h"
 #include "Input.h"
+#include "7zip/7zip.h"
+#include "7zip/OpenArchive.h"
 #include "VBA.h"
 
 #include "../AutoBuild.h"
@@ -67,10 +69,14 @@ MainWnd::MainWnd()
 {
 	m_hAccelTable = NULL;
 	arrow         = LoadCursor(NULL, IDC_ARROW);
+
+	InitDecoder();
 }
 
 MainWnd::~MainWnd()
-{}
+{
+	CleanupDecoder();
+}
 
 BEGIN_MESSAGE_MAP(MainWnd, CWnd)
 //{{AFX_MSG_MAP(MainWnd)
@@ -529,6 +535,12 @@ void MainWnd::OnClose()
 	delete this;
 }
 
+// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not directly.
+// also includes definitely non-ROM extensions we know about, since we only use this variable in a ROM opening function.
+// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even extensionless or unusually-named archives.
+static const char* s_romIgnoreExtensions [] = {"vbm", "sgm", "clt", "dat", "gbs", "gcf", "spc", "xpc", "pal", "act", "dmp", "avi", "ini",
+	"txt", "nfo", "htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "luasav", "sav"};
+
 bool noWriteNextBatteryFile = false;
 bool MainWnd::FileRun()
 {
@@ -552,12 +564,33 @@ bool MainWnd::FileRun()
 	}
 	noWriteNextBatteryFile = false;
 	char tempName[2048];
-	char file[2048];
 
+#if 1
+	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
+
+	if(theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
+
+	char LogicalName[2048], PhysicalName[2048];
+	if(ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions, sizeof(s_romIgnoreExtensions)/sizeof(*s_romIgnoreExtensions)))
+	{
+		theApp.filename = LogicalName;
+		ReleaseTempFileCategory("rom", PhysicalName);
+	}
+	else
+	{
+		return false;
+	}
+#else
+	// old version that only supports uncompressed, zip, and gzip formats, and doesn't handle multi-file archives well
+	char file[2048];
 	utilGetBaseName(theApp.szFile, tempName);
 
 	_fullpath(file, tempName, 1024);
 	theApp.filename = file;
+
+	const char* LogicalName = theApp.szFile;
+	const char* PhysicalName = theApp.szFile;
+#endif
 
 	int index = theApp.filename.ReverseFind('.');
 	if (index != -1)
@@ -578,26 +611,26 @@ bool MainWnd::FileRun()
 
 	if (!theApp.dir.GetLength())
 	{
-		int index = theApp.filename.ReverseFind('\\');
+		int index = max(theApp.filename.ReverseFind('/'), theApp.filename.ReverseFind('\\'));
 		if (index != -1)
 		{
 			theApp.dir = theApp.filename.Left(index-1);
 		}
 	}
 
-	IMAGE_TYPE type = utilFindType(theApp.szFile);
+	IMAGE_TYPE type = utilFindType(PhysicalName);
 
 	if (type == IMAGE_UNKNOWN)
 	{
 		systemMessage(IDS_UNSUPPORTED_FILE_TYPE,
-		              "The file \"%s\" is an unsupported type.", theApp.szFile);
+		              "The file \"%s\" is an unsupported type.", LogicalName);
 		return false;
 	}
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 	theApp.cartridgeType    = (int)type;
 	if (type == IMAGE_GB)
 	{
-		if (!gbLoadRom(theApp.szFile))
+		if (!gbLoadRom(PhysicalName))
 			return false;
 		theApp.emulator = GBSystem;
 		gbBorderOn      = theApp.winGbBorderOn;
@@ -617,7 +650,7 @@ bool MainWnd::FileRun()
 	}
 	else
 	{
-		int size = CPULoadRom(theApp.szFile);
+		int size = CPULoadRom(PhysicalName);
 		if (!size)
 			return false;
 
@@ -707,7 +740,7 @@ bool MainWnd::FileRun()
 	if (theApp.autoSaveLoadCheatList)
 		winLoadCheatListDefault();
 
-	theApp.addRecentFile(theApp.szFile);
+	theApp.addRecentFile(LogicalName);
 
 	theApp.updateWindowSize(theApp.videoOption);
 
@@ -937,10 +970,10 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 	}
 }
 
-CString MainWnd::getDirFromFile(CString& file)
+CString MainWnd::getDirFromFile(const CString& file)
 {
 	CString temp  = file;
-	int     index = temp.ReverseFind('\\');
+	int index = max(temp.ReverseFind('/'), temp.ReverseFind('\\'));
 
 	if (index != -1)
 	{
@@ -955,7 +988,7 @@ CString MainWnd::getDirFromFile(CString& file)
 	return temp;
 }
 
-bool MainWnd::isDriveRoot(CString& file)
+bool MainWnd::isDriveRoot(const CString& file)
 {
 	if (file.GetLength() == 3)
 	{
@@ -970,7 +1003,7 @@ void MainWnd::winSaveCheatListDefault()
 	CString name;
 	CString filename;
 
-	int index = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
 	if (index != -1)
 		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
@@ -1002,7 +1035,7 @@ void MainWnd::winLoadCheatListDefault()
 	CString name;
 	CString filename;
 
-	int index = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
 	if (index != -1)
 		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
@@ -1039,8 +1072,7 @@ void MainWnd::writeBatteryFile()
 	CString buffer;
 	CString filename;
 
-	int index = theApp.filename.ReverseFind('\\');
-
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 	if (index != -1)
 		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
 	else
@@ -1065,7 +1097,7 @@ void MainWnd::readBatteryFile()
 	CString buffer;
 	CString filename;
 
-	int index = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
 	if (index != -1)
 		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
@@ -1136,7 +1168,7 @@ bool MainWnd::fileOpenSelect(int cartridgeType)
 
 	theApp.szFile = "";
 
-	LPCTSTR exts[] = { "" };
+	LPCTSTR exts[] = { NULL };
 	CString filter = winLoadFilter(IDS_FILTER_ROM);
 	CString title  = winResLoadString(IDS_SELECT_ROM);
 
@@ -1228,7 +1260,7 @@ void MainWnd::screenCapture(int captureNumber)
 	CString buffer;
 
 	CString captureDir = regQueryStringValue(IDS_CAPTURE_DIR, "");
-	int     index      = theApp.filename.ReverseFind('\\');
+	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
 
 	CString name;
 	if (index != -1)

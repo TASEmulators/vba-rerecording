@@ -12,20 +12,26 @@
 #include "../GBA.h"
 #include "../gb/gbGlobals.h"
 #include "../Util.h"
+#include "7zip/OpenArchive.h"
 
 // MovieOpen dialog
 
 IMPLEMENT_DYNAMIC(MovieOpen, CDialog)
 MovieOpen::MovieOpen(CWnd*pParent /*=NULL*/)
 	: CDialog(MovieOpen::IDD, pParent)
-{}
+{
+}
 
 MovieOpen::~MovieOpen()
-{}
+{
+	SetArchiveParentHWND(NULL);
+}
 
 BOOL MovieOpen::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+
+	SetArchiveParentHWND(GetSafeHwnd());
 
 	GetDlgItem(IDC_CHECK_HIDEBORDER)->ShowWindow(FALSE);
 	GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText("");
@@ -48,13 +54,15 @@ BOOL MovieOpen::OnInitDialog()
 		char str [_MAX_PATH];
 		strcpy(str, theApp.filename);
 		strcat(str, ".vbm");
-		char *strPtr = strrchr(str, (int)'\\');
+		char *strPtr = max(strrchr(str, (int)'\\'), strrchr(str, (int)'|'));
 		if (strPtr == NULL)
 			strPtr = str;
+		else
+			strPtr++;
 
-		movieName = capdir + strPtr;
+		movieLogicalName = capdir + "\\" + strPtr;
 
-		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
+		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieLogicalName);
 	}
 
 	m_editFilename.LimitText(_MAX_PATH);
@@ -92,6 +100,8 @@ END_MESSAGE_MAP()
 
 // MovieOpen message handlers
 
+static bool shouldReopenBrowse = false;
+
 void MovieOpen::OnBnClickedBrowse()
 {
 	extern char *regQueryStringValue(const char *key, char *def);  // from Reg.cpp
@@ -104,10 +114,7 @@ void MovieOpen::OnBnClickedBrowse()
 	if (emulating)
 	{
 		filename = theApp.szFile;
-		int slash     = filename.ReverseFind('/');
-		int backslash = filename.ReverseFind('\\');
-		if (slash == -1 || (backslash != -1 && backslash > slash))
-			slash = backslash;
+		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
 		if (slash != -1)
 			filename = filename.Right(filename.GetLength()-slash-1);
 		int dot = filename.Find('.');
@@ -119,20 +126,33 @@ void MovieOpen::OnBnClickedBrowse()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	LPCTSTR exts[] = { ".vbm" };
+	LPCTSTR exts[] = { ".vbm", NULL };
 
 	FileDlg dlg(this, filename, filter, 1, "vbm", exts, capdir, title, false, true);
 
-	if (dlg.DoModal() == IDCANCEL)
+	do
 	{
-		return;
-	}
+		shouldReopenBrowse = false;
 
-	movieName = dlg.GetPathName();
+		if (dlg.DoModal() == IDCANCEL)
+		{
+			return;
+		}
 
-	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
+		CString tempName = dlg.GetPathName();
 
-	OnBnClickedMovieRefresh();
+		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(tempName);
+
+		// SetWindowText calls OnEnChangeMovieFilename which calls OnBnClickedMovieRefresh
+		// so this extra call to OnBnClickedMovieRefresh is bad
+		//OnBnClickedMovieRefresh();
+
+	} while(shouldReopenBrowse);
+
+	// scroll to show the rightmost side of the movie filename
+	CString tempName;
+	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(tempName);
+	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(strlen(tempName)-1), FALSE);
 }
 
 // returns the checksum of the BIOS that will be loaded after the next restart
@@ -191,10 +211,56 @@ void fillRomInfo(const SMovie & movieInfo, char romTitle [12], uint32 & romGameC
 	}
 }
 
+// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not directly.
+// also includes definitely non-movie extensions we know about, since we only use this variable in a movie opening function.
+// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even extensionless or unusually-named archives.
+static const char* s_movieIgnoreExtensions [] = {"gba", "gbc", "gb", "sgb", "cgb", "bin", "agb", "bios", "mb", "elf", "sgm", "clt", "dat", "gbs", "gcf", "spc", "xpc", "pal", "act", "dmp", "avi", "ini",
+	"txt", "nfo", "htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "luasav", "sav"};
+
 void MovieOpen::OnBnClickedMovieRefresh()
 {
-	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(movieName);
-	if (VBAMovieGetInfo(movieName, &movieInfo) == SUCCESS)
+	static int recursionDepth = 0;
+	if(recursionDepth > 0)
+		return;
+	struct Scope {Scope(){++recursionDepth;} ~Scope(){--recursionDepth;}} scope;
+
+	CString tempName;
+	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(tempName);
+
+#if 1
+	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
+
+	if(movieLogicalName.GetLength() > 2048) movieLogicalName.Truncate(2048);
+
+	char LogicalName[2048], PhysicalName[2048];
+	if(ObtainFile(tempName, LogicalName, PhysicalName, "mov", s_movieIgnoreExtensions, sizeof(s_movieIgnoreExtensions)/sizeof(*s_movieIgnoreExtensions)))
+	{
+		if(tempName != LogicalName)
+		{
+			int selStart=0, selEnd=0;
+			((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->GetSel(selStart, selEnd);
+
+			GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(LogicalName);
+
+			((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel(selStart, selEnd, FALSE);
+		}
+		moviePhysicalName = PhysicalName;
+		movieLogicalName = LogicalName;
+		ReleaseTempFileCategory("mov", PhysicalName);
+	}
+	else
+	{
+		shouldReopenBrowse = true;
+		return;
+	}
+#else
+	// old version that only supports uncompressed movies
+	moviePhysicalName = tempName;
+	movieLogicalName = tempName;
+#endif
+
+
+	if (VBAMovieGetInfo(moviePhysicalName, &movieInfo) == SUCCESS)
 	{
 		if (movieInfo.readOnly)
 		{
@@ -460,18 +526,18 @@ void MovieOpen::OnBnClickedOk()
 	extern void loadBIOS();
 	loadBIOS();
 
-	int code = VBAMovieOpen(movieName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
+	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
 
 	if (code != SUCCESS)
 	{
 		if (code == FILE_NOT_FOUND)
-			systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieName);
+			systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieLogicalName);
 		else if (code == WRONG_FORMAT)
-			systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieName);
+			systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieLogicalName);
 		else if (code == WRONG_VERSION)
-			systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieName);
+			systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieLogicalName);
 		else
-			systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieName);
+			systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieLogicalName);
 		return;
 	}
 	else
