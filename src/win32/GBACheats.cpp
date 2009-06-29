@@ -607,8 +607,12 @@ AddCheat::AddCheat(u32 address, CWnd*pParent /*=NULL*/)
 	: CDialog(AddCheat::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(AddCheat)
-	sizeType   = -1;
-	numberType = -1;
+	numberType = regQueryDwordValue("cheatsNumberType", 2);
+	if (numberType < 0 || numberType > 2)
+		numberType = 2;
+	sizeType = regQueryDwordValue("cheatsSizeType", 0);
+	if (sizeType < 0 || sizeType > 2)
+		sizeType = 0;
 	//}}AFX_DATA_INIT
 	this->address = address;
 }
@@ -662,14 +666,6 @@ BOOL AddCheat::OnInitDialog()
 		m_address.SetWindowText(buffer);
 		m_address.EnableWindow(FALSE);
 	}
-
-	numberType = regQueryDwordValue("cheatsNumberType", 2);
-	if (numberType < 0 || numberType > 2)
-		numberType = 2;
-
-	sizeType = regQueryDwordValue("cheatsSizeType", 0);
-	if (sizeType < 0 || sizeType > 2)
-		sizeType = 0;
 
 	UpdateData(FALSE);
 

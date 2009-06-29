@@ -1573,12 +1573,13 @@ int CPULoadRom(const char *szFile)
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+	// size+4 is so RAM search and watch are safe to read any byte in the allocated region as a 4-byte int
 #if (defined(WIN32) && !defined(SDL))
 	#define AllocMappedMem(name, mapName, nameStr, size, useCalloc, offset) \
-	mapName = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (size)+(offset), nameStr); \
+	mapName = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (size)+(offset)+(4), nameStr); \
 	if ((mapName) && GetLastError() == ERROR_ALREADY_EXISTS) { \
 		CloseHandle(mapName); \
-		mapName = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (size)+(offset), NULL); \
+		mapName = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (size)+(offset)+(4), NULL); \
 	} \
 	name = (u8 *)MapViewOfFile(mapName, FILE_MAP_WRITE, 0, 0, 0) + (offset); \
 	if ((name) == NULL) { \
@@ -1586,16 +1587,16 @@ int CPULoadRom(const char *szFile)
 		CPUCleanUp(); \
 		return 0; \
 	} \
-	memset(name, 0, size);
+	memset(name, 0, size+4);
 #else
 	#define AllocMappedMem(name, mapName, nameStr, size, useCalloc, offset) \
-	name = (u8 *)(useCalloc ? calloc(1, size) : malloc(size)); \
+	name = (u8 *)(useCalloc ? calloc(1, size+4) : malloc(size+4)); \
 	if ((name) == NULL) { \
 		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"), nameStr); \
 		CPUCleanUp(); \
 		return 0; \
 	} \
-	memset(name, 0, size);
+	memset(name, 0, size+4);
 #endif
 
 	AllocMappedMem(rom, mapROM, "vbaROM", 0x2000000, false, 0);
@@ -4071,6 +4072,7 @@ updateLoop:
 							}
 							GBASystem.laggedLast = GBASystem.lagged;
 							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+							OnFrameBoundary();
 							GBASystem.lagged = true;
 
 							if (count == 60)

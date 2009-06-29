@@ -501,6 +501,10 @@ protected:
 	afx_msg void OnUpdateFileLuaReload(CCmdUI *pCmdUI);
 	afx_msg void OnFileLuaStop();
 	afx_msg void OnUpdateFileLuaStop(CCmdUI *pCmdUI);
+	afx_msg void OnFileRamSearch();
+	afx_msg void OnUpdateFileRamSearch(CCmdUI *pCmdUI);
+	afx_msg void OnFileRamWatch();
+	afx_msg void OnUpdateFileRamWatch(CCmdUI *pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

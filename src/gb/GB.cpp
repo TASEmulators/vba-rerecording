@@ -2074,8 +2074,8 @@ void gbInit()
 	gbGenFilter();
 	gbSgbInit();
 
-	gbMemory = (u8 *)malloc(65536);
-	memset(gbMemory, 0, 65536);
+	gbMemory = (u8 *)malloc(65536 + 4);
+	memset(gbMemory, 0, 65536 + 4);
 
 	// HACK: +4 at start to accomodate the 2xSaI filter reading out of bounds of the leftmost pixel
 	origPix = (u8 *)calloc(1, 4*257*226 +4);
@@ -2977,8 +2977,8 @@ bool gbUpdateSizes()
 
 	if (gbRamSize)
 	{
-		gbRam = (u8 *)malloc(gbRamSize);
-		memset(gbRam, 0xFF, gbRamSize);
+		gbRam = (u8 *)malloc(gbRamSize + 4);
+		memset(gbRam, 0xFF, gbRamSize + 4);
 	}
 
 	int type = gbRom[0x147];
@@ -3088,10 +3088,10 @@ bool gbUpdateSizes()
 		    (gbRom[0x146] != 0x03 && (gbEmulatorType == 2)))
 		{
 			gbCgbMode = 1;
-			gbVram    = (u8 *)malloc(0x4000);
-			gbWram    = (u8 *)malloc(0x8000);
-			memset(gbVram, 0, 0x4000);
-			memset(gbWram, 0, 0x8000);
+			gbVram    = (u8 *)malloc(0x4000 + 4);
+			gbWram    = (u8 *)malloc(0x8000 + 4);
+			memset(gbVram, 0, 0x4000 + 4);
+			memset(gbWram, 0, 0x8000 + 4);
 			memset(gbPalette, 0, 2*128);
 		}
 		else
@@ -3327,6 +3327,7 @@ void gbEmulate(int ticksToStop)
 						}
 						GBSystem.laggedLast = GBSystem.lagged;
 						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+						OnFrameBoundary();
 						GBSystem.lagged = true;
 
 						if (gbFrameCount >= 60)

@@ -99,6 +99,11 @@
 #define IDD_TEXTCONFIG                  158
 #define IDD_LUA_ADD                     159
 #define IDD_ARCHIVEFILECHOOSER          160
+#define IDD_RAMSEARCH                   161
+#define IDD_EDITWATCH                   162
+#define IDD_RAMWATCH                    163
+#define IDD_PROMPT                      164
+#define IDR_ACCELERATOR1                165
 #define IDC_R0                          1000
 #define IDC_EDIT_UP                     1000
 #define IDC_R1                          1001
@@ -933,14 +938,77 @@
 #define ID_MOVIE_END_RESTART            40489
 #define ID_MOVIE_END_STOP               40490
 #define ID_MOVIE_END_RERECORD           40491
+#define ID_RAM_SEARCH                   40522
+#define ID_RAM_WATCH                    40523
+#define RAMMENU_FILE_RECENT             40653
+#define ID_WATCHES_MOVEUP               40664
+#define ID_WATCHES_MOVEDOWN             40665
+#define ID_WATCHES_EDITWATCH            40666
+#define ID_WATCHES_REMOVEWATCH          40667
+#define ID_WATCHES_NEWWATCH             40668
+#define ID_WATCHES_DUPLICATEWATCH       40669
+#define ID_WATCHES_UPDOWN               40670
+#define IDC_EDIT_COMPAREVALUE           41090
+#define IDC_EDIT_COMPAREADDRESS         41091
+#define IDC_EDIT_COMPARECHANGES         41092
+#define IDC_EDIT_DIFFBY                 41093
+#define IDC_C_AUTOSEARCH                41094
+#define IDC_EDIT_MODBY                  41095
+#define IDC_RAMLIST                     41133
+#define IDC_C_SEARCH                    41134
+#define IDC_C_ADDCHEAT                  41135
+#define IDC_C_RESET                     41136
+#define IDC_1_BYTE                      41137
+#define IDC_2_BYTES                     41138
+#define IDC_C_WATCH                     41139
+#define IDC_4_BYTES                     41140
+#define IDC_LESSTHAN                    41141
+#define IDC_MORETHAN                    41142
+#define IDC_NOMORETHAN                  41143
+#define IDC_NOLESSTHAN                  41144
+#define IDC_EQUALTO                     41145
+#define IDC_DIFFERENTFROM               41146
+#define IDC_DIFFERENTBY                 41147
+#define IDC_MODULO                      41148
+//#define IDC_UNSIGNED                    41149
+//#define IDC_SIGNED                      41150
+#define IDC_HEX                         41151
+#define IDC_C_UNDO                      41152
+#define IDC_C_RESET_CHANGES             41153
+#define IDC_PREVIOUSVALUE               42147
+#define IDC_SPECIFICVALUE               42148
+#define IDC_CHEATEDITVALUE              42156
+#define IDC_SPECIFICADDRESS             42157
+#define IDC_NUMBEROFCHANGES             42158
+#define IDC_MISALIGN                    42159
+#define IDC_WATCHLIST                   42171
+#define IDC_C_ELIMINATE                 42174
+#define RAMMENU_FILE_AUTOLOAD           42300
+#define RAMMENU_FILE_APPEND             42301
+#define RAMMENU_FILE_SAVEWINDOW         42302
+#define RAMMENU_FILE_NEW                42303
+#define RAMMENU_FILE_OPEN               42304
+#define RAMMENU_FILE_SAVE               42305
+#define RAMMENU_FILE_SAVEAS             42306
+#define RW_MENU_FIRST_RECENT_FILE       42350
+#define RW_MENU_LAST_RECENT_FILE        42370
+#define IDC_C_WATCH_DOWN                43400
+#define IDC_C_WATCH_DUPLICATE           43401
+#define IDC_C_WATCH_EDIT                43402
+#define IDC_C_WATCH_REMOVE              43403
+#define IDC_C_WATCH_UP                  43404
+#define IDC_PROMPT_TEXT                 44000
+#define IDC_PROMPT_TEXT2                44001
+#define IDC_PROMPT_EDIT                 44005
+
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        161
-#define _APS_NEXT_COMMAND_VALUE         40492
-#define _APS_NEXT_CONTROL_VALUE         1370
+#define _APS_NEXT_RESOURCE_VALUE        170
+#define _APS_NEXT_COMMAND_VALUE         43200
+#define _APS_NEXT_CONTROL_VALUE         1380
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

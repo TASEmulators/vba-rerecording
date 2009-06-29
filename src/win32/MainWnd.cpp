@@ -34,6 +34,8 @@
 #include "Input.h"
 #include "7zip/7zip.h"
 #include "7zip/OpenArchive.h"
+#include "ram_search.h"
+#include "ramwatch.h"
 #include "VBA.h"
 
 #include "../AutoBuild.h"
@@ -519,6 +521,10 @@ ON_COMMAND(ID_FILE_LUA_RELOAD, OnFileLuaReload)
 ON_UPDATE_COMMAND_UI(ID_FILE_LUA_RELOAD, OnUpdateFileLuaReload)
 ON_COMMAND(ID_FILE_LUA_STOP, OnFileLuaStop)
 ON_UPDATE_COMMAND_UI(ID_FILE_LUA_STOP, OnUpdateFileLuaStop)
+ON_COMMAND(ID_RAM_SEARCH, OnFileRamSearch)
+ON_UPDATE_COMMAND_UI(ID_RAM_SEARCH, OnUpdateFileRamSearch)
+ON_COMMAND(ID_RAM_WATCH, OnFileRamWatch)
+ON_UPDATE_COMMAND_UI(ID_RAM_WATCH, OnUpdateFileRamWatch)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -802,6 +808,9 @@ bool MainWnd::FileRun()
 			theApp.modelessCheatDialogIsOpen = false;
 		}
 	}
+
+	ReopenRamWindows();
+	reset_address_info();
 
 	return true;
 }
@@ -1205,6 +1214,12 @@ static bool translatingAccelerator = false;
 BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 {
 	translatingAccelerator = true;
+
+	if (RamSearchHWnd && ::IsDialogMessage(RamSearchHWnd, pMsg))
+		return TRUE;
+	if (RamWatchHWnd && ::IsDialogMessage(RamWatchHWnd, pMsg))
+		return TRUE;
+
 	if (CWnd::PreTranslateMessage(pMsg))
 	{
 		translatingAccelerator = false;
@@ -1331,7 +1346,10 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 {
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
-	bool a = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE);
+	bool a = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
+		|| (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
+		|| (RamWatchHWnd && pWndOther->GetSafeHwnd() == RamWatchHWnd && !theApp.pauseDuringCheatSearch)
+	;
 
 	extern bool inputActive;
 	inputActive = a;
@@ -1609,5 +1627,10 @@ LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
 			return 0;
 	}
 	return Default();
+}
+
+void OnFrameBoundary()
+{
+	Update_RAM_Search(); // updates RAM search and RAM watch
 }
 

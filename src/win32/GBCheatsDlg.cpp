@@ -679,8 +679,12 @@ AddGBCheat::AddGBCheat(u32 addr, CWnd*pParent /*=NULL*/)
 	: CDialog(AddGBCheat::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(AddGBCheat)
-	sizeType   = -1;
-	numberType = -1;
+	numberType = regQueryDwordValue("gbCheatsNumberType", 2);
+	if (numberType < 0 || numberType > 2)
+		numberType = 2;
+	sizeType = regQueryDwordValue("gbCheatsSizeType", 0);
+	if (sizeType < 0 || sizeType > 2)
+		sizeType = 0;
 	//}}AFX_DATA_INIT
 	address = addr;
 }
@@ -807,14 +811,6 @@ BOOL AddGBCheat::OnInitDialog()
 	::SetWindowLong(m_address,
 	                GWL_USERDATA,
 	                address);
-
-	numberType = regQueryDwordValue("gbCheatsNumberType", 2);
-	if (numberType < 0 || numberType > 2)
-		numberType = 2;
-
-	sizeType = regQueryDwordValue("gbCheatsSizeType", 0);
-	if (sizeType < 0 || sizeType > 2)
-		sizeType = 0;
 
 	UpdateData(FALSE);
 
