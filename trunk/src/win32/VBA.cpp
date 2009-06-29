@@ -278,7 +278,7 @@ VBA::VBA()
 	paused = false;
 	recentFreeze = false;
 	autoSaveLoadCheatList     = false;
-	pauseDuringCheatSearch    = true;
+	pauseDuringCheatSearch    = false;
 	modelessCheatDialogIsOpen = false;
 //	winout                    = NULL;
 //	removeIntros              = false;
@@ -2024,7 +2024,7 @@ void VBA::loadSettings()
 
 	autoSaveLoadCheatList = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;
 
-	pauseDuringCheatSearch = regQueryDwordValue("pauseDuringCheatSearch", 1) ? true : false;
+	pauseDuringCheatSearch = regQueryDwordValue("pauseDuringCheatSearch2", 0) ? true : false;
 
 	gbPaletteOption = regQueryDwordValue("gbPaletteOption", 0);
 	if (gbPaletteOption < 0)
@@ -2855,7 +2855,7 @@ void VBA::saveSettings()
 
 	regSetDwordValue("autoSaveCheatList", autoSaveLoadCheatList);
 
-	regSetDwordValue("pauseDuringCheatSearch", pauseDuringCheatSearch);
+	regSetDwordValue("pauseDuringCheatSearch2", pauseDuringCheatSearch);
 
 	regSetDwordValue("gbPaletteOption", gbPaletteOption);
 

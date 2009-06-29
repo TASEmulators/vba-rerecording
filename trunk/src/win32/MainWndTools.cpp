@@ -387,15 +387,15 @@ void MainWnd::OnToolsDebugGdb()
 			emulating = 1;
 			theApp.cartridgeType = 0;
 			theApp.filename      = "\\gnu_stub";
-			rom         = (u8 *)malloc(0x2000000);
-			workRAM     = (u8 *)calloc(1, 0x40000);
-			bios        = (u8 *)calloc(1, 0x4000);
-			internalRAM = (u8 *)calloc(1, 0x8000);
-			paletteRAM  = (u8 *)calloc(1, 0x400);
-			vram        = (u8 *)calloc(1, 0x20000);
-			oam         = (u8 *)calloc(1, 0x400);
+			rom         = (u8 *)malloc(0x2000000 + 4);
+			workRAM     = (u8 *)calloc(1, 0x40000 + 4);
+			bios        = (u8 *)calloc(1, 0x4000 + 4);
+			internalRAM = (u8 *)calloc(1, 0x8000 + 4);
+			paletteRAM  = (u8 *)calloc(1, 0x400 + 4);
+			vram        = (u8 *)calloc(1, 0x20000 + 4);
+			oam         = (u8 *)calloc(1, 0x400 + 4);
 			pix         = (u8 *)calloc(1, 4 * 240 * 160);
-			ioMem       = (u8 *)calloc(1, 0x400);
+			ioMem       = (u8 *)calloc(1, 0x400 + 4);
 
 			theApp.emulator = GBASystem;
 

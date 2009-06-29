@@ -27,6 +27,8 @@
 #include "Reg.h"
 #include "WinResUtil.h"
 #include "LuaOpenDialog.h"
+#include "ram_search.h"
+#include "ramwatch.h"
 #include "VBA.h"
 
 #include "../GBA.h"
@@ -206,6 +208,7 @@ void MainWnd::OnFileClose()
 		writeBatteryFile();
 		soundPause();
 		theApp.emulator.emuCleanUp();
+		CloseRamWindows();
 		remoteCleanUp();
 		if (VBAMovieActive())
 			VBAMovieStop(false); // will only get here on user selecting to stop playing the ROM, canceling movie
@@ -1180,6 +1183,41 @@ void MainWnd::OnFileLuaStop()
 	// I'm going to assume that Windows will adequately guard against this being executed
 	// uselessly. Even if it wasn't, it's no big deal.
 	VBALuaStop();
+}
+
+void MainWnd::OnFileRamSearch()
+{
+	if(!RamSearchHWnd)
+	{
+		reset_address_info();
+		LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		RamSearchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
+	}
+	else
+		::SetForegroundWindow(RamSearchHWnd);
+}
+
+void MainWnd::OnUpdateFileRamSearch(CCmdUI*pCmdUI)
+{
+	//pCmdUI->SetCheck(RamSearchHWnd != NULL);
+	pCmdUI->Enable(TRUE);
+}
+
+void MainWnd::OnFileRamWatch()
+{
+	if(!RamWatchHWnd)
+	{
+		LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		RamWatchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMWATCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamWatchProc);
+	}
+	else
+		::SetForegroundWindow(RamWatchHWnd);
+}
+
+void MainWnd::OnUpdateFileRamWatch(CCmdUI*pCmdUI)
+{
+	//pCmdUI->SetCheck(RamWatchHWnd != NULL);
+	pCmdUI->Enable(TRUE);
 }
 
 void MainWnd::OnUpdateFileLuaStop(CCmdUI*pCmdUI)
