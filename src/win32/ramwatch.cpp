@@ -6,6 +6,7 @@
 #include "GBCheatsDlg.h"
 #include "ram_search.h"
 #include "ramwatch.h"
+#include "reg.h"
 #include <assert.h>
 #include <windows.h>
 #include <string>
@@ -16,6 +17,7 @@
 #pragma comment(lib, "shell32.lib")
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
+
 
 static HMENU ramwatchmenu;
 static HMENU rwrecentmenu;
@@ -816,6 +818,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			};
 			
 		case WM_INITDIALOG: {
+//			AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
 
 			GetWindowRect(hWnd, &r);  //Ramwatch window
 			dx1 = (r.right - r.left) / 2;
@@ -1039,6 +1042,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 				{
 					AutoRWLoad ^= 1;
 					CheckMenuItem(ramwatchmenu, RAMMENU_FILE_AUTOLOAD, AutoRWLoad ? MF_CHECKED : MF_UNCHECKED);
+					regSetDwordValue(AUTORWLOAD, AutoRWLoad);
 					break;
 				}
 				case RAMMENU_FILE_SAVEWINDOW:

@@ -11,6 +11,10 @@ extern int ramw_x;
 extern int ramw_y;
 extern bool RWfileChanged;
 
+//Constants
+#define AUTORWLOAD "RamWatchAutoLoad"
+
+
 // AddressWatcher is self-contained now
 struct AddressWatcher
 {

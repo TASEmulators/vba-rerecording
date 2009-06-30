@@ -2,6 +2,8 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+06-30-2009 adelikat - Hooked up Ramwatch autoload
+TODO: Add nitsuja's changes here
 06-25-2009 aquanull - Tweaked UI again.
 06-25-2009 aquanull - Fixed movie drag & drop behavior.
 06-25-2009 aquanull - Fixed Reset/Cancel in the Directories dialog.
