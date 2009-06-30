@@ -33,6 +33,7 @@
 #include "Sound.h"
 #include "WavWriter.h"
 #include "WinResUtil.h"
+#include "ramwatch.h"
 
 //#include "../System.h"
 #include "../GBA.h"
@@ -2086,6 +2087,8 @@ void VBA::loadSettings()
 
 	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
 	movieOnEndPause    = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
+
+	AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
 }
 
 void VBA::updateFrameSkip()

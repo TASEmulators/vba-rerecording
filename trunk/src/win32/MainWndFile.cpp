@@ -56,6 +56,7 @@ void MainWnd::OnFileOpen()
 			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
 		FileRun();
 	}
+	if (AutoRWLoad) MainWnd::OnFileRamWatch();     //auto load ramwatch
 }
 
 void MainWnd::OnFileOpenGBx()
@@ -67,6 +68,7 @@ void MainWnd::OnFileOpenGBx()
 			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
 		FileRun();
 	}
+	if (AutoRWLoad) MainWnd::OnFileRamWatch();     //auto load ramwatch
 }
 
 void MainWnd::OnFilePause()
