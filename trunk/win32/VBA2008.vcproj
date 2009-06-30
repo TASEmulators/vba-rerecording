@@ -82,12 +82,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib nafxcw.lib libcmt.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="lib/win32"
-				IgnoreDefaultLibraryNames="libci.lib"
+				IgnoreDefaultLibraryNames="libci.lib;nafxcw.lib;libcmt.lib"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				GenerateMapFile="true"
@@ -186,12 +186,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib"
+				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib nafxcwd.lib libcmtd.lib"
 				OutputFile="$(OutDir)/VisualBoyAdvance.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="lib/win32"
-				IgnoreDefaultLibraryNames="libci.lib"
+				IgnoreDefaultLibraryNames="libci.lib;nafxcwd.lib;libcmtd.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				GenerateMapFile="true"
