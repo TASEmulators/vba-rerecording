@@ -1,11 +1,11 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VBA_VS2008", "VBA2008.vcproj", "{200824A0-CDBA-45D7-83B8-E5A8468792EC}"
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VBA_VS2005", "VBA2005.vcproj", "{200824A0-CDBA-45D7-83B8-E5A8468792EC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5646C572-A578-49F8-9DA9-3E00A8CBFE3F} = {5646C572-A578-49F8-9DA9-3E00A8CBFE3F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wlib7zip", "..\src\win32\7zip\7z\7zip_2008.vcproj", "{5646C572-A578-49F8-9DA9-3E00A8CBFE3F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wlib7zip", "..\src\win32\7zip\7z\7zip_2005.vcproj", "{5646C572-A578-49F8-9DA9-3E00A8CBFE3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
