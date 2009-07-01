@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="8.00"
 	Name="wlib7zip"
 	ProjectGUID="{5646C572-A578-49F8-9DA9-3E00A8CBFE3F}"
 	RootNamespace="gens"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -20,10 +19,9 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)\.VS2005\$(ConfigurationName)\$(PlatformName)\$(ProjectName)"
+			IntermediateDirectory="$(SolutionDir)\.VS2005\$(ConfigurationName)\$(PlatformName)\$(ProjectName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			WholeProgramOptimization="1"
@@ -67,10 +65,10 @@
 				ExceptionHandling="1"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/7z.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				PrecompiledHeaderFile="$(IntDir)\7z.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\vc80.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -108,10 +106,9 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)\.VS2005\$(ConfigurationName)\$(PlatformName)\$(ProjectName)"
+			IntermediateDirectory="$(SolutionDir)\.VS2005\$(ConfigurationName)\$(PlatformName)\$(ProjectName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -155,10 +152,10 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="false"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug/7z.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				PrecompiledHeaderFile="$(IntDir)\7z.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\vc80.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -2931,11 +2928,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CPP\Common\Defs.h"
+				RelativePath=".\CPP\Windows\Defs.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CPP\Windows\Defs.h"
+				RelativePath=".\CPP\Common\Defs.h"
 				>
 			</File>
 			<File
@@ -3471,11 +3468,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\C\Types.h"
+				RelativePath=".\CPP\Common\Types.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CPP\Common\Types.h"
+				RelativePath=".\C\Types.h"
 				>
 			</File>
 			<File
