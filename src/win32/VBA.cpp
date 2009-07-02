@@ -2089,6 +2089,9 @@ void VBA::loadSettings()
 	movieOnEndPause    = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
 	//RamWatch Settings
 	AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
+	RWSaveWindowPos = regQueryDwordValue(RWSAVEPOS, false);
+	ramw_x = regQueryDwordValue(RAMWX, 0);
+	ramw_y = regQueryDwordValue(RAMWY, 0);
 	char str[2048];
 	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
 	{
