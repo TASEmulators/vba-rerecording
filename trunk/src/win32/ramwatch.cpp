@@ -825,12 +825,12 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			GetWindowRect(hDlg,&wrect);
 			ramw_x = wrect.left;
 			ramw_y = wrect.top;
+			regSetDwordValue(RAMWX, ramw_x);
+			regSetDwordValue(RAMWY, ramw_x);
 			break;
 			};
 			
 		case WM_INITDIALOG: {
-//			AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
-
 			GetWindowRect(hWnd, &r);  //Ramwatch window
 			dx1 = (r.right - r.left) / 2;
 			dy1 = (r.bottom - r.top) / 2;
@@ -1060,6 +1060,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 				{
 					RWSaveWindowPos ^=1;
 					CheckMenuItem(ramwatchmenu, RAMMENU_FILE_SAVEWINDOW, RWSaveWindowPos ? MF_CHECKED : MF_UNCHECKED);
+					regSetDwordValue(RWSAVEPOS, RWSaveWindowPos);
 					break;
 				}
 				case IDC_C_ADDCHEAT:

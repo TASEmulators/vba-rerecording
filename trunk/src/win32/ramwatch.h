@@ -13,7 +13,9 @@ extern bool RWfileChanged;
 
 //Constants
 #define AUTORWLOAD "RamWatchAutoLoad"
-
+#define RWSAVEPOS "RamWatchSaveWindowPos"
+#define RAMWX "RamwX"
+#define RAMWY "RamwY"
 
 // AddressWatcher is self-contained now
 struct AddressWatcher
