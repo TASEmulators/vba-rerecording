@@ -5,7 +5,13 @@ TODO: Fix potential or existing bugs in this file.
 07-01-2009 adelikat - Hooked up RamWatch AskSave() function to VBA exit
 07-01-2009 adelikat - Ramwatch - Hooked up Ramwatch recent files, save window position flag, save window position
 06-30-2009 adelikat - Ramwatch - Hooked up Ramwatch autoload
-TODO: Add nitsuja's changes here
+06-29-2009 nitsuja - enabled directory override edit boxes
+06-28-2009 nitsuja - added RAM search and RAM watch (from Gens)
+06-28-2009 nitsuja - fixed GB memory viewer crash
+06-28-2009 nitsuja - fixed read-only toggle to refuse toggling when the movie file is not writable
+06-28-2009 nitsuja - added "All Files" filter option to all browse dialogs
+06-28-2009 nitsuja - fixed browse dialog filter selection crash
+06-28-2009 nitsuja - added support for loading ROMs and movies in 7z/rar/zip/etc archives, including multi-file archive selection support
 06-25-2009 aquanull - Tweaked UI again.
 06-25-2009 aquanull - Fixed movie drag & drop behavior.
 06-25-2009 aquanull - Fixed Reset/Cancel in the Directories dialog.
@@ -56,6 +62,6 @@ TODO: Add nitsuja's changes here
 02-05-2009 gochaism - Added lag counter.
 01-06-2009 aquanull - Fixed 'xn' window size would not reset when clicking on the option that is already checked.
 01-06-2009 aquanull - Fix for not recording the  lag Reduction flag in GBA movies caused by using Ctrl-key-combos right before opening the recording
-11-09-2008 Nitsuja - Fix crash caused by trying to open a file that doesn't exist and ends with .gba
-11-09-2008 Nitsuja - Fix crash caused by the sequence "Load movie, use cheat search, close movie, open new movie, open cheat search"
+11-09-2008 nitsuja - Fix crash caused by trying to open a file that doesn't exist and ends with .gba
+11-09-2008 nitsuja - Fix crash caused by the sequence "Load movie, use cheat search, close movie, open new movie, open cheat search"
 --VBA rerecording v21---
