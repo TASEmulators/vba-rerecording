@@ -197,7 +197,8 @@ void MainWnd::OnFileRecentFreeze()
 
 void MainWnd::OnFileExit()
 {
-	SendMessage(WM_CLOSE);
+	if (AskSave())
+		SendMessage(WM_CLOSE);
 }
 
 void MainWnd::OnFileClose()
