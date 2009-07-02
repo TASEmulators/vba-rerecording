@@ -238,6 +238,15 @@ bool AskSave()
 	return true;
 }
 
+void WriteRecentRWFiles()
+{
+	char str[2048];
+	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
+	{
+		sprintf(str, "Recent Watch %d", i+1);
+		regSetStringValue(str, &rw_recent_files[i][0]);
+	}
+}
 
 void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 {
@@ -290,6 +299,8 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 		moo.dwTypeData = tmp;
 		InsertMenuItem(menu, 0, 1, &moo);
 	}
+
+	WriteRecentRWFiles();	//write recent menu to ini
 }
 
 void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU menu, unsigned int menuItem, unsigned int baseId)

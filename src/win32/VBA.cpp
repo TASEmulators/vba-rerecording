@@ -2087,8 +2087,14 @@ void VBA::loadSettings()
 
 	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
 	movieOnEndPause    = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
-
+	//RamWatch Settings
 	AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
+	char str[2048];
+	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
+	{
+		sprintf(str, "Recent Watch %d", i+1);
+		strcpy(rw_recent_files[i], regQueryStringValue(str, NULL));
+	}
 }
 
 void VBA::updateFrameSkip()
