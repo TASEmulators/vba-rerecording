@@ -826,7 +826,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			ramw_x = wrect.left;
 			ramw_y = wrect.top;
 			regSetDwordValue(RAMWX, ramw_x);
-			regSetDwordValue(RAMWY, ramw_x);
+			regSetDwordValue(RAMWY, ramw_y);
 			break;
 			};
 			
