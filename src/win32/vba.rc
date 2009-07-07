@@ -1219,7 +1219,7 @@ BEGIN
     LTEXT           "Enter number of rewind slots (1...256)",IDC_STATIC,7,46,
                     174,8
     LTEXT           "Or enter 0 to disable rewind.",IDC_STATIC,7,55,174,8
-    LTEXT           "If enabled, Tools->Rewind will rewind the state by <interval> seconds, as many as <slots> intervals back.",
+    LTEXT           "If enabled, File->Rewind will rewind the state by <interval> seconds, as many as <slots> intervals back.",
                     IDC_STATIC,7,87,173,17
 END
 
@@ -1451,85 +1451,129 @@ BEGIN
 END
 
 IDD_RAMSEARCH DIALOGEX 0, 0, 287, 292
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION " RAM Search"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_RAMLIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,9,9,214,151,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_RAMLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER | 
+                    WS_TABSTOP,9,9,214,151,WS_EX_CLIENTEDGE
     PUSHBUTTON      "&Search",IDC_C_SEARCH,226,9,52,16
     PUSHBUTTON      "&Add Cheat",IDC_C_ADDCHEAT,226,145,52,16
     PUSHBUTTON      "&Watch",IDC_C_WATCH,226,127,52,16
     PUSHBUTTON      "&Reset",IDC_C_RESET,226,27,52,16
     PUSHBUTTON      "&Eliminate",IDC_C_ELIMINATE,226,109,52,16
-    GROUPBOX        "Comparison Operator",IDC_STATIC,10,166,102,118,0,WS_EX_TRANSPARENT
-    CONTROL         "Less Than",IDC_LESSTHAN,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,178,95,11
-    CONTROL         "Greater Than",IDC_MORETHAN,"Button",BS_AUTORADIOBUTTON,14,191,95,11
-    CONTROL         "Less Than or Equal To",IDC_NOMORETHAN,"Button",BS_AUTORADIOBUTTON,14,204,95,11
-    CONTROL         "Greater Than or Equal To",IDC_NOLESSTHAN,"Button",BS_AUTORADIOBUTTON,14,217,95,11
-    CONTROL         "Equal To",IDC_EQUALTO,"Button",BS_AUTORADIOBUTTON,14,230,95,11
-    CONTROL         "Not Equal To",IDC_DIFFERENTFROM,"Button",BS_AUTORADIOBUTTON,14,243,95,11
-    CONTROL         "Different By:",IDC_DIFFERENTBY,"Button",BS_AUTORADIOBUTTON,14,256,52,11
-    CONTROL         "Modulo",IDC_MODULO,"Button",BS_AUTORADIOBUTTON,14,269,35,11
-    EDITTEXT        IDC_EDIT_DIFFBY,69,255,38,12,ES_UPPERCASE | ES_AUTOHSCROLL | WS_DISABLED
-    EDITTEXT        IDC_EDIT_MODBY,51,267,38,12,ES_UPPERCASE | ES_AUTOHSCROLL | WS_DISABLED
-    GROUPBOX        "Compare To / By",IDC_STATIC,118,166,153,58,0,WS_EX_TRANSPARENT
-    CONTROL         "Previous Value",IDC_PREVIOUSVALUE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,121,176,67,10
-    CONTROL         "Specific Value:",IDC_SPECIFICVALUE,"Button",BS_AUTORADIOBUTTON,121,187,67,10
-    CONTROL         "Specific Address:",IDC_SPECIFICADDRESS,"Button",BS_AUTORADIOBUTTON,121,198,67,10
-    CONTROL         "Number of Changes:",IDC_NUMBEROFCHANGES,"Button",BS_AUTORADIOBUTTON,121,209,76,10
-    EDITTEXT        IDC_EDIT_COMPAREVALUE,203,183,63,12,ES_UPPERCASE | ES_AUTOHSCROLL | WS_DISABLED
-    EDITTEXT        IDC_EDIT_COMPAREADDRESS,203,195,63,12,ES_UPPERCASE | ES_AUTOHSCROLL | WS_DISABLED
-    EDITTEXT        IDC_EDIT_COMPARECHANGES,203,207,63,12,ES_UPPERCASE | ES_AUTOHSCROLL | WS_DISABLED
-    GROUPBOX        "Data Type / Display",IDC_STATIC,196,227,75,44,0,WS_EX_TRANSPARENT
-    CONTROL         "Signed",IDC_SIGNED,"Button",BS_AUTORADIOBUTTON | WS_GROUP,200,237,67,8
-    CONTROL         "Unsigned",IDC_UNSIGNED,"Button",BS_AUTORADIOBUTTON,200,248,67,8
-    CONTROL         "Hexadecimal",IDC_HEX,"Button",BS_AUTORADIOBUTTON,200,259,67,8
-    CONTROL         "Autosearch",IDC_C_AUTOSEARCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,200,273,52,11
+    GROUPBOX        "Comparison Operator",IDC_STATIC,10,166,102,118,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "Less Than",IDC_LESSTHAN,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,14,178,95,11
+    CONTROL         "Greater Than",IDC_MORETHAN,"Button",BS_AUTORADIOBUTTON,
+                    14,191,95,11
+    CONTROL         "Less Than or Equal To",IDC_NOMORETHAN,"Button",
+                    BS_AUTORADIOBUTTON,14,204,95,11
+    CONTROL         "Greater Than or Equal To",IDC_NOLESSTHAN,"Button",
+                    BS_AUTORADIOBUTTON,14,217,95,11
+    CONTROL         "Equal To",IDC_EQUALTO,"Button",BS_AUTORADIOBUTTON,14,
+                    230,95,11
+    CONTROL         "Not Equal To",IDC_DIFFERENTFROM,"Button",
+                    BS_AUTORADIOBUTTON,14,243,95,11
+    CONTROL         "Different By:",IDC_DIFFERENTBY,"Button",
+                    BS_AUTORADIOBUTTON,14,256,52,11
+    CONTROL         "Modulo",IDC_MODULO,"Button",BS_AUTORADIOBUTTON,14,269,
+                    35,11
+    EDITTEXT        IDC_EDIT_DIFFBY,69,255,38,12,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_MODBY,51,267,38,12,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        "Compare To / By",IDC_STATIC,118,166,153,58,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "Previous Value",IDC_PREVIOUSVALUE,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,121,176,67,10
+    CONTROL         "Specific Value:",IDC_SPECIFICVALUE,"Button",
+                    BS_AUTORADIOBUTTON,121,187,67,10
+    CONTROL         "Specific Address:",IDC_SPECIFICADDRESS,"Button",
+                    BS_AUTORADIOBUTTON,121,198,67,10
+    CONTROL         "Number of Changes:",IDC_NUMBEROFCHANGES,"Button",
+                    BS_AUTORADIOBUTTON,121,209,76,10
+    EDITTEXT        IDC_EDIT_COMPAREVALUE,203,183,63,12,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_COMPAREADDRESS,203,195,63,12,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_COMPARECHANGES,203,207,63,12,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        "Data Type / Display",IDC_STATIC,196,227,75,44,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "Signed",IDC_SIGNED,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,200,237,67,8
+    CONTROL         "Unsigned",IDC_UNSIGNED,"Button",BS_AUTORADIOBUTTON,200,
+                    248,67,8
+    CONTROL         "Hexadecimal",IDC_HEX,"Button",BS_AUTORADIOBUTTON,200,
+                    259,67,8
+    CONTROL         "Autosearch",IDC_C_AUTOSEARCH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,200,273,52,11
     GROUPBOX        "Data Size",IDC_STATIC,117,227,73,57,0,WS_EX_TRANSPARENT
-    CONTROL         "1 byte",IDC_1_BYTE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,121,237,61,11
-    CONTROL         "2 bytes",IDC_2_BYTES,"Button",BS_AUTORADIOBUTTON,121,248,61,11
-    CONTROL         "4 bytes",IDC_4_BYTES,"Button",BS_AUTORADIOBUTTON,121,259,61,11
-    CONTROL         "Check Misaligned",IDC_MISALIGN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,121,272,65,8
-    PUSHBUTTON      "&Clear Change Counts",IDC_C_RESET_CHANGES,226,46,52,20,BS_MULTILINE
+    CONTROL         "1 byte",IDC_1_BYTE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,121,237,61,11
+    CONTROL         "2 bytes",IDC_2_BYTES,"Button",BS_AUTORADIOBUTTON,121,
+                    248,61,11
+    CONTROL         "4 bytes",IDC_4_BYTES,"Button",BS_AUTORADIOBUTTON,121,
+                    259,61,11
+    CONTROL         "Check Misaligned",IDC_MISALIGN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,121,272,65,8
+    PUSHBUTTON      "&Clear Change Counts",IDC_C_RESET_CHANGES,226,46,52,20,
+                    BS_MULTILINE
     PUSHBUTTON      "&Undo",IDC_C_UNDO,226,69,52,16,WS_DISABLED
     LTEXT           "Is",IDC_STATIC,92,270,12,8
 END
 
 IDD_EDITWATCH DIALOGEX 0, 0, 181, 95
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION " Edit Watch"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CTEXT           "Address:",IDC_SPECIFICADDRESS,18,12,35,10
-    EDITTEXT        IDC_EDIT_COMPAREADDRESS,55,10,65,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_COMPAREADDRESS,55,10,65,12,ES_UPPERCASE | 
+                    ES_AUTOHSCROLL
     CTEXT           "Notes:",IDC_PROMPT_TEXT,18,24,45,10
     EDITTEXT        IDC_PROMPT_EDIT,55,22,65,12,ES_AUTOHSCROLL
     GROUPBOX        "Data Type",IDC_STATIC,14,37,75,42,0,WS_EX_TRANSPARENT
-    CONTROL         "&Signed",IDC_SIGNED,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,47,67,8
-    CONTROL         "&Unsigned",IDC_UNSIGNED,"Button",BS_AUTORADIOBUTTON,18,57,67,8
-    CONTROL         "&Hexadecimal",IDC_HEX,"Button",BS_AUTORADIOBUTTON,18,67,67,8
+    CONTROL         "&Signed",IDC_SIGNED,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,18,47,67,8
+    CONTROL         "&Unsigned",IDC_UNSIGNED,"Button",BS_AUTORADIOBUTTON,18,
+                    57,67,8
+    CONTROL         "&Hexadecimal",IDC_HEX,"Button",BS_AUTORADIOBUTTON,18,67,
+                    67,8
     GROUPBOX        "Data Size",IDC_STATIC,94,37,73,42,0,WS_EX_TRANSPARENT
-    CONTROL         "&1 byte",IDC_1_BYTE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,98,47,61,11
-    CONTROL         "&2 bytes",IDC_2_BYTES,"Button",BS_AUTORADIOBUTTON,98,57,61,11
-    CONTROL         "&4 bytes",IDC_4_BYTES,"Button",BS_AUTORADIOBUTTON,98,67,61,11
+    CONTROL         "&1 byte",IDC_1_BYTE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,98,47,61,11
+    CONTROL         "&2 bytes",IDC_2_BYTES,"Button",BS_AUTORADIOBUTTON,98,57,
+                    61,11
+    CONTROL         "&4 bytes",IDC_4_BYTES,"Button",BS_AUTORADIOBUTTON,98,67,
+                    61,11
     DEFPUSHBUTTON   "&OK",IDOK,66,80,50,14
     PUSHBUTTON      "&Cancel",ID_CANCEL,120,80,50,14
 END
 
 IDD_RAMWATCH DIALOGEX 0, 0, 269, 242
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION " RAM Watch"
 MENU RAMWATCH_MENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WATCHLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,9,9,210,222,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_WATCHLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | 
+                    WS_BORDER | WS_TABSTOP,9,9,210,222,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Edit",IDC_C_WATCH_EDIT,226,66,34,14
     PUSHBUTTON      "Remove",IDC_C_WATCH_REMOVE,226,83,34,14
     PUSHBUTTON      "New",IDC_C_WATCH,226,100,34,14
     PUSHBUTTON      "Duplicate",IDC_C_WATCH_DUPLICATE,226,117,34,14
     PUSHBUTTON      "Add Cheat",IDC_C_ADDCHEAT,222,140,42,16
     GROUPBOX        "Watches",IDC_STATIC,222,11,42,125
-    CONTROL         "",ID_WATCHES_UPDOWN,"msctls_updown32",WS_TABSTOP,232,23,19,36
+    CONTROL         "",ID_WATCHES_UPDOWN,"msctls_updown32",WS_TABSTOP,232,23,
+                    19,36
 END
 
 IDD_PROMPT DIALOGEX 0, 0, 190, 70
@@ -1985,16 +2029,16 @@ BEGIN
                                                     ID_FILE_EXPORT_GAMESHARKSNAPSHOT
 
             MENUITEM SEPARATOR
-            MENUITEM "Slot #1",                     ID_FILE_SAVEGAME_SLOT1
-            MENUITEM "Slot #2",                     ID_FILE_SAVEGAME_SLOT2
-            MENUITEM "Slot #3",                     ID_FILE_SAVEGAME_SLOT3
-            MENUITEM "Slot #4",                     ID_FILE_SAVEGAME_SLOT4
-            MENUITEM "Slot #5",                     ID_FILE_SAVEGAME_SLOT5
-            MENUITEM "Slot #6",                     ID_FILE_SAVEGAME_SLOT6
-            MENUITEM "Slot #7",                     ID_FILE_SAVEGAME_SLOT7
-            MENUITEM "Slot #8",                     ID_FILE_SAVEGAME_SLOT8
-            MENUITEM "Slot #9",                     ID_FILE_SAVEGAME_SLOT9
-            MENUITEM "Slot #10",                    ID_FILE_SAVEGAME_SLOT10
+            MENUITEM "Slot #&1",                    ID_FILE_SAVEGAME_SLOT1
+            MENUITEM "Slot #&2",                    ID_FILE_SAVEGAME_SLOT2
+            MENUITEM "Slot #&3",                    ID_FILE_SAVEGAME_SLOT3
+            MENUITEM "Slot #&4",                    ID_FILE_SAVEGAME_SLOT4
+            MENUITEM "Slot #&5",                    ID_FILE_SAVEGAME_SLOT5
+            MENUITEM "Slot #&6",                    ID_FILE_SAVEGAME_SLOT6
+            MENUITEM "Slot #&7",                    ID_FILE_SAVEGAME_SLOT7
+            MENUITEM "Slot #&8",                    ID_FILE_SAVEGAME_SLOT8
+            MENUITEM "Slot #&9",                    ID_FILE_SAVEGAME_SLOT9
+            MENUITEM "Slot #1&0",                   ID_FILE_SAVEGAME_SLOT10
             MENUITEM SEPARATOR
             MENUITEM "&Make 'Current' on Save",     ID_FILE_SAVEGAME_MAKECURRENT
 
@@ -2482,11 +2526,10 @@ BEGIN
     END
     POPUP "&Cheats"
     BEGIN
-        MENUITEM "RAM Search",   ID_RAM_SEARCH
-        MENUITEM "RAM Watch",  ID_RAM_WATCH
-
+        MENUITEM "&RAM Search...",              ID_RAM_SEARCH
+        MENUITEM "RAM &Watch...",               ID_RAM_WATCH
         MENUITEM SEPARATOR
-        MENUITEM "Old &cheat search...",   ID_CHEATS_SEARCHFORCHEATS
+        MENUITEM "Old &cheat search...",        ID_CHEATS_SEARCHFORCHEATS
         MENUITEM "&Pause during cheat search",  ID_CHEATS_PAUSEDURINGCHEATSEARCH
 
         MENUITEM SEPARATOR
@@ -2574,8 +2617,8 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&FAQ (website)",              ID_HELP_FAQ
-        MENUITEM "&Bug Report",                 ID_HELP_BUGREPORT
+        MENUITEM "&FAQ (website)...",           ID_HELP_FAQ
+        MENUITEM "&Bug Report...",              ID_HELP_BUGREPORT
         MENUITEM SEPARATOR
         MENUITEM "&About...",                   ID_HELP_ABOUT
     END
@@ -2718,7 +2761,8 @@ BEGIN
     "N",            RAMMENU_FILE_NEW,       VIRTKEY, CONTROL, NOINVERT
     "O",            RAMMENU_FILE_OPEN,      VIRTKEY, CONTROL, NOINVERT
     "S",            RAMMENU_FILE_SAVE,      VIRTKEY, CONTROL, NOINVERT
-    "S",            RAMMENU_FILE_SAVEAS,    VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "S",            RAMMENU_FILE_SAVEAS,    VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
 END
 
 
