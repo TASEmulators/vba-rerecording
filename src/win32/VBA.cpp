@@ -139,7 +139,7 @@ int  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 #define BMP_BUFFER_MAX_WIDTH (256)
 #define BMP_BUFFER_MAX_HEIGHT (224)
 #define BMP_BUFFER_MAX_DEPTH (4)
-static char bmpBuffer [BMP_BUFFER_MAX_WIDTH*BMP_BUFFER_MAX_HEIGHT*BMP_BUFFER_MAX_DEPTH];
+static u8 bmpBuffer [BMP_BUFFER_MAX_WIDTH*BMP_BUFFER_MAX_HEIGHT*BMP_BUFFER_MAX_DEPTH];
 
 char movieFileToPlay [1024];
 bool playMovieFile         = false;
@@ -1475,7 +1475,7 @@ void systemFrame(int rate)
 				wfx.cbSize = 0;
 				theApp.aviRecorder->SetSoundFormat(&wfx);
 			}
-			theApp.aviRecorder->AddSound((const char *)soundFrameSound, soundFrameSoundWritten * 2);
+			theApp.aviRecorder->AddSound((u8 *)soundFrameSound, soundFrameSoundWritten * 2);
 		}
 	}
 
@@ -2096,7 +2096,7 @@ void VBA::loadSettings()
 	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
 	{
 		sprintf(str, "Recent Watch %d", i+1);
-		strcpy(rw_recent_files[i], regQueryStringValue(str, NULL));
+//		strcpy(rw_recent_files[i], regQueryStringValue(str, NULL));
 	}
 }
 

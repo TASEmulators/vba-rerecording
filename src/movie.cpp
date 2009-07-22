@@ -495,28 +495,10 @@ void VBAMovieInit()
 
 #if (defined(WIN32) && !defined(SDL))
 
-/// FIXME: should make getter function elsewhere and use that to avoid duplicated code
+/// FIXEDME: made getter function elsewhere and used that to avoid duplicated code
 static void GetBatterySaveName(CString & filename)
 {
-    CString buffer;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-    if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-    else
-		buffer = theApp.filename;
-
-    extern char *regQueryStringValue(const char *key, char *def);      // from Reg.cpp
-    CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
-
-    if (saveDir.IsEmpty())
-		saveDir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-    if (((MainWnd *)theApp.m_pMainWnd)->isDriveRoot(saveDir))
-		filename.Format("%s%s.sav", saveDir, buffer);
-    else
-		filename.Format("%s\\%s.sav", saveDir, buffer);
+	filename = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 }
 
 #else

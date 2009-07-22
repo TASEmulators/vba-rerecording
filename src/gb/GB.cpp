@@ -590,28 +590,6 @@ void gbGenFilter()
 	}
 }
 
-bool gbIsGameboyRom(char *file)
-{
-	if (strlen(file) > 4)
-	{
-		char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".gb") == 0)
-				return true;
-			if (_stricmp(p, ".gbc") == 0)
-				return true;
-			if (_stricmp(p, ".cgb") == 0)
-				return true;
-			if (_stricmp(p, ".sgb") == 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
 void gbCopyMemory(u16 d, u16 s, int count)
 {
 	while (count)

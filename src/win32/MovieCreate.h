@@ -34,8 +34,6 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedBrowse();
-
-	CString movieName;
 	afx_msg void OnBnClickedRecstart();
 	afx_msg void OnBnClickedRecreset();
 	afx_msg void OnBnClickedRecnow();

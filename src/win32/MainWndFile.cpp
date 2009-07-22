@@ -229,31 +229,15 @@ void MainWnd::OnUpdateFileClose(CCmdUI*pCmdUI)
 void MainWnd::OnFileLoad()
 {
 	theApp.winCheckFullscreen();
-	CString buffer;
-	CString filename;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		buffer = theApp.filename;
-
-	CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
-
-	if (saveDir.IsEmpty())
-		saveDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(saveDir))
-		filename.Format("%s%s.sgm", saveDir, buffer);
-	else
-		filename.Format("%s\\%s.sgm", saveDir, buffer);
 
 	LPCTSTR exts[] = { ".sgm", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_SGM);
 	CString title  = winResLoadString(IDS_SELECT_SAVE_GAME_NAME);
 
-	FileDlg dlg(this, filename, filter, 0, "", exts, saveDir, title, false, true);
+	CString saveName = getRelatedFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
+	CString saveDir = getRelatedDir(IDS_SAVE_DIR);
+
+	FileDlg dlg(this, saveName, filter, 0, "SGM", exts, saveDir, title, false, true);
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -284,8 +268,70 @@ static bool FileExists(const char* filename)
 	return false;
 }
 
+CString MainWnd::getRelatedDir(const CString& TargetDirReg)
+{
+	CString targetDir = regQueryStringValue(TargetDirReg, NULL);
+
+	if (targetDir.IsEmpty())
+		targetDir = MainWnd::getDirFromFile(theApp.filename);
+
+	return targetDir;
+}
+
+CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString& TargetDirReg, const CString& ext)
+{
+	if (LogicalRomName.GetLength() == 0)
+		 return CString();
+
+	int index = max(LogicalRomName.ReverseFind('/'), max(LogicalRomName.ReverseFind('\\'), LogicalRomName.ReverseFind('|')));
+
+	CString buffer;
+	if (index != -1)
+		buffer = LogicalRomName.Right(LogicalRomName.GetLength()-index-1);
+	else
+		buffer = LogicalRomName;
+
+	CString targetDir = getRelatedDir(TargetDirReg);
+
+	CString filename;
+	if (MainWnd::isDriveRoot(targetDir))
+		filename.Format("%s%s%s", targetDir, buffer, ext);
+	else
+		filename.Format("%s\\%s%s", targetDir, buffer, ext);
+
+	// check for old style of naming, for better backward compatibility
+	if(!FileExists(filename))
+	{
+		index = LogicalRomName.Find('|');
+		if(index != -1)
+		{
+			buffer = LogicalRomName.Left(index);
+			index = max(buffer.ReverseFind('/'), buffer.ReverseFind('\\'));
+			
+			int dotIndex = buffer.ReverseFind('.');
+			if(dotIndex > index)
+				buffer = buffer.Left(dotIndex);
+
+			if(index != -1)
+				buffer = buffer.Right(buffer.GetLength()-index-1);
+
+			CString filename2;
+			if (MainWnd::isDriveRoot(targetDir))
+				filename2.Format("%s%s%s", targetDir, buffer, ext);
+			else
+				filename2.Format("%s\\%s%s", targetDir, buffer, ext);
+
+			if(FileExists(filename2))
+				filename = filename2;
+		}
+	}
+
+	return filename;
+}
+
 CString MainWnd::getSavestateFilename(const CString& LogicalRomName, int nID)
 {
+#if 0
 	int index = max(LogicalRomName.ReverseFind('/'), max(LogicalRomName.ReverseFind('\\'), LogicalRomName.ReverseFind('|')));
 
 	CString buffer;
@@ -333,6 +379,12 @@ CString MainWnd::getSavestateFilename(const CString& LogicalRomName, int nID)
 	}
 
 	return filename;
+#endif
+
+	CString ext;
+	ext.Format("%d.sgm", nID);
+
+	return getRelatedFilename(LogicalRomName, IDS_SAVE_DIR, ext);
 }
 
 bool8 loadedMovieSnapshot = 0;
@@ -385,31 +437,15 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 void MainWnd::OnFileSave()
 {
 	theApp.winCheckFullscreen();
-	CString buffer;
-	CString filename;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		buffer = theApp.filename;
-
-	CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
-
-	if (saveDir.IsEmpty())
-		saveDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(saveDir))
-		filename.Format("%s%s.sgm", saveDir, buffer);
-	else
-		filename.Format("%s\\%s.sgm", saveDir, buffer);
 
 	LPCTSTR exts[] = { ".sgm", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_SGM);
 	CString title  = winResLoadString(IDS_SELECT_SAVE_GAME_NAME);
 
-	FileDlg dlg(this, filename, filter, 0, "", exts, saveDir, title, true);
+	CString saveName = getRelatedFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
+	CString saveDir = getRelatedDir(IDS_SAVE_DIR);
+
+	FileDlg dlg(this, saveName, filter, 0, "SGM", exts, saveDir, title, true);
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -459,16 +495,15 @@ BOOL MainWnd::OnSelectSlot(UINT nID)
 void MainWnd::OnFileImportBatteryfile()
 {
 	theApp.winCheckFullscreen();
+
 	LPCTSTR exts[] = { ".sav", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_SAV);
 	CString title  = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
-	CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
+	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
+	CString batteryDir = getRelatedDir(IDS_BATTERY_DIR);
 
-	if (saveDir.IsEmpty())
-		saveDir = getDirFromFile(theApp.filename);
-
-	FileDlg dlg(this, "", filter, 0, "", exts, saveDir, title, false, true);
+	FileDlg dlg(this, batteryName, filter, 0, "SAV", exts, batteryDir, title, false, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 		return;
@@ -501,6 +536,7 @@ void MainWnd::OnUpdateFileImportBatteryfile(CCmdUI*pCmdUI)
 void MainWnd::OnFileImportGamesharkcodefile()
 {
 	theApp.winCheckFullscreen();
+
 	LPCTSTR exts[] = { NULL };
 	CString filter = theApp.cartridgeType == 0 ? winLoadFilter(IDS_FILTER_SPC) : winLoadFilter(IDS_FILTER_GCF);
 	CString title  = winResLoadString(IDS_SELECT_CODE_FILE);
@@ -536,6 +572,7 @@ void MainWnd::OnUpdateFileImportGamesharkcodefile(CCmdUI*pCmdUI)
 void MainWnd::OnFileImportGamesharksnapshot()
 {
 	theApp.winCheckFullscreen();
+
 	LPCTSTR exts[] = { NULL };
 	CString filter = theApp.cartridgeType == 1 ? winLoadFilter(IDS_FILTER_GBS) : winLoadFilter(IDS_FILTER_SPS);
 	CString title  = winResLoadString(IDS_SELECT_SNAPSHOT_FILE);
@@ -567,34 +604,15 @@ void MainWnd::OnUpdateFileImportGamesharksnapshot(CCmdUI*pCmdUI)
 void MainWnd::OnFileExportBatteryfile()
 {
 	theApp.winCheckFullscreen();
-	CString name;
 
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		name = theApp.filename;
-
-	LPCTSTR exts[] = {".sav", ".dat" };
-
+	LPCTSTR exts[] = {".sav", ".dat", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_SAV);
 	CString title  = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
-	CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
+	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
+	CString batteryDir = getRelatedDir(IDS_BATTERY_DIR);
 
-	if (saveDir.IsEmpty())
-		saveDir = getDirFromFile(theApp.filename);
-
-	FileDlg dlg(this,
-	            name,
-	            filter,
-	            1,
-	            "SAV",
-	            exts,
-	            saveDir,
-	            title,
-	            true);
+	FileDlg dlg(this, batteryName, filter, 1, "SAV", exts, batteryDir, title, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 	{
@@ -629,19 +647,12 @@ void MainWnd::OnFileExportGamesharksnapshot()
 		return;
 	}
 
-	CString name;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		name = theApp.filename;
-
-	LPCTSTR exts[] = {".sps" };
+	LPCTSTR exts[] = {".sps", NULL };
 
 	CString filter = winLoadFilter(IDS_FILTER_SPS);
 	CString title  = winResLoadString(IDS_SELECT_SNAPSHOT_FILE);
+
+	CString name = getRelatedFilename(theApp.filename, CString(), exts[0]);
 
 	FileDlg dlg(this,
 	            name,
@@ -672,42 +683,29 @@ void MainWnd::OnUpdateFileExportGamesharksnapshot(CCmdUI*pCmdUI)
 void MainWnd::OnFileScreencapture()
 {
 	theApp.winCheckFullscreen();
-	CString name;
-	CString filename;
 
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		name = theApp.filename;
-
-	CString capdir = regQueryStringValue(IDS_CAPTURE_DIR, "");
-	if (capdir.IsEmpty())
-		capdir = getDirFromFile(name);
-
-	CString ext = "png";
-
-	if (theApp.captureFormat != 0)
-		ext = "bmp";
-
-	if (isDriveRoot(capdir))
-		filename.Format("%s%s.%s", capdir, name, ext);
-	else
-		filename.Format("%s\\%s.%s", capdir, name, ext);
-
-	LPCTSTR exts[] = {".png", ".bmp" };
+	LPCTSTR exts[] = {".png", ".bmp", NULL };
 
 	CString filter = winLoadFilter(IDS_FILTER_PNG);
 	CString title  = winResLoadString(IDS_SELECT_CAPTURE_NAME);
 
+	CString ext;
+
+	if (theApp.captureFormat != 0)
+		ext.Format(".bmp");
+	else
+		ext.Format(".png");
+
+	CString captureName = getRelatedFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+	CString captureDir = getRelatedDir(IDS_CAPTURE_DIR);
+
 	FileDlg dlg(this,
-	            filename,
+	            captureName,
 	            filter,
 	            theApp.captureFormat ? 2 : 1,
 	            theApp.captureFormat ? "BMP" : "PNG",
 	            exts,
-	            capdir,
+	            captureDir,
 	            title,
 	            true);
 
@@ -1035,17 +1033,23 @@ void MainWnd::OnFileSavegameCurrent()
 
 void MainWnd::OnUpdateFileSavegameCurrent(CCmdUI*pCmdUI)
 {
+	CString str;
+	str.Format("&Current slot (#%d)", theApp.currentSlot+1);
+
+	pCmdUI->SetText(str);
 	pCmdUI->Enable(emulating);
 
 	if (pCmdUI->m_pMenu != NULL)
 	{
 		CMenu * pMenu = pCmdUI->m_pMenu;
+#if 0
 		CString str;
-
 		str.Format("Current slot (#%d)", theApp.currentSlot+1);
+
 		pMenu->ModifyMenu(ID_FILE_SAVEGAME_CURRENT, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_CURRENT, str);
 
 		pCmdUI->Enable(emulating);
+#endif
 		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
 	}
 }
@@ -1057,16 +1061,17 @@ void MainWnd::OnFileLoadgameCurrent()
 
 void MainWnd::OnUpdateFileLoadgameCurrent(CCmdUI*pCmdUI)
 {
+	CString str;
+	str.Format("&Current slot (#%d)", theApp.currentSlot+1);
+
+	pCmdUI->SetText(str);
 	pCmdUI->Enable(emulating);
 
 	if (pCmdUI->m_pMenu != NULL)
 	{
 		CMenu * pMenu = pCmdUI->m_pMenu;
-
 		CString     name;
 		CFileStatus status;
-		CString     str;
-
 		bool found = false;
 		int  i     = theApp.currentSlot;
 		{
@@ -1078,11 +1083,12 @@ void MainWnd::OnUpdateFileLoadgameCurrent(CCmdUI*pCmdUI)
 			}
 		}
 
+#if 0
+		CString str;
 		str.Format("Current slot (#%d)", theApp.currentSlot+1);
 		pMenu->ModifyMenu(ID_FILE_LOADGAME_CURRENT, MF_STRING|MF_BYCOMMAND, ID_FILE_LOADGAME_CURRENT, str);
-
+#endif
 		pCmdUI->Enable(found && emulating);
-
 		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
 	}
 }
@@ -1118,6 +1124,14 @@ void MainWnd::OnFileSavegameIncrementSlot()
 
 void MainWnd::OnUpdateFileSavegameIncrementSlot(CCmdUI*pCmdUI)
 {
+	CString str;
+	str.Format("&Increase current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((theApp.currentSlot + 1) % 10));
+
+	pCmdUI->SetText(str);
+	if (pCmdUI->m_pMenu != NULL)
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+
+#if 0
 	pCmdUI->Enable(true);
 
 	if (pCmdUI->m_pMenu != NULL)
@@ -1125,12 +1139,13 @@ void MainWnd::OnUpdateFileSavegameIncrementSlot(CCmdUI*pCmdUI)
 		CMenu * pMenu = pCmdUI->m_pMenu;
 		CString str;
 
-		str.Format("Increase current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((theApp.currentSlot + 1) % 10));
+		str.Format("&Increase current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((theApp.currentSlot + 1) % 10));
 		pMenu->ModifyMenu(ID_FILE_SAVEGAME_INCREMENTSLOT, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_INCREMENTSLOT, str);
 
 		pCmdUI->Enable(true);
 		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
 	}
+#endif
 }
 
 void MainWnd::OnFileSavegameDecrementSlot()
@@ -1144,6 +1159,14 @@ void MainWnd::OnFileSavegameDecrementSlot()
 
 void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI*pCmdUI)
 {
+	CString str;
+	str.Format("&Decrease current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((10 + theApp.currentSlot - 1) % 10));
+
+	pCmdUI->SetText(str);
+	if (pCmdUI->m_pMenu != NULL)
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+
+#if 0
 	pCmdUI->Enable(true);
 
 	if (pCmdUI->m_pMenu != NULL)
@@ -1157,6 +1180,7 @@ void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI*pCmdUI)
 		pCmdUI->Enable(true);
 		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
 	}
+#endif
 }
 
 void MainWnd::OnFileLuaLoad()

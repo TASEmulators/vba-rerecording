@@ -41,11 +41,13 @@ typedef struct
 	int   size;
 } variable_desc;
 
-extern bool utilWritePNGFile(const char *, int, int, u8 *);
+extern void utilWriteBMP(u8 *out, int w, int h, int dstDepth, u8 *in);
 extern bool utilWriteBMPFile(const char *, int, int, u8 *);
+extern bool utilWritePNGFile(const char *, int, int, u8 *);
 extern void utilApplyIPS(const char *ips, u8 **rom, int *size);
-extern void utilWriteBMP(char *out, int w, int h, int dstDepth, u8 *in);
 extern bool utilIsGBAImage(const char *);
+extern bool utilIsGBABios(const char *file);
+extern bool utilIsELF(const char *file);
 extern bool utilIsGBImage(const char *);
 extern bool utilIsZipFile(const char *);
 extern bool utilIsGzipFile(const char *);

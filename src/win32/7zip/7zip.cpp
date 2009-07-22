@@ -6,7 +6,8 @@
 
 #include <string>
 #include <vector>
-#include <assert.h>
+#include <cassert>
+#include <malloc.h>
 
 #include "7zipstreams.h" // defines OutStream and InFileStream
 

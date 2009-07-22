@@ -60,9 +60,240 @@ static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
 static int (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int)        = NULL;
 static int (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
 
+void utilPutDword(u8 *p, u32 value)
+{
+	*p++ = value & 255;
+	*p++ = (value >> 8) & 255;
+	*p++ = (value >> 16) & 255;
+	*p   = (value >> 24) & 255;
+}
+
+void utilPutWord(u8 *p, u16 value)
+{
+	*p++ = value & 255;
+	*p   = (value >> 8) & 255;
+}
+
+void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
+{
+	int sizeX = w;
+	int sizeY = h;
+
+	switch (dstDepth > 0 ? dstDepth : systemColorDepth)
+	{
+	case 16:
+	{
+		u16 *p = (u16 *)(pix+(w+2)*(h)*2); // skip first black line
+		for (int y = 0; y < sizeY; y++)
+		{
+			for (int x = 0; x < sizeX; x++)
+			{
+				u16 v = *p++;
+
+				*b++ = ((v >> systemBlueShift) & 0x01f) << 3; // B
+				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
+				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
+			}
+			p++; // skip black pixel for filters
+			p++; // skip black pixel for filters
+			p -= 2*(w+2);
+		}
+		break;
+	}
+	case 24:
+	{
+		u8 *pixU8 = (u8 *)pix+3*w*(h-1);
+		for (int y = 0; y < sizeY; y++)
+		{
+			for (int x = 0; x < sizeX; x++)
+			{
+				if (systemRedShift > systemBlueShift)
+				{
+					*b++ = *pixU8++; // B
+					*b++ = *pixU8++; // G
+					*b++ = *pixU8++; // R
+				}
+				else
+				{
+					int red   = *pixU8++;
+					int green = *pixU8++;
+					int blue  = *pixU8++;
+
+					*b++ = blue;
+					*b++ = green;
+					*b++ = red;
+				}
+			}
+			pixU8 -= 2*3*w;
+		}
+		break;
+	}
+	case 32:
+	{
+		u32 *pixU32 = (u32 *)(pix+4*(w+1)*(h));
+		for (int y = 0; y < sizeY; y++)
+		{
+			for (int x = 0; x < sizeX; x++)
+			{
+				u32 v = *pixU32++;
+
+				*b++ = ((v >> systemBlueShift) & 0x001f) << 3; // B
+				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
+				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
+			}
+			pixU32++;
+			pixU32 -= 2*(w+1);
+		}
+		break;
+	}
+	}
+}
+
+bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
+{
+	u8 writeBuffer[256 * 3];
+
+	FILE *fp = fopen(fileName, "wb");
+
+	if (!fp)
+	{
+		systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"), fileName);
+		return false;
+	}
+
+	struct
+	{
+		u8 ident[2];
+		u8 filesize[4];
+		u8 reserved[4];
+		u8 dataoffset[4];
+		u8 headersize[4];
+		u8 width[4];
+		u8 height[4];
+		u8 planes[2];
+		u8 bitsperpixel[2];
+		u8 compression[4];
+		u8 datasize[4];
+		u8 hres[4];
+		u8 vres[4];
+		u8 colors[4];
+		u8 importantcolors[4];
+		//    u8 pad[2];
+	} bmpheader;
+	memset(&bmpheader, 0, sizeof(bmpheader));
+
+	bmpheader.ident[0] = 'B';
+	bmpheader.ident[1] = 'M';
+
+	u32 fsz = sizeof(bmpheader) + w*h*3;
+	utilPutDword(bmpheader.filesize, fsz);
+	utilPutDword(bmpheader.dataoffset, 0x36);
+	utilPutDword(bmpheader.headersize, 0x28);
+	utilPutDword(bmpheader.width, w);
+	utilPutDword(bmpheader.height, h);
+	utilPutDword(bmpheader.planes, 1);
+	utilPutDword(bmpheader.bitsperpixel, 24);
+	utilPutDword(bmpheader.datasize, 3*w*h);
+
+	fwrite(&bmpheader, 1, sizeof(bmpheader), fp);
+
+#if 0
+	// FIXME: need sufficient buffer
+	utilWriteBMP(writeBuffer, w, h, systemColorDepth, pix);
+#else
+	u8 *b = writeBuffer;
+
+	int sizeX = w;
+	int sizeY = h;
+
+	switch (systemColorDepth)
+	{
+	case 16:
+	{
+		u16 *p = (u16 *)(pix+(w+2)*(h)*2); // skip first black line
+		for (int y = 0; y < sizeY; y++)
+		{
+			for (int x = 0; x < sizeX; x++)
+			{
+				u16 v = *p++;
+
+				*b++ = ((v >> systemBlueShift) & 0x01f) << 3; // B
+				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
+				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
+			}
+			p++; // skip black pixel for filters
+			p++; // skip black pixel for filters
+			p -= 2*(w+2);
+			fwrite(writeBuffer, 1, 3*w, fp);
+
+			b = writeBuffer;
+		}
+		break;
+	}
+	case 24:
+	{
+		u8 *pixU8 = (u8 *)pix+3*w*(h-1);
+		for (int y = 0; y < sizeY; y++)
+		{
+			for (int x = 0; x < sizeX; x++)
+			{
+				if (systemRedShift > systemBlueShift)
+				{
+					*b++ = *pixU8++; // B
+					*b++ = *pixU8++; // G
+					*b++ = *pixU8++; // R
+				}
+				else
+				{
+					int red   = *pixU8++;
+					int green = *pixU8++;
+					int blue  = *pixU8++;
+
+					*b++ = blue;
+					*b++ = green;
+					*b++ = red;
+				}
+			}
+			pixU8 -= 2*3*w;
+			fwrite(writeBuffer, 1, 3*w, fp);
+
+			b = writeBuffer;
+		}
+		break;
+	}
+	case 32:
+	{
+		u32 *pixU32 = (u32 *)(pix+4*(w+1)*(h));
+		for (int y = 0; y < sizeY; y++)
+		{
+			for (int x = 0; x < sizeX; x++)
+			{
+				u32 v = *pixU32++;
+
+				*b++ = ((v >> systemBlueShift) & 0x001f) << 3; // B
+				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
+				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
+			}
+			pixU32++;
+			pixU32 -= 2*(w+1);
+
+			fwrite(writeBuffer, 1, 3*w, fp);
+
+			b = writeBuffer;
+		}
+		break;
+	}
+	}
+#endif
+
+	fclose(fp);
+
+	return true;
+}
+
 bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 {
-	u8 writeBuffer[512 * 3];
+	u8 writeBuffer[256 * 3];
 
 	FILE *fp = fopen(fileName, "wb");
 
@@ -202,234 +433,6 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 	return true;
 }
 
-void utilPutDword(u8 *p, u32 value)
-{
-	*p++ = value & 255;
-	*p++ = (value >> 8) & 255;
-	*p++ = (value >> 16) & 255;
-	*p   = (value >> 24) & 255;
-}
-
-void utilPutWord(u8 *p, u16 value)
-{
-	*p++ = value & 255;
-	*p   = (value >> 8) & 255;
-}
-
-void utilWriteBMP(char *buf, int w, int h, int dstDepth, u8 *pix)
-{
-	u8 *b = (u8 *)buf;
-
-	int sizeX = w;
-	int sizeY = h;
-
-	switch (dstDepth > 0 ? dstDepth : systemColorDepth)
-	{
-	case 16:
-	{
-		u16 *p = (u16 *)(pix+(w+2)*(h)*2); // skip first black line
-		for (int y = 0; y < sizeY; y++)
-		{
-			for (int x = 0; x < sizeX; x++)
-			{
-				u16 v = *p++;
-
-				*b++ = ((v >> systemBlueShift) & 0x01f) << 3; // B
-				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
-				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
-			}
-			p++; // skip black pixel for filters
-			p++; // skip black pixel for filters
-			p -= 2*(w+2);
-		}
-		break;
-	}
-	case 24:
-	{
-		u8 *pixU8 = (u8 *)pix+3*w*(h-1);
-		for (int y = 0; y < sizeY; y++)
-		{
-			for (int x = 0; x < sizeX; x++)
-			{
-				if (systemRedShift > systemBlueShift)
-				{
-					*b++ = *pixU8++; // B
-					*b++ = *pixU8++; // G
-					*b++ = *pixU8++; // R
-				}
-				else
-				{
-					int red   = *pixU8++;
-					int green = *pixU8++;
-					int blue  = *pixU8++;
-
-					*b++ = blue;
-					*b++ = green;
-					*b++ = red;
-				}
-			}
-			pixU8 -= 2*3*w;
-		}
-		break;
-	}
-	case 32:
-	{
-		u32 *pixU32 = (u32 *)(pix+4*(w+1)*(h));
-		for (int y = 0; y < sizeY; y++)
-		{
-			for (int x = 0; x < sizeX; x++)
-			{
-				u32 v = *pixU32++;
-
-				*b++ = ((v >> systemBlueShift) & 0x001f) << 3; // B
-				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
-				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
-			}
-			pixU32++;
-			pixU32 -= 2*(w+1);
-		}
-		break;
-	}
-	}
-}
-
-bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
-{
-	u8 writeBuffer[512 * 3];
-
-	FILE *fp = fopen(fileName, "wb");
-
-	if (!fp)
-	{
-		systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"), fileName);
-		return false;
-	}
-
-	struct
-	{
-		u8 ident[2];
-		u8 filesize[4];
-		u8 reserved[4];
-		u8 dataoffset[4];
-		u8 headersize[4];
-		u8 width[4];
-		u8 height[4];
-		u8 planes[2];
-		u8 bitsperpixel[2];
-		u8 compression[4];
-		u8 datasize[4];
-		u8 hres[4];
-		u8 vres[4];
-		u8 colors[4];
-		u8 importantcolors[4];
-		//    u8 pad[2];
-	} bmpheader;
-	memset(&bmpheader, 0, sizeof(bmpheader));
-
-	bmpheader.ident[0] = 'B';
-	bmpheader.ident[1] = 'M';
-
-	u32 fsz = sizeof(bmpheader) + w*h*3;
-	utilPutDword(bmpheader.filesize, fsz);
-	utilPutDword(bmpheader.dataoffset, 0x36);
-	utilPutDword(bmpheader.headersize, 0x28);
-	utilPutDword(bmpheader.width, w);
-	utilPutDword(bmpheader.height, h);
-	utilPutDword(bmpheader.planes, 1);
-	utilPutDword(bmpheader.bitsperpixel, 24);
-	utilPutDword(bmpheader.datasize, 3*w*h);
-
-	fwrite(&bmpheader, 1, sizeof(bmpheader), fp);
-
-	u8 *b = writeBuffer;
-
-	int sizeX = w;
-	int sizeY = h;
-
-	switch (systemColorDepth)
-	{
-	case 16:
-	{
-		u16 *p = (u16 *)(pix+(w+2)*(h)*2); // skip first black line
-		for (int y = 0; y < sizeY; y++)
-		{
-			for (int x = 0; x < sizeX; x++)
-			{
-				u16 v = *p++;
-
-				*b++ = ((v >> systemBlueShift) & 0x01f) << 3; // B
-				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
-				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
-			}
-			p++; // skip black pixel for filters
-			p++; // skip black pixel for filters
-			p -= 2*(w+2);
-			fwrite(writeBuffer, 1, 3*w, fp);
-
-			b = writeBuffer;
-		}
-		break;
-	}
-	case 24:
-	{
-		u8 *pixU8 = (u8 *)pix+3*w*(h-1);
-		for (int y = 0; y < sizeY; y++)
-		{
-			for (int x = 0; x < sizeX; x++)
-			{
-				if (systemRedShift > systemBlueShift)
-				{
-					*b++ = *pixU8++; // B
-					*b++ = *pixU8++; // G
-					*b++ = *pixU8++; // R
-				}
-				else
-				{
-					int red   = *pixU8++;
-					int green = *pixU8++;
-					int blue  = *pixU8++;
-
-					*b++ = blue;
-					*b++ = green;
-					*b++ = red;
-				}
-			}
-			pixU8 -= 2*3*w;
-			fwrite(writeBuffer, 1, 3*w, fp);
-
-			b = writeBuffer;
-		}
-		break;
-	}
-	case 32:
-	{
-		u32 *pixU32 = (u32 *)(pix+4*(w+1)*(h));
-		for (int y = 0; y < sizeY; y++)
-		{
-			for (int x = 0; x < sizeX; x++)
-			{
-				u32 v = *pixU32++;
-
-				*b++ = ((v >> systemBlueShift) & 0x001f) << 3; // B
-				*b++ = ((v >> systemGreenShift) & 0x001f) << 3; // G
-				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
-			}
-			pixU32++;
-			pixU32 -= 2*(w+1);
-
-			fwrite(writeBuffer, 1, 3*w, fp);
-
-			b = writeBuffer;
-		}
-		break;
-	}
-	}
-
-	fclose(fp);
-
-	return true;
-}
-
 static int utilReadInt2(FILE *f)
 {
 	int res = 0;
@@ -553,6 +556,43 @@ bool utilIsGBAImage(const char *file)
 		}
 	}
 
+	return false;
+}
+
+bool utilIsGBABios(const char *file)
+{
+	if (strlen(file) > 4)
+	{
+		const char *p = strrchr(file, '.');
+
+		if (p != NULL)
+		{
+			if (_stricmp(p, ".gba") == 0)
+				return true;
+			if (_stricmp(p, ".agb") == 0)
+				return true;
+			if (_stricmp(p, ".bin") == 0)
+				return true;
+			if (_stricmp(p, ".bios") == 0)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool utilIsELF(const char *file)
+{
+	if (strlen(file) > 4)
+	{
+		const char *p = strrchr(file, '.');
+
+		if (p != NULL)
+		{
+			if (_stricmp(p, ".elf") == 0)
+				return true;
+		}
+	}
 	return false;
 }
 

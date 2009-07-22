@@ -10,7 +10,7 @@
 	FORCE_REF(CRegisterCodecs##x, g_RegisterCodecs##x)
 
 #ifndef FORCE_REF
-	#define FORCE_REF(...)
+	#define FORCE_REF(x,y)
 #endif
 
 DECLARE_CODEC(7zAES)
