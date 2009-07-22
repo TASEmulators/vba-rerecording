@@ -104,8 +104,6 @@ extern void CPUInit(const char *, bool);
 extern void CPUReset();
 extern void CPULoop(int);
 extern void CPUCheckDMA(int, int);
-extern bool CPUIsGBAImage(const char *);
-extern bool CPUIsZipFile(const char *);
 #ifdef PROFILING
 extern void cpuProfil(char *buffer, int, u32, int);
 extern void cpuEnableProfiling(int hz);

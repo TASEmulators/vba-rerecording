@@ -2,6 +2,19 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+07-22-2009 aquanull - Added a missing header file.
+07-22-2009 aquanull - Fixed various out-of-range errors within some file dialogs.
+07-22-2009 aquanull - Removed some redundant functions.
+07-01-2009 adelikat - Hooked up RamWatch AskSave() function to VBA exit
+07-01-2009 adelikat - Ramwatch - Hooked up Ramwatch recent files, save window position flag, save window position
+06-30-2009 adelikat - Ramwatch - Hooked up Ramwatch autoload
+06-29-2009 nitsuja - enabled directory override edit boxes
+06-28-2009 nitsuja - added RAM search and RAM watch (from Gens)
+06-28-2009 nitsuja - fixed GB memory viewer crash
+06-28-2009 nitsuja - fixed read-only toggle to refuse toggling when the movie file is not writable
+06-28-2009 nitsuja - added "All Files" filter option to all browse dialogs
+06-28-2009 nitsuja - fixed browse dialog filter selection crash
+06-28-2009 nitsuja - added support for loading ROMs and movies in 7z/rar/zip/etc archives, including multi-file archive selection support
 06-25-2009 aquanull - Tweaked UI again.
 06-25-2009 aquanull - Fixed movie drag & drop behavior.
 06-25-2009 aquanull - Fixed Reset/Cancel in the Directories dialog.

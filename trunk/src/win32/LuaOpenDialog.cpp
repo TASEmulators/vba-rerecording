@@ -69,7 +69,12 @@ BOOL LuaOpenDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	GetDlgItem(IDC_LUA_FILENAME)->SetWindowText("");
+	CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
+
+	GetDlgItem(IDC_LUA_FILENAME)->SetWindowText(luaName);
+
+	// scroll to show the rightmost side of the lua filename
+	((CEdit*)GetDlgItem(IDC_LUA_FILENAME))->SetSel((DWORD)(luaName.GetLength()-1), FALSE);
 
 	return TRUE; // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -77,56 +82,29 @@ BOOL LuaOpenDialog::OnInitDialog()
 
 void LuaOpenDialog::OnBnClickedBrowse()
 {
-	extern char *regQueryStringValue(const char *key, char *def);  // from Reg.cpp
-	CString capdir = regQueryStringValue(IDS_LUA_DIR, "");
-	CString luaName;
-	CString captureBuffer;
+	theApp.winCheckFullscreen();	// FIXME: necessary or not?
 
-	if (capdir.IsEmpty())
-		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-	CString filename = "";
-	if (emulating)
-	{
-		filename = theApp.szFile;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".lua";
-	}
+	CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
+	CString luaDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_LUA_DIR);
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
 	CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
 
 	LPCTSTR exts[] = { ".lua", NULL };
 
-	FileDlg dlg(this, filename, filter, 1, "lua", exts, capdir, title, false, true);
+	FileDlg dlg(this, luaName, filter, 1, "lua", exts, luaDir, title, false, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 	{
 		return;
 	}
 
-	luaName       = dlg.GetPathName();
-	captureBuffer = luaName;
-
-	if (dlg.m_ofn.nFileOffset > 0)
-	{
-		captureBuffer = captureBuffer.Left(dlg.m_ofn.nFileOffset);
-	}
-
-	int len = captureBuffer.GetLength();
-
-	if (len > 3 && captureBuffer[len-1] == '\\')
-		captureBuffer = captureBuffer.Left(len-1);
-
-	extern void regSetStringValue(const char *key, const char *value);   // from Reg.cpp
-	regSetStringValue(IDS_LUA_DIR, captureBuffer);
+	luaName = dlg.GetPathName();
 
 	GetDlgItem(IDC_LUA_FILENAME)->SetWindowText(luaName);
+
+	// scroll to show the rightmost side of the lua filename
+	((CEdit*)GetDlgItem(IDC_LUA_FILENAME))->SetSel((DWORD)(luaName.GetLength()-1), FALSE);
 }
 
 void LuaOpenDialog::OnOK()

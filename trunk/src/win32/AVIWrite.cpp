@@ -186,7 +186,7 @@ bool AVIWrite::Open(const char *filename)
 	return true;
 }
 
-bool AVIWrite::AddSound(const char *sound, int len)
+bool AVIWrite::AddSound(const u8 *sound, int len)
 {
 	LONG byteBuffer;
 
@@ -232,7 +232,7 @@ bool AVIWrite::NextSegment()
 	return ret;
 }
 
-bool AVIWrite::AddFrame(const char *bmp)
+bool AVIWrite::AddFrame(const u8 *bmp)
 {
 	LONG byteBuffer;
 

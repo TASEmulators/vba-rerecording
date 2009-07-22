@@ -111,7 +111,7 @@ void PaletteView::save(int which)
 	else
 		captureBuffer = "obj.pal";
 
-	LPCTSTR exts[] = {".pal", ".pal", ".act" };
+	LPCTSTR exts[] = {".pal", ".pal", ".act", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_PAL);
 	CString title  = winResLoadString(IDS_SELECT_PALETTE_NAME);

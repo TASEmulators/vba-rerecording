@@ -2091,18 +2091,18 @@ BEGIN
                 MENUITEM "Controller &4...",            ID_OPTIONS_JOYPAD_CONFIGURE_4
 
                 MENUITEM SEPARATOR
-                MENUITEM "Motion Sensor...",            ID_OPTIONS_JOYPAD_MOTIONCONFIGURE
+                MENUITEM "&Motion Sensor...",           ID_OPTIONS_JOYPAD_MOTIONCONFIGURE
 
             END
             POPUP "&Use Controller"
             BEGIN
-                MENUITEM "Controller 1",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_1
+                MENUITEM "Controller &1",               ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_1
 
-                MENUITEM "Controller 2",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_2
+                MENUITEM "Controller &2",               ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_2
 
-                MENUITEM "Controller 3",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_3
+                MENUITEM "Controller &3",               ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_3
 
-                MENUITEM "Controller 4",                ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_4
+                MENUITEM "Controller &4",               ID_OPTIONS_JOYPAD_DEFAULTJOYPAD_4
 
             END
             MENUITEM SEPARATOR
@@ -2307,44 +2307,65 @@ BEGIN
         END
         POPUP "Pixel &Filter"
         BEGIN
-            POPUP "Interframe Blending"
+            POPUP "&Interframe Blending"
             BEGIN
-                MENUITEM "None",                        ID_OPTIONS_FILTER_INTERFRAMEBLENDING_NONE
+                MENUITEM "&None",                       ID_OPTIONS_FILTER_INTERFRAMEBLENDING_NONE
 
-                MENUITEM "Motion Blur",                 ID_OPTIONS_FILTER_INTERFRAMEBLENDING_MOTIONBLUR
+                MENUITEM SEPARATOR
+                MENUITEM "&Motion Blur",                ID_OPTIONS_FILTER_INTERFRAMEBLENDING_MOTIONBLUR
 
-                MENUITEM "Smart",                       ID_OPTIONS_FILTER_INTERFRAMEBLENDING_SMART
+                MENUITEM "&Smart",                      ID_OPTIONS_FILTER_INTERFRAMEBLENDING_SMART
 
             END
             MENUITEM SEPARATOR
-            MENUITEM "&Normal",                     ID_OPTIONS_FILTER_NORMAL
-            MENUITEM "&TV Mode",                    ID_OPTIONS_FILTER_TVMODE
-            MENUITEM "Scanlines",                   ID_OPTIONS_FILTER_SCANLINES
+            POPUP "&Miscellaneous"
+            BEGIN
+                MENUITEM "&None",                       ID_OPTIONS_FILTER_NORMAL
 
-            MENUITEM "Bilinear",                    ID_OPTIONS_FILTER_BILINEAR
+                MENUITEM SEPARATOR
+                MENUITEM "&TV Mode",                    ID_OPTIONS_FILTER_TVMODE
 
-            MENUITEM "Bilinear Plus",               ID_OPTIONS_FILTER_BILINEARPLUS
+                MENUITEM "Scan&lines",                  ID_OPTIONS_FILTER_SCANLINES
 
-            MENUITEM "&Pixelate",                   ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL
+                MENUITEM "&Pixelate",                   ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL
 
-            MENUITEM "&Motion Blur",                ID_OPTIONS_FILTER16BIT_MOTIONBLUREXPERIMENTAL
+                MENUITEM SEPARATOR
+                MENUITEM "&Bilinear",                   ID_OPTIONS_FILTER_BILINEAR
 
-            MENUITEM "Simple 2x",                   ID_OPTIONS_FILTER16BIT_SIMPLE2X
+                MENUITEM "Bilinear Pl&us",              ID_OPTIONS_FILTER_BILINEARPLUS
 
-            MENUITEM "&2xSaI",                      ID_OPTIONS_FILTER_2XSAI
-            MENUITEM "&Super 2xSaI",                ID_OPTIONS_FILTER_SUPER2XSAI
+                MENUITEM SEPARATOR
+                MENUITEM "&Motion Blur",                ID_OPTIONS_FILTER16BIT_MOTIONBLUREXPERIMENTAL
 
-            MENUITEM "Super &Eagle",                ID_OPTIONS_FILTER_SUPEREAGLE
+            END
+            POPUP "Magnification &2x"
+            BEGIN
+                MENUITEM "Simple 2&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE2X
 
-            MENUITEM "&AdvanceMAME Scale2x",        ID_OPTIONS_FILTER16BIT_ADVANCEMAMESCALE2X
+                MENUITEM "&2xSaI",                      ID_OPTIONS_FILTER_2XSAI
 
-            MENUITEM "lq2x",                        ID_OPTIONS_FILTER_LQ2X
-            MENUITEM "hq2xS",                       ID_OPTIONS_FILTER_HQ2X2
-            MENUITEM "hq2x",                        ID_OPTIONS_FILTER_HQ2X
-            MENUITEM "hq3xS",                       ID_OPTIONS_FILTER_HQ3X2
-            MENUITEM "hq3x",                        ID_OPTIONS_FILTER_HQ3X
+                MENUITEM "&Super 2xSaI",                ID_OPTIONS_FILTER_SUPER2XSAI
+
+                MENUITEM "Super &Eagle",                ID_OPTIONS_FILTER_SUPEREAGLE
+
+                MENUITEM "&AdvanceMAME Scale2x",        ID_OPTIONS_FILTER16BIT_ADVANCEMAMESCALE2X
+
+                MENUITEM "lq2x",                        ID_OPTIONS_FILTER_LQ2X
+
+                MENUITEM "hq2x",                        ID_OPTIONS_FILTER_HQ2X
+
+                MENUITEM "hq2xS",                       ID_OPTIONS_FILTER_HQ2X2
+
+            END
+            POPUP "Magnification &3x"
+            BEGIN
+                MENUITEM "hq3x",                        ID_OPTIONS_FILTER_HQ3X
+
+                MENUITEM "hq3xS",                       ID_OPTIONS_FILTER_HQ3X2
+
+            END
             MENUITEM SEPARATOR
-            MENUITEM "&Disable MMX optimizations",  ID_OPTIONS_FILTER_DISABLEMMX
+            MENUITEM "&Disable MMX Optimizations",  ID_OPTIONS_FILTER_DISABLEMMX
 
         END
         POPUP "&Sound"
@@ -2470,16 +2491,16 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Head-Up Display"
         BEGIN
-            MENUITEM "Frame Counter",               ID_TOOLS_FRAMECOUNTER
-            MENUITEM "Lag Counter",                 ID_TOOLS_LAGCOUNTER
-            MENUITEM "Input Display",               ID_TOOLS_INPUTDISPLAY
+            MENUITEM "&Frame Counter",              ID_TOOLS_FRAMECOUNTER
+            MENUITEM "&Lag Counter",                ID_TOOLS_LAGCOUNTER
+            MENUITEM "&Input Display",              ID_TOOLS_INPUTDISPLAY
             MENUITEM SEPARATOR
             MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
 
             MENUITEM "Disable Status &Messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
 
             MENUITEM SEPARATOR
-            POPUP "Sh&ow Speed"
+            POPUP "Show &Speed"
             BEGIN
                 MENUITEM "None",                        ID_OPTIONS_EMULATOR_SHOWSPEED_NONE
 
@@ -2529,21 +2550,21 @@ BEGIN
         MENUITEM "&RAM Search...",              ID_RAM_SEARCH
         MENUITEM "RAM &Watch...",               ID_RAM_WATCH
         MENUITEM SEPARATOR
-        MENUITEM "Old &cheat search...",        ID_CHEATS_SEARCHFORCHEATS
-        MENUITEM "&Pause during cheat search",  ID_CHEATS_PAUSEDURINGCHEATSEARCH
+        MENUITEM "Old &Cheat Search...",        ID_CHEATS_SEARCHFORCHEATS
+        MENUITEM "&Pause during Cheat Search",  ID_CHEATS_PAUSEDURINGCHEATSEARCH
 
         MENUITEM SEPARATOR
-        MENUITEM "&View cheat list...",         ID_CHEATS_CHEATLIST
-        MENUITEM "&Load cheat list...",         ID_CHEATS_LOADCHEATLIST
-        MENUITEM "&Save cheat list...",         ID_CHEATS_SAVECHEATLIST
-        MENUITEM "&Auto save/load cheats",      ID_CHEATS_AUTOMATICSAVELOADCHEATS
+        MENUITEM "&View Cheat List...",         ID_CHEATS_CHEATLIST
+        MENUITEM "&Load Cheat List...",         ID_CHEATS_LOADCHEATLIST
+        MENUITEM "&Save Cheat List...",         ID_CHEATS_SAVECHEATLIST
+        MENUITEM "&Auto Save/Load Cheat List",  ID_CHEATS_AUTOMATICSAVELOADCHEATS
 
         MENUITEM SEPARATOR
-        MENUITEM "Import &Gameshark code file...", 
+        MENUITEM "Import &Gameshark Code File...", 
                                                 ID_FILE_IMPORT_GAMESHARKCODEFILE
 
         MENUITEM SEPARATOR
-        MENUITEM "&Disable all cheats",         ID_CHEATS_DISABLECHEATS
+        MENUITEM "&Disable All Cheats",         ID_CHEATS_DISABLECHEATS
     END
     POPUP "&Tools"
     BEGIN
@@ -2577,7 +2598,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Run &Lua Script...",          ID_FILE_LUA_LOAD
         MENUITEM "&Reload Lua Script",          ID_FILE_LUA_RELOAD
-        MENUITEM "Sto&p Lua Script",            ID_FILE_LUA_STOP
+        MENUITEM "S&top Lua Script",            ID_FILE_LUA_STOP
         MENUITEM SEPARATOR
         POPUP "&Movie"
         BEGIN

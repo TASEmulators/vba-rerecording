@@ -486,63 +486,39 @@ void MainWnd::OnToolsSoundRecording()
 void MainWnd::OnToolsSoundStartrecording()
 {
 	theApp.winCheckFullscreen();
-	CString captureBuffer;
 
-	CString capdir = regQueryStringValue(IDS_WAV_DIR, NULL);
+	CString wavName = theApp.filename;
 
-	if (capdir.IsEmpty())
-		capdir = getDirFromFile(theApp.filename);
-
-	CString filename = "";
 	if (VBAMovieActive())
 	{
 		extern SMovie Movie;
-		filename = Movie.filename;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".wav";
+		wavName = Movie.filename;
+		int index = wavName.ReverseFind('.');
+		if (index != -1)
+			wavName = wavName.Left(index);
 	}
 	else if (emulating)
 	{
-		filename = theApp.szFile;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".wav";
+		wavName = theApp.filename;
 	}
+
+	LPCTSTR exts[] = { ".wav", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_WAV);
 	CString title  = winResLoadString(IDS_SELECT_WAV_NAME);
 
-	LPCTSTR exts[] = { ".wav", NULL };
+	wavName = getRelatedFilename(wavName, IDS_WAV_DIR, exts[0]);
+	CString wavDir = getRelatedDir(IDS_WAV_DIR);
 
-	FileDlg dlg(this, filename, filter, 1, "wav", exts, capdir, title, true);
+	FileDlg dlg(this, wavName, filter, 1, "WAV", exts, wavDir, title, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 	{
 		return;
 	}
 
-	captureBuffer         = theApp.soundRecordName =  dlg.GetPathName();
+	theApp.soundRecordName = dlg.GetPathName();
 	theApp.soundRecording = true;
-
-	if (dlg.m_ofn.nFileOffset > 0)
-	{
-		captureBuffer = captureBuffer.Left(dlg.m_ofn.nFileOffset);
-	}
-
-	int len = captureBuffer.GetLength();
-
-	if (len > 3 && captureBuffer[len-1] == '\\')
-		captureBuffer = captureBuffer.Left(len-1);
-	regSetStringValue(IDS_WAV_DIR, captureBuffer);
 }
 
 void MainWnd::OnToolsSoundStoprecording()
@@ -575,68 +551,42 @@ void MainWnd::OnToolsAVIRecording()
 void MainWnd::OnToolsStartAVIRecording()
 {
 	theApp.winCheckFullscreen();
-	CString captureBuffer;
 
-	CString capdir = regQueryStringValue(IDS_AVI_DIR, NULL);
+	CString aviName = theApp.filename;
 
-	if (capdir.IsEmpty())
-		capdir = getDirFromFile(theApp.filename);
-
-	CString filename = "";
 	if (VBAMovieActive())
 	{
 		extern SMovie Movie;
-		filename = Movie.filename;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".avi";
+		aviName = Movie.filename;
+		int index = aviName.ReverseFind('.');
+		if (index != -1)
+			aviName = aviName.Left(index);
 	}
 	else if (emulating)
 	{
-		filename = theApp.szFile;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".avi";
+		aviName = theApp.filename;
 	}
+
+	LPCTSTR exts[] = { ".avi", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_AVI);
 	CString title  = winResLoadString(IDS_SELECT_AVI_NAME);
 
-	LPCTSTR exts[] = { ".avi", NULL };
+	aviName = getRelatedFilename(aviName, IDS_AVI_DIR, exts[0]);
+	CString aviDir = getRelatedDir(IDS_AVI_DIR);
 
-	FileDlg dlg(this, filename, filter, 1, "avi", exts, capdir, title, true);
+	FileDlg dlg(this, aviName, filter, 1, "AVI", exts, aviDir, title, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 	{
 		return;
 	}
 
-	captureBuffer        = theApp.soundRecordName =  dlg.GetPathName();
-	theApp.aviRecordName = captureBuffer;
+	theApp.aviRecordName = theApp.soundRecordName =  dlg.GetPathName();
 	theApp.aviRecording  = true;
 
 ///  extern long linearFrameCount; linearFrameCount = 0;
 ///  extern long linearSoundByteCount; linearSoundByteCount = 0;
-
-	if (dlg.m_ofn.nFileOffset > 0)
-	{
-		captureBuffer = captureBuffer.Left(dlg.m_ofn.nFileOffset);
-	}
-
-	int len = captureBuffer.GetLength();
-
-	if (len > 3 && captureBuffer[len-1] == '\\')
-		captureBuffer = captureBuffer.Left(len-1);
-
-	regSetStringValue(IDS_AVI_DIR, captureBuffer);
 
 	if (theApp.aviRecorder == NULL)
 	{

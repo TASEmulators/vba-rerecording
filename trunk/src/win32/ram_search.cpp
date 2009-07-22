@@ -25,27 +25,28 @@
 // (You can test this case by performing the search: Modulo 2 Is Specific Address 0)
 
 
-#include "stdafx.h"
-#include "resource.h"
-#include "VBA.h"
-//#include <windows.h>
+#ifdef _WIN32
+	#include "stdafx.h"
+	#include "resource.h"
+	#include "VBA.h"
+	//#include <windows.h>
+	#include <commctrl.h>
+	#include "BaseTsd.h"
+	#include "GBACheats.h"
+	#include "GBCheatsDlg.h"
+	typedef INT_PTR intptr_t;
+#else
+	#include "stdint.h"
+#endif
+#include <cassert>
+#include <list>
+#include <vector>
+
 #include "ram_search.h"
 #include "ramwatch.h"
-#include "GBACheats.h"
-#include "GBCheatsDlg.h"
 #include "../Globals.h"
 #include "../gb/gbGlobals.h"
 #include "../vbalua.h"
-#include <assert.h>
-#include <commctrl.h>
-#include <list>
-#include <vector>
-#ifdef _WIN32
-   #include "BaseTsd.h"
-   typedef INT_PTR intptr_t;
-#else
-   #include "stdint.h"
-#endif
 
 static inline u8* HardwareToSoftwareAddress(HWAddressType address)
 {
@@ -547,7 +548,6 @@ unsigned int HardwareAddressToItemIndex(HWAddressType hardwareAddress)
 
 
 
-
 // workaround for a parser error in MSVC that sometimes deletes a comma preceeding a macro
 // this macro takes a type and a signed/unsigned modifier, and returns the same type with that modifier whether or not the compiler decides to delete the comma between them
 template<typename T, typename ignored=void>
@@ -557,45 +557,125 @@ struct DummyType { typedef T t; };
 #pragma warning(disable : 4114) // disable "same modifier used twice" warning that otherwise would get issued when the compiler bug happens
 #endif
 
-// it's ugly but I can't think of a better way to call these functions that isn't also slower, since
-// I need the current values of these arguments to determine which primitive types are used within the function
-#define CALL_WITH_T_SIZE_TYPES(functionName, sizeTypeID, isSigned, requireAligned, ...) \
+#define CALL_WITH_T_SIZE_TYPES_0(functionName, sizeTypeID, isSigned, requiresAligned) \
 	(sizeTypeID == 'b' \
 		? (isSigned \
-			? functionName<char, COMMAHACK(signed,char)>(__VA_ARGS__) \
-			: functionName<char, COMMAHACK(unsigned,char)>(__VA_ARGS__)) \
+			? functionName<char, COMMAHACK(signed,char)>() \
+			: functionName<char, COMMAHACK(unsigned,char)>()) \
 	: sizeTypeID == 'w' \
 		? (isSigned \
-			? (requireAligned \
-				? functionName<short, COMMAHACK(signed,short)>(__VA_ARGS__) \
-				: functionName<char, COMMAHACK(signed,short)>(__VA_ARGS__)) \
-			: (requireAligned \
-				? functionName<short, COMMAHACK(unsigned,short)>(__VA_ARGS__) \
-				: functionName<char, COMMAHACK(unsigned,short)>(__VA_ARGS__))) \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,short)>() \
+				: functionName<char, COMMAHACK(signed,short)>()) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,short)>() \
+				: functionName<char, COMMAHACK(unsigned,short)>())) \
 	: sizeTypeID == 'd' \
 		? (isSigned \
-			? (requireAligned \
-				? functionName<short, COMMAHACK(signed,long)>(__VA_ARGS__) \
-				: functionName<char, COMMAHACK(signed,long)>(__VA_ARGS__)) \
-			: (requireAligned \
-				? functionName<short, COMMAHACK(unsigned,long)>(__VA_ARGS__) \
-				: functionName<char, COMMAHACK(unsigned,long)>(__VA_ARGS__))) \
-	: functionName<char, COMMAHACK(signed,char)>(__VA_ARGS__))
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,long)>() \
+				: functionName<char, COMMAHACK(signed,long)>()) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,long)>() \
+				: functionName<char, COMMAHACK(unsigned,long)>())) \
+	: functionName<char, COMMAHACK(signed,char)>())
+
+#define CALL_WITH_T_SIZE_TYPES_1(functionName, sizeTypeID, isSigned, requiresAligned, p0) \
+	(sizeTypeID == 'b' \
+		? (isSigned \
+			? functionName<char, COMMAHACK(signed,char)>(p0) \
+			: functionName<char, COMMAHACK(unsigned,char)>(p0)) \
+	: sizeTypeID == 'w' \
+		? (isSigned \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,short)>(p0) \
+				: functionName<char, COMMAHACK(signed,short)>(p0)) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,short)>(p0) \
+				: functionName<char, COMMAHACK(unsigned,short)>(p0))) \
+	: sizeTypeID == 'd' \
+		? (isSigned \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,long)>(p0) \
+				: functionName<char, COMMAHACK(signed,long)>(p0)) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,long)>(p0) \
+				: functionName<char, COMMAHACK(unsigned,long)>(p0))) \
+	: functionName<char, COMMAHACK(signed,char)>(p0))
+
+#define CALL_WITH_T_SIZE_TYPES_3(functionName, sizeTypeID, isSigned, requiresAligned, p0, p1, p2) \
+	(sizeTypeID == 'b' \
+		? (isSigned \
+			? functionName<char, COMMAHACK(signed,char)>(p0, p1, p2) \
+			: functionName<char, COMMAHACK(unsigned,char)>(p0, p1, p2)) \
+	: sizeTypeID == 'w' \
+		? (isSigned \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,short)>(p0, p1, p2) \
+				: functionName<char, COMMAHACK(signed,short)>(p0, p1, p2)) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,short)>(p0, p1, p2) \
+				: functionName<char, COMMAHACK(unsigned,short)>(p0, p1, p2))) \
+	: sizeTypeID == 'd' \
+		? (isSigned \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,long)>(p0, p1, p2) \
+				: functionName<char, COMMAHACK(signed,long)>(p0, p1, p2)) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,long)>(p0, p1, p2) \
+				: functionName<char, COMMAHACK(unsigned,long)>(p0, p1, p2))) \
+	: functionName<char, COMMAHACK(signed,char)>(p0, p1, p2))
+
+#define CALL_WITH_T_SIZE_TYPES_4(functionName, sizeTypeID, isSigned, requiresAligned, p0, p1, p2, p3) \
+	(sizeTypeID == 'b' \
+		? (isSigned \
+			? functionName<char, COMMAHACK(signed,char)>(p0, p1, p2, p3) \
+			: functionName<char, COMMAHACK(unsigned,char)>(p0, p1, p2, p3)) \
+	: sizeTypeID == 'w' \
+		? (isSigned \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,short)>(p0, p1, p2, p3) \
+				: functionName<char, COMMAHACK(signed,short)>(p0, p1, p2, p3)) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,short)>(p0, p1, p2, p3) \
+				: functionName<char, COMMAHACK(unsigned,short)>(p0, p1, p2, p3))) \
+	: sizeTypeID == 'd' \
+		? (isSigned \
+			? (requiresAligned \
+				? functionName<short, COMMAHACK(signed,long)>(p0, p1, p2, p3) \
+				: functionName<char, COMMAHACK(signed,long)>(p0, p1, p2, p3)) \
+			: (requiresAligned \
+				? functionName<short, COMMAHACK(unsigned,long)>(p0, p1, p2, p3) \
+				: functionName<char, COMMAHACK(unsigned,long)>(p0, p1, p2, p3))) \
+	: functionName<char, COMMAHACK(signed,char)>(p0, p1, p2, p3))
 
 // version that takes a forced comparison type
-#define CALL_WITH_T_STEP(functionName, sizeTypeID, sign,type, requireAligned, ...) \
+#define CALL_WITH_T_STEP_3(functionName, sizeTypeID, sign,type, requiresAligned, p0, p1, p2) \
 	(sizeTypeID == 'b' \
-		? functionName<char, COMMAHACK(sign,type)>(__VA_ARGS__) \
+		? functionName<char, COMMAHACK(sign,type)>(p0, p1, p2) \
 	: sizeTypeID == 'w' \
-		? (requireAligned \
-			? functionName<short, COMMAHACK(sign,type)>(__VA_ARGS__) \
-			: functionName<char, COMMAHACK(sign,type)>(__VA_ARGS__)) \
+		? (requiresAligned \
+			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2) \
+			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2)) \
 	: sizeTypeID == 'd' \
-		? (requireAligned \
-			? functionName<short, COMMAHACK(sign,type)>(__VA_ARGS__) \
-			: functionName<char, COMMAHACK(sign,type)>(__VA_ARGS__)) \
-	: functionName<char, COMMAHACK(sign,type)>(__VA_ARGS__))
+		? (requiresAligned \
+			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2) \
+			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2)) \
+	: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2))
 
+// version that takes a forced comparison type
+#define CALL_WITH_T_STEP_4(functionName, sizeTypeID, sign,type, requiresAligned, p0, p1, p2, p3) \
+	(sizeTypeID == 'b' \
+		? functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3) \
+	: sizeTypeID == 'w' \
+		? (requiresAligned \
+			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2, p3) \
+			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3)) \
+	: sizeTypeID == 'd' \
+		? (requiresAligned \
+			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2, p3) \
+			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3)) \
+	: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3))
 
 // basic comparison functions:
 template <typename T> inline bool LessCmp (T x, T y, T i)        { return x < y; }
@@ -711,16 +791,16 @@ void prune(char c,char o,char t,int v,int p)
 	// perform the search, eliminating nonmatching values
 	switch (c)
 	{
-		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_SIZE_TYPES(sf, rs_type_size, t, noMisalign, CmpFun,v,p)
+		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_SIZE_TYPES_3(sf, rs_type_size, t, noMisalign, CmpFun,v,p)
 		case 'r': DO_SEARCH(SearchRelative); break;
 		case 's': DO_SEARCH(SearchSpecific); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP(sf, rs_type_size, unsigned,int, noMisalign, CmpFun,v,p);
+		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP_3(sf, rs_type_size, unsigned,int, noMisalign, CmpFun,v,p)
 		case 'a': DO_SEARCH(SearchAddress); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP(sf, rs_type_size, unsigned,short, noMisalign, CmpFun,v,p);
+		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP_3(sf, rs_type_size, unsigned,short, noMisalign, CmpFun,v,p)
 		case 'n': DO_SEARCH(SearchChanges); break;
 
 		default: assert(!"Invalid search comparison type."); break;
@@ -889,16 +969,16 @@ bool IsSatisfied(int itemIndex)
 	switch (rs_c)
 	{
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_SIZE_TYPES(sf, rs_type_size,(rs_t=='s'),noMisalign, CmpFun,itemIndex,rs_val,rs_param);
+		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_SIZE_TYPES_4(sf, rs_type_size,(rs_t=='s'),noMisalign, CmpFun,itemIndex,rs_val,rs_param);
 		case 'r': DO_SEARCH(CompareRelativeAtItem); break;
 		case 's': DO_SEARCH(CompareSpecificAtItem); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP(sf, rs_type_size, unsigned,int, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
+		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP_4(sf, rs_type_size, unsigned,int, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
 		case 'a': DO_SEARCH(CompareAddressAtItem); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP(sf, rs_type_size, unsigned,short, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
+		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP_4(sf, rs_type_size, unsigned,short, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
 		case 'n': DO_SEARCH(CompareChangesAtItem); break;
 	}
 	return false;
@@ -953,7 +1033,7 @@ void CompactAddrs()
 	int prevResultCount = ResultCount;
 
 	CalculateItemIndices(size);
-	ResultCount = CALL_WITH_T_SIZE_TYPES(CountRegionItemsT, rs_type_size,rs_t=='s',noMisalign);
+	ResultCount = CALL_WITH_T_SIZE_TYPES_0(CountRegionItemsT, rs_type_size,rs_t=='s',noMisalign);
 
 	UpdatePossibilities(ResultCount, (int)s_activeMemoryRegions.size());
 
@@ -999,7 +1079,7 @@ void reset_address_info ()
 void signal_new_frame ()
 {
 	EnterCriticalSection(&s_activeMemoryRegionsCS);
-	CALL_WITH_T_SIZE_TYPES(UpdateRegionsT, rs_type_size,rs_t=='s',noMisalign);
+	CALL_WITH_T_SIZE_TYPES_0(UpdateRegionsT, rs_type_size, rs_t=='s', noMisalign);
 	LeaveCriticalSection(&s_activeMemoryRegionsCS);
 }
 
@@ -1104,8 +1184,8 @@ void signal_new_size ()
 	unsigned int itemsPerPage = ListView_GetCountPerPage(lv);
 	unsigned int oldTopIndex = ListView_GetTopIndex(lv);
 	unsigned int oldSelectionIndex = ListView_GetSelectionMark(lv);
-	unsigned int oldTopAddr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_last_type_size,rs_t=='s',rs_last_no_misalign, oldTopIndex);
-	unsigned int oldSelectionAddr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_last_type_size,rs_t=='s',rs_last_no_misalign, oldSelectionIndex);
+	unsigned int oldTopAddr = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_last_type_size,rs_t=='s',rs_last_no_misalign, oldTopIndex);
+	unsigned int oldSelectionAddr = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_last_type_size,rs_t=='s',rs_last_no_misalign, oldSelectionIndex);
 
 	std::vector<AddrRange> selHardwareAddrs;
 	if(numberOfItemsChanged)
@@ -1119,7 +1199,7 @@ void signal_new_size ()
 		for(int i = 0; i < selCount; ++i)
 		{
 			watchIndex = ListView_GetNextItem(lv, watchIndex, LVNI_SELECTED);
-			int addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_last_type_size,rs_t=='s',rs_last_no_misalign, watchIndex);
+			int addr = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_last_type_size,rs_t=='s',rs_last_no_misalign, watchIndex);
 			if(!selHardwareAddrs.empty() && addr == selHardwareAddrs.back().End())
 				selHardwareAddrs.back().size += size;
 			else
@@ -1135,7 +1215,7 @@ void signal_new_size ()
 	if(numberOfItemsChanged)
 	{
 		// restore selection ranges
-		unsigned int newTopIndex = CALL_WITH_T_SIZE_TYPES(HardwareAddressToItemIndex, rs_type_size,rs_t=='s',noMisalign, oldTopAddr);
+		unsigned int newTopIndex = CALL_WITH_T_SIZE_TYPES_1(HardwareAddressToItemIndex, rs_type_size,rs_t=='s',noMisalign, oldTopAddr);
 		unsigned int newBottomIndex = newTopIndex + itemsPerPage - 1;
 		SendMessage(lv, WM_SETREDRAW, FALSE, 0);
 		ListView_SetItemState(lv, -1, 0, LVIS_SELECTED|LVIS_FOCUSED); // deselect all
@@ -1143,10 +1223,10 @@ void signal_new_size ()
 		{
 			// calculate index ranges of this selection
 			const AddrRange& range = selHardwareAddrs[i];
-			int selRangeTop = CALL_WITH_T_SIZE_TYPES(HardwareAddressToItemIndex, rs_type_size,rs_t=='s',noMisalign, range.addr);
+			int selRangeTop = CALL_WITH_T_SIZE_TYPES_1(HardwareAddressToItemIndex, rs_type_size,rs_t=='s',noMisalign, range.addr);
 			int selRangeBottom = -1;
 			for(int endAddr = range.End()-1; endAddr >= selRangeTop && selRangeBottom == -1; endAddr--)
-				selRangeBottom = CALL_WITH_T_SIZE_TYPES(HardwareAddressToItemIndex, rs_type_size,rs_t=='s',noMisalign, endAddr);
+				selRangeBottom = CALL_WITH_T_SIZE_TYPES_1(HardwareAddressToItemIndex, rs_type_size,rs_t=='s',noMisalign, endAddr);
 			if(selRangeBottom == -1)
 				selRangeBottom = selRangeTop;
 			if(selRangeTop == -1)
@@ -1272,7 +1352,7 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 			int start = -1;
 			for(int i = top; i <= top+count; i++)
 			{
-				int changeNum = CALL_WITH_T_SIZE_TYPES(GetNumChangesFromItemIndex, rs_type_size,rs_t=='s',noMisalign, i); //s_numChanges[i];
+				int changeNum = CALL_WITH_T_SIZE_TYPES_1(GetNumChangesFromItemIndex, rs_type_size,rs_t=='s',noMisalign, i); //s_numChanges[i];
 				int changed = changeNum != changes[i-top];
 				if(changed)
 					changes[i-top] = changeNum;
@@ -1505,13 +1585,13 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					{
 						case 0:
 						{
-							int addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
+							int addr = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
 							sprintf(num,"%08X",addr);
 							Item->item.pszText = num;
 						}	return true;
 						case 1:
 						{
-							int i = CALL_WITH_T_SIZE_TYPES(GetCurValueFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
+							int i = CALL_WITH_T_SIZE_TYPES_1(GetCurValueFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
 							const char* formatString = ((rs_t=='s') ? "%d" : (rs_t=='u') ? "%u" : (rs_type_size=='d' ? "%08X" : rs_type_size=='w' ? "%04X" : "%02X"));
 							switch (rs_type_size)
 							{
@@ -1524,7 +1604,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						}	return true;
 						case 2:
 						{
-							int i = CALL_WITH_T_SIZE_TYPES(GetPrevValueFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
+							int i = CALL_WITH_T_SIZE_TYPES_1(GetPrevValueFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
 							const char* formatString = ((rs_t=='s') ? "%d" : (rs_t=='u') ? "%u" : (rs_type_size=='d' ? "%08X" : rs_type_size=='w' ? "%04X" : "%02X"));
 							switch (rs_type_size)
 							{
@@ -1537,7 +1617,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						}	return true;
 						case 3:
 						{
-							int i = CALL_WITH_T_SIZE_TYPES(GetNumChangesFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
+							int i = CALL_WITH_T_SIZE_TYPES_1(GetNumChangesFromItemIndex, rs_type_size,rs_t=='s',noMisalign, iNum);
 							sprintf(num,"%d",i);
 
 							Item->item.pszText = num;
@@ -1692,7 +1772,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					int watchItemIndex = ListView_GetSelectionMark(GetDlgItem(hDlg,IDC_RAMLIST));
 					if(watchItemIndex >= 0)
 					{
-						unsigned long address = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, watchItemIndex);
+						unsigned long address = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, watchItemIndex);
 
 						int sizeType = -1;
 						if(rs_type_size == 'b')
@@ -1816,7 +1896,7 @@ invalid_field:
 					if(watchItemIndex >= 0)
 					{
 						AddressWatcher tempWatch;
-						tempWatch.Address = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, watchItemIndex);
+						tempWatch.Address = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, watchItemIndex);
 						tempWatch.Size = rs_type_size;
 						tempWatch.Type = rs_t;
 						tempWatch.WrongEndian = 0; //Replace when I get little endian working
@@ -1849,7 +1929,7 @@ invalid_field:
 					for(int i = 0, j = 1024; i < selCount; ++i, --j)
 					{
 						watchIndex = ListView_GetNextItem(ramListControl, watchIndex, LVNI_SELECTED);
-						int addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, watchIndex);
+						int addr = CALL_WITH_T_SIZE_TYPES_1(GetHardwareAddressFromItemIndex, rs_type_size,rs_t=='s',noMisalign, watchIndex);
 						if(!selHardwareAddrs.empty() && addr == selHardwareAddrs.back().End())
 							selHardwareAddrs.back().size += size;
 						else

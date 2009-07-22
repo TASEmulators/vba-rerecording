@@ -370,9 +370,6 @@ struct option sdlOptions[] = {
   { NULL, no_argument, NULL, 0 }
 };
 
-extern bool CPUIsGBAImage(char *);
-extern bool gbIsGameboyRom(char *);
-
 #ifndef C_CORE
 #define SDL_LONG(val) \
   *((u32 *)&sdlStretcher[sdlStretcherPos]) = val;\
@@ -3544,9 +3541,8 @@ u16 checksumBIOS()
 	{
 		tempBIOS = (u8 *)malloc(0x4000);
 		int size = 0x4000;
-		extern bool CPUIsGBABios(const char * file);
 		if(utilLoad(biosFileName,
-					CPUIsGBABios,
+					utilIsGBABios,
 					tempBIOS,
 					size)) {
 		if(size == 0x4000)

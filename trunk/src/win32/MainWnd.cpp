@@ -602,19 +602,6 @@ bool MainWnd::FileRun()
 	if (index != -1)
 		theApp.filename = theApp.filename.Left(index);
 
-	CString ipsname;
-//  ipsname.Format("%s.ips", theApp.filename);
-
-	CString ipsDir = regQueryStringValue(IDS_IPS_DIR, NULL);
-
-	if (ipsDir.IsEmpty())
-		ipsDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(ipsDir))
-		ipsname.Format("%s%s.ips", ipsDir, theApp.filename);
-	else
-		ipsname.Format("%s\\%s.ips", ipsDir, theApp.filename);
-
 	if (!theApp.dir.GetLength())
 	{
 		int index = max(theApp.filename.ReverseFind('/'), theApp.filename.ReverseFind('\\'));
@@ -623,6 +610,8 @@ bool MainWnd::FileRun()
 			theApp.dir = theApp.filename.Left(index-1);
 		}
 	}
+
+	CString ipsname = getRelatedFilename(theApp.filename, IDS_IPS_DIR, ".ips");
 
 	IMAGE_TYPE type = utilFindType(PhysicalName);
 
@@ -1009,26 +998,9 @@ bool MainWnd::isDriveRoot(const CString& file)
 
 void MainWnd::winSaveCheatListDefault()
 {
-	CString name;
-	CString filename;
+	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
 
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		name = theApp.filename;
-	CString dir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
-
-	if (dir.IsEmpty())
-		dir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(dir))
-		filename.Format("%s%s.clt", dir, name);
-	else
-		filename.Format("%s\\%s.clt", dir, name);
-
-	winSaveCheatList(filename);
+	winSaveCheatList(cheatName);
 }
 
 void MainWnd::winSaveCheatList(const char *name)
@@ -1041,26 +1013,9 @@ void MainWnd::winSaveCheatList(const char *name)
 
 void MainWnd::winLoadCheatListDefault()
 {
-	CString name;
-	CString filename;
+	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
 
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		name = theApp.filename;
-	CString dir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
-
-	if (dir.IsEmpty())
-		dir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(dir))
-		filename.Format("%s%s.clt", dir, name);
-	else
-		filename.Format("%s\\%s.clt", dir, name);
-
-	winLoadCheatList(filename);
+	winLoadCheatList(cheatName);
 }
 
 void MainWnd::winLoadCheatList(const char *name)
@@ -1078,55 +1033,20 @@ void MainWnd::winLoadCheatList(const char *name)
 
 void MainWnd::writeBatteryFile()
 {
-	CString buffer;
-	CString filename;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-	if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		buffer = theApp.filename;
-
-	CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
-
-	if (saveDir.IsEmpty())
-		saveDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(saveDir))
-		filename.Format("%s%s.sav", saveDir, buffer);
-	else
-		filename.Format("%s\\%s.sav", saveDir, buffer);
+	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 
 	if (theApp.emulator.emuWriteBattery)
-		theApp.emulator.emuWriteBattery(filename);
+		theApp.emulator.emuWriteBattery(batteryName);
 }
 
 void MainWnd::readBatteryFile()
 {
-	CString buffer;
-	CString filename;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		buffer = theApp.filename;
-
-	CString saveDir = regQueryStringValue(IDS_BATTERY_DIR, NULL);
-
-	if (saveDir.IsEmpty())
-		saveDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(saveDir))
-		filename.Format("%s%s.sav", saveDir, buffer);
-	else
-		filename.Format("%s\\%s.sav", saveDir, buffer);
+	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 
 	bool res = false;
 
 	if (theApp.emulator.emuReadBattery)
-		res = theApp.emulator.emuReadBattery(filename);
+		res = theApp.emulator.emuReadBattery(batteryName);
 
 	if (res)
 		systemScreenMessage(winResLoadString(IDS_LOADED_BATTERY));
@@ -1272,41 +1192,18 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 
 void MainWnd::screenCapture(int captureNumber)
 {
-	CString buffer;
-
-	CString captureDir = regQueryStringValue(IDS_CAPTURE_DIR, "");
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	CString name;
-	if (index != -1)
-		name = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		name = theApp.filename;
-
-	if (captureDir.IsEmpty())
-		captureDir = getDirFromFile(theApp.filename);
-
-	LPCTSTR ext = "png";
+	CString ext;
 	if (theApp.captureFormat != 0)
-		ext = "bmp";
-
-	if (isDriveRoot(captureDir))
-		buffer.Format("%s%s_%02d.%s",
-		              captureDir,
-		              name,
-		              captureNumber,
-		              ext);
+		ext.Format("_%02d.bmp", captureNumber);
 	else
-		buffer.Format("%s\\%s_%02d.%s",
-		              captureDir,
-		              name,
-		              captureNumber,
-		              ext);
+		ext.Format("_%02d.png", captureNumber);
+
+	CString captureName = getRelatedFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
 
 	if (theApp.captureFormat == 0)
-		theApp.emulator.emuWritePNG(buffer);
+		theApp.emulator.emuWritePNG(captureName);
 	else
-		theApp.emulator.emuWriteBMP(buffer);
+		theApp.emulator.emuWriteBMP(captureName);
 
 	CString msg = winResLoadString(IDS_SCREEN_CAPTURE);
 	systemScreenMessage(msg);

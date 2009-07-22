@@ -10,7 +10,7 @@
 	FORCE_REF(CRegister##x##n, g_RegisterArc##n##x)
 
 #ifndef FORCE_REF
-	#define FORCE_REF(...)
+	#define FORCE_REF(x,y)
 #endif
 
 DECLARE_ARC(7z)

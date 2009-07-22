@@ -97,6 +97,8 @@ public:
 	static bool isDriveRoot(const CString& file);
 	static CString getDirFromFile(const CString& file);
 	static CString getSavestateFilename(const CString& LogicalRomName, int nID);
+	static CString getRelatedDir(const CString& TargetDirReg);
+	static CString getRelatedFilename(const CString& LogicalRomName, const CString& TargetDirReg, const CString& ext);
 	void winSaveCheatList(const char *name);
 	void winSaveCheatListDefault();
 	virtual ~MainWnd();

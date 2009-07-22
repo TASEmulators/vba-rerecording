@@ -1432,87 +1432,6 @@ bool CPUWriteBMPFile(const char *fileName)
 	return utilWriteBMPFile(fileName, 240, 160, pix);
 }
 
-bool CPUIsZipFile(const char *file)
-{
-	if (strlen(file) > 4)
-	{
-		const char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".zip") == 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-bool CPUIsGBAImage(const char *file)
-{
-	cpuIsMultiBoot = false;
-	if (strlen(file) > 4)
-	{
-		const char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".gba") == 0)
-				return true;
-			if (_stricmp(p, ".agb") == 0)
-				return true;
-			if (_stricmp(p, ".bin") == 0)
-				return true;
-			if (_stricmp(p, ".elf") == 0)
-				return true;
-			if (_stricmp(p, ".mb") == 0)
-			{
-				cpuIsMultiBoot = true;
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool CPUIsGBABios(const char *file)
-{
-	if (strlen(file) > 4)
-	{
-		const char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".gba") == 0)
-				return true;
-			if (_stricmp(p, ".agb") == 0)
-				return true;
-			if (_stricmp(p, ".bin") == 0)
-				return true;
-			if (_stricmp(p, ".bios") == 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-bool CPUIsELF(const char *file)
-{
-	if (strlen(file) > 4)
-	{
-		const char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".elf") == 0)
-				return true;
-		}
-	}
-	return false;
-}
-
 void CPUCleanUp()
 {
 	GBASystem.frameCount = 0;
@@ -1607,7 +1526,7 @@ int CPULoadRom(const char *szFile)
 	if (cpuIsMultiBoot)
 		whereToLoad = workRAM;
 
-	if (CPUIsELF(szFile))
+	if (utilIsELF(szFile))
 	{
 		FILE *f = fopen(szFile, "rb");
 		if (!f)
@@ -3383,7 +3302,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 	{
 		int size = 0x4000;
 		if (utilLoad(biosFileName,
-		             CPUIsGBABios,
+		             utilIsGBABios,
 		             bios,
 		             size))
 		{

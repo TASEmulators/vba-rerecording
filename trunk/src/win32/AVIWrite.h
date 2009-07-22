@@ -32,12 +32,12 @@ class AVIWrite {
   virtual ~AVIWrite();
 
   bool Open(const char *filename);
-  virtual bool AddFrame(const char * bmp);
+  virtual bool AddFrame(const u8 *bmp);
   void SetFPS(int fps);
   void SetVideoFormat(BITMAPINFOHEADER *);
   bool IsSoundAdded();
   void SetSoundFormat(WAVEFORMATEX *);
-  bool AddSound(const char *sound, int len);
+  bool AddSound(const u8 *sound, int len);
 
  private:
   int m_fps;

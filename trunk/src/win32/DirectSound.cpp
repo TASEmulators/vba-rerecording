@@ -410,7 +410,7 @@ void DirectSound::write()
 						}
 					}
 
-					theApp.aviRecorder->AddSound((const char *)soundFinalWave, len);
+					theApp.aviRecorder->AddSound((u8 *)soundFinalWave, len);
 				}
 			}
 		}

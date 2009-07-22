@@ -268,7 +268,7 @@ void GBPrinterDlg::OnSave()
 	else
 		captureBuffer = "printer.bmp";
 
-	LPCTSTR exts[] = {".png", ".bmp" };
+	LPCTSTR exts[] = {".png", ".bmp", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_PNG);
 	CString title  = winResLoadString(IDS_SELECT_CAPTURE_NAME);

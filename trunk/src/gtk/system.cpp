@@ -445,9 +445,8 @@ u16 checksumBIOS()
 	{
 		tempBIOS = (u8 *)malloc(0x4000);
 		int size = 0x4000;
-		extern bool CPUIsGBABios(const char * file);
 		if(utilLoad(biosFileName,
-					CPUIsGBABios,
+					utilIsGBABios,
 					tempBIOS,
 					size)) {
 		if(size == 0x4000)

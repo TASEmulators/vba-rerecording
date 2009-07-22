@@ -127,31 +127,15 @@ void MainWnd::OnUpdateCheatsPauseDuringCheatSearch(CCmdUI*pCmdUI)
 void MainWnd::OnCheatsLoadcheatlist()
 {
 	theApp.winCheckFullscreen();
-	CString buffer;
-	CString filename;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		buffer = theApp.filename;
-
-	CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
-
-	if (cheatDir.IsEmpty())
-		cheatDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(cheatDir))
-		filename.Format("%s%s.clt", cheatDir, buffer);
-	else
-		filename.Format("%s\\%s.clt", cheatDir, buffer);
 
 	LPCTSTR exts[] = { ".clt", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-	FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, false);
+	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
+	CString cheatDir = getRelatedDir(IDS_CHEAT_DIR);
+
+	FileDlg dlg(this, cheatName, filter, 0, "CLT", exts, cheatDir, title, false);
 
 	if (dlg.DoModal() == IDOK)
 	{
@@ -167,31 +151,15 @@ void MainWnd::OnUpdateCheatsLoadcheatlist(CCmdUI*pCmdUI)
 void MainWnd::OnCheatsSavecheatlist()
 {
 	theApp.winCheckFullscreen();
-	CString buffer;
-	CString filename;
-
-	int index = max(theApp.filename.ReverseFind('/'), max(theApp.filename.ReverseFind('\\'), theApp.filename.ReverseFind('|')));
-
-	if (index != -1)
-		buffer = theApp.filename.Right(theApp.filename.GetLength()-index-1);
-	else
-		buffer = theApp.filename;
-
-	CString cheatDir = regQueryStringValue(IDS_CHEAT_DIR, NULL);
-
-	if (cheatDir.IsEmpty())
-		cheatDir = getDirFromFile(theApp.filename);
-
-	if (isDriveRoot(cheatDir))
-		filename.Format("%s%s.clt", cheatDir, buffer);
-	else
-		filename.Format("%s\\%s.clt", cheatDir, buffer);
 
 	LPCTSTR exts[] = { ".clt", NULL };
 	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-	FileDlg dlg(this, filename, filter, 0, "CLT", exts, cheatDir, title, true);
+	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
+	CString cheatDir = getRelatedDir(IDS_CHEAT_DIR);
+
+	FileDlg dlg(this, cheatName, filter, 0, "CLT", exts, cheatDir, title, true);
 
 	if (dlg.DoModal() == IDOK)
 	{

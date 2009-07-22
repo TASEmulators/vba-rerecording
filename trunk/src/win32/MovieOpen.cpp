@@ -43,32 +43,18 @@ BOOL MovieOpen::OnInitDialog()
 	CheckDlgButton(IDC_READONLY, theApp.movieReadOnly);
 	m_editDescription.SetReadOnly(theApp.movieReadOnly);
 
-	// convert the ROM filename into a default movie name
-	{
-		extern char *regQueryStringValue(const char *key, char *def); // from Reg.cpp
-		CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
-
-		if (capdir.IsEmpty())
-			capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-		char str [_MAX_PATH];
-		strcpy(str, theApp.filename);
-		strcat(str, ".vbm");
-		char *strPtr = max(strrchr(str, (int)'\\'), strrchr(str, (int)'|'));
-		if (strPtr == NULL)
-			strPtr = str;
-		else
-			strPtr++;
-
-		movieLogicalName = capdir + "\\" + strPtr;
-
-		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieLogicalName);
-	}
-
 	m_editFilename.LimitText(_MAX_PATH);
 	m_editAuthor.LimitText(MOVIE_METADATA_AUTHOR_SIZE);
 	m_editDescription.LimitText(MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 	m_editPauseFrame.LimitText(8);
+
+	// convert the ROM filename into a default movie name
+	CString movieName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_MOVIE_DIR, ".vbm");
+
+	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
+
+	// scroll to show the rightmost side of the movie filename
+	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
 
 	OnBnClickedMovieRefresh();
 
@@ -100,35 +86,22 @@ END_MESSAGE_MAP()
 
 // MovieOpen message handlers
 
+// FIXME: file-scope-global
 static bool shouldReopenBrowse = false;
 
 void MovieOpen::OnBnClickedBrowse()
 {
-	extern char *regQueryStringValue(const char *key, char *def);  // from Reg.cpp
-	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
+	theApp.winCheckFullscreen();	// FIXME: necessary or not?
 
-	if (capdir.IsEmpty())
-		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-	CString filename = "";
-	if (emulating)
-	{
-		filename = theApp.szFile;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".vbm";
-	}
+	LPCTSTR exts[] = { ".vbm", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	LPCTSTR exts[] = { ".vbm", NULL };
+	CString movieName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
+	CString movieDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_MOVIE_DIR);
 
-	FileDlg dlg(this, filename, filter, 1, "vbm", exts, capdir, title, false, true);
+	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, false, true);
 
 	do
 	{
@@ -139,9 +112,9 @@ void MovieOpen::OnBnClickedBrowse()
 			return;
 		}
 
-		CString tempName = dlg.GetPathName();
+		movieName = dlg.GetPathName();
 
-		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(tempName);
+		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
 		// SetWindowText calls OnEnChangeMovieFilename which calls OnBnClickedMovieRefresh
 		// so this extra call to OnBnClickedMovieRefresh is bad
@@ -150,9 +123,7 @@ void MovieOpen::OnBnClickedBrowse()
 	} while(shouldReopenBrowse);
 
 	// scroll to show the rightmost side of the movie filename
-	CString tempName;
-	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(tempName);
-	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(strlen(tempName)-1), FALSE);
+	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
 }
 
 // returns the checksum of the BIOS that will be loaded after the next restart
@@ -164,9 +135,8 @@ u16 checksumBIOS()
 	{
 		tempBIOS = (u8 *)malloc(0x4000);
 		int         size = 0x4000;
-		extern bool CPUIsGBABios(const char *file);
 		if (utilLoad(theApp.biosFileName,
-		             CPUIsGBABios,
+		             utilIsGBABios,
 		             tempBIOS,
 		             size))
 		{

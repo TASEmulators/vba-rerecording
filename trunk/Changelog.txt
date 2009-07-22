@@ -2,6 +2,9 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+07-22-2009 aquanull - Added a missing header file.
+07-22-2009 aquanull - Fixed various out-of-range errors within some file dialogs.
+07-22-2009 aquanull - Removed some redundant functions.
 07-01-2009 adelikat - Hooked up RamWatch AskSave() function to VBA exit
 07-01-2009 adelikat - Ramwatch - Hooked up Ramwatch recent files, save window position flag, save window position
 06-30-2009 adelikat - Ramwatch - Hooked up Ramwatch autoload

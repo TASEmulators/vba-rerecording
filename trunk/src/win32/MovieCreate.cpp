@@ -57,25 +57,12 @@ BOOL MovieCreate::OnInitDialog()
 	m_editDescription.LimitText(MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 
 	// convert the ROM filename into a default movie name
-	{
-		extern char *regQueryStringValue(const char *key, char *def); // from Reg.cpp
-		CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
+	CString movieName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_MOVIE_DIR, ".vbm");
 
-		if (capdir.IsEmpty())
-			capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
+	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
-		char str [_MAX_PATH];
-		strcpy(str, theApp.filename);
-		strcat(str, ".vbm");
-		char *strPtr = strrchr(str, (int)'\\');
-		if (strPtr == NULL)
-			strPtr = str;
-
-		capdir   += strPtr;
-		movieName = capdir;
-
-		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
-	}
+	// scroll to show the rightmost side of the movie filename
+	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
 
 	return TRUE; // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -116,40 +103,27 @@ END_MESSAGE_MAP()
 void MovieCreate::OnBnClickedBrowse()
 {
 	theApp.winCheckFullscreen();
-	CString captureBuffer;
-	extern char *regQueryStringValue(const char *key, char *def); // from Reg.cpp
-	CString capdir = regQueryStringValue(IDS_MOVIE_DIR, "");
 
-	if (capdir.IsEmpty())
-		capdir = ((MainWnd *)theApp.m_pMainWnd)->getDirFromFile(theApp.filename);
-
-	CString filename = "";
-	if (emulating)
-	{
-		filename = theApp.szFile;
-		int slash = max(filename.ReverseFind('/'), max(filename.ReverseFind('\\'), filename.ReverseFind('|')));
-		if (slash != -1)
-			filename = filename.Right(filename.GetLength()-slash-1);
-		int dot = filename.Find('.');
-		if (dot != -1)
-			filename = filename.Left(dot);
-		filename += ".vbm";
-	}
+	LPCTSTR exts[] = { ".vbm", NULL };
 
 	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	LPCTSTR exts[] = { ".vbm", NULL };
+	CString movieName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
+	CString movieDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_MOVIE_DIR);
 
-	FileDlg dlg(this, filename, filter, 1, "vbm", exts, capdir, title, true);
+	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 	{
 		return;
 	}
 
-	movieName     = dlg.GetPathName();
-	captureBuffer = movieName;
+	movieName = dlg.GetPathName();
+
+	// we have directory override for that purpose
+#if 0
+	CString captureBuffer = movieName;
 
 	if (dlg.m_ofn.nFileOffset > 0)
 	{
@@ -163,8 +137,12 @@ void MovieCreate::OnBnClickedBrowse()
 
 	extern void regSetStringValue(const char *key, const char *value); // from Reg.cpp
 	regSetStringValue(IDS_MOVIE_DIR, captureBuffer);
+#endif
 
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
+
+	// scroll to show the rightmost side of the movie filename
+	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
 }
 
 void loadBIOS()
@@ -176,9 +154,8 @@ void loadBIOS()
 	if (theApp.useBiosFile)
 	{
 		int         size = 0x4000;
-		extern bool CPUIsGBABios(const char *file);
 		if (utilLoad(theApp.biosFileName,
-		             CPUIsGBABios,
+		             utilIsGBABios,
 		             bios,
 		             size))
 		{
@@ -201,9 +178,8 @@ bool checkBIOS(CString & biosFileName)
 	bool        ok       = false;
 	u8 *        tempBIOS = (u8 *)malloc(0x4000);
 	int         size     = 0x4000;
-	extern bool CPUIsGBABios(const char *file);
 	if (utilLoad(biosFileName,
-	             CPUIsGBABios,
+	             utilIsGBABios,
 	             tempBIOS,
 	             size))
 	{
@@ -283,6 +259,8 @@ void MovieCreate::OnBnClickedOk()
 			return;
 		}
 	}
+
+	CString movieName;
 
 	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(movieName);
 
