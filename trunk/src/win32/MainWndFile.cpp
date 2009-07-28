@@ -343,10 +343,7 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 				buffer = buffer.Right(buffer.GetLength()-index-1);
 
 			CString filename2;
-			if (MainWnd::isDriveRoot(targetDir))
-				filename2.Format("%s%s%s", targetDir, buffer, ext);
-			else
-				filename2.Format("%s\\%s%s", targetDir, buffer, ext);
+			filename2.Format("%s%s%s", targetDir, buffer, ext);
 
 			if (FileExists(filename2) || theApp.filenamePreference == 0)
 				filename = filename2;
