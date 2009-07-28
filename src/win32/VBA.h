@@ -36,11 +36,7 @@
 #include <afxtempl.h>
 
 #include "AcceleratorManager.h"
-//#include "resource.h"       // main symbols
 #include "Display.h"
-//#include "Input.h"
-//#include "IUpdate.h"
-//#include "Sound.h"
 #include "../System.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -215,6 +211,7 @@ public:
 	bool       loadMakesCurrent;
 	bool       saveMakesCurrent;
 	int        currentSlot;
+	int		   filenamePreference;
 	bool       frameSearching;
 	bool       frameSearchSkipping;
 	bool       frameSearchFirstStep;

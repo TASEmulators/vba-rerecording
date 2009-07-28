@@ -18,7 +18,6 @@
 
 #if (defined(WIN32) && !defined(SDL))
 #   include "win32/stdafx.h"
-#   include "win32/Sound.h"
 #   include "win32/VBA.h"
 #endif
 

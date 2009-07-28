@@ -548,134 +548,126 @@ unsigned int HardwareAddressToItemIndex(HWAddressType hardwareAddress)
 
 
 
-// workaround for a parser error in MSVC that sometimes deletes a comma preceeding a macro
-// this macro takes a type and a signed/unsigned modifier, and returns the same type with that modifier whether or not the compiler decides to delete the comma between them
-template<typename T, typename ignored=void>
-struct DummyType { typedef T t; };
-#define COMMAHACK(sign, type) DummyType<sign type, sign>::t
-#ifdef _MSC_VER
-#pragma warning(disable : 4114) // disable "same modifier used twice" warning that otherwise would get issued when the compiler bug happens
-#endif
-
+// workaround for MSVC 7 that doesn't support varadic C99 macros
 #define CALL_WITH_T_SIZE_TYPES_0(functionName, sizeTypeID, isSigned, requiresAligned) \
 	(sizeTypeID == 'b' \
 		? (isSigned \
-			? functionName<char, COMMAHACK(signed,char)>() \
-			: functionName<char, COMMAHACK(unsigned,char)>()) \
+			? functionName<char, signed char>() \
+			: functionName<char, unsigned char>()) \
 	: sizeTypeID == 'w' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,short)>() \
-				: functionName<char, COMMAHACK(signed,short)>()) \
+				? functionName<short, signed short>() \
+				: functionName<char, signed short>()) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,short)>() \
-				: functionName<char, COMMAHACK(unsigned,short)>())) \
+				? functionName<short, unsigned short>() \
+				: functionName<char, unsigned short>())) \
 	: sizeTypeID == 'd' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,long)>() \
-				: functionName<char, COMMAHACK(signed,long)>()) \
+				? functionName<short, signed long>() \
+				: functionName<char, signed long>()) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,long)>() \
-				: functionName<char, COMMAHACK(unsigned,long)>())) \
-	: functionName<char, COMMAHACK(signed,char)>())
+				? functionName<short, unsigned long>() \
+				: functionName<char, unsigned long>())) \
+	: functionName<char, signed char>())
 
 #define CALL_WITH_T_SIZE_TYPES_1(functionName, sizeTypeID, isSigned, requiresAligned, p0) \
 	(sizeTypeID == 'b' \
 		? (isSigned \
-			? functionName<char, COMMAHACK(signed,char)>(p0) \
-			: functionName<char, COMMAHACK(unsigned,char)>(p0)) \
+			? functionName<char, signed char>(p0) \
+			: functionName<char, unsigned char>(p0)) \
 	: sizeTypeID == 'w' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,short)>(p0) \
-				: functionName<char, COMMAHACK(signed,short)>(p0)) \
+				? functionName<short, signed short>(p0) \
+				: functionName<char, signed short>(p0)) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,short)>(p0) \
-				: functionName<char, COMMAHACK(unsigned,short)>(p0))) \
+				? functionName<short, unsigned short>(p0) \
+				: functionName<char, unsigned short>(p0))) \
 	: sizeTypeID == 'd' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,long)>(p0) \
-				: functionName<char, COMMAHACK(signed,long)>(p0)) \
+				? functionName<short, signed long>(p0) \
+				: functionName<char, signed long>(p0)) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,long)>(p0) \
-				: functionName<char, COMMAHACK(unsigned,long)>(p0))) \
-	: functionName<char, COMMAHACK(signed,char)>(p0))
+				? functionName<short, unsigned long>(p0) \
+				: functionName<char, unsigned long>(p0))) \
+	: functionName<char, signed char>(p0))
 
 #define CALL_WITH_T_SIZE_TYPES_3(functionName, sizeTypeID, isSigned, requiresAligned, p0, p1, p2) \
 	(sizeTypeID == 'b' \
 		? (isSigned \
-			? functionName<char, COMMAHACK(signed,char)>(p0, p1, p2) \
-			: functionName<char, COMMAHACK(unsigned,char)>(p0, p1, p2)) \
+			? functionName<char, signed char>(p0, p1, p2) \
+			: functionName<char, unsigned char>(p0, p1, p2)) \
 	: sizeTypeID == 'w' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,short)>(p0, p1, p2) \
-				: functionName<char, COMMAHACK(signed,short)>(p0, p1, p2)) \
+				? functionName<short, signed short>(p0, p1, p2) \
+				: functionName<char, signed short>(p0, p1, p2)) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,short)>(p0, p1, p2) \
-				: functionName<char, COMMAHACK(unsigned,short)>(p0, p1, p2))) \
+				? functionName<short, unsigned short>(p0, p1, p2) \
+				: functionName<char, unsigned short>(p0, p1, p2))) \
 	: sizeTypeID == 'd' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,long)>(p0, p1, p2) \
-				: functionName<char, COMMAHACK(signed,long)>(p0, p1, p2)) \
+				? functionName<short, signed long>(p0, p1, p2) \
+				: functionName<char, signed long>(p0, p1, p2)) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,long)>(p0, p1, p2) \
-				: functionName<char, COMMAHACK(unsigned,long)>(p0, p1, p2))) \
-	: functionName<char, COMMAHACK(signed,char)>(p0, p1, p2))
+				? functionName<short, unsigned long>(p0, p1, p2) \
+				: functionName<char, unsigned long>(p0, p1, p2))) \
+	: functionName<char, signed char>(p0, p1, p2))
 
 #define CALL_WITH_T_SIZE_TYPES_4(functionName, sizeTypeID, isSigned, requiresAligned, p0, p1, p2, p3) \
 	(sizeTypeID == 'b' \
 		? (isSigned \
-			? functionName<char, COMMAHACK(signed,char)>(p0, p1, p2, p3) \
-			: functionName<char, COMMAHACK(unsigned,char)>(p0, p1, p2, p3)) \
+			? functionName<char, signed char>(p0, p1, p2, p3) \
+			: functionName<char, unsigned char>(p0, p1, p2, p3)) \
 	: sizeTypeID == 'w' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,short)>(p0, p1, p2, p3) \
-				: functionName<char, COMMAHACK(signed,short)>(p0, p1, p2, p3)) \
+				? functionName<short, signed short>(p0, p1, p2, p3) \
+				: functionName<char, signed short>(p0, p1, p2, p3)) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,short)>(p0, p1, p2, p3) \
-				: functionName<char, COMMAHACK(unsigned,short)>(p0, p1, p2, p3))) \
+				? functionName<short, unsigned short>(p0, p1, p2, p3) \
+				: functionName<char, unsigned short>(p0, p1, p2, p3))) \
 	: sizeTypeID == 'd' \
 		? (isSigned \
 			? (requiresAligned \
-				? functionName<short, COMMAHACK(signed,long)>(p0, p1, p2, p3) \
-				: functionName<char, COMMAHACK(signed,long)>(p0, p1, p2, p3)) \
+				? functionName<short, signed long>(p0, p1, p2, p3) \
+				: functionName<char, signed long>(p0, p1, p2, p3)) \
 			: (requiresAligned \
-				? functionName<short, COMMAHACK(unsigned,long)>(p0, p1, p2, p3) \
-				: functionName<char, COMMAHACK(unsigned,long)>(p0, p1, p2, p3))) \
-	: functionName<char, COMMAHACK(signed,char)>(p0, p1, p2, p3))
+				? functionName<short, unsigned long>(p0, p1, p2, p3) \
+				: functionName<char, unsigned long>(p0, p1, p2, p3))) \
+	: functionName<char, signed char>(p0, p1, p2, p3))
 
 // version that takes a forced comparison type
-#define CALL_WITH_T_STEP_3(functionName, sizeTypeID, sign,type, requiresAligned, p0, p1, p2) \
+#define CALL_WITH_T_STEP_3(functionName, sizeTypeID, type, requiresAligned, p0, p1, p2) \
 	(sizeTypeID == 'b' \
-		? functionName<char, COMMAHACK(sign,type)>(p0, p1, p2) \
+		? functionName<char, type>(p0, p1, p2) \
 	: sizeTypeID == 'w' \
 		? (requiresAligned \
-			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2) \
-			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2)) \
+			? functionName<short, type>(p0, p1, p2) \
+			: functionName<char, type>(p0, p1, p2)) \
 	: sizeTypeID == 'd' \
 		? (requiresAligned \
-			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2) \
-			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2)) \
-	: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2))
+			? functionName<short, type>(p0, p1, p2) \
+			: functionName<char, type>(p0, p1, p2)) \
+	: functionName<char, type>(p0, p1, p2))
 
 // version that takes a forced comparison type
-#define CALL_WITH_T_STEP_4(functionName, sizeTypeID, sign,type, requiresAligned, p0, p1, p2, p3) \
+#define CALL_WITH_T_STEP_4(functionName, sizeTypeID, type, requiresAligned, p0, p1, p2, p3) \
 	(sizeTypeID == 'b' \
-		? functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3) \
+		? functionName<char, type>(p0, p1, p2, p3) \
 	: sizeTypeID == 'w' \
 		? (requiresAligned \
-			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2, p3) \
-			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3)) \
+			? functionName<short, type>(p0, p1, p2, p3) \
+			: functionName<char, type>(p0, p1, p2, p3)) \
 	: sizeTypeID == 'd' \
 		? (requiresAligned \
-			? functionName<short, COMMAHACK(sign,type)>(p0, p1, p2, p3) \
-			: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3)) \
-	: functionName<char, COMMAHACK(sign,type)>(p0, p1, p2, p3))
+			? functionName<short, type>(p0, p1, p2, p3) \
+			: functionName<char, type>(p0, p1, p2, p3)) \
+	: functionName<char, type>(p0, p1, p2, p3))
 
 // basic comparison functions:
 template <typename T> inline bool LessCmp (T x, T y, T i)        { return x < y; }
@@ -796,11 +788,11 @@ void prune(char c,char o,char t,int v,int p)
 		case 's': DO_SEARCH(SearchSpecific); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP_3(sf, rs_type_size, unsigned,int, noMisalign, CmpFun,v,p)
+		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP_3(sf, rs_type_size, unsigned int, noMisalign, CmpFun,v,p)
 		case 'a': DO_SEARCH(SearchAddress); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP_3(sf, rs_type_size, unsigned,short, noMisalign, CmpFun,v,p)
+		#define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP_3(sf, rs_type_size, unsigned short, noMisalign, CmpFun,v,p)
 		case 'n': DO_SEARCH(SearchChanges); break;
 
 		default: assert(!"Invalid search comparison type."); break;
@@ -974,11 +966,11 @@ bool IsSatisfied(int itemIndex)
 		case 's': DO_SEARCH(CompareSpecificAtItem); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP_4(sf, rs_type_size, unsigned,int, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
+		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP_4(sf, rs_type_size, unsigned int, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
 		case 'a': DO_SEARCH(CompareAddressAtItem); break;
 
 		#undef DO_SEARCH_2
-		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP_4(sf, rs_type_size, unsigned,short, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
+		#define DO_SEARCH_2(CmpFun,sf) return CALL_WITH_T_STEP_4(sf, rs_type_size, unsigned short, noMisalign, CmpFun,itemIndex,rs_val,rs_param);
 		case 'n': DO_SEARCH(CompareChangesAtItem); break;
 	}
 	return false;
@@ -1137,7 +1129,7 @@ void ReopenRamWindows() //Reopen them when a new Rom is loaded
 		}
 	}
 
-	if(hwnd == hWnd && hwnd != GetActiveWindow())
+	if (hwnd == hWnd && hwnd != GetActiveWindow())
 		SetActiveWindow(hWnd); // restore focus to the main window if it had it before
 }
 

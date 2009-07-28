@@ -95,6 +95,7 @@ public:
 	void readBatteryFile();
 	void writeBatteryFile();
 	static bool isDriveRoot(const CString& file);
+	static CString getDiskFilename(const CString& file);
 	static CString getDirFromFile(const CString& file);
 	static CString getSavestateFilename(const CString& LogicalRomName, int nID);
 	static CString getRelatedDir(const CString& TargetDirReg);
@@ -242,6 +243,8 @@ protected:
 	afx_msg void OnContextMenu(CWnd*pWnd, CPoint point);
 	afx_msg void OnOptionsEmulatorAssociate();
 	afx_msg void OnOptionsEmulatorDirectories();
+	afx_msg void OnOptionsEmulatorFilenamePreference(UINT nID);
+	afx_msg void OnUpdateOptionsEmulatorFilenamePreference(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsVideoDisablestatusmessages();
 	afx_msg void OnUpdateOptionsVideoDisablestatusmessages(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorSynchronize();

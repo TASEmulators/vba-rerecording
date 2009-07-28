@@ -121,24 +121,6 @@ void MovieCreate::OnBnClickedBrowse()
 
 	movieName = dlg.GetPathName();
 
-	// we have directory override for that purpose
-#if 0
-	CString captureBuffer = movieName;
-
-	if (dlg.m_ofn.nFileOffset > 0)
-	{
-		captureBuffer = captureBuffer.Left(dlg.m_ofn.nFileOffset);
-	}
-
-	int len = captureBuffer.GetLength();
-
-	if (len > 3 && captureBuffer[len-1] == '\\')
-		captureBuffer = captureBuffer.Left(len-1);
-
-	extern void regSetStringValue(const char *key, const char *value); // from Reg.cpp
-	regSetStringValue(IDS_MOVIE_DIR, captureBuffer);
-#endif
-
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
 	// scroll to show the rightmost side of the movie filename

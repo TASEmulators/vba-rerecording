@@ -706,6 +706,16 @@ void MainWnd::OnOptionsEmulatorDirectories()
 	dlg.DoModal();
 }
 
+void MainWnd::OnOptionsEmulatorFilenamePreference(UINT nID)
+{
+	theApp.filenamePreference = nID - ID_OPTIONS_PREFER_ARCHIEVE_NAME;
+}
+
+void MainWnd::OnUpdateOptionsEmulatorFilenamePreference(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetRadio(pCmdUI->m_nID == theApp.filenamePreference + ID_OPTIONS_PREFER_ARCHIEVE_NAME);
+}
+
 void MainWnd::OnOptionsVideoDisablestatusmessages()
 {
 	theApp.disableStatusMessage = !theApp.disableStatusMessage;
