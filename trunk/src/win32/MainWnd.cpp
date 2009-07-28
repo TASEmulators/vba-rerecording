@@ -217,6 +217,8 @@ ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN, OnUpdateOptionsVideoRe
 ON_WM_CONTEXTMENU()
 ON_COMMAND(ID_OPTIONS_EMULATOR_ASSOCIATE, OnOptionsEmulatorAssociate)
 ON_COMMAND(ID_OPTIONS_EMULATOR_DIRECTORIES, OnOptionsEmulatorDirectories)
+ON_COMMAND_RANGE(ID_OPTIONS_PREFER_ARCHIEVE_NAME, ID_OPTIONS_PREFER_ROM_NAME, OnOptionsEmulatorFilenamePreference)
+ON_UPDATE_COMMAND_UI_RANGE(ID_OPTIONS_PREFER_ARCHIEVE_NAME, ID_OPTIONS_PREFER_ROM_NAME, OnUpdateOptionsEmulatorFilenamePreference)
 ON_COMMAND(ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES, OnOptionsVideoDisablestatusmessages)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES, OnUpdateOptionsVideoDisablestatusmessages)
 ON_COMMAND(ID_OPTIONS_EMULATOR_SYNCHRONIZE, OnOptionsEmulatorSynchronize)
@@ -577,8 +579,10 @@ bool MainWnd::FileRun()
 	if(theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
 
 	char LogicalName[2048], PhysicalName[2048];
+	// FIXME: assertion failure in fopen.c if canceled
 	if(ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions, sizeof(s_romIgnoreExtensions)/sizeof(*s_romIgnoreExtensions)))
 	{
+		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
 		theApp.filename = LogicalName;
 		ReleaseTempFileCategory("rom", PhysicalName);
 	}
@@ -598,18 +602,7 @@ bool MainWnd::FileRun()
 	const char* PhysicalName = theApp.szFile;
 #endif
 
-	int index = theApp.filename.ReverseFind('.');
-	if (index != -1)
-		theApp.filename = theApp.filename.Left(index);
-
-	if (!theApp.dir.GetLength())
-	{
-		int index = max(theApp.filename.ReverseFind('/'), theApp.filename.ReverseFind('\\'));
-		if (index != -1)
-		{
-			theApp.dir = theApp.filename.Left(index-1);
-		}
-	}
+	theApp.dir		= getDirFromFile(theApp.filename);
 
 	CString ipsname = getRelatedFilename(theApp.filename, IDS_IPS_DIR, ".ips");
 
@@ -658,6 +651,7 @@ bool MainWnd::FileRun()
 		//    if(cpuEnhancedDetection && winSaveType == 0) {
 		//      utilGBAFindSave(rom, size);
 		//    }
+
 		GetModuleFileName(NULL, tempName, 2048);
 
 		char *p = strrchr(tempName, '\\');
@@ -735,7 +729,10 @@ bool MainWnd::FileRun()
 	if (theApp.autoSaveLoadCheatList)
 		winLoadCheatListDefault();
 
-	theApp.addRecentFile(LogicalName);
+	if (theApp.filenamePreference == 0)
+		theApp.addRecentFile(getDiskFilename(LogicalName));
+	else
+		theApp.addRecentFile(LogicalName);
 
 	theApp.updateWindowSize(theApp.videoOption);
 
@@ -800,6 +797,9 @@ bool MainWnd::FileRun()
 
 	ReopenRamWindows();
 	reset_address_info();
+
+	if (AutoRWLoad)
+		MainWnd::OnFileRamWatch();     //auto load ramwatch
 
 	return true;
 }
@@ -968,34 +968,6 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 	}
 }
 
-CString MainWnd::getDirFromFile(const CString& file)
-{
-	CString temp  = file;
-	int index = max(temp.ReverseFind('/'), temp.ReverseFind('\\'));
-
-	if (index != -1)
-	{
-		temp = temp.Left(index);
-		if (temp.GetLength() == 2 && temp[1] == ':')
-			temp += "\\";
-	}
-	else
-	{
-		temp = "";
-	}
-	return temp;
-}
-
-bool MainWnd::isDriveRoot(const CString& file)
-{
-	if (file.GetLength() == 3)
-	{
-		if (file[1] == ':' && file[2] == '\\')
-			return true;
-	}
-	return false;
-}
-
 void MainWnd::winSaveCheatListDefault()
 {
 	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
@@ -1086,31 +1058,34 @@ void MainWnd::OnSystemMinimize()
 
 bool MainWnd::fileOpenSelect(int cartridgeType)
 {
-	theApp.dir = "";
-	CString initialDir = regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
-	if (!initialDir.IsEmpty())
-		theApp.dir = initialDir;
-
 	int selectedFilter = regQueryDwordValue("selectedFilter", 0);
 	if (selectedFilter < 0 || selectedFilter > 2)
 		selectedFilter = 0;
-
-	theApp.szFile = "";
 
 	LPCTSTR exts[] = { NULL };
 	CString filter = winLoadFilter(IDS_FILTER_ROM);
 	CString title  = winResLoadString(IDS_SELECT_ROM);
 
-	FileDlg dlg(this, "", filter, selectedFilter, "", exts, theApp.dir, title, false, true);
+	bool isOverrideEmpty = false;
+	CString initialDir = regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
+	if (initialDir.IsEmpty())
+	{
+		isOverrideEmpty = true;
+		initialDir = theApp.dir;
+	}
+
+	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
 
 	if (dlg.DoModal() == IDOK)
 	{
 		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
 		theApp.szFile = dlg.GetPathName();
-		theApp.dir    = theApp.szFile.Left(dlg.m_ofn.nFileOffset);
-		if (theApp.dir.GetLength() > 3 && theApp.dir[theApp.dir.GetLength()-1] == '\\')
-			theApp.dir = theApp.dir.Left(theApp.dir.GetLength()-1);
-		regSetStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, theApp.dir);
+		initialDir = getDirFromFile(theApp.szFile);
+
+		// we have directory override for that purpose
+		// but this can be...desirable
+		if (isOverrideEmpty)
+			regSetStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, initialDir);
 		return true;
 	}
 	return false;
@@ -1310,10 +1285,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 	char szFile[1024];
 	char ext[1024];
 
-	if (DragQueryFile(hDropInfo,
-	                  0,
-	                  szFile,
-	                  1024))
+	if (DragQueryFile(hDropInfo, 0, szFile, 1024))
 	{
 		DragFinish(hDropInfo);
 

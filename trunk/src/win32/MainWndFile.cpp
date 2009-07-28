@@ -52,11 +52,8 @@ void MainWnd::OnFileOpen()
 	theApp.winCheckFullscreen();
 	if (fileOpenSelect(0))
 	{
-		if (VBAMovieActive())
-			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
 		FileRun();
 	}
-	if (AutoRWLoad) MainWnd::OnFileRamWatch();     //auto load ramwatch
 }
 
 void MainWnd::OnFileOpenGBx()
@@ -64,11 +61,8 @@ void MainWnd::OnFileOpenGBx()
 	theApp.winCheckFullscreen();
 	if (fileOpenSelect(1))
 	{
-		if (VBAMovieActive())
-			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
 		FileRun();
 	}
-	if (AutoRWLoad) MainWnd::OnFileRamWatch();     //auto load ramwatch
 }
 
 void MainWnd::OnFilePause()
@@ -160,9 +154,6 @@ BOOL MainWnd::OnFileRecentFile(UINT nID)
 {
 	if (theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1].GetLength())
 	{
-		if (VBAMovieActive())
-			VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
-
 		theApp.szFile = theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1];
 		if (FileRun())
 			emulating = true;
@@ -257,15 +248,50 @@ void MainWnd::OnUpdateFileLoad(CCmdUI*pCmdUI)
 	pCmdUI->Enable(emulating);
 }
 
+// maybe these should go to util.cpp
 static bool FileExists(const char* filename)
 {
 	FILE* f = fopen(filename, "rb");
-	if(f)
+	if (f)
 	{
 		fclose(f);
 		return true;
 	}
 	return false;
+}
+
+bool MainWnd::isDriveRoot(const CString& file)
+{
+	if (file.GetLength() == 3)
+	{
+		if (file[1] == ':' && file[2] == '\\')
+			return true;
+	}
+	return false;
+}
+
+CString MainWnd::getDiskFilename(const CString& file)
+{
+	int index = file.Find('|');
+
+	if (index != -1)
+		return file.Left(index);
+	else
+		return file;
+}
+
+CString MainWnd::getDirFromFile(const CString& file)
+{
+	CString temp  = getDiskFilename(file);
+	int index = max(temp.ReverseFind('/'), temp.ReverseFind('\\'));
+	if (index != -1)
+	{
+		temp = temp.Left(index);
+		if (temp.GetLength() == 2 && temp[1] == ':')
+			temp += "\\";
+	}
+
+	return temp;
 }
 
 CString MainWnd::getRelatedDir(const CString& TargetDirReg)
@@ -283,36 +309,37 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 	if (LogicalRomName.GetLength() == 0)
 		 return CString();
 
-	int index = max(LogicalRomName.ReverseFind('/'), max(LogicalRomName.ReverseFind('\\'), LogicalRomName.ReverseFind('|')));
-
-	CString buffer;
-	if (index != -1)
-		buffer = LogicalRomName.Right(LogicalRomName.GetLength()-index-1);
-	else
-		buffer = LogicalRomName;
-
 	CString targetDir = getRelatedDir(TargetDirReg);
+	if (!isDriveRoot(targetDir))
+		targetDir += '\\';
+
+	CString buffer = LogicalRomName;
+
+	int index = max(buffer.ReverseFind('/'), max(buffer.ReverseFind('\\'), buffer.ReverseFind('|')));
+	if (index != -1)
+		buffer = buffer.Right(buffer.GetLength()-index-1);
+
+	index = buffer.ReverseFind('.');
+	if (index != -1)
+		buffer = buffer.Left(index);
 
 	CString filename;
-	if (MainWnd::isDriveRoot(targetDir))
-		filename.Format("%s%s%s", targetDir, buffer, ext);
-	else
-		filename.Format("%s\\%s%s", targetDir, buffer, ext);
+	filename.Format("%s%s%s", targetDir, buffer, ext);
 
 	// check for old style of naming, for better backward compatibility
-	if(!FileExists(filename))
+	if (!FileExists(filename) || theApp.filenamePreference == 0)
 	{
 		index = LogicalRomName.Find('|');
-		if(index != -1)
+		if (index != -1)
 		{
 			buffer = LogicalRomName.Left(index);
 			index = max(buffer.ReverseFind('/'), buffer.ReverseFind('\\'));
 			
 			int dotIndex = buffer.ReverseFind('.');
-			if(dotIndex > index)
+			if (dotIndex > index)
 				buffer = buffer.Left(dotIndex);
 
-			if(index != -1)
+			if (index != -1)
 				buffer = buffer.Right(buffer.GetLength()-index-1);
 
 			CString filename2;
@@ -321,7 +348,7 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 			else
 				filename2.Format("%s\\%s%s", targetDir, buffer, ext);
 
-			if(FileExists(filename2))
+			if (FileExists(filename2) || theApp.filenamePreference == 0)
 				filename = filename2;
 		}
 	}
@@ -331,56 +358,6 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 
 CString MainWnd::getSavestateFilename(const CString& LogicalRomName, int nID)
 {
-#if 0
-	int index = max(LogicalRomName.ReverseFind('/'), max(LogicalRomName.ReverseFind('\\'), LogicalRomName.ReverseFind('|')));
-
-	CString buffer;
-	if (index != -1)
-		buffer = LogicalRomName.Right(LogicalRomName.GetLength()-index-1);
-	else
-		buffer = LogicalRomName;
-
-	CString saveDir = regQueryStringValue(IDS_SAVE_DIR, NULL);
-
-	if (saveDir.IsEmpty())
-		saveDir = MainWnd::getDirFromFile(LogicalRomName);
-
-	CString filename;
-	if (MainWnd::isDriveRoot(saveDir))
-		filename.Format("%s%s%d.sgm", saveDir, buffer, nID);
-	else
-		filename.Format("%s\\%s%d.sgm", saveDir, buffer, nID);
-
-	// check for old style of naming, for better backward compatibility
-	if(!FileExists(filename))
-	{
-		index = LogicalRomName.Find('|');
-		if(index != -1)
-		{
-			buffer = LogicalRomName.Left(index);
-			index = max(buffer.ReverseFind('/'), buffer.ReverseFind('\\'));
-			
-			int dotIndex = buffer.ReverseFind('.');
-			if(dotIndex > index)
-				buffer = buffer.Left(dotIndex);
-
-			if(index != -1)
-				buffer = buffer.Right(buffer.GetLength()-index-1);
-
-			CString filename2;
-			if (MainWnd::isDriveRoot(saveDir))
-				filename2.Format("%s%s%d.sgm", saveDir, buffer, nID);
-			else
-				filename2.Format("%s\\%s%d.sgm", saveDir, buffer, nID);
-
-			if(FileExists(filename2))
-				filename = filename2;
-		}
-	}
-
-	return filename;
-#endif
-
 	CString ext;
 	ext.Format("%d.sgm", nID);
 

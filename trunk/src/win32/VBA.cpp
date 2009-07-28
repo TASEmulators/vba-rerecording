@@ -679,8 +679,6 @@ BOOL VBA::InitInstance()
 
 	winAccelMgr.Connect((MainWnd *)m_pMainWnd);
 
-	winAccelMgr.SetRegKey(HKEY_CURRENT_USER, "Software\\Emulators\\VisualBoyAdvance");
-
 	extern void winAccelAddCommands(CAcceleratorManager&);
 
 	winAccelAddCommands(winAccelMgr);
@@ -1868,8 +1866,12 @@ void VBA::loadSettings()
 		windowPositionY = 0;
 
 	useBiosFile = regQueryDwordValue("useBios", 0) ? true : false;
-
 	skipBiosFile = regQueryDwordValue("skipBios", 0) ? true : false;
+	buffer = regQueryStringValue("biosFile", "");
+	if (!buffer.IsEmpty())
+	{
+		biosFileName = buffer;
+	}
 
 	memLagEnabled     = regQueryDwordValue("memLagEnabled", false) ? true : false;
 	memLagTempEnabled = memLagEnabled;
@@ -1878,28 +1880,16 @@ void VBA::loadSettings()
 
 	allowLeftRight = regQueryDwordValue("allowLeftRight", false) ? true : false;
 
-	buffer = regQueryStringValue("biosFile", "");
-
-	if (!buffer.IsEmpty())
-	{
-		biosFileName = buffer;
-	}
-
 	int res = regQueryDwordValue("soundEnable", 0x30f);
 
 	soundEnable(res);
 	soundDisable(~res);
 
 	soundOffFlag = (regQueryDwordValue("soundOff", 0)) ? true : false;
-
 	soundQuality = regQueryDwordValue("soundQuality", 2);
-
 	soundEcho = regQueryDwordValue("soundEcho", 0) ? true : false;
-
 	soundLowPass = regQueryDwordValue("soundLowPass", 0) ? true : false;
-
 	soundReverse = regQueryDwordValue("soundReverse", 0) ? true : false;
-
 	soundVolume = regQueryDwordValue("soundVolume", 0);
 	if (soundVolume < 0 || soundVolume > 5)
 		soundVolume = 0;
@@ -1940,8 +1930,9 @@ void VBA::loadSettings()
 	else
 		gbSerialFunction = NULL;
 
-	pauseWhenInactive = regQueryDwordValue("pauseWhenInactive", 1) ?
-	                    true : false;
+	pauseWhenInactive = regQueryDwordValue("pauseWhenInactive", 1) ? true : false;
+
+	filenamePreference = regQueryDwordValue("filenamePreference", 0);
 
 	frameCounter  = regQueryDwordValue("frameCounter", false) ? true : false;
 	lagCounter    = regQueryDwordValue("lagCounter", false) ? true : false;
@@ -2736,11 +2727,9 @@ CString VBA::winLoadFilter(UINT id)
 void VBA::saveSettings()
 {
 	regSetDwordValue("language", languageOption);
-
 	regSetStringValue("languageName", languageName);
 
 	regSetDwordValue("frameSkip", frameSkip);
-
 	regSetDwordValue("gbFrameSkip", gbFrameSkip);
 
 ///  regSetDwordValue("autoFrameSkip", autoFrameSkip);
@@ -2770,30 +2759,21 @@ void VBA::saveSettings()
 	regSetDwordValue("windowY", windowPositionY);
 
 	regSetDwordValue("useBios", useBiosFile);
-
 	regSetDwordValue("skipBios", skipBiosFile);
+	if (!biosFileName.IsEmpty())
+		regSetStringValue("biosFile", biosFileName);
 
 	regSetDwordValue("memLagEnabled", memLagEnabled);
-
 	regSetDwordValue("useOldGBTiming", useOldGBTiming);
 
 	regSetDwordValue("allowLeftRight", allowLeftRight);
 
-	if (!biosFileName.IsEmpty())
-		regSetStringValue("biosFile", biosFileName);
-
 	regSetDwordValue("soundEnable", soundGetEnable() & 0x30f);
-
 	regSetDwordValue("soundOff", soundOffFlag);
-
 	regSetDwordValue("soundQuality", soundQuality);
-
 	regSetDwordValue("soundEcho", soundEcho);
-
 	regSetDwordValue("soundLowPass", soundLowPass);
-
 	regSetDwordValue("soundReverse", soundReverse);
-
 	regSetDwordValue("soundVolume", soundVolume);
 
 	regSetDwordValue("ddrawEmulationOnly", ddrawEmulationOnly);
@@ -2805,18 +2785,18 @@ void VBA::saveSettings()
 	regSetDwordValue("glType", glType);
 
 	regSetDwordValue("filter", filterType);
-
 	regSetDwordValue("disableMMX", disableMMX);
 
 	regSetDwordValue("disableStatus", disableStatusMessage);
 
 	regSetDwordValue("showSpeed", showSpeed);
-
 	regSetDwordValue("showSpeedTransparent", showSpeedTransparent);
 
 	regSetDwordValue("gbPrinter", winGbPrinterEnabled);
 
 	regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
+
+	regSetDwordValue("filenamePreference", filenamePreference);
 
 	regSetDwordValue("frameCounter", frameCounter);
 	regSetDwordValue("lagCounter", lagCounter);

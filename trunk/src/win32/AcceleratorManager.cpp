@@ -26,6 +26,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// All Registry stuff removed
+
 #include "stdafx.h"
 #include <windows.h> // MIIM_STRING
 #include "resource.h"
@@ -41,41 +44,70 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// Constructor/Destructor
-//////////////////////////////////////////////////////////////////////
-//
-//
 CAcceleratorManager::CAcceleratorManager()
 {
-	m_hRegKey       = HKEY_CURRENT_USER;
-	m_szRegKey      = "";
 	m_bAutoSave     = FALSE;
 	m_pWndConnected = NULL;
 
 	m_bDefaultTable = false;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 CAcceleratorManager::~CAcceleratorManager()
 {
-	if ((m_bAutoSave == true) && (m_szRegKey.IsEmpty() != FALSE))
+#if 0
+	if (m_bAutoSave)
 	{
-		//          bool bRet = Write();
-		//          if (!bRet)
-		//                  systemMessage(0, "CAcceleratorManager::~CAcceleratorManager\nError in
-		// CAcceleratorManager::Write...");
+		bool bRet = Write();
+		if (!bRet)
+			systemMessage(0, "CAcceleratorManager::~CAcceleratorManager\nError in CAcceleratorManager::Write...");
+	}
+#endif
+	Reset();
+}
+
+CAcceleratorManager & CAcceleratorManager::operator=(const CAcceleratorManager& accelmgr)
+{
+	Reset();
+
+	CCmdAccelOb*pCmdAccel;
+	CCmdAccelOb*pNewCmdAccel;
+	WORD        wKey;
+	// Copy the 2 tables : normal accel table...
+	POSITION pos = accelmgr.m_mapAccelTable.GetStartPosition();
+	while (pos != NULL)
+	{
+		accelmgr.m_mapAccelTable.GetNextAssoc(pos, wKey, pCmdAccel);
+		pNewCmdAccel = new CCmdAccelOb;
+		ASSERT(pNewCmdAccel != NULL);
+		*pNewCmdAccel = *pCmdAccel;
+		m_mapAccelTable.SetAt(wKey, pNewCmdAccel);
+	}
+	// ... and saved accel table.
+	pos = accelmgr.m_mapAccelTableSaved.GetStartPosition();
+	while (pos != NULL)
+	{
+		accelmgr.m_mapAccelTableSaved.GetNextAssoc(pos, wKey, pCmdAccel);
+		pNewCmdAccel = new CCmdAccelOb;
+		ASSERT(pNewCmdAccel != NULL);
+		*pNewCmdAccel = *pCmdAccel;
+		m_mapAccelTableSaved.SetAt(wKey, pNewCmdAccel);
 	}
 
-	Reset();
+	// The Strings-ID table
+	CString szKey;
+	pos = accelmgr.m_mapAccelString.GetStartPosition();
+	while (pos != NULL)
+	{
+		accelmgr.m_mapAccelString.GetNextAssoc(pos, szKey, wKey);
+		m_mapAccelString.SetAt(szKey, wKey);
+	}
+	m_bDefaultTable = accelmgr.m_bDefaultTable;
+
+	return *this;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Internal fcts
-//////////////////////////////////////////////////////////////////////
-//
 //
 void CAcceleratorManager::Reset()
 {
@@ -99,9 +131,6 @@ void CAcceleratorManager::Reset()
 	m_mapAccelTableSaved.RemoveAll();
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::AddAccel(BYTE cVirt, WORD wIDCommand, WORD wKey, LPCTSTR szCommand, bool bLocked)
 {
 	ASSERT(szCommand != NULL);
@@ -145,16 +174,11 @@ bool CAcceleratorManager::AddAccel(BYTE cVirt, WORD wIDCommand, WORD wKey, LPCTS
 
 //////////////////////////////////////////////////////////////////////
 // Debug fcts
-//////////////////////////////////////////////////////////////////////
-//
 //
 #ifdef _DEBUG
 void CAcceleratorManager::AssertValid() const
 {}
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 void CAcceleratorManager::Dump(CDumpContext& dc) const
 {
 	CCmdAccelOb*pCmdAccel;
@@ -182,11 +206,6 @@ void CAcceleratorManager::Dump(CDumpContext& dc) const
 
 #endif
 
-//////////////////////////////////////////////////////////////////////
-//
-//////////////////////////////////////////////////////////////////////
-//
-//
 void CAcceleratorManager::Connect(CWnd*pWnd, bool bAutoSave)
 {
 	ASSERT(m_pWndConnected == NULL);
@@ -195,35 +214,7 @@ void CAcceleratorManager::Connect(CWnd*pWnd, bool bAutoSave)
 }
 
 //////////////////////////////////////////////////////////////////////
-//
-//
-bool CAcceleratorManager::GetRegKey(HKEY& hRegKey, CString& szRegKey)
-{
-	if (m_szRegKey.IsEmpty())
-		return false;
-
-	hRegKey  = m_hRegKey;
-	szRegKey = m_szRegKey;
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-//
-//
-bool CAcceleratorManager::SetRegKey(HKEY hRegKey, LPCTSTR szRegKey)
-{
-	ASSERT(hRegKey != NULL);
-	ASSERT(szRegKey != NULL);
-
-	m_szRegKey = szRegKey;
-	m_hRegKey  = hRegKey;
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////
 // Update the application's ACCELs table
-//////////////////////////////////////////////////////////////////////
-//
 //
 bool CAcceleratorManager::UpdateWndTable()
 {
@@ -296,8 +287,6 @@ bool CAcceleratorManager::UpdateWndTable()
 
 //////////////////////////////////////////////////////////////////////
 // Create/Destroy accelerators
-//////////////////////////////////////////////////////////////////////
-//
 //
 bool CAcceleratorManager::DeleteAccel(BYTE cVirt, WORD wIDCommand, WORD wKey)
 {
@@ -325,9 +314,6 @@ bool CAcceleratorManager::DeleteAccel(BYTE cVirt, WORD wIDCommand, WORD wKey)
 	return false;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::DeleteEntry(WORD wIDCommand)
 {
 	CCmdAccelOb*pCmdAccel = NULL;
@@ -348,9 +334,6 @@ bool CAcceleratorManager::DeleteEntry(WORD wIDCommand)
 	return true;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::DeleteEntry(LPCTSTR szCommand)
 {
 	ASSERT(szCommand != NULL);
@@ -363,9 +346,6 @@ bool CAcceleratorManager::DeleteEntry(LPCTSTR szCommand)
 	return true;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::SetAccel(BYTE cVirt, WORD wIDCommand, WORD wKey, LPCTSTR szCommand, bool bLocked)
 {
 	ASSERT(szCommand != NULL);
@@ -373,9 +353,6 @@ bool CAcceleratorManager::SetAccel(BYTE cVirt, WORD wIDCommand, WORD wKey, LPCTS
 	return AddAccel(cVirt, wIDCommand, wKey, szCommand, bLocked);
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::AddCommandAccel(WORD wIDCommand, LPCTSTR szCommand, bool bLocked)
 {
 	ASSERT(szCommand != NULL);
@@ -399,9 +376,6 @@ bool CAcceleratorManager::AddCommandAccel(WORD wIDCommand, LPCTSTR szCommand, bo
 	return bRet;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::CreateEntry(WORD wIDCommand, LPCTSTR szCommand)
 {
 	ASSERT(szCommand != NULL);
@@ -420,8 +394,6 @@ bool CAcceleratorManager::CreateEntry(WORD wIDCommand, LPCTSTR szCommand)
 
 //////////////////////////////////////////////////////////////////////
 // Get a string from the ACCEL definition
-//////////////////////////////////////////////////////////////////////
-//
 //
 bool CAcceleratorManager::GetStringFromACCEL(ACCEL*pACCEL, CString& szAccel)
 {
@@ -436,9 +408,6 @@ bool CAcceleratorManager::GetStringFromACCEL(ACCEL*pACCEL, CString& szAccel)
 		return true;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::GetStringFromACCEL(BYTE cVirt, WORD nCode, CString& szAccel)
 {
 	CAccelsOb accel(cVirt, nCode);
@@ -448,50 +417,6 @@ bool CAcceleratorManager::GetStringFromACCEL(BYTE cVirt, WORD nCode, CString& sz
 		return false;
 	else
 		return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Copy function
-//
-CAcceleratorManager & CAcceleratorManager::operator=(const CAcceleratorManager& accelmgr)
-{
-	Reset();
-
-	CCmdAccelOb*pCmdAccel;
-	CCmdAccelOb*pNewCmdAccel;
-	WORD        wKey;
-	// Copy the 2 tables : normal accel table...
-	POSITION pos = accelmgr.m_mapAccelTable.GetStartPosition();
-	while (pos != NULL)
-	{
-		accelmgr.m_mapAccelTable.GetNextAssoc(pos, wKey, pCmdAccel);
-		pNewCmdAccel = new CCmdAccelOb;
-		ASSERT(pNewCmdAccel != NULL);
-		*pNewCmdAccel = *pCmdAccel;
-		m_mapAccelTable.SetAt(wKey, pNewCmdAccel);
-	}
-	// ... and saved accel table.
-	pos = accelmgr.m_mapAccelTableSaved.GetStartPosition();
-	while (pos != NULL)
-	{
-		accelmgr.m_mapAccelTableSaved.GetNextAssoc(pos, wKey, pCmdAccel);
-		pNewCmdAccel = new CCmdAccelOb;
-		ASSERT(pNewCmdAccel != NULL);
-		*pNewCmdAccel = *pCmdAccel;
-		m_mapAccelTableSaved.SetAt(wKey, pNewCmdAccel);
-	}
-
-	// The Strings-ID table
-	CString szKey;
-	pos = accelmgr.m_mapAccelString.GetStartPosition();
-	while (pos != NULL)
-	{
-		accelmgr.m_mapAccelString.GetNextAssoc(pos, szKey, wKey);
-		m_mapAccelString.SetAt(szKey, wKey);
-	}
-	m_bDefaultTable = accelmgr.m_bDefaultTable;
-
-	return *this;
 }
 
 void CAcceleratorManager::UpdateMenu(HMENU menu)
@@ -624,15 +549,13 @@ void CAcceleratorManager::UpdateMenu(HMENU menu)
 
 //////////////////////////////////////////////////////////////////////
 // In/Out to the registry
-//////////////////////////////////////////////////////////////////////
 //
-//
-bool CAcceleratorManager::Load(HKEY hRegKey, LPCTSTR szRegKey)
+bool CAcceleratorManager::Load()
 {
-	ASSERT(szRegKey != NULL);
+//	ASSERT(szRegKey != NULL);
 
-	m_hRegKey  = hRegKey;
-	m_szRegKey = szRegKey;
+//	m_hRegKey  = hRegKey;
+//	m_szRegKey = szRegKey;
 
 	DWORD data[2048/sizeof(DWORD)];
 
@@ -687,24 +610,6 @@ bool CAcceleratorManager::Load(HKEY hRegKey, LPCTSTR szRegKey)
 	return false;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-//
-bool CAcceleratorManager::Load()
-{
-	BOOL bRet = FALSE;
-	if (!m_szRegKey.IsEmpty())
-		bRet = Load(m_hRegKey, m_szRegKey);
-
-	if (bRet == TRUE)
-		return true;
-	else
-		return false;
-}
-
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::Write()
 {
 	CDWordArray AccelsDatasArray;
@@ -761,8 +666,6 @@ bool CAcceleratorManager::Write()
 
 //////////////////////////////////////////////////////////////////////
 // Defaults values management.
-//////////////////////////////////////////////////////////////////////
-//
 //
 bool CAcceleratorManager::CreateDefaultTable()
 {
@@ -812,14 +715,12 @@ bool CAcceleratorManager::CreateDefaultTable()
 }
 
 #include "mainwnd.h"
-//////////////////////////////////////////////////////////////////////
-//
-//
 bool CAcceleratorManager::Default()
 {
 	/// this is NYI for some reason, so the "Reset All" button doesn't work
 
-/*	// still doesn't work:
+#if 0
+	// still doesn't work:
     Reset();
     regDeleteValue("keyboard");
     regDeleteValue("keyboardCount");
@@ -832,7 +733,8 @@ bool CAcceleratorManager::Default()
     Write();
     UpdateMenu(theApp.menu);
     m_pWndConnected = NULL;
- */
+#endif
+
 	return true;
 }
 

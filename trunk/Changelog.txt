@@ -2,6 +2,9 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+07-28-2009 aquanull - Fixed an old bug that caused the emulator to freeze.
+07-28-2009 aquanull - Added an option to make the emulator prefer the old-fashion save/movie/etc. file naming to the new-fashion.
+07-28-2009 aquanull - Removed the last Win32 Registry junks.
 07-22-2009 aquanull - Added a missing header file.
 07-22-2009 aquanull - Fixed various out-of-range errors within some file dialogs.
 07-22-2009 aquanull - Removed some redundant functions.

@@ -1,15 +1,15 @@
 * Clean the code, including re-creation of the file structure, which is a whole mess at this moment.
 * Fix the SDL/gtk build malfunction.
-* Enable GBA mode recording for special GBC games like Shantae that can utilize GBA's hardware feature.
+* Actually save recent watch files.
 * Fix the buggy stateful settings.
 * Fix the bugs with vba-over.ini settings.
 * Fix the frame timing?
-* Implement the VBA-H-like cheat search engine?
-* Resolve all issues on the tracker.
+* Enable GBA mode recording for special GBC games like Shantae that can utilize GBA's hardware feature?
+* Resolve all other issues on the tracker.
 * Convert the repository from Subversion to Mercurial?
 * Multiplayer re-recording support for GBA and/or GB games?
 * Documentation?
 
 and/or...
 
-* Something with VBA-M...?
+* "Utilize" the VBA-M project?

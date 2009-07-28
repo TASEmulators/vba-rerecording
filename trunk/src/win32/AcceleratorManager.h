@@ -45,9 +45,9 @@ typedef CMap< CString, LPCSTR, WORD, WORD & > CMapStringToWord;
 typedef CMap< WORD, WORD &, CCmdAccelOb *, CCmdAccelOb * & > CMapWordToCCmdAccelOb;
 #endif
 
-//////////////////////////////////////////////////////////////////////
-//
-//
+////////////////////////////////////////////////////////////////////////////////
+// All Registry stuff removed
+
 class CAcceleratorManager : public CObject
 {
 	friend class AccelEditor;
@@ -61,8 +61,7 @@ public:
 	void UpdateMenu();
 	// Connection to the main application wnd
 	void Connect(CWnd *pWnd, bool bAutoSave = true);
-	// In/Out with the registry
-	bool Load(HKEY hRegKey, LPCTSTR szRegKey);
+	// In/Out
 	bool Load();
 	bool Write();
 	// Get the initials accels, not the user's
@@ -79,9 +78,6 @@ public:
 			return false;
 	}
 
-	// Registry access configuration
-	bool GetRegKey(HKEY& hRegKey, CString &szRegKey);
-	bool SetRegKey(HKEY hRegKey, LPCTSTR szRegKey);
 	bool IsAutoSave() {return m_bAutoSave;}
 	void SetAutoSave(bool bAutoSave) {m_bAutoSave = bAutoSave;}
 
@@ -133,10 +129,7 @@ protected:
 	CMapWordToCCmdAccelOb m_mapAccelTableSaved;
 	bool m_bDefaultTable;
 
-	// Where the users datas will be saved in the registry
-	HKEY    m_hRegKey;
-	CString m_szRegKey;
-	// if true, there is an auto-save in the registry, when the destructor is called
+	// if true, there is an auto-save, when the destructor is called
 	bool m_bAutoSave;
 };
 

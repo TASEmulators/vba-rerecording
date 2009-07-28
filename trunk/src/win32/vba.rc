@@ -2529,6 +2529,15 @@ BEGIN
 
             END
             MENUITEM SEPARATOR
+            POPUP "Relevant File &Naming"
+            BEGIN
+                MENUITEM "Prefer On-Disk &Archive Filename", 
+                                                        ID_OPTIONS_PREFER_ARCHIVE_NAME
+
+                MENUITEM "Prefer Logical &ROM Filename", 
+                                                        ID_OPTIONS_PREFER_ROM_NAME
+
+            END
             MENUITEM "&Directories...",             ID_OPTIONS_EMULATOR_DIRECTORIES
 
             MENUITEM "&Associate...",               ID_OPTIONS_EMULATOR_ASSOCIATE
