@@ -708,12 +708,12 @@ void MainWnd::OnOptionsEmulatorDirectories()
 
 void MainWnd::OnOptionsEmulatorFilenamePreference(UINT nID)
 {
-	theApp.filenamePreference = nID - ID_OPTIONS_PREFER_ARCHIEVE_NAME;
+	theApp.filenamePreference = nID - ID_OPTIONS_PREFER_ARCHIVE_NAME;
 }
 
 void MainWnd::OnUpdateOptionsEmulatorFilenamePreference(CCmdUI *pCmdUI)
 {
-	pCmdUI->SetRadio(pCmdUI->m_nID == theApp.filenamePreference + ID_OPTIONS_PREFER_ARCHIEVE_NAME);
+	pCmdUI->SetRadio(pCmdUI->m_nID == theApp.filenamePreference + ID_OPTIONS_PREFER_ARCHIVE_NAME);
 }
 
 void MainWnd::OnOptionsVideoDisablestatusmessages()

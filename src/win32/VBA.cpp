@@ -318,6 +318,7 @@ VBA::VBA()
 	glType               = 0;
 	regEnabled           = false;
 	pauseWhenInactive    = true;
+	filenamePreference   = true;
 	frameCounter         = false;
 	lagCounter           = false;
 	inputDisplay         = false;
