@@ -29,8 +29,10 @@ bool regEnabled = true;
 
 void regInit(const char *path)
 {
-	DWORD disp = 0;
-	LONG  res  = RegCreateKeyEx(HKEY_CURRENT_USER,
+	if (regEnabled)
+	{
+		DWORD disp = 0;
+		LONG  res  = RegCreateKeyEx(HKEY_CURRENT_USER,
 	                            "Software\\Emulators\\VisualBoyAdvance",
 	                            0,
 	                            "",
@@ -39,6 +41,7 @@ void regInit(const char *path)
 	                            NULL,
 	                            &vbKey,
 	                            &disp);
+	}
 	regVbaPath.Format("%s\\vba.ini", path);
 }
 

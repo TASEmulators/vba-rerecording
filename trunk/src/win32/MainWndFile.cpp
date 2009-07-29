@@ -299,7 +299,7 @@ CString MainWnd::getRelatedDir(const CString& TargetDirReg)
 	CString targetDir = regQueryStringValue(TargetDirReg, NULL);
 
 	if (targetDir.IsEmpty())
-		targetDir = MainWnd::getDirFromFile(theApp.filename);
+		targetDir = getDirFromFile(theApp.filename);
 
 	return targetDir;
 }
@@ -325,9 +325,10 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 
 	CString filename;
 	filename.Format("%s%s%s", targetDir, buffer, ext);
+	bool fileExist = FileExists(filename);
 
 	// check for old style of naming, for better backward compatibility
-	if (!FileExists(filename) || theApp.filenamePreference == 0)
+	if (!fileExist || theApp.filenamePreference == 0)
 	{
 		index = LogicalRomName.Find('|');
 		if (index != -1)
@@ -344,9 +345,10 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 
 			CString filename2;
 			filename2.Format("%s%s%s", targetDir, buffer, ext);
+			bool file2Exist = FileExists(filename2);
 
-			if (FileExists(filename2) || theApp.filenamePreference == 0)
-				filename = filename2;
+			if ((file2Exist && !fileExist) || (theApp.filenamePreference == 0 && (file2Exist || !fileExist)))
+				return filename2;
 		}
 	}
 

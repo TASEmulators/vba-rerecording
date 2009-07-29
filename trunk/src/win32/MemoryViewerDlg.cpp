@@ -160,14 +160,13 @@ BOOL MemoryViewerDlg::OnInitDialog()
 	DIALOG_SIZER_ENTRY(IDC_CURRENT_ADDRESS_LABEL, DS_MoveY | DS_MoveX)
 	DIALOG_SIZER_ENTRY(IDC_CURRENT_ADDRESS, DS_MoveY | DS_MoveX)
 	DIALOG_SIZER_END()
-/*
-   // ???????
-    SetData(sz,
-            TRUE,
-            HKEY_CURRENT_USER,
-            "Software\\Emulators\\VisualBoyAdvance\\Viewer\\MemoryView",
-            NULL);
- */
+
+	SetData(sz,
+			TRUE,
+			HKEY_CURRENT_USER,
+			"Software\\Emulators\\VisualBoyAdvance\\Viewer\\GBDisassembleView",
+			NULL);
+
 	autoUpdate = regQueryDwordValue("memViewerAutoUpdate", 1);
 	if (autoUpdate)
 	{
