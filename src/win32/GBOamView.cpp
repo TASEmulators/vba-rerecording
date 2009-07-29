@@ -463,6 +463,7 @@ BOOL GBOamView::OnInitDialog()
 	        HKEY_CURRENT_USER,
 	        "Software\\Emulators\\VisualBoyAdvance\\Viewer\\GBOamView",
 	        NULL);
+
 	m_sprite.SetWindowText("0");
 
 	updateScrollInfo();

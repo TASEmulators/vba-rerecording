@@ -91,7 +91,6 @@ BOOL AccelEditor::OnInitDialog()
 	DIALOG_SIZER_ENTRY(IDC_CURRENTS, DS_MoveX | DS_SizeY)
 	DIALOG_SIZER_ENTRY(IDC_EDIT_KEY, DS_MoveX | DS_MoveY)
 	DIALOG_SIZER_END()
-
 	SetData(sz,
 	        TRUE,
 	        HKEY_CURRENT_USER,

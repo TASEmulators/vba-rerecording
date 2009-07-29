@@ -88,7 +88,6 @@ BOOL GBPaletteView::OnInitDialog()
 
 	DIALOG_SIZER_START(sz)
 	DIALOG_SIZER_END()
-
     SetData(sz,
             FALSE,
             HKEY_CURRENT_USER,

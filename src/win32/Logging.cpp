@@ -218,6 +218,7 @@ BOOL Logging::OnInitDialog()
 	        HKEY_CURRENT_USER,
 	        "Software\\Emulators\\VisualBoyAdvance\\Viewer\\LogView",
 	        NULL);
+
 	m_swi = (systemVerbose & 1) != 0;
 	m_unaligned_access = (systemVerbose & 2) != 0;
 	m_illegal_write    = (systemVerbose & 4) != 0;

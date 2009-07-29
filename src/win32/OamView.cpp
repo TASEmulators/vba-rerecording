@@ -533,6 +533,7 @@ BOOL OamView::OnInitDialog()
 	        HKEY_CURRENT_USER,
 	        "Software\\Emulators\\VisualBoyAdvance\\Viewer\\OamView",
 	        NULL);
+
 	m_sprite.SetWindowText("0");
 
 	updateScrollInfo();
