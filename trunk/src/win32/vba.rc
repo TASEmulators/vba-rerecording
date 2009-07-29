@@ -2045,6 +2045,8 @@ BEGIN
         END
         POPUP "C&urrent Slot"
         BEGIN
+            MENUITEM "&Increase Current Slot",      ID_FILE_SAVEGAME_INCREMENTSLOT
+
             MENUITEM "&Decrease Current Slot",      ID_FILE_SAVEGAME_DECREMENTSLOT
 
             MENUITEM SEPARATOR
@@ -2059,7 +2061,7 @@ BEGIN
             MENUITEM "Slot #&9",                    ID_SELECT_SLOT9
             MENUITEM "Slot #1&0",                   ID_SELECT_SLOT10
             MENUITEM SEPARATOR
-            MENUITEM "&Increase Current Slot",      ID_FILE_SAVEGAME_INCREMENTSLOT
+            MENUITEM "Display &Timestamps",          ID_FILE_SLOT_DISPLAYMODIFICATIONTIME
 
         END
         MENUITEM SEPARATOR
@@ -2082,7 +2084,7 @@ BEGIN
         BEGIN
             POPUP "&Configure Controllers"
             BEGIN
-                MENUITEM "Controller 1...",             ID_OPTIONS_JOYPAD_CONFIGURE_1
+                MENUITEM "Controller &1...",            ID_OPTIONS_JOYPAD_CONFIGURE_1
 
                 MENUITEM "Controller &2...",            ID_OPTIONS_JOYPAD_CONFIGURE_2
 

@@ -619,6 +619,7 @@ BOOL MapView::OnInitDialog()
 	        HKEY_CURRENT_USER,
 	        "Software\\Emulators\\VisualBoyAdvance\\Viewer\\MapView",
 	        NULL);
+
 	SIZE size;
 	size.cx = 1;
 	size.cy = 1;

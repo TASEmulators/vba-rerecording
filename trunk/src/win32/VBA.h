@@ -200,17 +200,18 @@ public:
 	bool       nvVideoLog;
 	bool       nvAudioLog;
 	bool       painting;	// for systemDrawScreen()
-	int32        sensorX;
-	int32        sensorY;
+	int32      sensorX;
+	int32      sensorY;
 	int        mouseCounter;
 	bool       wasPaused;
-	bool       autoLoadMostRecent;
-	bool       loadMakesRecent;
 	int        fsMaxScale;
 	int        romSize;
+	bool       autoLoadMostRecent;
+	bool       loadMakesRecent;
 	bool       loadMakesCurrent;
 	bool       saveMakesCurrent;
 	int        currentSlot;
+	bool       showSlotTime;
 	int		   filenamePreference;
 	bool       frameSearching;
 	bool       frameSearchSkipping;

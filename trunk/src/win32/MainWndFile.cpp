@@ -325,10 +325,10 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 
 	CString filename;
 	filename.Format("%s%s%s", targetDir, buffer, ext);
-	bool fileExist = FileExists(filename);
+	bool fileExists = FileExists(filename);
 
 	// check for old style of naming, for better backward compatibility
-	if (!fileExist || theApp.filenamePreference == 0)
+	if (!fileExists || theApp.filenamePreference == 0)
 	{
 		index = LogicalRomName.Find('|');
 		if (index != -1)
@@ -345,9 +345,9 @@ CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString
 
 			CString filename2;
 			filename2.Format("%s%s%s", targetDir, buffer, ext);
-			bool file2Exist = FileExists(filename2);
+			bool file2Exists = FileExists(filename2);
 
-			if ((file2Exist && !fileExist) || (theApp.filenamePreference == 0 && (file2Exist || !fileExist)))
+			if ((file2Exists && !fileExists) || (theApp.filenamePreference == 0 && (file2Exists || !fileExists)))
 				return filename2;
 		}
 	}
@@ -361,6 +361,29 @@ CString MainWnd::getSavestateFilename(const CString& LogicalRomName, int nID)
 	ext.Format("%d.sgm", nID);
 
 	return getRelatedFilename(LogicalRomName, IDS_SAVE_DIR, ext);
+}
+
+CString MainWnd::getSavestateMenuString(const CString& LogicalRomName, int nID)
+{
+	CString str;
+	if (theApp.showSlotTime)
+	{
+		CFileStatus status;
+		if (emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, nID), status))
+		{
+			str.Format("#&%d %s", nID, status.m_mtime.Format("%Y/%m/%d %H:%M:%S"));
+		}
+		else
+		{
+			str.Format("#&%d ----/--/-- --:--:--", nID);
+		}
+	}
+	else
+	{
+		str.Format("Slot #&%d", nID);
+	}
+
+	return str;
 }
 
 bool8 loadedMovieSnapshot = 0;
@@ -630,15 +653,7 @@ void MainWnd::OnFileExportGamesharksnapshot()
 
 	CString name = getRelatedFilename(theApp.filename, CString(), exts[0]);
 
-	FileDlg dlg(this,
-	            name,
-	            filter,
-	            1,
-	            "SPS",
-	            exts,
-	            "",
-	            title,
-	            true);
+	FileDlg dlg(this, name, filter, 1, "SPS", exts, "", title, true);
 
 	if (dlg.DoModal() == IDCANCEL)
 		return;
@@ -814,17 +829,14 @@ void MainWnd::OnFileSavegameOldestslot()
 	if (!emulating)
 		return;
 
-	CString     name;
 	CFileStatus status;
 	CString     str;
 	time_t      time  = -1;
-	int         found = 0;
+	int         found = -1;
 
 	for (int i = 0; i < 10; i++)
 	{
-		name = getSavestateFilename(theApp.filename, i+1);
-
-		if (emulating && CFile::GetStatus(name, status))
+		if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
 		{
 			if (time - status.m_mtime.GetTime() > 0 || time == -1)
 			{
@@ -838,57 +850,52 @@ void MainWnd::OnFileSavegameOldestslot()
 			break;
 		}
 	}
+
 	OnFileSaveSlot(ID_FILE_SAVEGAME_SLOT1+found);
 }
 
 void MainWnd::OnUpdateFileSavegameOldestslot(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(emulating);
-	if (pCmdUI->m_pSubMenu != NULL)
+	bool enabled = emulating;
+	if (pCmdUI->m_pMenu != NULL)
 	{
-		CMenu * pMenu = pCmdUI->m_pSubMenu;
-
-		CString     name;
 		CFileStatus status;
-		CString     str;
-		time_t      time       = -1;
-		int         found      = 0;
-		bool        foundEmpty = false;
+		time_t		time		= -1;
+		int			found		= -1;
 
-		for (int i = 0; i < 10; i++)
+		if (emulating)
 		{
-			name = getSavestateFilename(theApp.filename, i+1);
-
-			if (emulating && CFile::GetStatus(name, status))
+			for (int i = 0; i < 10; i++)
 			{
-				CString timestamp = status.m_mtime.Format("%Y/%m/%d %H:%M:%S");
-				str.Format("%d %s", i+1, timestamp);
-				if (!foundEmpty && (time - status.m_mtime.GetTime() > 0 || time == -1))
+				if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
 				{
-					time  = (time_t)status.m_mtime.GetTime();
+					if (time - status.m_mtime.GetTime() > 0 || time == -1)
+					{
+						time  = (time_t)status.m_mtime.GetTime();
+						found = i;
+					}
+				}
+				else
+				{
 					found = i;
+					break;
 				}
 			}
-			else
-			{
-				if (!foundEmpty)
-				{
-					found      = i;
-					foundEmpty = true;
-				}
-				str.Format("%d ----/--/-- --:--:--", i+1);
-			}
-			pMenu->ModifyMenu(ID_FILE_SAVEGAME_SLOT1+i, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_SLOT1+i, str);
 		}
 
-		if (found != -1 && emulating)
-			str.Format("Oldest slot (#%d)", found+1);
+		CString str;
+		enabled = (found != -1);
+		if (enabled)
+			str.Format("&Oldest Slot (#%d)", found+1);
 		else
-			str.Format("Oldest slot", found+1);
-		pMenu->ModifyMenu(ID_FILE_SAVEGAME_OLDESTSLOT, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_OLDESTSLOT, str);
+			str.Format("&Oldest Slot", found+1);
+		
+		pCmdUI->SetText(str);
 
-		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
+
+	pCmdUI->Enable(enabled);
 }
 
 void MainWnd::OnFileLoadgameMostrecent()
@@ -896,7 +903,6 @@ void MainWnd::OnFileLoadgameMostrecent()
 	if (!emulating)
 		return;
 
-	CString     name;
 	CFileStatus status;
 	CString     str;
 	time_t      time  = 0;
@@ -904,9 +910,7 @@ void MainWnd::OnFileLoadgameMostrecent()
 
 	for (int i = 0; i < 10; i++)
 	{
-		name = getSavestateFilename(theApp.filename, i+1);
-
-		if (emulating && CFile::GetStatus(name, status))
+		if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
 		{
 			if (status.m_mtime.GetTime() > time)
 			{
@@ -915,6 +919,7 @@ void MainWnd::OnFileLoadgameMostrecent()
 			}
 		}
 	}
+
 	if (found != -1)
 	{
 		OnFileLoadSlot(ID_FILE_LOADGAME_SLOT1+found);
@@ -923,63 +928,84 @@ void MainWnd::OnFileLoadgameMostrecent()
 
 void MainWnd::OnUpdateFileLoadgameMostrecent(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(emulating);
-
-	if (pCmdUI->m_pSubMenu != NULL)
+	bool enabled = emulating;
+	if (pCmdUI->m_pMenu != NULL)
 	{
-		CMenu * pMenu = pCmdUI->m_pSubMenu;
-
-		CString     name;
 		CFileStatus status;
-		CString     str;
+		int         found = -1;
 
 		time_t time  = 0;
-		int    found = -1;
-		for (int i = 0; i < 10; i++)
+		if (emulating)
 		{
-			name = getSavestateFilename(theApp.filename, i+1);
-
-			if (emulating && CFile::GetStatus(name, status))
+			for (int i = 0; i < 10; i++)
 			{
-				CString timestamp = status.m_mtime.Format("%Y/%m/%d %H:%M:%S");
-				str.Format("%d %s", i+1, timestamp);
-
-				if (status.m_mtime.GetTime() > time)
+				if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
 				{
-					time  = (time_t)status.m_mtime.GetTime();
-					found = i;
+					if (status.m_mtime.GetTime() > time)
+					{
+						time  = (time_t)status.m_mtime.GetTime();
+						found = i;
+					}
 				}
 			}
-			else
-			{
-				str.Format("%d ----/--/-- --:--:--", i+1);
-			}
-			pMenu->ModifyMenu(ID_FILE_LOADGAME_SLOT1+i, MF_STRING|MF_BYCOMMAND, ID_FILE_LOADGAME_SLOT1+i, str);
 		}
 
-		if (found != -1 && emulating)
-			str.Format("Most recent slot (#%d)", found+1);
+		CString str;
+		enabled = (found != -1);
+		if (enabled)
+			str.Format("Most &Recent Slot (#%d)", found+1);
 		else
-			str.Format("Most recent slot", found+1);
-		pMenu->ModifyMenu(ID_FILE_LOADGAME_MOSTRECENT, MF_STRING|MF_BYCOMMAND, ID_FILE_LOADGAME_MOSTRECENT, str);
+			str.Format("Most &Recent Slot", found+1);
 
-		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
+		pCmdUI->SetText(str);
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
+
+	pCmdUI->Enable(enabled);
 }
 
 void MainWnd::OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(emulating);
+	int slotID = pCmdUI->m_nID - ID_FILE_LOADGAME_SLOT1 + 1;
+
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		pCmdUI->SetText(getSavestateMenuString(theApp.filename, slotID));
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+	}
+
+	CFileStatus status;
+	pCmdUI->Enable(emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, slotID), status));
 }
 
 void MainWnd::OnUpdateFileSaveGameSlot(CCmdUI *pCmdUI)
 {
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		int slotID = pCmdUI->m_nID - ID_FILE_SAVEGAME_SLOT1 + 1;
+
+		pCmdUI->SetText(getSavestateMenuString(theApp.filename, slotID));
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+	}
+
 	pCmdUI->Enable(emulating);
 }
 
 void MainWnd::OnUpdateSelectSlot(CCmdUI *pCmdUI)
 {
-	pCmdUI->SetCheck(pCmdUI->m_nID - ID_SELECT_SLOT1 == theApp.currentSlot);
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		int slot = pCmdUI->m_nID - ID_SELECT_SLOT1;
+
+		pCmdUI->SetText(getSavestateMenuString(theApp.filename, slot + 1));
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+
+		pCmdUI->SetCheck(slot == theApp.currentSlot);
+	}
 }
 
 void MainWnd::OnFileLoadgameAutoloadmostrecent()
@@ -1009,25 +1035,19 @@ void MainWnd::OnFileSavegameCurrent()
 
 void MainWnd::OnUpdateFileSavegameCurrent(CCmdUI*pCmdUI)
 {
-	CString str;
-	str.Format("&Current slot (#%d)", theApp.currentSlot+1);
-
-	pCmdUI->SetText(str);
-	pCmdUI->Enable(emulating);
-
 	if (pCmdUI->m_pMenu != NULL)
 	{
-		CMenu * pMenu = pCmdUI->m_pMenu;
-#if 0
+		int slotID = theApp.currentSlot + 1;
+
 		CString str;
-		str.Format("Current slot (#%d)", theApp.currentSlot+1);
+		str.Format("&Current slot (#%d)", slotID);
 
-		pMenu->ModifyMenu(ID_FILE_SAVEGAME_CURRENT, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_CURRENT, str);
+		pCmdUI->SetText(str);
 
-		pCmdUI->Enable(emulating);
-#endif
-		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
+
+	pCmdUI->Enable(emulating);
 }
 
 void MainWnd::OnFileLoadgameCurrent()
@@ -1037,36 +1057,20 @@ void MainWnd::OnFileLoadgameCurrent()
 
 void MainWnd::OnUpdateFileLoadgameCurrent(CCmdUI*pCmdUI)
 {
-	CString str;
-	str.Format("&Current slot (#%d)", theApp.currentSlot+1);
-
-	pCmdUI->SetText(str);
-	pCmdUI->Enable(emulating);
+	int slotID = theApp.currentSlot + 1;
 
 	if (pCmdUI->m_pMenu != NULL)
 	{
-		CMenu * pMenu = pCmdUI->m_pMenu;
-		CString     name;
-		CFileStatus status;
-		bool found = false;
-		int  i     = theApp.currentSlot;
-		{
-			name = getSavestateFilename(theApp.filename, i+1);
-
-			if (emulating && CFile::GetStatus(name, status))
-			{
-				found = true;
-			}
-		}
-
-#if 0
 		CString str;
-		str.Format("Current slot (#%d)", theApp.currentSlot+1);
-		pMenu->ModifyMenu(ID_FILE_LOADGAME_CURRENT, MF_STRING|MF_BYCOMMAND, ID_FILE_LOADGAME_CURRENT, str);
-#endif
-		pCmdUI->Enable(found && emulating);
-		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
+		str.Format("&Current slot (#%d)", slotID);
+
+		pCmdUI->SetText(str);
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
+
+	CFileStatus status;
+	pCmdUI->Enable(emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, slotID), status));
 }
 
 void MainWnd::OnFileLoadgameMakeCurrent()
@@ -1094,69 +1098,57 @@ void MainWnd::OnFileSavegameIncrementSlot()
 	theApp.currentSlot = (theApp.currentSlot + 1) % 10;
 
 	char str [32];
-	sprintf(str, "Current Slot: %d", theApp.currentSlot+1);
+	sprintf(str, "Current Slot: %d", theApp.currentSlot + 1);
 	systemScreenMessage(str, 0, 600);
 }
 
 void MainWnd::OnUpdateFileSavegameIncrementSlot(CCmdUI*pCmdUI)
 {
-	CString str;
-	str.Format("&Increase current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((theApp.currentSlot + 1) % 10));
-
-	pCmdUI->SetText(str);
-	if (pCmdUI->m_pMenu != NULL)
-		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
-
-#if 0
-	pCmdUI->Enable(true);
-
 	if (pCmdUI->m_pMenu != NULL)
 	{
-		CMenu * pMenu = pCmdUI->m_pMenu;
+		int slotID = theApp.currentSlot + 1;
+
 		CString str;
+		str.Format("&Increase current slot (#%d -> #%d)", slotID, slotID % 10 + 1);
 
-		str.Format("&Increase current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((theApp.currentSlot + 1) % 10));
-		pMenu->ModifyMenu(ID_FILE_SAVEGAME_INCREMENTSLOT, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_INCREMENTSLOT, str);
+		pCmdUI->SetText(str);
 
-		pCmdUI->Enable(true);
-		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
-#endif
 }
 
 void MainWnd::OnFileSavegameDecrementSlot()
 {
-	theApp.currentSlot = (10 + theApp.currentSlot - 1) % 10;
+	theApp.currentSlot = (theApp.currentSlot + 9) % 10;
 
 	char str [32];
-	sprintf(str, "Current Slot: %d", theApp.currentSlot+1);
+	sprintf(str, "Current Slot: %d", theApp.currentSlot + 1);
 	systemScreenMessage(str, 0, 600);
 }
 
 void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI*pCmdUI)
 {
-	CString str;
-	str.Format("&Decrease current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((10 + theApp.currentSlot - 1) % 10));
-
-	pCmdUI->SetText(str);
-	if (pCmdUI->m_pMenu != NULL)
-		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
-
-#if 0
-	pCmdUI->Enable(true);
-
 	if (pCmdUI->m_pMenu != NULL)
 	{
-		CMenu * pMenu = pCmdUI->m_pMenu;
+		int slotID = theApp.currentSlot + 1;
+
 		CString str;
+		str.Format("&Decrease current slot (#%d -> #%d)", slotID, (slotID + 8) % 10 + 1);
 
-		str.Format("Decrease current slot (#%d -> #%d)", 1+(theApp.currentSlot), 1+((10 + theApp.currentSlot - 1) % 10));
-		pMenu->ModifyMenu(ID_FILE_SAVEGAME_DECREMENTSLOT, MF_STRING|MF_BYCOMMAND, ID_FILE_SAVEGAME_DECREMENTSLOT, str);
+		pCmdUI->SetText(str);
 
-		pCmdUI->Enable(true);
-		theApp.winAccelMgr.UpdateMenu(pMenu->GetSafeHmenu());
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
-#endif
+}
+
+void MainWnd::OnFileSlotDisplayModificationTime()
+{
+	theApp.showSlotTime = !theApp.showSlotTime;
+}
+
+void MainWnd::OnUpdateFileSlotDisplayModificationTime(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.showSlotTime);
 }
 
 void MainWnd::OnFileLuaLoad()

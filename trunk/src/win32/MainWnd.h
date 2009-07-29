@@ -98,6 +98,7 @@ public:
 	static CString getDiskFilename(const CString& file);
 	static CString getDirFromFile(const CString& file);
 	static CString getSavestateFilename(const CString& LogicalRomName, int nID);
+	static CString getSavestateMenuString(const CString& LogicalRomName, int nID);
 	static CString getRelatedDir(const CString& TargetDirReg);
 	static CString getRelatedFilename(const CString& LogicalRomName, const CString& TargetDirReg, const CString& ext);
 	void winSaveCheatList(const char *name);
@@ -489,6 +490,8 @@ protected:
 	afx_msg void OnUpdateFileSavegameIncrementSlot(CCmdUI*pCmdUI);
 	afx_msg void OnFileSavegameDecrementSlot();
 	afx_msg void OnUpdateFileSavegameDecrementSlot(CCmdUI*pCmdUI);
+	afx_msg void OnFileSlotDisplayModificationTime();
+	afx_msg void OnUpdateFileSlotDisplayModificationTime(CCmdUI*pCmdUI);
 
 	afx_msg void OnOptionsSoundVolume25x();
 	afx_msg void OnUpdateOptionsSoundVolume25x(CCmdUI*pCmdUI);
@@ -499,6 +502,11 @@ protected:
 	afx_msg void OnOptionsVideoFullscreenmaxscale();
 	afx_msg void OnOptionsVideoTextdisplayoptions();
 	afx_msg void OnUpdateOptionsVideoTextdisplayoptions(CCmdUI *pCmdUI);
+
+	afx_msg BOOL OnFileRecentFile(UINT nID);
+	afx_msg BOOL OnFileLoadSlot(UINT nID);
+	afx_msg BOOL OnFileSaveSlot(UINT nID);
+	afx_msg BOOL OnSelectSlot(UINT nID);
 
 	afx_msg void OnFileLuaLoad();
 	afx_msg void OnUpdateFileLuaLoad(CCmdUI *pCmdUI);
@@ -512,11 +520,6 @@ protected:
 	afx_msg void OnUpdateFileRamWatch(CCmdUI *pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-	afx_msg BOOL OnFileRecentFile(UINT nID);
-	afx_msg BOOL OnFileLoadSlot(UINT nID);
-	afx_msg BOOL OnFileSaveSlot(UINT nID);
-	afx_msg BOOL OnSelectSlot(UINT nID);
 };
 
 /////////////////////////////////////////////////////////////////////////////

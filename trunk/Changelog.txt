@@ -2,6 +2,8 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+07-29-2009 aquanull - Fixed display of timestamps of Save Slots. It can be enabled via File->Current Slot->Display Timestamps.
+07-29-2009 aquanull - Now the emulator will never write to the Windows Registry anymore.
 07-28-2009 aquanull - Fixed an old bug that caused the emulator to freeze.
 07-28-2009 aquanull - Added an option to make the emulator prefer the old-fashion save/movie/etc. file naming to the new-fashion.
 07-28-2009 aquanull - Removed the last Win32 Registry junks.
