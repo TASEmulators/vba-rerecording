@@ -24,9 +24,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifndef VERSION
-#define VERSION       "1.7.2 re-recording v21+ (interim)"
-#endif
+#include "version.h"
 
 //change the FALSE to TRUE for autoincrement of build number
 #define INCREMENT_VERSION FALSE

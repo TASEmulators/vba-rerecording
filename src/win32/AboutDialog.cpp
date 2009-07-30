@@ -38,7 +38,7 @@ AboutDialog::AboutDialog(CWnd*pParent /*=NULL*/)
 	: CDialog(AboutDialog::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(AboutDialog)
-	m_version = _T(VERSION);
+	m_version = _T(VBA_VERSION_STRING);
 	//}}AFX_DATA_INIT
 }
 

@@ -50,6 +50,7 @@
 #include "../movie.h"
 #include "../nesvideos-piece.h"
 #include "../vbalua.h"
+#include "../version.h"
 
 extern void Pixelate(u8*, u32, u8*, u8*, u32, int, int);
 extern void Pixelate32(u8*, u32, u8*, u8*, u32, int, int);
@@ -1446,9 +1447,9 @@ void systemShowSpeed(int speed)
 	{
 		CString buffer;
 		if (theApp.showSpeed == 1)
-			buffer.Format(MAINWND_TITLE_STRING "-%3d%%", systemSpeed);
+			buffer.Format(VBA_NAME_AND_VERSION "-%3d%%", systemSpeed);
 		else
-			buffer.Format(MAINWND_TITLE_STRING "-%3d%%(%d, %d fps)", systemSpeed,
+			buffer.Format(VBA_NAME_AND_VERSION "-%3d%%(%d, %d fps)", systemSpeed,
 			              systemFrameSkip,
 			              theApp.showRenderedFrames);
 
