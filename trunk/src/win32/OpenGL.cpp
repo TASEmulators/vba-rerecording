@@ -27,6 +27,7 @@
 #include "../Globals.h"
 #include "../gb/gbGlobals.h"
 #include "../Text.h"
+#include "../version.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -216,7 +217,7 @@ bool OpenGLDisplay::initialize()
 
 	pWnd->CreateEx(styleEx,
 	               theApp.wndClass,
-	               MAINWND_TITLE_STRING,
+	               VBA_NAME_AND_VERSION,
 	               style,
 	               x, y, winSizeX, winSizeY,
 	               NULL,

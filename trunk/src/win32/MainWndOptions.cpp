@@ -44,6 +44,7 @@
 #include "../Sound.h"
 #include "../inputGlobal.h"
 #include "../movie.h"
+#include "../version.h"
 
 extern int emulating;
 
@@ -859,7 +860,7 @@ BOOL MainWnd::OnOptionsEmulatorShowSpeed(UINT nID)
 	{
 	case ID_OPTIONS_EMULATOR_SHOWSPEED_NONE:
 		theApp.showSpeed = 0;
-		systemSetTitle(MAINWND_TITLE_STRING);
+		systemSetTitle(VBA_NAME_AND_VERSION);
 		break;
 	case ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE:
 		theApp.showSpeed = 1;

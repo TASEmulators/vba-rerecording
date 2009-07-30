@@ -42,6 +42,7 @@
 #include "../gb/gbGlobals.h"
 #include "../movie.h"
 #include "../vbalua.h"
+#include "../version.h"
 
 extern int emulating;
 
@@ -209,7 +210,7 @@ void MainWnd::OnFileClose()
 	}
 	emulating = 0;
 	RedrawWindow(NULL, NULL, RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
-	systemSetTitle(MAINWND_TITLE_STRING);
+	systemSetTitle(VBA_NAME_AND_VERSION);
 }
 
 void MainWnd::OnUpdateFileClose(CCmdUI*pCmdUI)

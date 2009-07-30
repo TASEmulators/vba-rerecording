@@ -27,6 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="defaultconfig\SubWCRev.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -51,7 +52,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src"
+				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src;userconfig;defaultconfig"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -132,6 +133,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="defaultconfig\SubWCRev.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -153,7 +155,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src"
+				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src;userconfig;defaultconfig"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
@@ -2059,11 +2061,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
@@ -2292,6 +2294,10 @@
 			</File>
 			<File
 				RelativePath="..\src\vbalua.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\version.h"
 				>
 			</File>
 			<File

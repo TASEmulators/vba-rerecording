@@ -54,7 +54,6 @@ enum
 #define MAX_REWIND_SLOTS 256
 #define SCREEN_MESSAGE_SLOTS 8
 
-#define MAINWND_TITLE_STRING "VBA rerecording v21+ (interim)"
 #define IDS_ROM_DIR             "romDir"
 #define IDS_GBXROM_DIR          "gbromDir"
 #define IDS_BATTERY_DIR         "batteryDir"
