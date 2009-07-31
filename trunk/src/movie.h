@@ -164,4 +164,6 @@ bool8 VBAMovieSwitchToRecording();
 void VBAMovieSetPauseAt();
 void VBAMovieSetPauseAt(int at);
 
+extern bool8 loadedMovieSnapshot;
+
 #endif // VBA_MOVIE_H

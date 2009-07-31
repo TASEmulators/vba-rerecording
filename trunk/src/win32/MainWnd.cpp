@@ -809,7 +809,7 @@ bool MainWnd::FileRun()
 	return true;
 }
 
-void MainWnd::OnInitMenuPopup(CMenu*pMenu, UINT nIndex, BOOL bSysMenu)
+void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 {
 	ASSERT(pMenu != NULL);
 
@@ -913,11 +913,12 @@ void MainWnd::OnMove(int x, int y)
 }
 
 static bool wasPaused = false;
-static int  lastType  = -1;
 
 void MainWnd::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
+
+	static int  lastType  = -1;
 
 	// hack to re-maximize window after it auto-unmaximizes while loading a ROM
 	if (nType == SIZE_MAXIMIZED && lastType == SIZE_MAXIMIZED)
@@ -962,7 +963,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 				{
 					if (!theApp.paused)
 					{
-						wasPaused     = theApp.paused;
+						wasPaused     = false;
 						theApp.paused = true;
 						soundPause();
 					}
@@ -1209,14 +1210,27 @@ void MainWnd::OnMouseMove(UINT nFlags, CPoint point)
 
 void MainWnd::OnInitMenu(CMenu*pMenu)
 {
-	CWnd::OnInitMenu(pMenu);
-
-	// HACK: we only want to call this if the user is pulling down the menu,
-	// but TranslateAccelerator also causes OnInitMenu to be called, so ignore that
-	if (!translatingAccelerator)
+	if (translatingAccelerator)
 	{
+		// HACK: kludge to workaround the MFC menu-items-vs-accelerator-keys 'defect'
+
+		// FIXME: it consumes a little too more and more system resources (Windows/MFC bug?)
+#if 0
+		theApp.m_menu.DestroyMenu();
+		theApp.m_menu.LoadMenu(MAKEINTRESOURCE(IDR_MENU));
+		SetMenu(&theApp.m_menu);
+		theApp.menu = theApp.m_menu.GetSafeHmenu();
+#endif
+	}
+	else
+	{
+		// HACK: we only want to call this if the user is pulling down the menu,
+		// but TranslateAccelerator also causes OnInitMenu to be called, so ignore that
+
 		soundPause();
 	}
+
+	CWnd::OnInitMenu(pMenu);
 }
 
 void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)

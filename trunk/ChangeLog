@@ -2,6 +2,8 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+07-30-2009 aquanull - Fixed an old bug that would crash the emulator if the user paused it with the throttle set to 25% or less and without a ROM loaded.
+07-30-2009 aquanull - Fixed menu item File->Pause. It now updates correctly.
 07-29-2009 aquanull - Fixed display of timestamps of Save Slots. It can be enabled via File->Current Slot->Display Timestamps.
 07-29-2009 aquanull - Now the emulator will never write to the Windows Registry anymore.
 07-28-2009 aquanull - Fixed an old bug that caused the emulator to freeze.

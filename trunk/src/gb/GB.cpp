@@ -2731,10 +2731,9 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 			systemMessage(0, N_("Can't load a non-movie snapshot while a movie is active."));
 			goto failedLoadGB;
 		}
-#if (defined(WIN32) && !defined(SDL))
-		extern bool8 loadedMovieSnapshot;
+
 		loadedMovieSnapshot = movieSnapshot;
-#endif
+
 		if (movieSnapshot) // even if a movie isn't active we still want to parse through this in case other stuff is added
                            // later on in the save format
 		{

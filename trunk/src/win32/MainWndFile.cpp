@@ -70,25 +70,33 @@ void MainWnd::OnFilePause()
 {
 	if (!theApp.paused)
 	{
-		if (theApp.throttle > 25)
+/*		if (theApp.throttle > 25)
 		{
 			// less immediate response, better update
+			// FIXME: fails to pause at the first frame immeadiately after loading a ROM
 			OnDebugNextframe();
 		}
 		else
 		{
-			// more immediate response, worse update
+*/			// more immediate response, worse update
 			theApp.paused   = !theApp.paused;
-			theApp.painting = true;
-			systemDrawScreen();
-			theApp.painting = false;
-		}
+
+			// otherwise would crash when not emulating
+			if (emulating)
+			{
+				theApp.painting = true;
+				systemDrawScreen();
+				theApp.painting = false;
+			}
+/*		}
+*/
 		theApp.wasPaused = true;
 		soundPause();
 	}
 	else
 	{
 		theApp.paused = !theApp.paused;
+		theApp.wasPaused = false;
 		soundResume();
 	}
 }
@@ -387,7 +395,6 @@ CString MainWnd::getSavestateMenuString(const CString& LogicalRomName, int nID)
 	return str;
 }
 
-bool8 loadedMovieSnapshot = 0;
 BOOL MainWnd::OnFileLoadSlot(UINT nID)
 {
 	nID = nID + 1 - ID_FILE_LOADGAME_SLOT1;
