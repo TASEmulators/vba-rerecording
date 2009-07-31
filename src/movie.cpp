@@ -67,6 +67,7 @@ extern int emulating; // from VBA.cpp
 
 SMovie Movie;
 bool   loadingMovie = false;
+bool8  loadedMovieSnapshot = 0;
 
 #if (defined(WIN32) && !defined(SDL))
 extern u32 currentButtons [4];     // from DirectInput.cpp
