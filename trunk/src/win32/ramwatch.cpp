@@ -301,7 +301,8 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 		InsertMenuItem(menu, 0, 1, &moo);
 	}
 
-	WriteRecentRWFiles();	// write recent menu to ini
+	// I don't think one function shall do so many things in a row
+//	WriteRecentRWFiles();	// write recent menu to ini
 }
 
 void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU menu, unsigned int menuItem, unsigned int baseId)
@@ -355,7 +356,6 @@ void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU men
 	// Update the recent files menu
 	UpdateRW_RMenu(menu, menuItem, baseId);
 }
-
 
 void RWAddRecentFile(const char *filename)
 {
@@ -1136,6 +1136,11 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			EndDialog(hDlg, true);
 			return true;
 
+		case WM_DESTROY:
+			// this is the correct place
+			WriteRecentRWFiles();	// write recent menu to ini
+			break;
+
 		case WM_DROPFILES:
 		{
 			HDROP hDrop = (HDROP)wParam;
@@ -1147,4 +1152,3 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 	return false;
 }
-
