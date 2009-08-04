@@ -1048,7 +1048,7 @@ void MainWnd::OnUpdateFileSavegameCurrent(CCmdUI*pCmdUI)
 		int slotID = theApp.currentSlot + 1;
 
 		CString str;
-		str.Format("&Current slot (#%d)", slotID);
+		str.Format("&Current Slot (#%d)", slotID);
 
 		pCmdUI->SetText(str);
 
@@ -1070,7 +1070,7 @@ void MainWnd::OnUpdateFileLoadgameCurrent(CCmdUI*pCmdUI)
 	if (pCmdUI->m_pMenu != NULL)
 	{
 		CString str;
-		str.Format("&Current slot (#%d)", slotID);
+		str.Format("&Current Slot (#%d)", slotID);
 
 		pCmdUI->SetText(str);
 
@@ -1117,7 +1117,7 @@ void MainWnd::OnUpdateFileSavegameIncrementSlot(CCmdUI*pCmdUI)
 		int slotID = theApp.currentSlot + 1;
 
 		CString str;
-		str.Format("&Increase current slot (#%d -> #%d)", slotID, slotID % 10 + 1);
+		str.Format("&Increase Current Slot (#%d -> #%d)", slotID, slotID % 10 + 1);
 
 		pCmdUI->SetText(str);
 
@@ -1141,7 +1141,7 @@ void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI*pCmdUI)
 		int slotID = theApp.currentSlot + 1;
 
 		CString str;
-		str.Format("&Decrease current slot (#%d -> #%d)", slotID, (slotID + 8) % 10 + 1);
+		str.Format("&Decrease Current Slot (#%d -> #%d)", slotID, (slotID + 8) % 10 + 1);
 
 		pCmdUI->SetText(str);
 
