@@ -11,13 +11,14 @@
 #include <windows.h>
 #include <string>
 
+/*
 #include <commctrl.h>
 #pragma comment(lib, "comctl32.lib")
 #include <shellapi.h>
 #pragma comment(lib, "shell32.lib")
 #include <commdlg.h>
 #pragma comment(lib, "comdlg32.lib")
-
+*/
 
 static HMENU ramwatchmenu;
 static HMENU rwrecentmenu;
@@ -243,7 +244,7 @@ void WriteRecentRWFiles()
 	char str[2048];
 	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
 	{
-		sprintf(str, "Recent Watch %d", i+1);
+		sprintf(str, "recentWatch%d", i+1);
 		regSetStringValue(str, &rw_recent_files[i][0]);
 	}
 }
@@ -300,35 +301,37 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 		InsertMenuItem(menu, 0, 1, &moo);
 	}
 
-	WriteRecentRWFiles();	//write recent menu to ini
+	WriteRecentRWFiles();	// write recent menu to ini
 }
 
 void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU menu, unsigned int menuItem, unsigned int baseId)
 {
+	const size_t len = 1024; // Avoid magic numbers
+
 	// Try to find out if the filename is already in the recent files list.
 	for(unsigned int x = 0; x < arrayLen; x++)
 	{
 		if(strlen(rw_recent_files[x]))
 		{
-			if(!strcmp(rw_recent_files[x], addString))    // Item is already in list.
+			if(!strncmp(rw_recent_files[x], addString, 1024))    // Item is already in list.
 			{
 				// If the filename is in the file list don't add it again.
 				// Move it up in the list instead.
 
 				int y;
-				char tmp[1024];
+				char tmp[len];
 
 				// Save pointer.
-				strcpy(tmp,rw_recent_files[x]);
+				strncpy(tmp, rw_recent_files[x], len);
 				
 				for(y = x; y; y--)
 				{
 					// Move items down.
-					strcpy(rw_recent_files[y],rw_recent_files[y - 1]);
+					strncpy(rw_recent_files[y],rw_recent_files[y - 1], len);
 				}
 
 				// Put item on top.
-				strcpy(rw_recent_files[0],tmp);
+				strncpy(rw_recent_files[0],tmp, len);
 
 				// Update the recent files menu
 				UpdateRW_RMenu(menu, menuItem, baseId);
@@ -343,11 +346,11 @@ void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU men
 	// Move the other items down.
 	for(unsigned int x = arrayLen - 1; x; x--)
 	{
-		strcpy(rw_recent_files[x],rw_recent_files[x - 1]);
+		strncpy(rw_recent_files[x],rw_recent_files[x - 1], len);
 	}
 
 	// Add the new item.
-	strcpy(rw_recent_files[0], addString);
+	strncpy(rw_recent_files[0], addString, len);
 
 	// Update the recent files menu
 	UpdateRW_RMenu(menu, menuItem, baseId);

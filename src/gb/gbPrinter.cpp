@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include "../System.h"
+#include "gbPrinter.h"
 
 u8  gbPrinterStatus = 0;
 int gbPrinterState  = 0;
@@ -164,16 +165,16 @@ void gbPrinterCommand()
 	}
 }
 
-u8 gbPrinterSend(u8 b)
+u8 gbPrinterSend(u8 byte)
 {
 	switch (gbPrinterState)
 	{
 	case 0:
 		gbPrinterCount = 0;
 		// receiving preamble
-		if (b == 0x88)
+		if (byte == 0x88)
 		{
-			gbPrinterPacket[gbPrinterCount++] = b;
+			gbPrinterPacket[gbPrinterCount++] = byte;
 			gbPrinterState++;
 		}
 		else
@@ -184,9 +185,9 @@ u8 gbPrinterSend(u8 b)
 		break;
 	case 1:
 		// receiving preamble
-		if (b == 0x33)
+		if (byte == 0x33)
 		{
-			gbPrinterPacket[gbPrinterCount++] = b;
+			gbPrinterPacket[gbPrinterCount++] = byte;
 			gbPrinterState++;
 		}
 		else
@@ -197,7 +198,7 @@ u8 gbPrinterSend(u8 b)
 		break;
 	case 2:
 		// receiving header
-		gbPrinterPacket[gbPrinterCount++] = b;
+		gbPrinterPacket[gbPrinterCount++] = byte;
 		if (gbPrinterCount == 6)
 		{
 			gbPrinterState++;
@@ -208,7 +209,7 @@ u8 gbPrinterSend(u8 b)
 		// receiving data
 		if (gbPrinterDataSize)
 		{
-			gbPrinterPacket[gbPrinterCount++] = b;
+			gbPrinterPacket[gbPrinterCount++] = byte;
 			if (gbPrinterCount == (6+gbPrinterDataSize))
 			{
 				gbPrinterState++;
@@ -219,12 +220,12 @@ u8 gbPrinterSend(u8 b)
 	// intentionally move to next if no data to receive
 	case 4:
 		// receiving CRC
-		gbPrinterPacket[gbPrinterCount++] = b;
+		gbPrinterPacket[gbPrinterCount++] = byte;
 		gbPrinterState++;
 		break;
 	case 5:
 		// receiving CRC-2
-		gbPrinterPacket[gbPrinterCount++] = b;
+		gbPrinterPacket[gbPrinterCount++] = byte;
 		if (gbPrinterCheckCRC())
 		{
 			gbPrinterCommand();
@@ -233,13 +234,13 @@ u8 gbPrinterSend(u8 b)
 		break;
 	case 6:
 		// receiving dummy 1
-		gbPrinterPacket[gbPrinterCount++] = b;
+		gbPrinterPacket[gbPrinterCount++] = byte;
 		gbPrinterResult = 0x81;
 		gbPrinterState++;
 		break;
 	case 7:
 		// receiving dummy 2
-		gbPrinterPacket[gbPrinterCount++] = b;
+		gbPrinterPacket[gbPrinterCount++] = byte;
 		gbPrinterResult = gbPrinterStatus;
 		gbPrinterState  = 0;
 		gbPrinterCount  = 0;

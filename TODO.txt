@@ -1,6 +1,5 @@
-* Clean the code, including re-creation of the file structure, which is a whole mess at this moment.
+* Clean the code, which is a whole mess at this moment.
 * Fix the SDL/gtk build malfunction.
-* Actually save recent watch files.
 * Fix the buggy stateful settings.
 * Fix the bugs with vba-over.ini settings.
 * Fix the frame timing?

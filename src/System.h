@@ -24,8 +24,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Port.h"
 #include "zlib.h"
+#include "Port.h"
 
 struct EmulatedSystem
 {

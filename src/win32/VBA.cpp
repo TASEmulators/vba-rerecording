@@ -2050,7 +2050,7 @@ void VBA::loadSettings()
 	for (int i = 0; i < 10; i++)
 	{
 		buffer.Format("recent%d", i);
-		char *s = regQueryStringValue(buffer, NULL);
+		const char *s = regQueryStringValue(buffer, NULL);
 		if (s == NULL)
 			break;
 		recentFiles[i] = s;
@@ -2080,16 +2080,20 @@ void VBA::loadSettings()
 
 	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
 	movieOnEndPause    = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
-	//RamWatch Settings
+
+	// RamWatch Settings
 	AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
 	RWSaveWindowPos = regQueryDwordValue(RWSAVEPOS, false);
 	ramw_x = regQueryDwordValue(RAMWX, 0);
 	ramw_y = regQueryDwordValue(RAMWY, 0);
-	char str[2048];
+
 	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
 	{
-		sprintf(str, "Recent Watch %d", i+1);
-//		strcpy(rw_recent_files[i], regQueryStringValue(str, NULL));
+		buffer.Format("recentWatch%d", i+1);
+		const char *s = regQueryStringValue(buffer, NULL);
+		if (s == NULL)
+			break;
+		RWAddRecentFile(s);
 	}
 }
 

@@ -55,7 +55,7 @@ const char *regGetINIPath()
 	return regVbaPath;
 }
 
-char *regQueryStringValue(const char *key, char *def)
+const char *regQueryStringValue(const char *key, const char *def)
 {
 	if (regEnabled)
 	{

@@ -47,9 +47,9 @@ typedef struct
 static RTCCLOCKDATA rtcClockData;
 static bool         rtcEnabled = false;
 
-void rtcEnable(bool e)
+void rtcEnable(bool enable)
 {
-	rtcEnabled = e;
+	rtcEnabled = enable;
 }
 
 bool rtcIsEnabled()
