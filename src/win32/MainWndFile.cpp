@@ -1192,14 +1192,35 @@ void MainWnd::OnFileRamSearch()
 {
 	theApp.winCheckFullscreen();
 
-	if(!RamSearchHWnd)
+	// the traditional way
+	if (theApp.modelessCheatDialogIsOpen)
 	{
-		reset_address_info();
-		LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		RamSearchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
+		if (IsWindow(RamSearchHWnd))
+			::DestroyWindow(RamSearchHWnd);
 	}
+
+/*
+	// no longer needed
+	if (!RamSearchHWnd)
+	{
+*/
+	reset_address_info();
+	LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	if (theApp.pauseDuringCheatSearch)
+	{
+		::DialogBox(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
+	}
+	else if (!theApp.modelessCheatDialogIsOpen)
+	{
+		theApp.modelessCheatDialogIsOpen = true;
+		::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
+	}
+/*
+	}
+	// no longer needed
 	else
 		::SetForegroundWindow(RamSearchHWnd);
+*/
 }
 
 void MainWnd::OnUpdateFileRamSearch(CCmdUI*pCmdUI)
@@ -1212,10 +1233,10 @@ void MainWnd::OnFileRamWatch()
 {
 	theApp.winCheckFullscreen();
 
-	if(!RamWatchHWnd)
+	if (!RamWatchHWnd)
 	{
 		LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		RamWatchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMWATCH), theApp.m_pMainWnd->GetSafeHwnd(), (DLGPROC) RamWatchProc);
+		RamWatchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMWATCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamWatchProc);
 	}
 	else
 		::SetForegroundWindow(RamWatchHWnd);

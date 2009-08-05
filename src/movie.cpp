@@ -525,8 +525,9 @@ static void SetPlayEmuSettings()
     if (theApp.cartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 
-    ((MainWnd *)theApp.m_pMainWnd)->OnOptionsSound44khz();     // some GB/GBC games depend on the sound rate, so just use the
-                                                               // highest one
+	// some GB/GBC games depend on the sound rate, so just use the highest one
+	systemSetSoundQuality(1);
+
     theApp.useOldGBTiming = false;
 //    theApp.removeIntros   = false;
     theApp.skipBiosFile   = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
@@ -816,8 +817,9 @@ static void SetRecordEmuSettings()
     gbEchoRAMFixOn = 1;
 
 #   if (defined(WIN32) && !defined(SDL))
-    ((MainWnd *)theApp.m_pMainWnd)->OnOptionsSound44khz();     // some GB/GBC games depend on the sound rate, so just use the
-                                                               // highest one
+	// some GB/GBC games depend on the sound rate, so just use the highest one
+	systemSetSoundQuality(1);
+
     theApp.useOldGBTiming = false;
 //    theApp.removeIntros   = false;
 

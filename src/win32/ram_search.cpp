@@ -2013,10 +2013,13 @@ invalid_field:
 			return rv;
 		}	break;
 
-		case WM_CLOSE:
+//		case WM_CLOSE:
+		case WM_DESTROY:
 			RamSearchHWnd = NULL;
-			EndDialog(hDlg, true);
-			return true;
+			theApp.modelessCheatDialogIsOpen = false;
+//			EndDialog(hDlg, true);
+//			return true;
+			break;
 	}
 
 	return false;

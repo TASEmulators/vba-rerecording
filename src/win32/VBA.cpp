@@ -1644,6 +1644,16 @@ bool systemCanChangeSoundQuality()
 	return true;
 }
 
+bool systemSetSoundQuality(int quality)
+{
+	if (theApp.cartridgeType == 0)
+		soundSetQuality(quality);
+	else
+		gbSoundSetQuality(quality);
+
+	return true;
+}
+
 bool systemPauseOnFrame()
 {
 	if (theApp.winPauseNextFrame)
@@ -2087,12 +2097,13 @@ void VBA::loadSettings()
 	ramw_x = regQueryDwordValue(RAMWX, 0);
 	ramw_y = regQueryDwordValue(RAMWY, 0);
 
-	for (int i = 0; i < MAX_RECENT_WATCHES; i++)
+	// this is FILO
+	for (int i = MAX_RECENT_WATCHES; i > 0; --i)
 	{
-		buffer.Format("recentWatch%d", i+1);
+		buffer.Format("recentWatch%d", i);
 		const char *s = regQueryStringValue(buffer, NULL);
 		if (s == NULL)
-			break;
+			continue;
 		RWAddRecentFile(s);
 	}
 }

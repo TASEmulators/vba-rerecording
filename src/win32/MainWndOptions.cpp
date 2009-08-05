@@ -1204,10 +1204,7 @@ void MainWnd::OnUpdateOptionsSound22khz(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSound44khz()
 {
-	if (theApp.cartridgeType == 0)
-		soundSetQuality(1);
-	else
-		gbSoundSetQuality(1);
+	systemSetSoundQuality(1);
 }
 
 void MainWnd::OnUpdateOptionsSound44khz(CCmdUI*pCmdUI)

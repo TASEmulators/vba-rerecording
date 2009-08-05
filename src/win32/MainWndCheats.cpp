@@ -40,7 +40,7 @@ void MainWnd::OnCheatsSearchforcheats()
 {
 	theApp.winCheckFullscreen();
 
-	if (!theApp.pauseDuringCheatSearch && theApp.modelessCheatDialogIsOpen)
+	if (theApp.modelessCheatDialogIsOpen)
 	{
 		gbaDlg.DestroyWindow();
 		gbDlg.DestroyWindow();
@@ -73,7 +73,7 @@ void MainWnd::OnCheatsSearchforcheats()
 			if (!theApp.modelessCheatDialogIsOpen)
 			{
 				theApp.modelessCheatDialogIsOpen = true;
-				gbDlg.Create(GBACheatSearch::IDD, theApp.m_pMainWnd);
+				gbDlg.Create(GBCheatSearch::IDD, theApp.m_pMainWnd);
 			}
 		}
 	}

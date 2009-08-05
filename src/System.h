@@ -99,6 +99,7 @@ extern void systemScreenMessage(const char *msg, int slot = 0, int duration = 30
 extern int  systemGetSensorX();
 extern int  systemGetSensorY();
 extern bool systemCanChangeSoundQuality();
+extern bool systemSetSoundQuality(int quality);
 extern void systemShowSpeed(int);
 extern void systemFrame(int rate);
 extern void systemGbBorderOn();
