@@ -2031,7 +2031,7 @@ BEGIN
             MENUITEM "Slot #&9",                    ID_FILE_SAVEGAME_SLOT9
             MENUITEM "Slot #1&0",                   ID_FILE_SAVEGAME_SLOT10
             MENUITEM SEPARATOR
-            MENUITEM "&Make 'Current' on Save",     ID_FILE_SAVEGAME_MAKECURRENT
+            MENUITEM "&Make 'Current' On Save",     ID_FILE_SAVEGAME_MAKECURRENT
         END
         POPUP "C&urrent Slot"
         BEGIN

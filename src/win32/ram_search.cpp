@@ -1967,7 +1967,11 @@ invalid_field:
 				//case IDOK:
 				case IDCANCEL:
 					RamSearchHWnd = NULL;
-					EndDialog(hDlg, true);
+/*					if (theApp.pauseDuringCheatSearch)
+						EndDialog(hDlg, true);	// this should never be called on a modeless dialog
+					else
+*/
+						DestroyWindow(hDlg);
 					{rv = true; break;}
 			}
 
@@ -2016,8 +2020,7 @@ invalid_field:
 //		case WM_CLOSE:
 		case WM_DESTROY:
 			RamSearchHWnd = NULL;
-			theApp.modelessCheatDialogIsOpen = false;
-//			EndDialog(hDlg, true);
+//			theApp.modelessCheatDialogIsOpen = false;
 //			return true;
 			break;
 	}

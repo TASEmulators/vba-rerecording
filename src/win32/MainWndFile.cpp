@@ -1192,20 +1192,21 @@ void MainWnd::OnFileRamSearch()
 {
 	theApp.winCheckFullscreen();
 
+/*
+	// actually, what we don't need is this
 	// the traditional way
 	if (theApp.modelessCheatDialogIsOpen)
 	{
 		if (IsWindow(RamSearchHWnd))
 			::DestroyWindow(RamSearchHWnd);
 	}
+*/
 
-/*
-	// no longer needed
 	if (!RamSearchHWnd)
 	{
-*/
-	reset_address_info();
-	LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		reset_address_info();
+		LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+/*
 	if (theApp.pauseDuringCheatSearch)
 	{
 		::DialogBox(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
@@ -1213,14 +1214,12 @@ void MainWnd::OnFileRamSearch()
 	else if (!theApp.modelessCheatDialogIsOpen)
 	{
 		theApp.modelessCheatDialogIsOpen = true;
+*/
 		::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
+//	}
 	}
-/*
-	}
-	// no longer needed
 	else
 		::SetForegroundWindow(RamSearchHWnd);
-*/
 }
 
 void MainWnd::OnUpdateFileRamSearch(CCmdUI*pCmdUI)
