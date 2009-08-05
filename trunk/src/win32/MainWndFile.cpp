@@ -1190,6 +1190,8 @@ void MainWnd::OnFileLuaStop()
 
 void MainWnd::OnFileRamSearch()
 {
+	theApp.winCheckFullscreen();
+
 	if(!RamSearchHWnd)
 	{
 		reset_address_info();
@@ -1208,10 +1210,12 @@ void MainWnd::OnUpdateFileRamSearch(CCmdUI*pCmdUI)
 
 void MainWnd::OnFileRamWatch()
 {
+	theApp.winCheckFullscreen();
+
 	if(!RamWatchHWnd)
 	{
 		LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		RamWatchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMWATCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamWatchProc);
+		RamWatchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMWATCH), theApp.m_pMainWnd->GetSafeHwnd(), (DLGPROC) RamWatchProc);
 	}
 	else
 		::SetForegroundWindow(RamWatchHWnd);

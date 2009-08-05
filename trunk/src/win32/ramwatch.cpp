@@ -22,7 +22,7 @@
 
 static HMENU ramwatchmenu;
 static HMENU rwrecentmenu;
-static HACCEL RamWatchAccels = NULL;
+/*static*/ HACCEL RamWatchAccels = NULL;
 char rw_recent_files[MAX_RECENT_WATCHES][1024];
 //char Watch_Dir[1024]="";
 bool RWfileChanged = false; //Keeps track of whether the current watch file has been changed, if so, ramwatch will prompt to save changes
@@ -830,8 +830,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			ramw_y = wrect.top;
 			regSetDwordValue(RAMWX, ramw_x);
 			regSetDwordValue(RAMWY, ramw_y);
-			break;
-			};
+		}	break;
 			
 		case WM_INITDIALOG: {
 			GetWindowRect(hWnd, &r);  //Ramwatch window
@@ -897,8 +896,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			DragAcceptFiles(hDlg, TRUE);
 
 			return true;
-			break;
-		}
+		}	break;
 		
 		case WM_INITMENU:
 			CheckMenuItem(ramwatchmenu, RAMMENU_FILE_AUTOLOAD, AutoRWLoad ? MF_CHECKED : MF_UNCHECKED);
@@ -961,8 +959,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 					return 1;
 				}
 			}
-		}
-		break;
+		}	break;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
@@ -1133,8 +1130,9 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_CLOSE:
 			RamWatchHWnd = NULL;
 			DragAcceptFiles(hDlg, FALSE);
-			EndDialog(hDlg, true);
-			return true;
+//			EndDialog(hDlg, true);
+//			return true;
+			return false;
 
 		case WM_DESTROY:
 			// this is the correct place
