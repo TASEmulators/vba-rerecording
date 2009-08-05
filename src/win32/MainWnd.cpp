@@ -1117,17 +1117,21 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 	translatingAccelerator = true;
 
 	if (RamSearchHWnd && ::IsDialogMessage(RamSearchHWnd, pMsg))
+	{
 		return TRUE;
-	if (RamWatchHWnd && ::IsDialogMessage(RamWatchHWnd, pMsg))
+	}
+	else if (RamWatchHWnd && ::IsDialogMessage(RamWatchHWnd, pMsg))
+	{
+		if (RamWatchAccels)
+			TranslateAccelerator(RamWatchHWnd, RamWatchAccels, pMsg);
 		return TRUE;
-
-	if (CWnd::PreTranslateMessage(pMsg))
+	}
+	else if (CWnd::PreTranslateMessage(pMsg))
 	{
 		translatingAccelerator = false;
 		return TRUE;
 	}
-
-	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
+	else if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
 	{
 		bool bHit = theApp.hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, theApp.hAccel, pMsg);
 
