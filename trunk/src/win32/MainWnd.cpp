@@ -1236,8 +1236,9 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 
 	bool a = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
 /*
-		// FIXME: this is a logical error
-		// see what theApp.pauseDuringCheatSearch is supposed to do: MainWnd::OnFileRamSearch()
+		// FIXME: this is a logical error, which will the emulator fail to pause when the focus is lost
+		//   see what theApp.pauseDuringCheatSearch is supposed to be used for: MainWndCheats.cpp
+		//   it would be problematic to use, as long as the old cheat search is still using it
 		|| (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
 		|| (RamWatchHWnd && pWndOther->GetSafeHwnd() == RamWatchHWnd && !theApp.pauseDuringCheatSearch)
 */
