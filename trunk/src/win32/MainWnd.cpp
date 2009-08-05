@@ -863,7 +863,10 @@ void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 			{
 				continue; // first item of popup can't be routed to
 			}
-			state.DoUpdate(this, FALSE); // popups are never auto disabled
+
+			// HACK: wow, we use recursive call to fix the accel key problems!
+			OnInitMenuPopup(state.m_pSubMenu, nIndex, bSysMenu);
+//			state.DoUpdate(this, FALSE); // popups are never auto disabled
 		}
 		else
 		{
@@ -1118,12 +1121,14 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 
 	if (RamSearchHWnd && ::IsDialogMessage(RamSearchHWnd, pMsg))
 	{
+		translatingAccelerator = false;
 		return TRUE;
 	}
 	else if (RamWatchHWnd && ::IsDialogMessage(RamWatchHWnd, pMsg))
 	{
 		if (RamWatchAccels)
 			TranslateAccelerator(RamWatchHWnd, RamWatchAccels, pMsg);
+		translatingAccelerator = false;
 		return TRUE;
 	}
 	else if (CWnd::PreTranslateMessage(pMsg))
@@ -1214,27 +1219,15 @@ void MainWnd::OnMouseMove(UINT nFlags, CPoint point)
 
 void MainWnd::OnInitMenu(CMenu*pMenu)
 {
-	if (translatingAccelerator)
-	{
-		// HACK: kludge to workaround the MFC menu-items-vs-accelerator-keys 'defect'
+	CWnd::OnInitMenu(pMenu);
 
-		// FIXME: it consumes a little too more and more system resources (Windows/MFC bug?)
-#if 0
-		theApp.m_menu.DestroyMenu();
-		theApp.m_menu.LoadMenu(MAKEINTRESOURCE(IDR_MENU));
-		SetMenu(&theApp.m_menu);
-		theApp.menu = theApp.m_menu.GetSafeHmenu();
-#endif
-	}
-	else
+	if (!translatingAccelerator)
 	{
 		// HACK: we only want to call this if the user is pulling down the menu,
 		// but TranslateAccelerator also causes OnInitMenu to be called, so ignore that
 
 		soundPause();
 	}
-
-	CWnd::OnInitMenu(pMenu);
 }
 
 void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
@@ -1242,8 +1235,12 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
 	bool a = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
+/*
+		// FIXME: this is a logical error
+		// see what theApp.pauseDuringCheatSearch is supposed to do: MainWnd::OnFileRamSearch()
 		|| (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
 		|| (RamWatchHWnd && pWndOther->GetSafeHwnd() == RamWatchHWnd && !theApp.pauseDuringCheatSearch)
+*/
 	;
 
 	extern bool inputActive;

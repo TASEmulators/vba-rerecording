@@ -1566,11 +1566,11 @@ BEGIN
     CONTROL         "",IDC_WATCHLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | 
                     WS_BORDER | WS_TABSTOP,9,9,210,222,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Edit",IDC_C_WATCH_EDIT,226,66,34,14
-    PUSHBUTTON      "Remove",IDC_C_WATCH_REMOVE,226,83,34,14
-    PUSHBUTTON      "New",IDC_C_WATCH,226,100,34,14
-    PUSHBUTTON      "Duplicate",IDC_C_WATCH_DUPLICATE,226,117,34,14
-    PUSHBUTTON      "Add Cheat",IDC_C_ADDCHEAT,222,140,42,16
+    PUSHBUTTON      "&Edit",IDC_C_WATCH_EDIT,226,66,34,14
+    PUSHBUTTON      "&Remove",IDC_C_WATCH_REMOVE,226,83,34,14
+    PUSHBUTTON      "&New",IDC_C_WATCH,226,100,34,14
+    PUSHBUTTON      "Duplic&ate",IDC_C_WATCH_DUPLICATE,226,117,34,14
+    PUSHBUTTON      "Add &Cheat",IDC_C_ADDCHEAT,222,140,42,16
     GROUPBOX        "Watches",IDC_STATIC,222,11,42,125
     CONTROL         "",ID_WATCHES_UPDOWN,"msctls_updown32",WS_TABSTOP,232,23,
                     19,36
@@ -2488,29 +2488,29 @@ END
 
 RAMWATCH_MENU MENU 
 BEGIN
-    POPUP "File"
+    POPUP "&File"
     BEGIN
-        MENUITEM "&New List\tCtrl N",           RAMMENU_FILE_NEW
-        MENUITEM "&Open...\tCtrl O",            RAMMENU_FILE_OPEN
-        MENUITEM "&Save\tCtrl S",               RAMMENU_FILE_SAVE
-        MENUITEM "Sa&ve As...\tCtrl Shift S",   RAMMENU_FILE_SAVEAS
+        MENUITEM "&New List\tCtrl+N",           RAMMENU_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            RAMMENU_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               RAMMENU_FILE_SAVE
+        MENUITEM "Sa&ve As...\tCtrl+Shift+S",   RAMMENU_FILE_SAVEAS
         MENUITEM "&Append File...",             RAMMENU_FILE_APPEND
-        MENUITEM "Recent",                      RAMMENU_FILE_RECENT
+        MENUITEM "&Recent",                      RAMMENU_FILE_RECENT
         MENUITEM SEPARATOR
         MENUITEM "Auto-&Load",                  RAMMENU_FILE_AUTOLOAD
-        MENUITEM "Save Window Position",        RAMMENU_FILE_SAVEWINDOW
+        MENUITEM "Save &Window Position",        RAMMENU_FILE_SAVEWINDOW
         MENUITEM SEPARATOR
-        MENUITEM "&Close\tAlt F4",              IDCANCEL
+        MENUITEM "&Close\tAlt+F4",              IDCANCEL
     END
-    POPUP "Watches"
+    POPUP "&Watches"
     BEGIN
         MENUITEM "&New Watch\tN",               IDC_C_WATCH
         MENUITEM "&Edit Watch\tE",              IDC_C_WATCH_EDIT
         MENUITEM "&Remove Watch\tR",            IDC_C_WATCH_REMOVE
-        MENUITEM "Duplicate Watch\tA",          IDC_C_WATCH_DUPLICATE
+        MENUITEM "Duplic&ate Watch\tA",          IDC_C_WATCH_DUPLICATE
         MENUITEM SEPARATOR
-        MENUITEM "Move Up\tU",                  IDC_C_WATCH_UP
-        MENUITEM "Move Down\tD",                IDC_C_WATCH_DOWN
+        MENUITEM "Move &Up\tU",                  IDC_C_WATCH_UP
+        MENUITEM "Move &Down\tD",                IDC_C_WATCH_DOWN
     END
 END
 

@@ -50,42 +50,15 @@ public:
 
 	// Implementation
 public:
+	afx_msg void OnOptionsEmulatorSelectbiosfile();
+
 	HCURSOR arrow;
 	void winMouseOn();
 	void screenCapture(int captureNumber);
 	HACCEL m_hAccelTable;
 	bool fileOpenSelect(int cartridgeType);
-	afx_msg LRESULT OnConfirmMode(WPARAM, LPARAM);
-	afx_msg LRESULT OnMySysCommand(WPARAM, LPARAM);
-	afx_msg void OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateFileSaveGameSlot(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateSelectSlot(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateOptionsJoypadAutofire(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsJoypadAutofire(UINT nID);
-	afx_msg void OnUpdateOptionsJoypadSticky(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsJoypadSticky(UINT nID);
-	afx_msg void OnUpdateOptionsJoypadDefault(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsJoypadDefault(UINT nID);
-	afx_msg void OnUpdateOptionsFilterIFB(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsFilterIFB(UINT nID);
-	afx_msg void OnUpdateOptionsFilter(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsFilter(UINT nID);
-	afx_msg void OnUpdateOptionsPriority(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsPriority(UINT nID);
 	void updateSoundChannels(UINT nID);
-	afx_msg void OnUpdateOptionsSoundVolume(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsSoundVolume(UINT nID);
-	afx_msg void OnUpdateOptionsEmulatorShowSpeed(CCmdUI *pCmdUI);
-	afx_msg BOOL OnOptionsEmulatorShowSpeed(UINT nID);
-	afx_msg void OnSystemMinimize();
-	afx_msg void OnUpdateVideoLayer(CCmdUI*pCmdUI);
-	afx_msg BOOL OnVideoLayer(UINT nID);
 	void winConfirmMode();
-	afx_msg BOOL OnOptionVideoSize(UINT nID);
-	afx_msg BOOL OnOptionsFrameskip(UINT nID);
-	afx_msg void OnOptionsSound44khz();
-	afx_msg void OnOptionsEmulatorSelectbiosfile();
-	afx_msg void OnFileTogglemenu();
 	bool fileImportGSACodeFile(CString& fileName);
 	bool writeSaveGame(const char *name);
 	bool loadSaveGame(const char *name);
@@ -108,6 +81,35 @@ public:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(MainWnd)
+	afx_msg LRESULT OnConfirmMode(WPARAM, LPARAM);
+	afx_msg LRESULT OnMySysCommand(WPARAM, LPARAM);
+	afx_msg void OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateFileSaveGameSlot(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateSelectSlot(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateOptionsJoypadAutofire(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsJoypadAutofire(UINT nID);
+	afx_msg void OnUpdateOptionsJoypadSticky(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsJoypadSticky(UINT nID);
+	afx_msg void OnUpdateOptionsJoypadDefault(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsJoypadDefault(UINT nID);
+	afx_msg void OnUpdateOptionsFilterIFB(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsFilterIFB(UINT nID);
+	afx_msg void OnUpdateOptionsFilter(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsFilter(UINT nID);
+	afx_msg void OnUpdateOptionsPriority(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsPriority(UINT nID);
+	afx_msg void OnUpdateOptionsSoundVolume(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsSoundVolume(UINT nID);
+	afx_msg void OnUpdateOptionsEmulatorShowSpeed(CCmdUI *pCmdUI);
+	afx_msg BOOL OnOptionsEmulatorShowSpeed(UINT nID);
+	afx_msg void OnSystemMinimize();
+	afx_msg void OnUpdateVideoLayer(CCmdUI*pCmdUI);
+	afx_msg BOOL OnVideoLayer(UINT nID);
+	afx_msg BOOL OnOptionVideoSize(UINT nID);
+	afx_msg BOOL OnOptionsFrameskip(UINT nID);
+	afx_msg void OnOptionsSound44khz();
+	afx_msg void OnFileTogglemenu();
+
 	afx_msg void OnClose();
 	afx_msg void OnHelpAbout();
 	afx_msg void OnHelpFaq();

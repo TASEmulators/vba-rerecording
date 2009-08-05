@@ -468,6 +468,15 @@ static bool readKeyboard()
 {
 	if (pDevices[0].needed)
 	{
+#if 0
+		// temporary fix, no longer needed
+		extern HWND RamWatchHWnd;
+		if (GetActiveWindow() == RamWatchHWnd)
+		{
+			memset(pDevices[0].data, 0, 256);
+			return true;
+		}
+#endif
 		HRESULT hret = pDevices[0].device->
 		               GetDeviceState(256,
 		                              (LPVOID)pDevices[0].data);

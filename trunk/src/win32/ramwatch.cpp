@@ -509,7 +509,7 @@ int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 
 bool Save_Watches()
 {
-	const char* slash = max(strrchr(gamefilename, '\\'), strrchr(gamefilename, '/'));
+	const char* slash = max(strrchr(gamefilename, '|'), max(strrchr(gamefilename, '\\'), strrchr(gamefilename, '/')));
 	strcpy(Str_Tmp,slash ? slash+1 : gamefilename);
 	char* dot = strrchr(Str_Tmp, '.');
 	if(dot) *dot = 0;
@@ -624,7 +624,7 @@ bool Load_Watches(bool clear, const char* filename)
 
 bool Load_Watches(bool clear)
 {
-	const char* slash = max(strrchr(gamefilename, '\\'), strrchr(gamefilename, '/'));
+	const char* slash = max(strrchr(gamefilename, '|'), max(strrchr(gamefilename, '\\'), strrchr(gamefilename, '/')));
 	strcpy(Str_Tmp,slash ? slash+1 : gamefilename);
 	char* dot = strrchr(Str_Tmp, '.');
 	if(dot) *dot = 0;
@@ -831,7 +831,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			regSetDwordValue(RAMWX, ramw_x);
 			regSetDwordValue(RAMWY, ramw_y);
 		}	break;
-			
+
 		case WM_INITDIALOG: {
 			GetWindowRect(hWnd, &r);  //Ramwatch window
 			dx1 = (r.right - r.left) / 2;
@@ -895,7 +895,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 			DragAcceptFiles(hDlg, TRUE);
 
-			return true;
+			return false;
 		}	break;
 		
 		case WM_INITMENU:
@@ -1114,7 +1114,9 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 					OpenRWRecentFile(LOWORD(wParam) - RW_MENU_FIRST_RECENT_FILE);
 			}
 			break;
-		
+
+#if 0
+		// this message is never received
 		case WM_KEYDOWN: // handle accelerator keys
 		{
 			SetFocus(GetDlgItem(hDlg,IDC_WATCHLIST));
@@ -1126,16 +1128,18 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			if(RamWatchAccels && TranslateAccelerator(hDlg, RamWatchAccels, &msg))
 				return true;
 		}	break;
+#endif
 
-		case WM_CLOSE:
-			RamWatchHWnd = NULL;
-			DragAcceptFiles(hDlg, FALSE);
-//			EndDialog(hDlg, true);
-//			return true;
-			return false;
+//		case WM_CLOSE:
+//			RamWatchHWnd = NULL;
+//			DragAcceptFiles(hDlg, FALSE);
+//			DestroyWindow(hDlg);
+//			return false;
 
 		case WM_DESTROY:
 			// this is the correct place
+			RamWatchHWnd = NULL;
+			DragAcceptFiles(hDlg, FALSE);
 			WriteRecentRWFiles();	// write recent menu to ini
 			break;
 
