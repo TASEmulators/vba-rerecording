@@ -9,9 +9,9 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../GBA.h"
+#include "../gba/GBA.h"
 #include "../gb/gbGlobals.h"
-#include "../Util.h"
+#include "../common/Util.h"
 #include "7zip/OpenArchive.h"
 
 // MovieOpen dialog

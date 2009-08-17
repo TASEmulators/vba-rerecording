@@ -24,9 +24,9 @@
 #include "Disassemble.h"
 #include "VBA.h"
 
-#include "../armdis.h"
-#include "../GBA.h"
-#include "../Globals.h"
+#include "../gba/armdis.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

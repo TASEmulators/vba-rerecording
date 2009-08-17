@@ -27,10 +27,10 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-//#include "../System.h"
+//#include "../common/System.h"
 #include "../gb/gbGlobals.h"
 #include "../NLS.h"
-#include "../Util.h"
+#include "../common/Util.h"
 
 extern "C" {
 #include <png.h>

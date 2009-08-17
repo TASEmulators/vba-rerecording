@@ -34,7 +34,7 @@
 #include <vector>
 #include <list>
 
-#include "../System.h"
+#include "../common/System.h"
 
 #include "configfile.h"
 #include "screenarea.h"

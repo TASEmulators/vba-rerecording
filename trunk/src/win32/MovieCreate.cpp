@@ -9,11 +9,11 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../movie.h"
-#include "../Globals.h"
-#include "../gb/gbGlobals.h"
 #include "../NLS.h"
-#include "../Util.h"
+#include "../common/Util.h"
+#include "../common/movie.h"
+#include "../gba/Globals.h"
+#include "../gb/gbGlobals.h"
 
 extern u32 myROM[];
 

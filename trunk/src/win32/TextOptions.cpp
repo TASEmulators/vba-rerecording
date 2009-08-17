@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "../Text.h"
+#include "../common/Text.h"
 #include "resource.h"
 #include "TextOptions.h"
 

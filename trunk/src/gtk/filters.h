@@ -20,7 +20,7 @@
 #ifndef __VBA_FILTERS_H__
 #define __VBA_FILTERS_H__
 
-#include "../System.h"
+#include "../common/System.h"
 
 int Init_2xSaI(u32);
 

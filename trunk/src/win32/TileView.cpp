@@ -27,10 +27,9 @@
 #include "WinResUtil.h"
 #include "VBA.h" // for theApp
 
-//#include "../System.h"
-#include "../Globals.h"
+#include "../gba/Globals.h"
 #include "../NLS.h"
-#include "../Util.h"
+#include "../common/Util.h"
 
 extern "C" {
 #include <png.h>

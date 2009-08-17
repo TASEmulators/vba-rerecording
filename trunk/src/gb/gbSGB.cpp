@@ -19,12 +19,11 @@
 #include <stdlib.h>
 #include <memory.h>
 
-#include "../System.h"
-#include "../Port.h"
-#include "../Util.h"
+#include "../common/System.h"
+#include "../common/Util.h"
 #include "GB.h"
 #include "gbGlobals.h"
-#include "../movie.h"
+#include "../common/movie.h"
 
 extern u8 *pix;
 extern bool speedup;

@@ -23,7 +23,7 @@
 #include "resource.h"
 #include "GDBConnection.h"
 
-#include "../System.h"
+#include "../common/System.h"
 
 #define SOCKET_MESSAGE WM_APP+1
 

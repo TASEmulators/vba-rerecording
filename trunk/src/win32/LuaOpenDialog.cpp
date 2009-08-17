@@ -27,7 +27,7 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../vbalua.h"
+#include "../common/vbalua.h"
 
 extern int emulating; // from VBA.cpp
 

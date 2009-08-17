@@ -31,18 +31,18 @@
 #include "ramwatch.h"
 #include "VBA.h"
 
-#include "../GBA.h"
-#include "../Globals.h"
-#include "../Cheats.h"
-#include "../EEprom.h"
 #include "../NLS.h"
-#include "../Sound.h"
+#include "../version.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
+#include "../gba/Cheats.h"
+#include "../gba/EEprom.h"
+#include "../gba/Sound.h"
 #include "../gb/GB.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
-#include "../movie.h"
-#include "../vbalua.h"
-#include "../version.h"
+#include "../common/movie.h"
+#include "../common/vbalua.h"
 
 extern int emulating;
 

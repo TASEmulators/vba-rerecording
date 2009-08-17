@@ -54,9 +54,9 @@
 #include "gmon.h"
 #include "gmon_out.h"
 
-#include "../System.h"
-#include "../GBA.h"
-#include "../Globals.h"
+#include "../common/System.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
 #include "../NLS.h"
 
 /*

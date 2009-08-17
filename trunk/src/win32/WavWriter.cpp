@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include "WavWriter.h"
 
-#include "../Util.h"
+#include "../common/Util.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

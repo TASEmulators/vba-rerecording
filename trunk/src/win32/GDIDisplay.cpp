@@ -24,9 +24,9 @@
 #include "Reg.h"
 #include "VBA.h"
 
-#include "../Globals.h"
+#include "../gba/Globals.h"
 #include "../gb/gbGlobals.h"
-#include "../Text.h"
+#include "../common/Text.h"
 #include "../version.h"
 
 #ifdef _DEBUG

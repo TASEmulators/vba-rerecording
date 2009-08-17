@@ -27,9 +27,9 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../Cheats.h"
-#include "../CheatSearch.h"
-#include "../Globals.h"
+#include "../gba/Cheats.h"
+#include "../gba/CheatSearch.h"
+#include "../gba/Globals.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

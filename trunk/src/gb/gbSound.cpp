@@ -24,8 +24,8 @@
 #include <memory.h>
 #include <assert.h>
 
-#include "../System.h"
-#include "../Util.h"
+#include "../common/System.h"
+#include "../common/Util.h"
 //#include "../Blip_Buffer.h"
 #include "gbGlobals.h"
 #include "gbSound.h"

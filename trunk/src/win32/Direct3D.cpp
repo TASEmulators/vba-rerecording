@@ -27,10 +27,10 @@
 #include "Reg.h"
 #include "VBA.h"
 
-//#include "../System.h"
-#include "../Globals.h"
+//#include "../common/System.h"
+#include "../gba/Globals.h"
 #include "../gb/gbGlobals.h"
-#include "../Text.h"
+#include "../common/Text.h"
 #include "../version.h"
 
 #ifdef _DEBUG

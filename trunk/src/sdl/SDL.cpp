@@ -27,20 +27,22 @@
 
 #include "Port.h"
 #include "SDL.h"
-#include "GBA.h"
-#include "Globals.h"
-#include "agbprint.h"
-#include "Flash.h"
 #include "debugger.h"
-#include "RTC.h"
-#include "Sound.h"
-#include "Text.h"
-#include "unzip.h"
-#include "Util.h"
+#include "gba/GBA.h"
+#include "gba/Globals.h"
+#include "gba/agbprint.h"
+#include "gba/Flash.h"
+#include "gba/RTC.h"
+#include "gba/Sound.h"
 #include "gb/GB.h"
 #include "gb/gbGlobals.h"
-#include "movie.h"
-#include "System.h"
+#include "common/Text.h"
+#include "common/unzip.h"
+#include "common/Util.h"
+#include "common/movie.h"
+#include "common/System.h"
+#include "common/inputGlobal.h"
+
 
 #define GBC_CAPABLE ((gbRom[0x143] & 0x80) != 0)
 #define SGB_CAPABLE (gbRom[0x146] == 0x03)
@@ -271,8 +273,6 @@ int sdlStretcherPos;
 #else
 void (*sdlStretcher)(u8 *, u8*) = NULL;
 #endif
-
-#include "inputGlobal.h"
 
 u16 joypad[4][12] = {
   { SDLK_LEFT,  SDLK_RIGHT,

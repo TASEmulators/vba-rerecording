@@ -28,16 +28,16 @@
 #include "gbMemory.h"
 #include "gbSGB.h"
 #include "gbSound.h"
-#include "../unzip.h"
-#include "../Util.h"
+#include "../common/unzip.h"
+#include "../common/Util.h"
 #if (defined(WIN32) && !defined(SDL))
 #   include "../win32/stdafx.h"
 #   include "../win32/VBA.h"
 #endif
-#include "../System.h"
 #include "../NLS.h"
-#include "../movie.h"
-#include "../vbalua.h"
+#include "../common/System.h"
+#include "../common/movie.h"
+#include "../common/vbalua.h"
 
 extern soundtick_t GB_USE_TICKS_AS;
 

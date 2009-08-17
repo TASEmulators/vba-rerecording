@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(src/armdis.h)
+AC_INIT(src/AutoBuild.h)
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -100,7 +100,7 @@ AC_DEFINE(socklen_t,int)
 
 AC_C_BIGENDIAN
 
-VBA_LIBS="../gb/libgb.a"
+VBA_LIBS="../gba/libgba.a ../gb/libgb.a ../common/libgbcom.a ../filters/libfilter.a"
 
 VBA_SRC_EXTRA="$VBA_SRC_EXTRA lua"
 VBA_LIBS="$VBA_LIBS ../lua/libgblua.a"
@@ -120,8 +120,7 @@ if test "x$with_mmx" = xyes; then
     AC_MSG_ERROR([*** Couldn't find nasm program.])
   fi
   CXXFLAGS="$CXXFLAGS -DMMX"
-  VBA_SRC_EXTRA="$VBA_SRC_EXTRA i386"
-  VBA_LIBS="$VBA_LIBS ../i386/lib386.a"
+  VBA_LIBS="$VBA_LIBS ../filters/lib386.a"
 fi
 
 if test "x$enable_sdl" = xyes || test "x$enable_gtk" = xyes; then
@@ -173,10 +172,12 @@ Makefile
 m4/Makefile
 po/Makefile.in
 src/Makefile
+src/common/Makefile
 src/gb/Makefile
+src/gba/Makefile
 src/gtk/Makefile
 src/gtk/images/Makefile
-src/i386/Makefile
+src/filters/Makefile
 src/lua/Makefile
 src/prof/Makefile
 src/sdl/Makefile

@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <memory.h>
-#include "../System.h"
+#include "../common/System.h"
 #include "gbPrinter.h"
 
 u8  gbPrinterStatus = 0;

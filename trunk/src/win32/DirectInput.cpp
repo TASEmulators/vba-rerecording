@@ -27,8 +27,8 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../movie.h"
-#include "../vbalua.h"
+#include "../common/movie.h"
+#include "../common/vbalua.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
