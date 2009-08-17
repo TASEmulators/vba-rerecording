@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "Throttle.h"
-#include "../System.h" // for system messages
+#include "../common/System.h" // for system messages
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

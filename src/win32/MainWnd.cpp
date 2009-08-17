@@ -39,20 +39,20 @@
 #include "VBA.h"
 
 #include "../AutoBuild.h"
-#include "../Cheats.h"
-#include "../cheatSearch.h"
-#include "../GBA.h"
-#include "../Globals.h"
-#include "../Flash.h"
-#include "../Globals.h"
+#include "../gba/Cheats.h"
+#include "../gba/CheatSearch.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
+#include "../gba/Flash.h"
+#include "../gba/Globals.h"
+#include "../gba/RTC.h"
+#include "../gba/Sound.h"
 #include "../gb/GB.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
-#include "../RTC.h"
-#include "../Sound.h"
-#include "../Util.h"
-#include "../movie.h"
-#include "../vbalua.h"
+#include "../common/Util.h"
+#include "../common/movie.h"
+#include "../common/vbalua.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -809,6 +809,65 @@ bool MainWnd::FileRun()
 	return true;
 }
 
+// recursive kludge
+static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
+{
+	ASSERT(pMenu != NULL);
+
+	CCmdUI state;
+	state.m_pParentMenu = pParentMenu;
+	state.m_pMenu = pMenu;
+	ASSERT(state.m_pOther == NULL);
+
+	state.m_nIndexMax = pMenu->GetMenuItemCount();
+	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
+	     state.m_nIndex++)
+	{
+		state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
+		if (state.m_nID == 0)
+			continue; // menu separator or invalid cmd - ignore it
+
+		ASSERT(state.m_pOther == NULL);
+		ASSERT(state.m_pMenu != NULL);
+		if (state.m_nID == (UINT)-1)
+		{
+			// possibly a popup menu, route to first item of that popup
+			state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
+			if (state.m_pSubMenu == NULL ||
+			    (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
+			    state.m_nID == (UINT)-1)
+			{
+				continue; // first item of popup can't be routed to
+			}
+
+			state.DoUpdate(pWnd, false);
+			// FIXME: SLOW recursive call, especially when you hold down Frame Advance
+//			InitMenuKludge(state.m_pMenu, state.m_pSubMenu, pWnd);
+		}
+		else
+		{
+			// normal menu item
+			// Auto enable/disable if frame window has 'm_bAutoMenuEnable'
+			//    set and command is _not_ a system command.
+			state.m_pSubMenu = NULL;
+			state.DoUpdate(pWnd, state.m_nID < 0xF000);
+		}
+
+		// adjust for menu deletions and additions
+		UINT nCount = pMenu->GetMenuItemCount();
+		if (nCount < state.m_nIndexMax)
+		{
+			state.m_nIndex -= (state.m_nIndexMax - nCount);
+			while (state.m_nIndex < nCount &&
+			       pMenu->GetMenuItemID(state.m_nIndex) == state.m_nID)
+			{
+				state.m_nIndex++;
+			}
+		}
+		state.m_nIndexMax = nCount;
+	}
+}
+
 void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 {
 	ASSERT(pMenu != NULL);
@@ -843,53 +902,7 @@ void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 		}
 	}
 
-	state.m_nIndexMax = pMenu->GetMenuItemCount();
-	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
-	     state.m_nIndex++)
-	{
-		state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
-		if (state.m_nID == 0)
-			continue; // menu separator or invalid cmd - ignore it
-
-		ASSERT(state.m_pOther == NULL);
-		ASSERT(state.m_pMenu != NULL);
-		if (state.m_nID == (UINT)-1)
-		{
-			// possibly a popup menu, route to first item of that popup
-			state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
-			if (state.m_pSubMenu == NULL ||
-			    (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
-			    state.m_nID == (UINT)-1)
-			{
-				continue; // first item of popup can't be routed to
-			}
-
-			// HACK: wow, we use recursive call to fix the accel key problems!
-			OnInitMenuPopup(state.m_pSubMenu, nIndex, bSysMenu);
-//			state.DoUpdate(this, FALSE); // popups are never auto disabled
-		}
-		else
-		{
-			// normal menu item
-			// Auto enable/disable if frame window has 'm_bAutoMenuEnable'
-			//    set and command is _not_ a system command.
-			state.m_pSubMenu = NULL;
-			state.DoUpdate(this, state.m_nID < 0xF000);
-		}
-
-		// adjust for menu deletions and additions
-		UINT nCount = pMenu->GetMenuItemCount();
-		if (nCount < state.m_nIndexMax)
-		{
-			state.m_nIndex -= (state.m_nIndexMax - nCount);
-			while (state.m_nIndex < nCount &&
-			       pMenu->GetMenuItemID(state.m_nIndex) == state.m_nID)
-			{
-				state.m_nIndex++;
-			}
-		}
-		state.m_nIndexMax = nCount;
-	}
+	InitMenuKludge(state.m_pParentMenu, state.m_pMenu, this);
 }
 
 void MainWnd::OnMove(int x, int y)
@@ -1117,27 +1130,24 @@ static bool translatingAccelerator = false;
 
 BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 {
-	translatingAccelerator = true;
-
 	if (RamSearchHWnd && ::IsDialogMessage(RamSearchHWnd, pMsg))
 	{
-		translatingAccelerator = false;
 		return TRUE;
 	}
 	else if (RamWatchHWnd && ::IsDialogMessage(RamWatchHWnd, pMsg))
 	{
 		if (RamWatchAccels)
 			TranslateAccelerator(RamWatchHWnd, RamWatchAccels, pMsg);
-		translatingAccelerator = false;
 		return TRUE;
 	}
 	else if (CWnd::PreTranslateMessage(pMsg))
 	{
-		translatingAccelerator = false;
 		return TRUE;
 	}
 	else if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
 	{
+		translatingAccelerator = true;
+
 		bool bHit = theApp.hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, theApp.hAccel, pMsg);
 
 		// HACK to get around the fact that TranslateAccelerator can't handle modifier-only accelerators
@@ -1176,7 +1186,6 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 		return bHit;
 	}
 
-	translatingAccelerator = false;
 	return FALSE;
 }
 
@@ -1217,11 +1226,15 @@ void MainWnd::OnMouseMove(UINT nFlags, CPoint point)
 	CWnd::OnMouseMove(nFlags, point);
 }
 
-void MainWnd::OnInitMenu(CMenu*pMenu)
+void MainWnd::OnInitMenu(CMenu *pMenu)
 {
 	CWnd::OnInitMenu(pMenu);
 
-	if (!translatingAccelerator)
+	if (translatingAccelerator)
+	{
+//		OnCmdMsg(, CN_UPDATE_COMMAND_UI, , NULL);
+	}
+	else
 	{
 		// HACK: we only want to call this if the user is pulling down the menu,
 		// but TranslateAccelerator also causes OnInitMenu to be called, so ignore that

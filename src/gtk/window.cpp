@@ -25,13 +25,13 @@
 
 #include <SDL.h>
 
-#include "../GBA.h"
-#include "../Globals.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
+#include "../gba/Sound.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
-#include "../Sound.h"
-#include "../Util.h"
+#include "../common/Util.h"
 
 #include "menuitem.h"
 #include "tools.h"

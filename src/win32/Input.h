@@ -24,7 +24,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../inputGlobal.h"
+#include "../common/inputGlobal.h"
 
 #define JOYCONFIG_MESSAGE (WM_USER + 1000)
 

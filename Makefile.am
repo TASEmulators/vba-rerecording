@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = gnu dist-zip
 
-CORE_SUBDIRS = m4 src win32
+CORE_SUBDIRS = m4 src win32 po
 
 EXTRA_SUBDIRS = po
 

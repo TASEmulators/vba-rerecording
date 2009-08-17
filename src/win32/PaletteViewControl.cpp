@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "PaletteViewControl.h"
 
-#include "../Util.h"
+#include "../common/Util.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

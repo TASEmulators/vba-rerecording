@@ -21,7 +21,7 @@
 #include <assert.h>
 
 #include "AVIWrite.h"
-#include "../System.h"
+#include "../common/System.h"
 
 AVIWrite::AVIWrite()
 {

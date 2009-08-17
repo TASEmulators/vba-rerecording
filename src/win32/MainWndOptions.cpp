@@ -34,16 +34,16 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../GBA.h"
-#include "../Globals.h"
-#include "../agbprint.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
+#include "../gba/Flash.h"
+#include "../gba/Sound.h"
+#include "../gba/agbprint.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
-#include "../Flash.h"
-#include "../Sound.h"
-#include "../inputGlobal.h"
-#include "../movie.h"
+#include "../common/inputGlobal.h"
+#include "../common/movie.h"
 #include "../version.h"
 
 extern int emulating;

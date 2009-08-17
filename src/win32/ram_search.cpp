@@ -44,9 +44,9 @@
 
 #include "ram_search.h"
 #include "ramwatch.h"
-#include "../Globals.h"
+#include "../gba/Globals.h"
 #include "../gb/gbGlobals.h"
-#include "../vbalua.h"
+#include "../common/vbalua.h"
 
 static inline u8* HardwareToSoftwareAddress(HWAddressType address)
 {

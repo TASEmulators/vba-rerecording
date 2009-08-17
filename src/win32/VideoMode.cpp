@@ -31,7 +31,7 @@
 
 #include "VideoMode.h"
 
-#include "../System.h" // for system messages
+#include "../common/System.h" // for system messages
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

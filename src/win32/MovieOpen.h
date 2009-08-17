@@ -5,7 +5,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../movie.h"
+#include "../common/movie.h"
 
 // MovieOpen dialog
 

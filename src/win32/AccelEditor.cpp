@@ -25,7 +25,7 @@
 #include "CmdAccelOb.h"
 #include "VBA.h"
 
-//#include "../System.h"
+//#include "../common/System.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

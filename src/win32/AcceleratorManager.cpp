@@ -36,7 +36,7 @@
 #include "CmdAccelOb.h"
 #include "Reg.h"
 #include "VBA.h"
-//#include "../System.h"
+//#include "../common/System.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

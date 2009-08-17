@@ -27,8 +27,8 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../GBA.h"
-#include "../Globals.h"
+#include "../gba/GBA.h"
+#include "../gba/Globals.h"
 #include "../gb/gbCheats.h"
 
 extern int emulating;

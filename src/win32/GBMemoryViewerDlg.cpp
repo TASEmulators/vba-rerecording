@@ -28,7 +28,7 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-//#include "../System.h"
+//#include "../common/System.h"
 #include "../gb/gbGlobals.h"
 
 #ifdef _DEBUG

@@ -24,7 +24,7 @@
 #include "Logging.h"
 #include "FileDlg.h"
 
-#include "../System.h"
+#include "../common/System.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -24,8 +24,8 @@
 #include "IOViewer.h"
 #include "VBA.h"
 
-#include "../GBA.h" // CPUWriteHalfWord
-#include "../Globals.h"
+#include "../gba/GBA.h" // CPUWriteHalfWord
+#include "../gba/Globals.h"
 
 #include "IOViewerRegs.h"
 

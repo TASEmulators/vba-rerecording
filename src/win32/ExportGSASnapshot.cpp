@@ -23,8 +23,8 @@
 #include "resource.h"
 #include "ExportGSASnapshot.h"
 
-#include "../System.h"
-#include "../GBA.h"
+#include "../common/System.h"
+#include "../gba/GBA.h"
 #include "../NLS.h"
 
 #ifdef _DEBUG

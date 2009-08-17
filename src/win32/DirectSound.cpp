@@ -26,10 +26,10 @@
 #include "WavWriter.h"
 #include "VBA.h"
 
-//#include "../System.h"
-#include "../Globals.h"
-#include "../Sound.h"
-#include "../nesvideos-piece.h"
+//#include "../common/System.h"
+#include "../gba/Globals.h"
+#include "../gba/Sound.h"
+#include "../common/nesvideos-piece.h"
 
 class DirectSound : public ISound
 {

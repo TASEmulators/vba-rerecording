@@ -24,16 +24,16 @@
 #include "BugReport.h"
 #include "VBA.h"
 
-#include "../agbprint.h"
 #include "../AutoBuild.h"
-#include "../Flash.h"
-#include "../Cheats.h"
-#include "../Globals.h"
+#include "../gba/agbprint.h"
+#include "../gba/Flash.h"
+#include "../gba/Cheats.h"
+#include "../gba/Globals.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
-#include "../RTC.h"
-#include "../Sound.h"
-#include "../vbalua.h"
+#include "../gba/RTC.h"
+#include "../gba/Sound.h"
+#include "../common/vbalua.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

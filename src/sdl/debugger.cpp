@@ -24,12 +24,12 @@ extern "C" {
 #include <string.h>
 
 #include "Port.h"
-#include "GBA.h"
-#include "Globals.h"
-#include "Cheats.h"
-#include "System.h"
-#include "armdis.h"
-#include "elf.h"
+#include "gba/GBA.h"
+#include "gba/Globals.h"
+#include "gba/Cheats.h"
+#include "gba/armdis.h"
+#include "gba/elf.h"
+#include "common/System.h"
 #include "exprNode.h"
 
 extern bool debugger;

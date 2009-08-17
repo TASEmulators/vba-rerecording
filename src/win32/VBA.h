@@ -37,7 +37,7 @@
 
 #include "AcceleratorManager.h"
 #include "Display.h"
-#include "../System.h"
+#include "../common/System.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // VBA:

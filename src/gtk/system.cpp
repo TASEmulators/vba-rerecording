@@ -23,11 +23,11 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 
-#include "../System.h"
-#include "../Globals.h"
+#include "../common/System.h"
+#include "../common/Util.h"
+#include "../gba/Globals.h"
 #include "../gb/gbGlobals.h"
-#include "../Util.h"
-#include "../Sound.h"
+#include "../gba/Sound.h"
 
 #include "window.h"
 #include "intl.h"
