@@ -18,12 +18,8 @@ using namespace std;
 #if (defined(WIN32) && !defined(SDL))
 	#include <direct.h>
 	#include "../win32/stdafx.h"
-	#include "../win32/resource.h"
 	#include "../win32/Input.h"
-	#include "../win32/Sound.h"
-	#include "../win32/WinResUtil.h"
 	#include "../win32/MainWnd.h"
-	#include "../win32/Reg.h"
 	#include "../win32/VBA.h"
 	#define theEmulator (theApp.emulator)
 #else

@@ -2227,7 +2227,7 @@ BEGIN
                 MENUITEM "&Smart",                      ID_OPTIONS_FILTER_INTERFRAMEBLENDING_SMART
             END
             MENUITEM SEPARATOR
-            POPUP "&Miscellaneous"
+            POPUP "&Miscellaneous 2x"
             BEGIN
                 MENUITEM "&None",                       ID_OPTIONS_FILTER_NORMAL
                 MENUITEM SEPARATOR
@@ -2243,6 +2243,7 @@ BEGIN
             POPUP "&2x Magnification"
             BEGIN
                 MENUITEM "Simple 2&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE2X
+                MENUITEM SEPARATOR
                 MENUITEM "&2xSaI",                      ID_OPTIONS_FILTER_2XSAI
                 MENUITEM "&Super 2xSaI",                ID_OPTIONS_FILTER_SUPER2XSAI
                 MENUITEM "Super &Eagle",                ID_OPTIONS_FILTER_SUPEREAGLE
@@ -2253,12 +2254,18 @@ BEGIN
             END
             POPUP "&3x Magnification"
             BEGIN
+                MENUITEM "Simple 3&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE3X
+                MENUITEM SEPARATOR
                 MENUITEM "HQ3x",                        ID_OPTIONS_FILTER_HQ3X
                 MENUITEM "HQ3xS",                       ID_OPTIONS_FILTER_HQ3X2
             END
+            POPUP "&4x Magnification"
+            BEGIN
+                MENUITEM "Simple 4&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE4X
+            END
             MENUITEM SEPARATOR
             MENUITEM "&Disable MMX Optimizations",  ID_OPTIONS_FILTER_DISABLEMMX
-        END
+            END
         POPUP "&Sound"
         BEGIN
             MENUITEM "&On",                         ID_OPTIONS_SOUND_ON

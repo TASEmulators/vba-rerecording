@@ -75,7 +75,7 @@ static int calculateShift(u32 mask)
 
 GDIDisplay::GDIDisplay()
 {
-	filterData = (u8 *)malloc(4*4*256*240);
+	filterData = (u8 *)malloc(4*16*256*192); // sufficient for 4x filters @ 32bit color depth
 }
 
 GDIDisplay::~GDIDisplay()
@@ -322,11 +322,21 @@ void GDIDisplay::render()
 	bi->bmiHeader.biHeight = -filterHeight;
 
 	int pitch = filterWidth * 2 + 4;
-	if (systemColorDepth == 24)
-		pitch = filterWidth * 3;
-	else if (systemColorDepth == 32)
+	if (systemColorDepth == 32)
 		pitch = filterWidth * 4 + 4;
+	// FIXME: is the 24bit color depth still being used nowadays?
+	else if (systemColorDepth == 24)
+		pitch = filterWidth * 3;
 
+	// FIXME: is this working if systemColorDepth == 24?
+	int filterPitch = theApp.rect.right*2;
+	if (systemColorDepth == 32)
+		filterPitch = theApp.rect.right*4;
+	else if (systemColorDepth == 24)
+		filterPitch = theApp.rect.right*3;
+
+/*
+	// HACK: see below
 	if (textMethod == 1 && !filterFunction)
 	{
 		textMethod = 0; // must not be after systemMessage!
@@ -334,6 +344,7 @@ void GDIDisplay::render()
 		    0,
 		    "The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
 	}
+*/
 
 	// moved to VBA.cpp
 	/*
@@ -350,25 +361,16 @@ void GDIDisplay::render()
 
 	if (filterFunction)
 	{
-		bi->bmiHeader.biWidth  = filterWidth * 2;
-		bi->bmiHeader.biHeight = -filterHeight * 2;
+		bi->bmiHeader.biWidth  = theApp.rect.right;
+		bi->bmiHeader.biHeight = -theApp.rect.bottom;
 
-		if (systemColorDepth == 16)
-			(*filterFunction)(pix+pitch,
-			                  pitch,
-			                  (u8 *)theApp.delta,
-			                  (u8 *)filterData,
-			                  filterWidth*2*2,
-			                  filterWidth,
-			                  filterHeight);
-		else
-			(*filterFunction)(pix+pitch,
-			                  pitch,
-			                  (u8 *)theApp.delta,
-			                  (u8 *)filterData,
-			                  filterWidth*4*2,
-			                  filterWidth,
-			                  filterHeight);
+		(*filterFunction)(pix+pitch,
+						  pitch,
+						  (u8 *)theApp.delta,
+						  (u8 *)filterData,
+						  filterPitch,
+						  filterWidth,
+						  filterHeight);
 	}
 
 	if (theApp.showSpeed && theApp.videoOption > VIDEO_4X)
@@ -383,22 +385,17 @@ void GDIDisplay::render()
 
 		if (filterFunction)
 		{
-			int p = filterWidth * 4;
-			if (systemColorDepth == 24)
-				p = filterWidth * 6;
-			else if (systemColorDepth == 32)
-				p = filterWidth * 8;
 			if (theApp.showSpeedTransparent)
 				drawTextTransp((u8 *)filterData,
-				               p,
-				               10,
-				               filterHeight*2-10,
+				               filterPitch,
+				               theApp.rect.left+10,
+				               theApp.rect.bottom-10,
 				               buffer);
 			else
 				drawText((u8 *)filterData,
-				         p,
-				         10,
-				         filterHeight*2-10,
+				         filterPitch,
+			             theApp.rect.left+10,
+			             theApp.rect.bottom-10,
 				         buffer);
 		}
 		else
@@ -406,19 +403,22 @@ void GDIDisplay::render()
 			if (theApp.showSpeedTransparent)
 				drawTextTransp((u8 *)pix,
 				               pitch,
-				               10,
-				               filterHeight-10,
+				               theApp.rect.left+10,
+				               theApp.rect.bottom-10,
 				               buffer);
 			else
 				drawText((u8 *)pix,
 				         pitch,
-				         10,
-				         filterHeight-10,
+			             theApp.rect.left+10,
+			             theApp.rect.bottom-10,
 				         buffer);
 		}
 	}
+
 	if (textMethod == 1 && filterFunction)
-		DrawTextMessages((u8 *)filterData, filterWidth*systemColorDepth/4, 0, filterHeight*2);
+	{
+		DrawTextMessages((u8 *)filterData, filterPitch, theApp.rect.left, theApp.rect.bottom);
+	}
 
 	POINT p;
 	p.x = theApp.dest.left;
@@ -446,7 +446,7 @@ void GDIDisplay::render()
 	              DIB_RGB_COLORS,
 	              SRCCOPY);
 
-	if (textMethod == 2)
+	if (textMethod == 2 || (textMethod == 1 && !filterFunction)) // HACK: so that textMethod isn't changed
 		for (int slot = 0; slot < SCREEN_MESSAGE_SLOTS; slot++)
 		{
 			if (theApp.screenMessage[slot])

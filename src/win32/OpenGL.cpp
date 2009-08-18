@@ -84,7 +84,7 @@ OpenGLDisplay::OpenGLDisplay()
 	width      = 0;
 	height     = 0;
 	size       = 0.0f;
-	filterData = (u8 *)malloc(4*4*256*240);
+	filterData = (u8 *)malloc(4*16*256*192); // sufficient for 4x filters @ 32bit color depth
 	failed     = false;
 }
 
@@ -156,16 +156,15 @@ bool OpenGLDisplay::initialize()
 
 		/* Need to fix this code later. For now, Fullscreen takes the whole
 		   screen.
-		   int scaleX = (fsWidth / sizeX);
-		   int scaleY = (fsHeight / sizeY);
+		   int scaleX = (theApp.fsWidth / theApp.sizeX);
+		   int scaleY = (theApp.fsHeight / theApp.sizeY);
 		   int min = scaleX < scaleY ? scaleX : scaleY;
-		   surfaceSizeX = sizeX * min;
-		   surfaceSizeY = sizeY * min;
-		   if(fullScreenStretch) {
-		 */
+		   theApp.surfaceSizeX = theApp.sizeX * min;
+		   theApp.surfaceSizeY = theApp.sizeY * min;
+		   if(theApp.fullScreenStretch) {*/
 		theApp.surfaceSizeX = theApp.fsWidth;
 		theApp.surfaceSizeY = theApp.fsHeight;
-		//      }
+//         }
 		break;
 	}
 	}
@@ -405,6 +404,10 @@ void OpenGLDisplay::render()
 	int pitch = filterWidth * 4 + 4;
 	u8 *data  = pix + (theApp.sizeX+1)*4;
 
+	int filterPitch = theApp.rect.right*4;
+
+/*
+	// HACK: see below
 	if (textMethod == 1 && !filterFunction)
 	{
 		textMethod = 0; // must not be after systemMessage!
@@ -412,7 +415,7 @@ void OpenGLDisplay::render()
 		    0,
 		    "The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
 	}
-
+*/
 	// moved to VBA.cpp
 	/*
 	   if(textMethod == 0)
@@ -433,12 +436,12 @@ void OpenGLDisplay::render()
 		               pitch,
 		               (u8 *)theApp.delta,
 		               (u8 *)filterData,
-		               filterWidth*4*2,
+		               filterPitch,
 		               filterWidth,
 		               filterHeight);
 	}
 
-	if (theApp.videoOption > VIDEO_4X && theApp.showSpeed)
+	if (theApp.showSpeed && theApp.videoOption > VIDEO_4X)
 	{
 		char buffer[30];
 		if (theApp.showSpeed == 1)
@@ -450,22 +453,17 @@ void OpenGLDisplay::render()
 
 		if (filterFunction)
 		{
-			int p = filterWidth * 4;
-			if (systemColorDepth == 24)
-				p = filterWidth * 6;
-			else if (systemColorDepth == 32)
-				p = filterWidth * 8;
 			if (theApp.showSpeedTransparent)
 				drawTextTransp((u8 *)filterData,
-				               p,
-				               10,
-				               filterHeight*2-10,
+				               filterPitch,
+				               theApp.rect.left+10,
+				               theApp.rect.bottom-10,
 				               buffer);
 			else
 				drawText((u8 *)filterData,
-				         p,
-				         10,
-				         filterHeight*2-10,
+				         filterPitch,
+			             theApp.rect.left+10,
+			             theApp.rect.bottom-10,
 				         buffer);
 		}
 		else
@@ -473,28 +471,28 @@ void OpenGLDisplay::render()
 			if (theApp.showSpeedTransparent)
 				drawTextTransp((u8 *)pix,
 				               pitch,
-				               10,
-				               filterHeight-10,
+				               theApp.rect.left+10,
+				               theApp.rect.bottom-10,
 				               buffer);
 			else
 				drawText((u8 *)pix,
 				         pitch,
-				         10,
-				         filterHeight-10,
+			             theApp.rect.left+10,
+			             theApp.rect.bottom-10,
 				         buffer);
 		}
 	}
 
 	if (textMethod == 1 && filterFunction)
-		DrawTextMessages((u8 *)filterData, filterWidth*systemColorDepth/4, 0, filterHeight*2);
+	{
+		DrawTextMessages((u8 *)filterData, filterPitch, theApp.rect.left, theApp.rect.bottom);
+	}
 
 	// Texturemap complete texture to surface so we have free scaling
 	// and antialiasing
-	int mult = 1;
 	if (filterFunction)
 	{
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, 2*theApp.sizeX);
-		mult = 2;
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, theApp.rect.right);
 	}
 	else
 	{
@@ -502,31 +500,31 @@ void OpenGLDisplay::render()
 	}
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0,
-	                0, 0, mult*theApp.sizeX, mult*theApp.sizeY,
+					0, 0, theApp.rect.right, theApp.rect.bottom,
 	                GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	if (theApp.glType == 0)
 	{
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
-		glTexCoord2f(mult*theApp.sizeX/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
-		glTexCoord2f(0.0, mult*theApp.sizeY/size); glVertex3i(0, theApp.surfaceSizeY, 0);
-		glTexCoord2f(mult*theApp.sizeX/size, mult*theApp.sizeY/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.right/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
+		glTexCoord2f(0.0, theApp.rect.bottom/size); glVertex3i(0, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.right/size, theApp.rect.bottom/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
 		glEnd();
 	}
 	else
 	{
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
-		glTexCoord2f(mult*theApp.sizeX/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
-		glTexCoord2f(mult*theApp.sizeX/size, mult*theApp.sizeY/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
-		glTexCoord2f(0.0, mult*theApp.sizeY/size); glVertex3i(0, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.right/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
+		glTexCoord2f(theApp.rect.right/size, theApp.rect.bottom/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
+		glTexCoord2f(0.0, theApp.rect.bottom/size); glVertex3i(0, theApp.surfaceSizeY, 0);
 		glEnd();
 	}
 
 	CDC *dc = theApp.m_pMainWnd->GetDC();
 
-	if (textMethod == 2)
+	if (textMethod == 2 || (textMethod == 1 && !filterFunction)) // HACK: so that textMethod isn't changed
 	{
 		for (int slot = 0; slot < SCREEN_MESSAGE_SLOTS; slot++)
 		{
@@ -618,7 +616,12 @@ bool OpenGLDisplay::initializeTexture(int w, int h)
 {
 	int mySize = 256;
 	size = 256.0f;
-	if (w > 255 || h > 255)
+	if (w > 511 || h > 511)
+	{
+		size   = 1024.0f;
+		mySize = 1024;
+	}
+	else if (w > 255 || h > 255)
 	{
 		size   = 512.0f;
 		mySize = 512;
