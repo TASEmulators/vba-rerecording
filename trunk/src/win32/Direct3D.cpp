@@ -73,24 +73,6 @@ typedef struct _D3DTLVERTEX
 
 class Direct3DDisplay : public IDisplay
 {
-private:
-	HINSTANCE             d3dDLL;
-	LPDIRECT3D8           pD3D;
-	LPDIRECT3DDEVICE8     pDevice;
-	LPDIRECT3DTEXTURE8    pTexture;
-	D3DSURFACE_DESC       dsdBackBuffer;
-	D3DPRESENT_PARAMETERS dpp;
-	D3DFORMAT             screenFormat;
-	int  width;
-	int  height;
-	bool filterDisabled;
-	ID3DXFont *pFont;
-	bool       failed;
-
-	void restoreDeviceObjects();
-	void invalidateDeviceObjects();
-	bool initializeOffscreen(int w, int h);
-	void updateFiltering(int);
 public:
 	Direct3DDisplay();
 	virtual ~Direct3DDisplay();
@@ -106,6 +88,29 @@ public:
 	virtual DISPLAY_TYPE getType() { return DIRECT_3D; };
 	virtual void setOption(const char *, int);
 	virtual int selectFullScreenMode(GUID * *);
+
+private:
+	HINSTANCE             d3dDLL;
+	LPDIRECT3D8           pD3D;
+	LPDIRECT3DDEVICE8     pDevice;
+	LPDIRECT3DTEXTURE8    pTexture;
+	D3DSURFACE_DESC       dsdBackBuffer;
+	D3DPRESENT_PARAMETERS dpp;
+	D3DFORMAT             screenFormat;
+	int  width;
+	int  height;
+	bool filterDisabled;
+	ID3DXFont *pFont;
+	bool       failed;
+	unsigned int textureSize;
+	D3DTLVERTEX verts[4];
+
+
+	void restoreDeviceObjects();
+	void invalidateDeviceObjects();
+	bool initializeOffscreen(int w, int h);
+	void updateFiltering(int);
+	void calculateVertices();
 };
 
 Direct3DDisplay::Direct3DDisplay()
@@ -120,6 +125,7 @@ Direct3DDisplay::Direct3DDisplay()
 	height         = 0;
 	filterDisabled = false;
 	failed         = false;
+	textureSize    = 0;
 }
 
 Direct3DDisplay::~Direct3DDisplay()
@@ -411,8 +417,11 @@ bool Direct3DDisplay::initialize()
 bool Direct3DDisplay::initializeOffscreen(int w, int h)
 {
 	int size = 256;
-	if (w > 256 || h > 256)
+	if (w > 512 || h > 512)
+		size = 1024;
+	else if (w > 256 || h > 256)
 		size = 512;
+	textureSize = size;
 
 	UINT      ww     = size;
 	UINT      hh     = size;
@@ -538,35 +547,38 @@ void Direct3DDisplay::checkFullScreen()
 	//    pDirect3D->FlipToGDISurface();
 }
 
-static void BlitRect(LPDIRECT3DDEVICE8 lpDevice,
-                     LPDIRECT3DTEXTURE8 lpSrc,
-                     float left, float top,
-                     float right, float bottom,
-                     D3DCOLOR col, float z)
+void Direct3DDisplay::calculateVertices()
 {
+	// color
+	D3DCOLOR col = 0xFFFFFFFF;
+
 	// calculate rhw
+	FLOAT z	  = 1.0f;
+	FLOAT rhw = 1.0f / (z * 990.0f + 10.0f);
 
-	float rhw = 1.0f/(z*990.0f+10.0f);
+	// -0.5f is necessary in order to match texture alignment to display pixels
+	FLOAT left     = -0.5f;
+	FLOAT right    = dpp.BackBufferWidth - 0.5f;
+	FLOAT top      = -0.5f;
+	FLOAT bottom   = dpp.BackBufferHeight - 0.5f;
 
-	// set up rectangle
+	FLOAT textureX = (FLOAT)theApp.rect.right / (FLOAT)textureSize;
+	FLOAT textureY = (FLOAT)theApp.rect.bottom / (FLOAT)textureSize;
 
-	D3DTLVERTEX verts[4];
-	verts[0] = D3DTLVERTEX(D3DXVECTOR3(left-0.5f,  top-0.5f,    z), rhw, col, 0.0f, 0.0f);
-	verts[1] = D3DTLVERTEX(D3DXVECTOR3(right-0.5f, top-0.5f,    z), rhw, col, 1.0f, 0.0f);
-	verts[2] = D3DTLVERTEX(D3DXVECTOR3(right-0.5f, bottom-0.5f, z), rhw, col, 1.0f, 1.0f);
-	verts[3] = D3DTLVERTEX(D3DXVECTOR3(left-0.5f,  bottom-0.5f, z), rhw, col, 0.0f, 1.0f);
-
-	// set the texture
-
-	lpDevice->SetTexture(0, lpSrc);
-
-	// configure shader for vertex type
-
-	lpDevice->SetVertexShader(D3DFVF_TLVERTEX);
-
-	// draw the rectangle
-
-	lpDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, verts, sizeof(D3DTLVERTEX));
+//#define D3D_DRAW_SINGLE_RECTANGLE
+#ifdef D3D_DRAW_SINGLE_RECTANGLE
+	// set up a rectangle
+	verts[0] = D3DTLVERTEX(D3DXVECTOR3(left,  top,    z), rhw, col, 0.0f,     0.0f);
+	verts[1] = D3DTLVERTEX(D3DXVECTOR3(right, top,    z), rhw, col, textureX, 0.0f);
+	verts[2] = D3DTLVERTEX(D3DXVECTOR3(right, bottom, z), rhw, col, textureX, textureY);
+	verts[3] = D3DTLVERTEX(D3DXVECTOR3(left,  bottom, z), rhw, col, 0.0f,     textureY);
+#else
+	// set up triangles
+	verts[0] = D3DTLVERTEX(D3DXVECTOR3(left,  bottom, z), rhw, col, 0.0f,     textureY);
+	verts[1] = D3DTLVERTEX(D3DXVECTOR3(left,  top,    z), rhw, col, 0.0f,     0.0f);
+	verts[2] = D3DTLVERTEX(D3DXVECTOR3(right, bottom, z), rhw, col, textureX, textureY);
+	verts[3] = D3DTLVERTEX(D3DXVECTOR3(right, top,    z), rhw, col, textureX, 0.0f);
+#endif
 }
 
 void Direct3DDisplay::render()
@@ -722,9 +734,20 @@ gbaLoopEnd:
 
 			pTexture->UnlockRect(0);
 
-			float scaleX = (float)theApp.surfaceSizeX / theApp.sizeX;
-			float scaleY = (float)theApp.surfaceSizeY / theApp.sizeY;
-			BlitRect(pDevice, pTexture, 0, 0, scaleX*256, scaleY*256, 0xffffff, 0.1f);
+			// set the texture
+			pDevice->SetTexture(0, pTexture);
+
+			// configure shader for vertex type
+			pDevice->SetVertexShader(D3DFVF_TLVERTEX);
+
+#ifdef D3D_DRAW_SINGLE_RECTANGLE
+			// draw the rectangle
+				pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, verts, sizeof(D3DTLVERTEX));
+			//#undef D3D_DRAW_RECT
+#else
+			// draw the triangles
+			pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, verts, sizeof(D3DTLVERTEX));
+#endif
 		}
 
 		if (textMethod == 2)
@@ -822,6 +845,7 @@ void Direct3DDisplay::resize(int w, int h)
 		else
 			systemMessage(0, "Failed device reset %08x", hr);
 	}
+	calculateVertices();
 }
 
 bool Direct3DDisplay::changeRenderSize(int w, int h)
@@ -841,6 +865,7 @@ bool Direct3DDisplay::changeRenderSize(int w, int h)
 	}
 	if (filterDisabled && theApp.filterFunction)
 		theApp.filterFunction = NULL;
+	calculateVertices();
 
 	return true;
 }

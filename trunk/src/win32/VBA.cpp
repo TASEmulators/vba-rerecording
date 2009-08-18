@@ -64,8 +64,12 @@ extern void SuperEagle(u8*, u32, u8*, u8*, u32, int, int);
 extern void SuperEagle32(u8*, u32, u8*, u8*, u32, int, int);
 extern void AdMame2x(u8*, u32, u8*, u8*, u32, int, int);
 extern void AdMame2x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void Simple2x(u8*, u32, u8*, u8*, u32, int, int);
+extern void Simple2x16(u8*, u32, u8*, u8*, u32, int, int);
 extern void Simple2x32(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Simple3x16)(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Simple3x32)(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Simple4x16)(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Simple4x32)(u8*, u32, u8*, u8*, u32, int, int);
 extern void Bilinear(u8*, u32, u8*, u8*, u32, int, int);
 extern void Bilinear32(u8*, u32, u8*, u8*, u32, int, int);
 extern void BilinearPlus(u8*, u32, u8*, u8*, u32, int, int);
@@ -1030,7 +1034,7 @@ void VBA::updateFilter()
 			filterFunction = AdMame2x;
 			break;
 		case 8:
-			filterFunction = Simple2x;
+			filterFunction = Simple2x16;
 			break;
 		case 9:
 			filterFunction = Bilinear;
@@ -1056,6 +1060,12 @@ void VBA::updateFilter()
 		case 16:
 			filterFunction = hq3x;
 			break;
+		case 17:
+			filterFunction = Simple3x16;
+			break;
+		case 18:
+			filterFunction = Simple4x16;
+			break;
 		}
 		switch (filterType)
 		{
@@ -1070,8 +1080,14 @@ void VBA::updateFilter()
 			break;
 		case 15: // hq3x -> 3x texture
 		case 16:
+		case 17:
 			rect.right  = sizeX*3;
 			rect.bottom = sizeY*3;
+			memset(delta, 255, sizeof(delta));
+			break;
+		case 18: // Simple4x -> 4x texture
+			rect.right  = sizeX*4;
+			rect.bottom = sizeY*4;
 			memset(delta, 255, sizeof(delta));
 			break;
 		}
@@ -1135,6 +1151,12 @@ void VBA::updateFilter()
 			case 16:
 				filterFunction = hq3x32;
 				break;
+			case 17:
+				filterFunction = Simple3x32;
+				break;
+			case 18:
+				filterFunction = Simple4x32;
+				break;
 			}
 			switch (filterType)
 			{
@@ -1149,8 +1171,14 @@ void VBA::updateFilter()
 				break;
 			case 15: // hq3x -> 3x texture
 			case 16:
+			case 17:
 				rect.right  = sizeX*3;
 				rect.bottom = sizeY*3;
+				memset(delta, 255, sizeof(delta));
+				break;
+			case 18: // Simple4x -> 4x texture
+				rect.right  = sizeX*4;
+				rect.bottom = sizeY*4;
 				memset(delta, 255, sizeof(delta));
 				break;
 			}
@@ -1920,7 +1948,7 @@ void VBA::loadSettings()
 		glType = 0;
 
 	filterType = regQueryDwordValue("filter", 0);
-	if (filterType < 0 || filterType > 16)
+	if (filterType < 0 || filterType > 18)
 		filterType = 0;
 
 	disableMMX = regQueryDwordValue("disableMMX", 0) ? true : false;

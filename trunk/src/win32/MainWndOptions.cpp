@@ -1583,6 +1583,12 @@ BOOL MainWnd::OnOptionsFilter(UINT nID)
 	case ID_OPTIONS_FILTER_HQ3X:
 		theApp.filterType = 16;
 		break;
+	case ID_OPTIONS_FILTER16BIT_SIMPLE3X:
+		theApp.filterType = 17;
+		break;
+	case ID_OPTIONS_FILTER16BIT_SIMPLE4X:
+		theApp.filterType = 18;
+		break;
 	default:
 		return FALSE;
 	}
@@ -1645,6 +1651,12 @@ void MainWnd::OnUpdateOptionsFilter(CCmdUI *pCmdUI)
 		break;
 	case ID_OPTIONS_FILTER_HQ3X:
 		pCmdUI->SetCheck(theApp.filterType == 16);
+		break;
+	case ID_OPTIONS_FILTER16BIT_SIMPLE3X:
+		pCmdUI->SetCheck(theApp.filterType == 17);
+		break;
+	case ID_OPTIONS_FILTER16BIT_SIMPLE4X:
+		pCmdUI->SetCheck(theApp.filterType == 18);
 		break;
 	}
 }

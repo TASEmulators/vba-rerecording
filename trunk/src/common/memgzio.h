@@ -1,3 +1,6 @@
+#ifndef MEMGZIO_H
+#define MEMGZIO_H
+
 /* gzio.c -- IO on .gz files
  * Copyright (C) 1995-2002 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -9,10 +12,12 @@
  * Adapted from original gzio.c from zlib library by Forgotten
  */
 
-#include "zutil.h" // Help! This file doesn't even exist in my zlib!
+#include <zlib.h>
 
-gzFile ZEXPORT memgzopen(char *memory, int, const char *);
-int ZEXPORT memgzread(gzFile, voidp, unsigned);
-int ZEXPORT memgzwrite(gzFile, const voidp, unsigned);
-int ZEXPORT memgzclose(gzFile);
-long ZEXPORT memtell(gzFile);
+gzFile ZEXPORT memgzopen(char *memory, int available, const char *mode);
+int ZEXPORT memgzread(gzFile file, voidp buf, unsigned len);
+int ZEXPORT memgzwrite(gzFile file, const voidp buf, unsigned len);
+int ZEXPORT memgzclose(gzFile file);
+long ZEXPORT memtell(gzFile file);
+
+#endif // MEMGZIO_H

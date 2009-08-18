@@ -1100,10 +1100,19 @@
 				<File
 					RelativePath="..\src\filters\2xSaImmx.asm">
 					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
-							CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+							CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
 							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
 				</File>

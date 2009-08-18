@@ -9,13 +9,31 @@
  * Adapted from original gzio.c from zlib library by Forgotten
  */
 
-/* @(#) $Id: memgzio.c,v 1.3 2004/01/17 23:07:32 kxu Exp $ */
+/* @(#) $Id: memgzio.c,v 1.5 2006/06/06 21:04:20 spacy51 Exp $ */
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #include "memgzio.h"
+
+#ifndef local
+#define local static
+#endif
+
+#ifndef DEF_MEM_LEVEL
+#  define DEF_MEM_LEVEL 8
+#endif
+
+#ifndef OS_CODE
+#define OS_CODE 3
+#endif
+
+#ifndef zmemcpy
+#define zmemcpy memcpy
+#endif
 
 /*struct internal_state {int dummy;};*/ /* for buggy compilers */
 
@@ -31,8 +49,9 @@
 #endif
 
 #define ALLOC(size) malloc(size)
-#define TRYFREE(p) {if (p) \
-						free(p);}
+#define TRYFREE(p) \
+	{if (p)                            \
+		 free(p);}
 
 static int gz_magic[2] = {0x1f, 0x8b}; /* gzip magic header */
 
@@ -133,7 +152,7 @@ local size_t memWrite(const void *buffer, size_t size, size_t count,
 		total = file->available;
 	}
 	memcpy(file->next, buffer, total);
-	file->available -= total;
+	file->available -= (int)total;
 	file->next      += total;
 	return total;
 }
@@ -157,7 +176,7 @@ local size_t memRead(void *buffer, size_t size, size_t count,
 		total = file->available;
 	}
 	memcpy(buffer, file->next, total);
-	file->available -= total;
+	file->available -= (int)total;
 	file->next      += total;
 	return total;
 }
@@ -183,7 +202,7 @@ local int memPutc(int c, MEMFILE *file)
 
 local long memTell(MEMFILE *f)
 {
-	return (f->next - f->memory) - 8;
+	return (long)(f->next - f->memory) - 8;
 }
 
 local int memError(MEMFILE *f)
@@ -211,7 +230,7 @@ local int memPrintf(MEMFILE *f, const char *format, ...)
 	len = vsprintf(buffer, format, list);
 	va_end(list);
 
-	return memWrite(buffer, 1, len, f);
+	return (int)memWrite(buffer, 1, len, f);
 }
 
 /* ===========================================================================
@@ -246,12 +265,12 @@ const char *mode;
 	s->stream.next_in  = s->inbuf = Z_NULL;
 	s->stream.next_out = s->outbuf = Z_NULL;
 	s->stream.avail_in = s->stream.avail_out = 0;
-	s->z_err       = Z_OK;
-	s->z_eof       = 0;
-	s->crc         = crc32(0L, Z_NULL, 0);
-	s->msg         = NULL;
-	s->transparent = 0;
-	s->file        = NULL;
+	s->z_err           = Z_OK;
+	s->z_eof           = 0;
+	s->crc             = crc32(0L, Z_NULL, 0);
+	s->msg             = NULL;
+	s->transparent     = 0;
+	s->file            = NULL;
 
 	s->mode = '\0';
 	do
@@ -369,7 +388,7 @@ mem_stream *s;
 	if (s->stream.avail_in == 0)
 	{
 		errno = 0;
-		s->stream.avail_in = memRead(s->inbuf, 1, Z_BUFSIZE, s->file);
+		s->stream.avail_in = (uInt)memRead(s->inbuf, 1, Z_BUFSIZE, s->file);
 		if (s->stream.avail_in == 0)
 		{
 			s->z_eof = 1;
@@ -544,8 +563,7 @@ unsigned len;
 			}
 			if (s->stream.avail_out > 0)
 			{
-				s->stream.avail_out -= memRead(next_out, 1, s->stream.avail_out,
-				                               s->file);
+				s->stream.avail_out -= (uInt)memRead(next_out, 1, s->stream.avail_out, s->file);
 			}
 			len -= s->stream.avail_out;
 			s->stream.total_in  += (uLong)len;
@@ -557,7 +575,7 @@ unsigned len;
 		if (s->stream.avail_in == 0 && !s->z_eof)
 		{
 			errno = 0;
-			s->stream.avail_in = memRead(s->inbuf, 1, Z_BUFSIZE, s->file);
+			s->stream.avail_in = (uInt)memRead(s->inbuf, 1, Z_BUFSIZE, s->file);
 			if (s->stream.avail_in == 0)
 			{
 				s->z_eof = 1;
