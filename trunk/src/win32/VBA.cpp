@@ -52,8 +52,12 @@
 #include "../common/vbalua.h"
 #include "../version.h"
 
-extern void Pixelate(u8*, u32, u8*, u8*, u32, int, int);
-extern void Pixelate32(u8*, u32, u8*, u8*, u32, int, int);
+extern void Pixelate2x16(u8*, u32, u8*, u8*, u32, int, int);
+extern void Pixelate2x32(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Pixelate3x16)(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Pixelate3x32)(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Pixelate4x16)(u8*, u32, u8*, u8*, u32, int, int);
+extern void (*Pixelate4x32)(u8*, u32, u8*, u8*, u32, int, int);
 extern void MotionBlur(u8*, u32, u8*, u8*, u32, int, int);
 extern void MotionBlur32(u8*, u32, u8*, u8*, u32, int, int);
 extern void _2xSaI(u8*, u32, u8*, u8*, u32, int, int);
@@ -1025,7 +1029,7 @@ void VBA::updateFilter()
 			filterFunction = SuperEagle;
 			break;
 		case 5:
-			filterFunction = Pixelate;
+			filterFunction = Pixelate2x16;
 			break;
 		case 6:
 			filterFunction = MotionBlur;
@@ -1066,6 +1070,12 @@ void VBA::updateFilter()
 		case 18:
 			filterFunction = Simple4x16;
 			break;
+		case 19:
+			filterFunction = Pixelate3x16;
+			break;
+		case 20:
+			filterFunction = Pixelate4x16;
+			break;
 		}
 		switch (filterType)
 		{
@@ -1081,11 +1091,13 @@ void VBA::updateFilter()
 		case 15: // hq3x -> 3x texture
 		case 16:
 		case 17:
+		case 19:
 			rect.right  = sizeX*3;
 			rect.bottom = sizeY*3;
 			memset(delta, 255, sizeof(delta));
 			break;
 		case 18: // Simple4x -> 4x texture
+		case 20:
 			rect.right  = sizeX*4;
 			rect.bottom = sizeY*4;
 			memset(delta, 255, sizeof(delta));
@@ -1116,7 +1128,7 @@ void VBA::updateFilter()
 				filterFunction = SuperEagle32;
 				break;
 			case 5:
-				filterFunction = Pixelate32;
+				filterFunction = Pixelate2x32;
 				break;
 			case 6:
 				filterFunction = MotionBlur32;
@@ -1157,6 +1169,12 @@ void VBA::updateFilter()
 			case 18:
 				filterFunction = Simple4x32;
 				break;
+			case 19:
+				filterFunction = Pixelate3x32;
+				break;
+			case 20:
+				filterFunction = Pixelate4x32;
+				break;
 			}
 			switch (filterType)
 			{
@@ -1172,11 +1190,13 @@ void VBA::updateFilter()
 			case 15: // hq3x -> 3x texture
 			case 16:
 			case 17:
+			case 19:
 				rect.right  = sizeX*3;
 				rect.bottom = sizeY*3;
 				memset(delta, 255, sizeof(delta));
 				break;
 			case 18: // Simple4x -> 4x texture
+			case 20:
 				rect.right  = sizeX*4;
 				rect.bottom = sizeY*4;
 				memset(delta, 255, sizeof(delta));
@@ -1948,7 +1968,7 @@ void VBA::loadSettings()
 		glType = 0;
 
 	filterType = regQueryDwordValue("filter", 0);
-	if (filterType < 0 || filterType > 18)
+	if (filterType < 0 || filterType > 20)
 		filterType = 0;
 
 	disableMMX = regQueryDwordValue("disableMMX", 0) ? true : false;
