@@ -2,6 +2,7 @@ TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
 ---VBA-rr V21+(interim)---
+09-04-2009 aquanull - Added Pixelate 3x and Pixelate 4x filters for fun.
 08-18-2009 aquanull - Fixed GDI/D3D/OpenGL display with 3x filters.
 08-18-2009 aquanull - Added Simple 3x and Simple 4x filters (unoptimized).
 08-05-2009 aquanull - Fixed a bug that certain accelerator keys would not be enabled correctly.

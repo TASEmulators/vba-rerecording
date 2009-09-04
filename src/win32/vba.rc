@@ -2233,7 +2233,6 @@ BEGIN
                 MENUITEM SEPARATOR
                 MENUITEM "&TV Mode",                    ID_OPTIONS_FILTER_TVMODE
                 MENUITEM "Scan&lines",                  ID_OPTIONS_FILTER_SCANLINES
-                MENUITEM "&Pixelate",                   ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL
                 MENUITEM SEPARATOR
                 MENUITEM "&Bilinear",                   ID_OPTIONS_FILTER_BILINEAR
                 MENUITEM "Bilinear Pl&us",              ID_OPTIONS_FILTER_BILINEARPLUS
@@ -2243,11 +2242,13 @@ BEGIN
             POPUP "&2x Magnification"
             BEGIN
                 MENUITEM "Simple 2&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE2X
+                MENUITEM "&Pixelate 2x",                ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL
                 MENUITEM SEPARATOR
                 MENUITEM "&2xSaI",                      ID_OPTIONS_FILTER_2XSAI
                 MENUITEM "&Super 2xSaI",                ID_OPTIONS_FILTER_SUPER2XSAI
                 MENUITEM "Super &Eagle",                ID_OPTIONS_FILTER_SUPEREAGLE
                 MENUITEM "&AdvanceMAME Scale2x",        ID_OPTIONS_FILTER16BIT_ADVANCEMAMESCALE2X
+                MENUITEM SEPARATOR
                 MENUITEM "LQ2x",                        ID_OPTIONS_FILTER_LQ2X
                 MENUITEM "HQ2x",                        ID_OPTIONS_FILTER_HQ2X
                 MENUITEM "HQ2xS",                       ID_OPTIONS_FILTER_HQ2X2
@@ -2255,6 +2256,7 @@ BEGIN
             POPUP "&3x Magnification"
             BEGIN
                 MENUITEM "Simple 3&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE3X
+                MENUITEM "&Pixelate 3x",                ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL3X
                 MENUITEM SEPARATOR
                 MENUITEM "HQ3x",                        ID_OPTIONS_FILTER_HQ3X
                 MENUITEM "HQ3xS",                       ID_OPTIONS_FILTER_HQ3X2
@@ -2262,6 +2264,7 @@ BEGIN
             POPUP "&4x Magnification"
             BEGIN
                 MENUITEM "Simple 4&x",                  ID_OPTIONS_FILTER16BIT_SIMPLE4X
+                MENUITEM "&Pixelate 4x",                ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL4X
             END
             MENUITEM SEPARATOR
             MENUITEM "&Disable MMX Optimizations",  ID_OPTIONS_FILTER_DISABLEMMX

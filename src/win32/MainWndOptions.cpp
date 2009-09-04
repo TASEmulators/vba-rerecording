@@ -1589,6 +1589,12 @@ BOOL MainWnd::OnOptionsFilter(UINT nID)
 	case ID_OPTIONS_FILTER16BIT_SIMPLE4X:
 		theApp.filterType = 18;
 		break;
+	case ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL3X:
+		theApp.filterType = 19;
+		break;
+	case ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL4X:
+		theApp.filterType = 20;
+		break;
 	default:
 		return FALSE;
 	}
@@ -1657,6 +1663,12 @@ void MainWnd::OnUpdateOptionsFilter(CCmdUI *pCmdUI)
 		break;
 	case ID_OPTIONS_FILTER16BIT_SIMPLE4X:
 		pCmdUI->SetCheck(theApp.filterType == 18);
+		break;
+	case ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL3X:
+		pCmdUI->SetCheck(theApp.filterType == 19);
+		break;
+	case ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL4X:
+		pCmdUI->SetCheck(theApp.filterType == 20);
 		break;
 	}
 }
