@@ -1,0 +1,14 @@
+#VBA Sync Information for published movies on [http://TASVideos.org TASVideos.org]
+
+These movies require VBA rerecording v20:
+
+  * [http://tasvideos.org/1008M.html Akumajou Special - Boku Dracula-kun (Kid Dracula)]
+  * [http://tasvideos.org/1065M.html Castlevania Legends]
+  * [http://tasvideos.org/941M.html Pokémon Green]
+  * [http://tasvideos.org/1050M.html Wizards & Warriors X - Fortress of Fear]
+
+These movies require VBA rerecording v17:
+
+  * [http://tasvideos.org/564M.html Pokémon Gold]
+
+All movies that had a stated version earlier than v17 work on the latest version.
