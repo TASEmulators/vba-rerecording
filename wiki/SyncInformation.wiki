@@ -1,5 +1,7 @@
 #VBA Sync Information for published movies on [http://TASVideos.org TASVideos.org]
 
+The following applies only to GB/SGB/GBC movies:
+
 These movies require VBA rerecording v20:
 
   * [http://tasvideos.org/1008M.html Akumajou Special - Boku Dracula-kun (Kid Dracula)]
