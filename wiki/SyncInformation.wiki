@@ -11,4 +11,4 @@ These movies require VBA rerecording v17:
 
   * [http://tasvideos.org/564M.html Pokémon Gold]
 
-All movies that had a stated version earlier than v17 work on the latest version.
+All movies whose submission pages had a stated version earlier than v17 work on the latest version.
