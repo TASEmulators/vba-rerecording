@@ -43,3 +43,5 @@ VBA v21 Lua Scripting Function List:
   * gui.popup
   * gui.gdscreenshot
   * gui.gdoverlay
+
+Keys for joypad table: ["A", "B", "select", "start", "right", "left", "up", "down", "R", "L"]
