@@ -1,4 +1,4 @@
-#summary VBA Sync Information for published movies on [http://TASVideos.org TASVideos.org]
+#summary VBA Sync Information for published movies on TASVideos.org
 
 The following applies only to GB/SGB/GBC movies:
 
