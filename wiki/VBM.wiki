@@ -1,4 +1,6 @@
-#vbm is the movie capture format of Visual Boy Advance
+#summary VBM file format description
+
+VBM is the movie capture format of Visual Boy Advance
 
 ==VBM file format description==
 
