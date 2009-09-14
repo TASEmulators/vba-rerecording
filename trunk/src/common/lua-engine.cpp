@@ -2882,90 +2882,206 @@ static int sfmt_randomseed(lua_State *L)
 	return 0;
 }
 
-// int AND(int one, int two, ..., int n)
-//
-//  Since Lua doesn't provide binary, I provide this function.
-//  Does a full binary AND on all parameters and returns the result.
-//  A single element is okay, and it's returned straight, but it does you
+// the following bit operations are ported from LuaBitOp 1.0.1,
+// because it can handle the sign bit (bit 31) correctly.
 
-//  little good.
-static int base_AND(lua_State *L)
+/*
+** Lua BitOp -- a bit operations library for Lua 5.1.
+** http://bitop.luajit.org/
+**
+** Copyright (C) 2008-2009 Mike Pall. All rights reserved.
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**
+** [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
+*/
+
+#ifdef _MSC_VER
+/* MSVC is stuck in the last century and doesn't have C99's stdint.h. */
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h>
+#endif
+
+typedef int32_t SBits;
+typedef uint32_t UBits;
+
+typedef union {
+  lua_Number n;
+#ifdef LUA_NUMBER_DOUBLE
+  uint64_t b;
+#else
+  UBits b;
+#endif
+} BitNum;
+
+/* Convert argument to bit type. */
+static UBits barg(lua_State *L, int idx)
 {
-	int count = lua_gettop(L);
-
-	if (count == 0)
-		luaL_error(L, "Binary AND called empty.");
-
-	int result = luaL_checkinteger(L, 1);
-	int i;
-	for (i = 2; i <= count; i++)
-		result &= luaL_checkinteger(L, i);
-	lua_settop(L, 0);
-	lua_pushinteger(L, result);
-	return 1;
+  BitNum bn;
+  UBits b;
+  bn.n = lua_tonumber(L, idx);
+#if defined(LUA_NUMBER_DOUBLE)
+  bn.n += 6755399441055744.0;  /* 2^52+2^51 */
+#ifdef SWAPPED_DOUBLE
+  b = (UBits)(bn.b >> 32);
+#else
+  b = (UBits)bn.b;
+#endif
+#elif defined(LUA_NUMBER_INT) || defined(LUA_NUMBER_LONG) || \
+      defined(LUA_NUMBER_LONGLONG) || defined(LUA_NUMBER_LONG_LONG) || \
+      defined(LUA_NUMBER_LLONG)
+  if (sizeof(UBits) == sizeof(lua_Number))
+    b = bn.b;
+  else
+    b = (UBits)(SBits)bn.n;
+#elif defined(LUA_NUMBER_FLOAT)
+#error "A 'float' lua_Number type is incompatible with this library"
+#else
+#error "Unknown number type, check LUA_NUMBER_* in luaconf.h"
+#endif
+  if (b == 0 && !lua_isnumber(L, idx))
+    luaL_typerror(L, idx, "number");
+  return b;
 }
 
-// int OR(int one, int two, ..., int n)
-//
+/* Return bit type. */
+#define BRET(b)  lua_pushnumber(L, (lua_Number)(SBits)(b)); return 1;
 
-//   ..and similarly for a binary OR
-static int base_OR(lua_State *L)
+static int bit_tobit(lua_State *L) { BRET(barg(L, 1)) }
+static int bit_bnot(lua_State *L) { BRET(~barg(L, 1)) }
+
+#define BIT_OP(func, opr) \
+  static int func(lua_State *L) { int i; UBits b = barg(L, 1); \
+    for (i = lua_gettop(L); i > 1; i--) b opr barg(L, i); BRET(b) }
+BIT_OP(bit_band, &=)
+BIT_OP(bit_bor, |=)
+BIT_OP(bit_bxor, ^=)
+
+#define bshl(b, n)  (b << n)
+#define bshr(b, n)  (b >> n)
+#define bsar(b, n)  ((SBits)b >> n)
+#define brol(b, n)  ((b << n) | (b >> (32-n)))
+#define bror(b, n)  ((b << (32-n)) | (b >> n))
+#define BIT_SH(func, fn) \
+  static int func(lua_State *L) { \
+    UBits b = barg(L, 1); UBits n = barg(L, 2) & 31; BRET(fn(b, n)) }
+BIT_SH(bit_lshift, bshl)
+BIT_SH(bit_rshift, bshr)
+BIT_SH(bit_arshift, bsar)
+BIT_SH(bit_rol, brol)
+BIT_SH(bit_ror, bror)
+
+static int bit_bswap(lua_State *L)
 {
-	int count = lua_gettop(L);
-
-	if (count == 0)
-		luaL_error(L, "Binary OR called empty.");
-
-	int result = luaL_checkinteger(L, 1);
-	int i;
-	for (i = 2; i <= count; i++)
-		result |= luaL_checkinteger(L, i);
-	lua_settop(L, 0);
-	lua_pushinteger(L, result);
-	return 1;
+  UBits b = barg(L, 1);
+  b = (b >> 24) | ((b >> 8) & 0xff00) | ((b & 0xff00) << 8) | (b << 24);
+  BRET(b)
 }
 
-// int XOR(int one, int two, ..., int n)
-//
-
-//   ..and so on
-static int base_XOR(lua_State *L)
+static int bit_tohex(lua_State *L)
 {
-	int count = lua_gettop(L);
-
-	if (count == 0)
-		luaL_error(L, "Binary XOR called empty.");
-
-	int result = luaL_checkinteger(L, 1);
-	int i;
-	for (i = 2; i <= count; i++)
-		result ^= luaL_checkinteger(L, i);
-	lua_settop(L, 0);
-	lua_pushinteger(L, result);
-	return 1;
+  UBits b = barg(L, 1);
+  SBits n = lua_isnone(L, 2) ? 8 : (SBits)barg(L, 2);
+  const char *hexdigits = "0123456789abcdef";
+  char buf[8];
+  int i;
+  if (n < 0) { n = -n; hexdigits = "0123456789ABCDEF"; }
+  if (n > 8) n = 8;
+  for (i = (int)n; --i >= 0; ) { buf[i] = hexdigits[b & 15]; b >>= 4; }
+  lua_pushlstring(L, buf, (size_t)n);
+  return 1;
 }
 
-static int base_SHIFT(lua_State *L)
+static const struct luaL_Reg bit_funcs[] = {
+  { "tobit",	bit_tobit },
+  { "bnot",	bit_bnot },
+  { "band",	bit_band },
+  { "bor",	bit_bor },
+  { "bxor",	bit_bxor },
+  { "lshift",	bit_lshift },
+  { "rshift",	bit_rshift },
+  { "arshift",	bit_arshift },
+  { "rol",	bit_rol },
+  { "ror",	bit_ror },
+  { "bswap",	bit_bswap },
+  { "tohex",	bit_tohex },
+  { NULL, NULL }
+};
+
+/* Signed right-shifts are implementation-defined per C89/C99.
+** But the de facto standard are arithmetic right-shifts on two's
+** complement CPUs. This behaviour is required here, so test for it.
+*/
+#define BAD_SAR		(bsar(-8, 2) != (SBits)-2)
+
+bool luabitop_validate(lua_State *L) // originally named as luaopen_bit
 {
-	int num = luaL_checkinteger(L, 1);
-	int shift = luaL_checkinteger(L, 2);
-	if (shift < 0)
-		num <<= -shift;
+  UBits b;
+  lua_pushnumber(L, (lua_Number)1437217655L);
+  b = barg(L, -1);
+  if (b != (UBits)1437217655L || BAD_SAR) {  /* Perform a simple self-test. */
+    const char *msg = "compiled with incompatible luaconf.h";
+#ifdef LUA_NUMBER_DOUBLE
+#ifdef _WIN32
+    if (b == (UBits)1610612736L)
+      msg = "use D3DCREATE_FPU_PRESERVE with DirectX";
+#endif
+    if (b == (UBits)1127743488L)
+      msg = "not compiled with SWAPPED_DOUBLE";
+#endif
+    if (BAD_SAR)
+      msg = "arithmetic right-shift broken";
+    luaL_error(L, "bit library self-test failed (%s)", msg);
+    return false;
+  }
+  return true;
+}
+
+// LuaBitOp ends here
+
+static int bit_bshift_emulua(lua_State *L)
+{
+	int shift = luaL_checkinteger(L,2);
+	if (shift < 0) {
+		lua_pushinteger(L, -shift);
+		lua_replace(L, 2);
+		return bit_lshift(L);
+	}
 	else
-		num >>= shift;
-	lua_settop(L, 0);
-	lua_pushinteger(L, num);
-	return 1;
+		return bit_rshift(L);
 }
 
-static int base_BIT(lua_State *L)
+static int bitbit(lua_State *L)
 {
-	int bit = luaL_checkinteger(L, 1);
-	if (bit < 0 || bit > 30)
-		luaL_error(L, "range is 0 to 30 inclusive");
-	lua_settop(L, 0);
-	lua_pushinteger(L, 1 << bit);
-	return 1;
+	int rv = 0;
+	int numArgs = lua_gettop(L);
+	for(int i = 1; i <= numArgs; i++) {
+		int where = luaL_checkinteger(L,i);
+		if (where >= 0 && where < 32)
+			rv |= (1 << where);
+	}
+	lua_settop(L,0);
+	BRET(rv);
 }
 
 // The function called periodically to ensure Lua doesn't run amok.
@@ -3313,11 +3429,13 @@ int VBALoadLuaCode(const char *filename)
 		luaL_register(LUA, "gui", guilib);
 		luaL_register(LUA, "input", inputlib);
 		lua_settop(LUA, 0);		// clean the stack, because each call to luaL_register leaves a table on top
-		lua_register(LUA, "AND", base_AND);
-		lua_register(LUA, "OR", base_OR);
-		lua_register(LUA, "XOR", base_XOR);
-		lua_register(LUA, "SHIFT", base_SHIFT);
-		lua_register(LUA, "BIT", base_BIT);
+
+		lua_register(LUA, "AND", bit_band);
+		lua_register(LUA, "OR", bit_bor);
+		lua_register(LUA, "XOR", bit_bxor);
+		lua_register(LUA, "SHIFT", bit_bshift_emulua);
+		lua_register(LUA, "BIT", bitbit);
+		luabitop_validate(LUA);
 
 		lua_pushstring(LUA, "math");
 		lua_gettable(LUA, LUA_GLOBALSINDEX);
