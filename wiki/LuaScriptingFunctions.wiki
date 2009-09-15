@@ -2,6 +2,8 @@
 
 See also [http://www.lua.org/manual/5.1/ Lua manual].
 
+*Important: nil is not 0. nil and 0 are two different entities*
+
 =vba=
 
 ===vba.frameadvance()===
