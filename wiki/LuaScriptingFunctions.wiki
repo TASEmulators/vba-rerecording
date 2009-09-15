@@ -2,7 +2,7 @@
 
 See also [http://www.lua.org/manual/5.1/ Lua manual].
 
-*Important: nil is not 0. nil and 0 are two different entities*
+*Important: nil is not 0. nil and 0 are two different entities.*
 
 =vba=
 
@@ -63,6 +63,8 @@ Calls the function whenever the given address is written to. Function can be nil
 
 =joypad=
 
+Before the next frame is emulated, one may set keys to be pressed. The buffer is cleared each frame. 
+
 ===table joypad.get(int port)===
 
 Returns a table of buttons which have been pressed. Does not read movie input. Key values are 1 for pressed, nil for not pressed. Keys for joypad table: (A, B, select, start, right, left, up, down, R, L). Keys are case-sensitive.
@@ -108,6 +110,8 @@ If set to true, no rerecords done by Lua are counted in the rerecord total. If s
 Stops the movie. Cannot be used if there is no movie.
 
 =gui=
+
+Before the next frame is drawn, one may draw to the buffer. The buffer is cleared each frame. 
 
 All functions assume that the height of the image is 256 and the width is 239.
 
