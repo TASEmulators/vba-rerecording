@@ -94,8 +94,8 @@
 				MapFileName="$(OutDir)/$(TargetName).map"
 				SubSystem="2"
 				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
+				EnableCOMDATFolding="0"
+				OptimizeForWindows98="0"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
@@ -225,6 +225,113 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Release FastBuild|Win32"
+			OutputDirectory="$(SolutionDir)\__bins"
+			IntermediateDirectory="$(SolutionDir)\.VS2008\$(ConfigurationName)\$(PlatformName)"
+			ConfigurationType="1"
+			UseOfMFC="1"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="0"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine="defaultconfig\SubWCRev.bat"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName="$(OutDir)/$(TargetName).tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="false"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="directx;lib/zlib;lib/libpng;../src/lua/src;userconfig;defaultconfig"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\vc80.pdb"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="4244;4996;4800"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_AFXDLL;NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="directx/d3dx8.lib wsock32.lib directx/ddraw.lib directx/dxguid.lib winmm.lib directx/dinput.lib vfw32.lib opengl32.lib nafxcw.lib libcmt.lib"
+				OutputFile="$(OutDir)\$(ProjectName)_releaseFastBuild.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="lib/win32"
+				IgnoreDefaultLibraryNames="libci.lib;nafxcw.lib;libcmt.lib"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
+				GenerateMapFile="true"
+				MapFileName="$(OutDir)/$(TargetName).map"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="0"
+				OptimizeForWindows98="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+				AdditionalManifestFiles="$(ProjectDir)..\src\win32\VisualBoyAdvance.exe.manifest"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -247,6 +354,15 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm.exe -D__DJGPP__ -f win32 -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						Outputs="$(IntDir)\$(InputName).obj"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release FastBuild|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -392,6 +508,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release FastBuild|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -2009,6 +2133,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\gba\GBAGfx.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\gba\GBAinline.h"
 				>
 			</File>
@@ -2061,11 +2189,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gb\gbPrinter.h"
+				RelativePath="..\src\win32\GBPrinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinter.h"
+				RelativePath="..\src\gb\gbPrinter.h"
 				>
 			</File>
 			<File
@@ -2086,10 +2214,6 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\GDBConnection.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\gba\GBAGfx.h"
 				>
 			</File>
 			<File
@@ -2352,6 +2476,14 @@
 						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release FastBuild|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<File
@@ -2367,6 +2499,14 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release FastBuild|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool
