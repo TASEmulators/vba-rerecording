@@ -518,8 +518,6 @@ bool Save_Watches()
 	{
 		FILE *WatchFile = fopen(Str_Tmp,"r+b");
 		if (!WatchFile) WatchFile = fopen(Str_Tmp,"w+b");
-		//fputc(SegaCD_Started?'1':(_32X_Started?'2':'0'),WatchFile);
-		fputc('0',WatchFile);
 		fputc('\n',WatchFile);
 		strcpy(currentWatch,Str_Tmp);
 		RWAddRecentFile(currentWatch);
@@ -551,8 +549,6 @@ if (currentWatch[0] == NULL) //If there is no currently loaded file, run to Save
 		strcpy(Str_Tmp,currentWatch);
 		FILE *WatchFile = fopen(Str_Tmp,"r+b");
 		if (!WatchFile) WatchFile = fopen(Str_Tmp,"w+b");
-		//fputc(SegaCD_Started?'1':(_32X_Started?'2':'0'),WatchFile);
-		fputc('0',WatchFile);
 		fputc('\n',WatchFile);
 		sprintf(Str_Tmp,"%d\n",WatchCount);
 		fputs(Str_Tmp,WatchFile);
@@ -590,13 +586,6 @@ bool Load_Watches(bool clear, const char* filename)
 	char mode;
 	fgets(Str_Tmp,1024,WatchFile);
 	sscanf(Str_Tmp,"%c%*s",&mode);
-	//if ((mode == '1' && !(SegaCD_Started)) || (mode == '2' && !(_32X_Started)))
-	//{
-	//	char Device[8];
-	//	strcpy(Device,(mode > '1')?"32X":"SegaCD");
-	//	sprintf(Str_Tmp,"Warning: %s not started. \nWatches for %s addresses will be ignored.",Device,Device);
-	//	MessageBox(MESSAGEBOXPARENT,Str_Tmp,"Possible Device Mismatch",MB_OK);
-	//}
 	int WatchAdd;
 	fgets(Str_Tmp,1024,WatchFile);
 	sscanf(Str_Tmp,"%d%*s",&WatchAdd);
