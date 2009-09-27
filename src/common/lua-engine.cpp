@@ -3421,7 +3421,8 @@ int VBALoadLuaCode(const char *filename)
 		LUA = lua_open();
 		luaL_openlibs(LUA);
 
-		luaL_register(LUA, "vba", vbalib);
+		luaL_register(LUA, "emu", vbalib); // added for better cross-emulator compatibility
+		luaL_register(LUA, "vba", vbalib); // kept for backward compatibility
 		luaL_register(LUA, "memory", memorylib);
 		luaL_register(LUA, "joypad", joypadlib);
 		luaL_register(LUA, "savestate", savestatelib);
