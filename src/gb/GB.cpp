@@ -33,6 +33,7 @@
 #if (defined(WIN32) && !defined(SDL))
 #   include "../win32/stdafx.h"
 #   include "../win32/VBA.h"
+#   include "../win32/ram_search.h"
 #endif
 #include "../NLS.h"
 #include "../common/System.h"
@@ -2787,6 +2788,9 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		tempFailCount = 0;
 	}
 	VBAUpdateFrameCountDisplay();
+	#ifdef WIN32
+		Update_RAM_Search(); // Update_RAM_Watch() is also called.
+	#endif
 	return true;
 
 failedLoadGB:
