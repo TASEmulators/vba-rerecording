@@ -2833,6 +2833,20 @@ static int input_getcurrentinputstatus(lua_State *L)
 	return 1;
 }
 
+static int avi_framecount(lua_State *L)
+{
+	#ifdef WIN32
+	if (theApp.aviRecorder != NULL) {
+		lua_pushinteger(L, theApp.aviRecorder->videoFrames());
+	}
+	else
+	#endif
+	{
+		lua_pushinteger(L, 0);
+	}
+	return 1;
+}
+
 // same as math.random, but uses SFMT instead of C rand()
 // FIXME: this function doesn't care multi-instance,
 
@@ -3255,6 +3269,13 @@ static const struct luaL_reg inputlib[] = {
 	{NULL, NULL}
 };
 
+// gocha: since vba dumps avi so badly,
+// I add avilib as a workaround for enhanced video encoding.
+static const struct luaL_reg avilib[] = {
+	{"framecount", avi_framecount},
+	{NULL, NULL}
+};
+
 void HandleCallbackError(lua_State *L)
 {
 	if (L->errfunc || L->errorJmp)
@@ -3429,6 +3450,7 @@ int VBALoadLuaCode(const char *filename)
 		luaL_register(LUA, "movie", movielib);
 		luaL_register(LUA, "gui", guilib);
 		luaL_register(LUA, "input", inputlib);
+		luaL_register(LUA, "avi", avilib); // workaround for enhanced video encoding
 		lua_settop(LUA, 0);		// clean the stack, because each call to luaL_register leaves a table on top
 
 		lua_register(LUA, "AND", bit_band);

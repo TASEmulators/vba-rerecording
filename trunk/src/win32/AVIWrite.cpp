@@ -272,3 +272,7 @@ void AVIWrite::SetFPS(int f)
 	m_fps = f;
 }
 
+int AVIWrite::videoFrames()
+{
+	return m_videoFrames;
+}
