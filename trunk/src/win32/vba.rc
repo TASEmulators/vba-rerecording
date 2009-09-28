@@ -2483,9 +2483,6 @@ BEGIN
             MENUITEM "&PNG",                        ID_OPTIONS_EMULATOR_PNGFORMAT
             MENUITEM "&BMP",                        ID_OPTIONS_EMULATOR_BMPFORMAT
         END
-        MENUITEM SEPARATOR
-        MENUITEM "Copy Settings For VBAWatch",  ID_TOOLS_VBAWATCH_SETTING
-        MENUITEM "Copy Settings For VBxWatch",  ID_TOOLS_VBXWATCH_SETTING
     END
     POPUP "&Help"
     BEGIN
