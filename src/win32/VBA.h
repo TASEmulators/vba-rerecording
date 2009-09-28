@@ -36,6 +36,7 @@
 #include <afxtempl.h>
 
 #include "AcceleratorManager.h"
+#include "AVIWrite.h"
 #include "Display.h"
 #include "../common/System.h"
 

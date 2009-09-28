@@ -38,6 +38,7 @@ class AVIWrite {
   bool IsSoundAdded();
   void SetSoundFormat(WAVEFORMATEX *);
   bool AddSound(const u8 *sound, int len);
+  int videoFrames();
 
  private:
   int m_fps;
