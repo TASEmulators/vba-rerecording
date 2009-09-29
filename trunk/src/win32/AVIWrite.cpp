@@ -32,6 +32,8 @@ AVIWrite::AVIWrite()
 	m_streamSound      = NULL;
 	m_videoFrames      = 0;
 	m_samplesSound     = 0;
+	m_videoFramesTotal = 0;
+	m_samplesSoundTotal= 0;
 	m_totalBytes       = 0;
 	m_segmentNumber    = 0;
 	m_usePrevOptions   = false;
@@ -173,6 +175,10 @@ bool AVIWrite::Open(const char *filename)
 	m_videoFrames  = 0;
 	m_samplesSound = 0;
 	m_totalBytes   = 0;
+	if (!m_usePrevOptions) {
+		m_videoFramesTotal  = 0;
+		m_samplesSoundTotal = 0;
+	}
 
 	strncpy(m_aviFileName, filename, MAX_PATH);
 	strncpy(m_aviBaseName, filename, MAX_PATH);
@@ -210,6 +216,7 @@ bool AVIWrite::AddSound(const u8 *sound, int len)
 		return false;
 	}
 	m_samplesSound += samples;
+	m_samplesSoundTotal += samples;
 	m_totalBytes   += byteBuffer;
 	return true;
 }
@@ -253,6 +260,7 @@ bool AVIWrite::AddFrame(const u8 *bmp)
 		return false;
 	}
 	m_videoFrames++;
+	m_videoFramesTotal++;
 	m_totalBytes += byteBuffer;
 
 	// segment / split AVI when it's almost 2 GB (2000MB, to be precise)
@@ -274,5 +282,5 @@ void AVIWrite::SetFPS(int f)
 
 int AVIWrite::videoFrames()
 {
-	return m_videoFrames;
+	return m_videoFramesTotal;
 }

@@ -54,6 +54,8 @@ class AVIWrite {
   AVICOMPRESSOPTIONS *m_arrayOptions[1];
   int m_videoFrames;
   int m_samplesSound;
+  int m_videoFramesTotal;
+  int m_samplesSoundTotal;
   LONG m_totalBytes;
   bool m_failed;
   int m_segmentNumber;
