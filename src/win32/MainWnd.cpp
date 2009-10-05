@@ -1502,6 +1502,13 @@ romcheck_exit:
 				return;
 			}
 		}
+		else if (strcasecmp(ext, ".wch") == 0)
+		{
+			if (emulating) {
+				MainWnd::OnFileRamWatch();
+				Load_Watches(true, szFile);
+			}
+		}
 		else
 		{
 			theApp.szFile = szFile;

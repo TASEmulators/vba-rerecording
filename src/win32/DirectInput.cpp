@@ -16,6 +16,8 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+//#define USE_GETASYNCKEYSTATE_FOR_KEYBOARD
+
 #include "stdafx.h"
 
 #define DIRECTINPUT_VERSION 0x0500
@@ -29,6 +31,144 @@
 
 #include "../common/movie.h"
 #include "../common/vbalua.h"
+
+// master keyboard translation table
+static const struct {
+	int dik;
+	int vk;
+	int ascii;
+} win_key_trans_table[] = {
+	// dinput key		virtual key		ascii
+	{ DIK_ESCAPE,		VK_ESCAPE,	 	27 },
+	{ DIK_1,			'1',			'1' },
+	{ DIK_2,			'2',			'2' },
+	{ DIK_3,			'3',			'3' },
+	{ DIK_4,			'4',			'4' },
+	{ DIK_5,			'5',			'5' },
+	{ DIK_6,			'6',			'6' },
+	{ DIK_7,			'7',			'7' },
+	{ DIK_8,			'8',			'8' },
+	{ DIK_9,			'9',			'9' },
+	{ DIK_0,			'0',			'0' },
+	{ DIK_MINUS, 		VK_OEM_MINUS,	'-' },
+	{ DIK_EQUALS,		VK_OEM_PLUS,	'=' },
+	{ DIK_BACK, 		VK_BACK, 		8 },
+	{ DIK_TAB, 			VK_TAB, 		9 },
+	{ DIK_Q,			'Q',			'Q' },
+	{ DIK_W,			'W',			'W' },
+	{ DIK_E,			'E',			'E' },
+	{ DIK_R,			'R',			'R' },
+	{ DIK_T,			'T',			'T' },
+	{ DIK_Y,			'Y',			'Y' },
+	{ DIK_U,			'U',			'U' },
+	{ DIK_I,			'I',			'I' },
+	{ DIK_O,			'O',			'O' },
+	{ DIK_P,			'P',			'P' },
+	{ DIK_LBRACKET, 	VK_OEM_4,		'[' },
+	{ DIK_RBRACKET, 	VK_OEM_6,		']' },
+	{ DIK_RETURN, 		VK_RETURN, 		13 },
+	{ DIK_LCONTROL, 	VK_LCONTROL, 	0 },
+	{ DIK_A,			'A',			'A' },
+	{ DIK_S,			'S',			'S' },
+	{ DIK_D,			'D',			'D' },
+	{ DIK_F,			'F',			'F' },
+	{ DIK_G,			'G',			'G' },
+	{ DIK_H,			'H',			'H' },
+	{ DIK_J,			'J',			'J' },
+	{ DIK_K,			'K',			'K' },
+	{ DIK_L,			'L',			'L' },
+	{ DIK_SEMICOLON,	VK_OEM_1,		';' },
+	{ DIK_APOSTROPHE,	VK_OEM_7,		'\'' },
+	{ DIK_GRAVE, 		VK_OEM_3,		'`' },
+	{ DIK_LSHIFT, 		VK_LSHIFT, 		0 },
+	{ DIK_BACKSLASH, 	VK_OEM_5,		'\\' },
+	{ DIK_Z,			'Z',			'Z' },
+	{ DIK_X,			'X',			'X' },
+	{ DIK_C,			'C',			'C' },
+	{ DIK_V,			'V',			'V' },
+	{ DIK_B,			'B',			'B' },
+	{ DIK_N,			'N',			'N' },
+	{ DIK_M,			'M',			'M' },
+	{ DIK_COMMA,		VK_OEM_COMMA,	',' },
+	{ DIK_PERIOD, 		VK_OEM_PERIOD,	'.' },
+	{ DIK_SLASH, 		VK_OEM_2,		'/' },
+	{ DIK_RSHIFT, 		VK_RSHIFT, 		0 },
+	{ DIK_MULTIPLY, 	VK_MULTIPLY,	'*' },
+	{ DIK_LMENU, 		VK_LMENU, 		0 },
+	{ DIK_SPACE, 		VK_SPACE,		' ' },
+	{ DIK_CAPITAL, 		VK_CAPITAL, 	0 },
+	{ DIK_F1,			VK_F1, 			0 },
+	{ DIK_F2,			VK_F2, 			0 },
+	{ DIK_F3,			VK_F3, 			0 },
+	{ DIK_F4,			VK_F4, 			0 },
+	{ DIK_F5,			VK_F5, 			0 },
+	{ DIK_F6,			VK_F6, 			0 },
+	{ DIK_F7,			VK_F7, 			0 },
+	{ DIK_F8,			VK_F8, 			0 },
+	{ DIK_F9,			VK_F9, 			0 },
+	{ DIK_F10,			VK_F10, 		0 },
+	{ DIK_NUMLOCK,		VK_NUMLOCK, 	0 },
+	{ DIK_SCROLL,		VK_SCROLL, 		0 },
+	{ DIK_NUMPAD7,		VK_NUMPAD7, 	0 },
+	{ DIK_NUMPAD8,		VK_NUMPAD8, 	0 },
+	{ DIK_NUMPAD9,		VK_NUMPAD9, 	0 },
+	{ DIK_SUBTRACT,		VK_SUBTRACT, 	0 },
+	{ DIK_NUMPAD4,		VK_NUMPAD4, 	0 },
+	{ DIK_NUMPAD5,		VK_NUMPAD5, 	0 },
+	{ DIK_NUMPAD6,		VK_NUMPAD6, 	0 },
+	{ DIK_ADD,			VK_ADD, 		0 },
+	{ DIK_NUMPAD1,		VK_NUMPAD1, 	0 },
+	{ DIK_NUMPAD2,		VK_NUMPAD2, 	0 },
+	{ DIK_NUMPAD3,		VK_NUMPAD3, 	0 },
+	{ DIK_NUMPAD0,		VK_NUMPAD0, 	0 },
+	{ DIK_DECIMAL,		VK_DECIMAL, 	0 },
+	{ DIK_F11,			VK_F11, 		0 },
+	{ DIK_F12,			VK_F12, 		0 },
+	{ DIK_F13,			VK_F13, 		0 },
+	{ DIK_F14,			VK_F14, 		0 },
+	{ DIK_F15,			VK_F15, 		0 },
+	{ DIK_NUMPADENTER,	VK_RETURN, 		0 },
+	{ DIK_RCONTROL,		VK_RCONTROL, 	0 },
+	{ DIK_DIVIDE,		VK_DIVIDE, 		0 },
+	{ DIK_SYSRQ, 		0, 				0 },
+	{ DIK_RMENU,		VK_RMENU, 		0 },
+	{ DIK_HOME,			VK_HOME, 		0 },
+	{ DIK_UP,			VK_UP, 			0 },
+	{ DIK_PRIOR,		VK_PRIOR, 		0 },
+	{ DIK_LEFT,			VK_LEFT, 		0 },
+	{ DIK_RIGHT,		VK_RIGHT, 		0 },
+	{ DIK_END,			VK_END, 		0 },
+	{ DIK_DOWN,			VK_DOWN, 		0 },
+	{ DIK_NEXT,			VK_NEXT, 		0 },
+	{ DIK_INSERT,		VK_INSERT, 		0 },
+	{ DIK_DELETE,		VK_DELETE, 		0 },
+	{ DIK_LWIN,			VK_LWIN, 		0 },
+	{ DIK_RWIN,			VK_RWIN, 		0 },
+	{ DIK_APPS,			VK_APPS, 		0 },
+	{ DIK_PAUSE,		VK_PAUSE,		0 },
+	{ 0,				VK_CANCEL,		0 },
+
+	// New keys introduced in Windows 2000. These have no MAME codes to
+	// preserve compatibility with old config files that may refer to them
+	// as e.g. FORWARD instead of e.g. KEYCODE_WEBFORWARD. They need table
+	// entries anyway because otherwise they aren't recognized when
+	// GetAsyncKeyState polling is used (as happens currently when MAME is
+	// paused). Some codes are missing because the mapping to vkey codes
+	// isn't clear, and MapVirtualKey is no help.
+
+	{ DIK_MUTE,			VK_VOLUME_MUTE,			0 },
+	{ DIK_VOLUMEDOWN,	VK_VOLUME_DOWN,			0 },
+	{ DIK_VOLUMEUP,		VK_VOLUME_UP,			0 },
+	{ DIK_WEBHOME,		VK_BROWSER_HOME,		0 },
+	{ DIK_WEBSEARCH,	VK_BROWSER_SEARCH,		0 },
+	{ DIK_WEBFAVORITES,	VK_BROWSER_FAVORITES,	0 },
+	{ DIK_WEBREFRESH,	VK_BROWSER_REFRESH,		0 },
+	{ DIK_WEBSTOP,		VK_BROWSER_STOP,		0 },
+	{ DIK_WEBFORWARD,	VK_BROWSER_FORWARD,		0 },
+	{ DIK_WEBBACK,		VK_BROWSER_BACK,		0 },
+	{ DIK_MAIL,			VK_LAUNCH_MAIL,			0 },
+	{ DIK_MEDIASELECT,	VK_LAUNCH_MEDIA_SELECT,	0 },
+};
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -464,19 +604,36 @@ static void checkKeys()
 
 #define KEYDOWN(buffer, key) (buffer[key] & 0x80)
 
+static bool IsKeyDownAsync (WORD KeyIdent)
+{
+	//if(KeyIdent == 0 || KeyIdent == VK_ESCAPE) // if it's the 'disabled' key, it's never pressed
+	//	return false;
+
+	//if(!GUI.BackgroundInput && GUI.hWnd != GetForegroundWindow())
+	//	return false;
+
+	// the pause key is special, need this to catch all presses of it
+	// Both GetKeyState and GetAsyncKeyState cannot catch it anyway,
+	// so this should be handled in WM_KEYDOWN message.
+	if(KeyIdent == VK_PAUSE)
+	{
+		return false;
+//		if(GetAsyncKeyState(VK_PAUSE)) // not &'ing this with 0x8000 is intentional and necessary
+//			return true;
+	}
+
+	if(KeyIdent == VK_CAPITAL || KeyIdent == VK_NUMLOCK || KeyIdent == VK_SCROLL)
+		return ((GetKeyState(KeyIdent) & 0x01) != 0);
+	else
+		return ((GetAsyncKeyState(KeyIdent) & 0x8000) != 0);
+	//return ((GetKeyState (KeyIdent) & 0x80) != 0);
+}
+
 static bool readKeyboard()
 {
+#ifndef USE_GETASYNCKEYSTATE_FOR_KEYBOARD
 	if (pDevices[0].needed)
 	{
-#if 0
-		// temporary fix, no longer needed
-		extern HWND RamWatchHWnd;
-		if (GetActiveWindow() == RamWatchHWnd)
-		{
-			memset(pDevices[0].data, 0, 256);
-			return true;
-		}
-#endif
 		HRESULT hret = pDevices[0].device->
 		               GetDeviceState(256,
 		                              (LPVOID)pDevices[0].data);
@@ -491,6 +648,11 @@ static bool readKeyboard()
 
 		return hret == DI_OK;
 	}
+#else
+	for (int i = 0; i < sizeof(win_key_trans_table)/sizeof(win_key_trans_table[0]); i++) {
+		pDevices[0].data[win_key_trans_table[i].dik] = IsKeyDownAsync(win_key_trans_table[i].vk) ? 0x80 : 0;
+	}
+#endif
 	return true;
 }
 
