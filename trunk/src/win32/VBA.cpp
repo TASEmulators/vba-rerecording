@@ -395,6 +395,18 @@ VBA::VBA()
 	}
 
 	VBAMovieInit();
+
+	TIMECAPS tc;
+	if (timeGetDevCaps(&tc, sizeof(TIMECAPS))== TIMERR_NOERROR)
+	{
+		wmTimerRes = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
+		timeBeginPeriod (wmTimerRes);
+	}
+	else
+	{
+		wmTimerRes = 5;
+		timeBeginPeriod (wmTimerRes);
+	}
 }
 
 VBA::~VBA()
@@ -467,6 +479,8 @@ VBA::~VBA()
 
 	if (frameSearchMemory)
 		free(frameSearchMemory);
+
+	timeEndPeriod (wmTimerRes);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1270,6 +1284,13 @@ void log(const char *msg, ...)
 
 bool systemReadJoypads()
 {
+	// this function is called at every frame, even if vba is fast-forwarded.
+	// so we try to limit the input frequency here just in case.
+	static u32 lastTime = 0;
+	if((int)(systemGetClock() - lastTime) < 10)
+		return true;
+	lastTime = systemGetClock();
+
 	if (theApp.input)
 		return theApp.input->readDevices();
 	return false;

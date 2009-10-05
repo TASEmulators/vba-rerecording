@@ -221,6 +221,7 @@ public:
 	int        frameSearchStart;
 	u32        frameSearchOldInput [4];
 	char *     frameSearchMemory;
+	DWORD      wmTimerRes;
 
 	CList<IUpdateListener *, IUpdateListener * &> updateList;
 	int updateCount;
