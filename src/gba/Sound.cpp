@@ -217,6 +217,7 @@ bool8 soundReverse   = false;
 
 static int32  soundTicks_int32;
 static int32  SOUND_CLOCK_TICKS_int32;
+static int32  soundDSBValue_int32;
 variable_desc soundSaveStruct[] = {
 	{ &soundPaused,				sizeof(int32) },
 	{ &soundPlay,				sizeof(int32) },
@@ -286,7 +287,7 @@ variable_desc soundSaveStruct[] = {
 	{ &soundDSBEnabled,			sizeof(int32) },
 	{ &soundDSBTimer,			sizeof(int32) },
 	{ &soundDSFifoB[0],                    32 },
-	{ &soundDSBValue,			sizeof(int32) },
+	{ &soundDSBValue_int32,		sizeof(int32) }, // save as int32 because of a mistake of the past.
 	{ &soundBuffer[0][0],				6*735 },
 	{ &soundFinalWave[0],				2*735 },
 	{ NULL,									0 }
@@ -1499,6 +1500,7 @@ void soundSaveGame(gzFile gzFile)
 {
 	soundTicks_int32        = (int32) soundTicks;
 	SOUND_CLOCK_TICKS_int32 = (int32) SOUND_CLOCK_TICKS;
+	soundDSBValue_int32     = (int32) soundDSBValue;
 
 	utilWriteData(gzFile, soundSaveStruct);
 	utilWriteData(gzFile, soundSaveStructV2);
@@ -1539,5 +1541,6 @@ void soundReadGame(gzFile gzFile, int version)
 	soundTicks        = (soundtick_t) soundTicks_int32;
 	SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
 	//}
+	soundDSBValue = (u8) soundDSBValue_int32;
 }
 
