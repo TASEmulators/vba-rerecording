@@ -701,11 +701,12 @@ void MainWnd::OnUpdateToolsPlayMovie(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsPlayReadOnly()
 {
-//	if(!VBAMovieActive())
-//		systemScreenMessage("no movie active");
-//	else
-	VBAMovieToggleReadOnly();
-	theApp.movieReadOnly = VBAMovieActive() ? (VBAMovieReadOnly() ? true : false) : !theApp.movieReadOnly;
+	if (!VBAMovieActive()) {
+		theApp.movieReadOnly = !theApp.movieReadOnly;
+		systemScreenMessage(theApp.movieReadOnly  ? "Movie now read-only" : "Movie now editable");
+	}
+	else
+		VBAMovieToggleReadOnly();
 }
 
 void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI)
@@ -714,7 +715,7 @@ void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI)
 // the menu!
 ///  pCmdUI->SetCheck(VBAMovieReadOnly());
 	pCmdUI->Enable(TRUE); // TEMP
-	pCmdUI->SetCheck(VBAMovieActive() ? VBAMovieReadOnly() : theApp.movieReadOnly); // TEMP
+	pCmdUI->SetCheck(VBAMovieActive() ? VBAMovieReadOnly() : theApp.movieReadOnly);
 }
 
 void MainWnd::OnToolsResumeRecord()
