@@ -1620,10 +1620,12 @@ void gbSpeedSwitch()
 
 void gbReset()
 {
-	GBSystem.frameCount = 0;
-	GBSystem.lagCount   = 0;
-	GBSystem.lagged     = true;
-	GBSystem.laggedLast = true;
+	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
+		GBSystem.frameCount = 0;
+		GBSystem.lagCount   = 0;
+		GBSystem.lagged     = true;
+		GBSystem.laggedLast = true;
+	}
 	VBAMovieSignalReset();
 
 	SP.W            = 0xfffe;

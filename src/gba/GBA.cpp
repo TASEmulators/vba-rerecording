@@ -3390,10 +3390,12 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 
 void CPUReset()
 {
-	GBASystem.frameCount = 0;
-	GBASystem.lagCount   = 0;
-	GBASystem.lagged     = true;
-	GBASystem.laggedLast = true;
+	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
+		GBASystem.frameCount = 0;
+		GBASystem.lagCount   = 0;
+		GBASystem.lagged     = true;
+		GBASystem.laggedLast = true;
+	}
 	VBAMovieSignalReset();
 
 	if (gbaSaveType == 0)
