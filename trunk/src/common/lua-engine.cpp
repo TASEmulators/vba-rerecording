@@ -3562,7 +3562,8 @@ void VBALuaStop(void)
  */
 int VBALuaRunning(void)
 {
-	return LUA && luaRunning;
+	// FIXME: return false when no callback functions are registered.
+	return (int) (LUA != NULL); // should return true if callback functions are active.
 }
 
 /**
@@ -3601,6 +3602,7 @@ int VBALuaReadJoypad(int which)
  */
 bool8 VBALuaRerecordCountSkip(void)
 {
+	// FIXME: return true if (there are any active callback functions && skipRerecords)
 	return LUA && luaRunning && skipRerecords;
 }
 
@@ -3610,7 +3612,7 @@ bool8 VBALuaRerecordCountSkip(void)
  */
 void VBALuaGui(uint8 *screen, int ppl, int width, int height)
 {
-	if (!LUA || !luaRunning)
+	if (!LUA/* || !luaRunning*/)
 		return;
 
 	// First, check if we're being called by anybody
