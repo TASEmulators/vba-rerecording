@@ -32,7 +32,7 @@ struct EmulatedSystem
 	// main emulation function
 	void (*emuMain)(int);
 	// reset emulator
-	void (*emuReset)();
+	void (*emuReset)(bool);
 	// clean up memory
 	void (*emuCleanUp)();
 	// load battery file

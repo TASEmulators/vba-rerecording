@@ -72,7 +72,6 @@ extern u32 currentButtons [4];     // from DirectInput.cpp
 u32 currentButtons [4];
 #endif
 static bool resetSignaled   = false;
-static bool ignoreNextReset = false;
 
 static int controllersLeftThisFrame = 0;
 static int prevBorder, prevWinBorder, prevBorderAuto;
@@ -365,19 +364,9 @@ static void read_frame_controller_data(int i)
 			currentButtons[i] &= ~BUTTON_MOTION_MASK;
 	}
 
-    if (resetSignaled)
-		currentButtons[i] |= BUTTON_MASK_RESET;
+	if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
+		resetSignaled = true;
 
-    if (i == 0)
-    {
-        if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
-        {
-            // 'soft' reset:
-            theEmulator.emuReset();
-		}
-
-        resetSignaled = false;
-	}
 /* // apparently implemented from the other end, in systemReadJoypad
  #if (!(defined(WIN32) && !defined(SDL)))
     // convert from currentButtons input format
@@ -459,8 +448,8 @@ static void write_frame_controller_data(int i)
 #           endif
 #       endif
 
-        // soft-reset "button" for 1 frame if the game is reset while recording
-        if (resetSignaled)
+		// soft-reset "button" for 1 frame if the game is reset while recording
+		if (resetSignaled)
 			buttonData |= BUTTON_MASK_RESET;
 
         // write it to file
@@ -474,11 +463,6 @@ static void write_frame_controller_data(int i)
         // pretend the controller is disconnected (otherwise input it gives could cause desync since we're not writing it to the
         // movie)
         currentButtons[i] = 0;
-	}
-
-    if (i == 0)
-    {
-        resetSignaled = false;
 	}
 }
 
@@ -601,7 +585,7 @@ static void HardResetAndSRAMClear()
     theEmulator.emuCleanUp();     // keep it from being resurrected from RAM
 
     /// FIXME the correct SDL code to call for a full restart isn't in a function yet
-    theEmulator.emuReset();
+    theEmulator.emuReset(false);
 #   endif
 }
 
@@ -678,7 +662,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
     {
         // 'soft' reset:
-        theEmulator.emuReset();
+        theEmulator.emuReset(false);
 
         // load the SRAM
         result = theEmulator.emuReadBatteryFromStream(stream) ? SUCCESS : WRONG_FORMAT;
@@ -935,7 +919,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 			}
 
             // 'soft' reset:
-            theEmulator.emuReset();
+            theEmulator.emuReset(false);
 		}
 
         utilGzClose(stream);
@@ -1533,19 +1517,16 @@ uint32 VBAMovieGetState()
 
 void VBAMovieSignalReset()
 {
-    if (ignoreNextReset)
-    {
-        ignoreNextReset = false;
-        return;
-	}
-
-    if (Movie.state == MOVIE_STATE_RECORD)
+	if (VBAMovieActive())
 		resetSignaled = true;
 }
 
-void VBAMovieSignalIgnoreNextReset()
+void VBAMovieResetIfRequested()
 {
-    ignoreNextReset = true;
+	if (VBAMovieActive() && resetSignaled) {
+		theEmulator.emuReset(false);
+		resetSignaled = false;
+	}
 }
 
 void VBAMovieSetMetadata(const char *info)

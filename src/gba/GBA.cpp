@@ -3388,7 +3388,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 	}
 }
 
-void CPUReset()
+void CPUReset(bool userReset)
 {
 	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
 		GBASystem.frameCount = 0;
@@ -3396,7 +3396,10 @@ void CPUReset()
 		GBASystem.lagged     = true;
 		GBASystem.laggedLast = true;
 	}
-	VBAMovieSignalReset();
+	else if (userReset) {
+		VBAMovieSignalReset();
+		return;
+	}
 
 	if (gbaSaveType == 0)
 	{
@@ -4014,13 +4017,16 @@ updateLoop:
 							u32 joy = 0;
 
 							// update joystick information
-							if (systemReadJoypads())
+							if (systemReadJoypads()) {
 								// read default joystick
 								joy = systemReadJoypad(-1, cpuEEPROMSensorEnabled);
 
+								VBAMovieResetIfRequested();
+							}
+
 							frameBoundary = true;
 
-							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION); // FIXME: proper position?
+							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 							P1 = 0x03FF ^ (joy & 0x3FF);
 

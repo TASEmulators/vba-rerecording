@@ -51,7 +51,7 @@ extern void gbEmulate(int);
 extern bool gbIsGameboyRom(const char *);
 extern void gbSoundReset();
 extern void gbSoundSetQuality(int);
-extern void gbReset();
+extern void gbReset(bool userReset = false);
 extern void gbCleanUp();
 extern bool gbWriteBatteryFile(const char *);
 extern bool gbWriteBatteryFile(const char *, bool);

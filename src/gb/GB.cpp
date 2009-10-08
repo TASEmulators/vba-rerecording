@@ -1618,7 +1618,7 @@ void gbSpeedSwitch()
 	}
 }
 
-void gbReset()
+void gbReset(bool userReset)
 {
 	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
 		GBSystem.frameCount = 0;
@@ -1626,7 +1626,10 @@ void gbReset()
 		GBSystem.lagged     = true;
 		GBSystem.laggedLast = true;
 	}
-	VBAMovieSignalReset();
+	else if (userReset) {
+		VBAMovieSignalReset();
+		return;
+	}
 
 	SP.W            = 0xfffe;
 	AF.W            = 0x01b0;
@@ -3347,11 +3350,13 @@ void gbEmulate(int ticksToStop)
 							{
 								gbJoymask[0] = systemReadJoypad(-1, sensor);
 							}
+
+							VBAMovieResetIfRequested();
 						}
 
 						frameBoundary = true;
 
-						CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION); // FIXME: proper position?
+						CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 						int newmask = gbJoymask[0] & 255;
 

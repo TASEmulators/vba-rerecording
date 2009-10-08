@@ -117,7 +117,7 @@ void MainWnd::OnFileReset()
 		}
 		else
 		{
-			theApp.emulator.emuReset();
+			theApp.emulator.emuReset(true);
 			systemScreenMessage(winResLoadString(IDS_RESET));
 		}
 	}
@@ -531,7 +531,7 @@ void MainWnd::OnFileImportBatteryfile()
 		systemMessage(MSG_CANNOT_OPEN_FILE, "Cannot open file %s", dlg.GetPathName());
 	else
 	{
-		theApp.emulator.emuReset();
+		theApp.emulator.emuReset(true);
 	}
 }
 
