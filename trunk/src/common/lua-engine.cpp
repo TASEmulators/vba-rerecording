@@ -655,6 +655,29 @@ static int vba_lagged(lua_State *L)
 	return 1;
 }
 
+int movie_isactive(lua_State *L) {
+	lua_pushboolean(L, VBAMovieActive());
+	return 1;
+}
+
+int movie_isrecording(lua_State *L) {
+	lua_pushboolean(L, VBAMovieRecording());
+	return 1;
+}
+
+int movie_isplaying(lua_State *L) {
+	lua_pushboolean(L, VBAMoviePlaying());
+	return 1;
+}
+
+int movie_getlength(lua_State *L) {
+	if(VBAMovieActive())
+		lua_pushinteger(L, VBAMovieGetLength());
+	else
+		lua_pushinteger(L, 0);
+	return 1;
+}
+
 static int memory_readbyte(lua_State *L)
 {
 	u32 addr;
@@ -1163,7 +1186,8 @@ int movie_getauthor(lua_State *L)
 {
 	if (!VBAMovieActive())
 	{
-		lua_pushnil(L);
+		//lua_pushnil(L);
+		lua_pushstring(L, "");
 		return 1;
 	}
 
@@ -1176,7 +1200,8 @@ int movie_getfilename(lua_State *L)
 {
 	if (!VBAMovieActive())
 	{
-		lua_pushnil(L);
+		//lua_pushnil(L);
+		lua_pushstring(L, "");
 		return 1;
 	}
 
@@ -1188,7 +1213,7 @@ int movie_getfilename(lua_State *L)
 //
 
 //   "record", "playback" or nil
-int movie_mode(lua_State *L)
+int movie_getmode(lua_State *L)
 {
 	assert(!VBAMovieLoading());
 	if (!VBAMovieActive())
@@ -1202,6 +1227,20 @@ int movie_mode(lua_State *L)
 	else
 		lua_pushstring(L, "playback");
 	return 1;
+}
+
+static int movie_rerecordcount(lua_State *L) {
+	if(VBAMovieActive())
+		lua_pushinteger(L, VBAMovieGetRerecordCount());
+	else
+		lua_pushinteger(L, 0);
+	return 1;
+}
+
+static int movie_setrerecordcount(lua_State *L) {
+	if(VBAMovieActive())
+		VBAMovieSetRerecordCount(luaL_checkinteger(L, 1));
+	return 0;
 }
 
 static int movie_rerecordcounting(lua_State *L)
@@ -3215,13 +3254,21 @@ static const struct luaL_reg savestatelib[] = {
 
 static const struct luaL_reg movielib[] = {
 
-	{"framecount", vba_framecount}, // for those familiar with other emulators that have movie.framecount() instead of emulatorname.framecount()
-	{"mode", movie_mode},
-	{"rerecordcounting", movie_rerecordcounting},
-	{"stop", movie_stop},
+	{"active", movie_isactive},
+	{"recording", movie_isrecording},
+	{"playing", movie_isplaying},
+	{"mode", movie_getmode},
 
+	{"length", movie_getlength},
 	{"author", movie_getauthor},
 	{"name", movie_getfilename},
+	{"rerecordcount", movie_rerecordcount},
+	{"setrerecordcount", movie_setrerecordcount},
+
+	{"rerecordcounting", movie_rerecordcounting},
+	{"framecount", vba_framecount}, // for those familiar with other emulators that have movie.framecount() instead of emulatorname.framecount()
+
+	{"stop", movie_stop},
 
 	// alternative names
 	{"close", movie_stop},
