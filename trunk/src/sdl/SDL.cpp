@@ -1712,7 +1712,7 @@ void sdlPollEvents()
         if(!(event.key.keysym.mod & MOD_NOCTRL) &&
            (event.key.keysym.mod & KMOD_CTRL)) {
           if(emulating) {
-            emulator.emuReset();
+            emulator.emuReset(true);
 
             systemScreenMessage("Reset");
           }

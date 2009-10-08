@@ -316,7 +316,6 @@ void gbSgbPicture()
     gbSgbMode = 0;
     gbSgbMask = 0;
     gbSgbRenderBorder();
-	VBAMovieSignalIgnoreNextReset();
     gbReset();
   }
 

@@ -289,7 +289,7 @@ void Window::vOnFileReset()
 {
   if (emulating)
   {
-    m_stEmulator.emuReset();
+    m_stEmulator.emuReset(true);
     m_poFilePauseItem->set_active(false);
   }
 }

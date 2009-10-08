@@ -157,7 +157,7 @@ std::string VBAMovieGetFilename();
 
 uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly = true);
 void VBAMovieSignalReset();
-void VBAMovieSignalIgnoreNextReset();
+void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
 void VBAMovieToggleReadOnly();
 bool8 VBAMovieSwitchToRecording();

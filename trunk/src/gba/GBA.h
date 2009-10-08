@@ -101,7 +101,7 @@ extern void CPUUpdateRegister(u32, u16);
 extern void CPUWriteHalfWord(u32, u16);
 extern void CPUWriteByte(u32, u8);
 extern void CPUInit(const char *, bool);
-extern void CPUReset();
+extern void CPUReset(bool userReset = false);
 extern void CPULoop(int);
 extern void CPUCheckDMA(int, int);
 #ifdef PROFILING
