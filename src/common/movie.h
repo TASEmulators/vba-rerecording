@@ -152,6 +152,8 @@ uint32 VBAMovieGetId();
 uint32 VBAMovieGetLength();
 uint32 VBAMovieGetFrameCounter();
 uint32 VBAMovieGetState();
+uint32 VBAMovieGetRerecordCount ();
+uint32 VBAMovieSetRerecordCount (uint32 newRerecordCount);
 std::string VBAMovieGetAuthorInfo();
 std::string VBAMovieGetFilename();
 

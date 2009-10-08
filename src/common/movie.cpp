@@ -599,22 +599,28 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     int    result;
     int    fn;
 
-    if (filename[0] == '\0')
+	char movie_filename [_MAX_PATH];
+#ifdef WIN32
+	_fullpath(movie_filename, filename, _MAX_PATH);
+#else
+	// FIXME: convert to fullpath
+	strncpy(movie_filename, filename, _MAX_PATH);
+	movie_filename[_MAX_PATH-1] = '\0';
+#endif
+
+	if (movie_filename[0] == '\0')
 		{loadingMovie = false; return FILE_NOT_FOUND;}
 
-    if (!emulating)
+	if (!emulating)
 		{loadingMovie = false; return UNKNOWN_ERROR;}
 
-//	bool alreadyOpen = (Movie.file != NULL && _stricmp(filename, Movie.filename) == 0);
+//	bool alreadyOpen = (Movie.file != NULL && _stricmp(movie_filename, Movie.filename) == 0);
 
 //	if(alreadyOpen)
     change_state(MOVIE_STATE_NONE);     // have to stop current movie before trying to re-open it
 
-    if (filename[0] == '\0')
-		{loadingMovie = false; return FILE_NOT_FOUND;}
-
-    if (!(file = fopen(filename, "rb+")))
-		if (!(file = fopen(filename, "rb")))
+    if (!(file = fopen(movie_filename, "rb+")))
+		if (!(file = fopen(movie_filename, "rb")))
 			{loadingMovie = false; return FILE_NOT_FOUND;}
 		//else
 		//	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
@@ -622,8 +628,8 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 //	if(!alreadyOpen)
 //		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
 //
-//	if(!(file = fopen(filename, "rb+")))
-//		if(!(file = fopen(filename, "rb")))
+//	if(!(file = fopen(movie_filename, "rb+")))
+//		if(!(file = fopen(movie_filename, "rb")))
 //			{loadingMovie = false; return FILE_NOT_FOUND;}
 //		else
 //			movieReadOnly = 2;
@@ -649,7 +655,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     // apparently this lseek is necessary
     lseek(fn, Movie.header.offset_to_savestate, SEEK_SET);
     if (!(stream = utilGzReopen(fn, "rb")))
-		if (!(stream = utilGzOpen(filename, "rb")))
+		if (!(stream = utilGzOpen(movie_filename, "rb")))
 			{loadingMovie = false; return FILE_NOT_FOUND;}
 		else
 			fn = dup(fileno(file)); // in case the above dup failed but opening the file normally doesn't fail
@@ -680,13 +686,13 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     if (result != SUCCESS)
 		{loadingMovie = false; return result;}
 
-//	if(!(file = fopen(filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
+//	if(!(file = fopen(movie_filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
 //	{
-//		if(!Movie.readOnly || !(file = fopen(filename, "rb"))) // try read-only if failed
+//		if(!Movie.readOnly || !(file = fopen(movie_filename, "rb"))) // try read-only if failed
 //			return FILE_NOT_FOUND;
 //	}
-    if (!(file = fopen(filename, "rb+")))
-		if (!(file = fopen(filename, "rb")))
+    if (!(file = fopen(movie_filename, "rb+")))
+		if (!(file = fopen(movie_filename, "rb")))
 			{loadingMovie = false; return FILE_NOT_FOUND;}
 		else
 			movieReadOnly = 2;
@@ -712,8 +718,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
                                    // systems
     Movie.currentFrame = 0;
 
-    strncpy(Movie.filename, filename, _MAX_PATH);
-    Movie.filename[_MAX_PATH-1] = '\0';
+    strcpy(Movie.filename, movie_filename);
     Movie.readOnly = movieReadOnly;
     change_state(MOVIE_STATE_PLAY);
 
@@ -841,15 +846,24 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
     STREAM stream;
     int    fn;
 
-    bool alreadyOpen = (Movie.file != NULL && stricmp(filename, Movie.filename) == 0);
+	char movie_filename [_MAX_PATH];
+#ifdef WIN32
+	_fullpath(movie_filename, filename, _MAX_PATH);
+#else
+	// FIXME: convert to fullpath
+	strncpy(movie_filename, filename, _MAX_PATH);
+	movie_filename[_MAX_PATH-1] = '\0';
+#endif
+
+    bool alreadyOpen = (Movie.file != NULL && stricmp(movie_filename, Movie.filename) == 0);
 
     if (alreadyOpen)
 		change_state(MOVIE_STATE_NONE); // have to stop current movie before trying to re-open it
 
-    if (filename[0] == '\0')
+    if (movie_filename[0] == '\0')
 		{loadingMovie = false; return FILE_NOT_FOUND;}
 
-    if (!(file = fopen(filename, "wb")))
+    if (!(file = fopen(movie_filename, "wb")))
 		{loadingMovie = false; return FILE_NOT_FOUND;}
 
     if (!alreadyOpen)
@@ -926,7 +940,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 
         // reopen the file and seek back to the end
 
-        if (!(file = fopen(filename, "rb+")))
+        if (!(file = fopen(movie_filename, "rb+")))
 			{loadingMovie = false; return FILE_NOT_FOUND;}
 
         fseek(file, 0, SEEK_END);
@@ -951,8 +965,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
                                     // systems
     Movie.currentFrame = 0;
 
-    strncpy(Movie.filename, filename, _MAX_PATH);
-    Movie.filename[_MAX_PATH-1] = '\0';
+    strcpy(Movie.filename, movie_filename);
     Movie.readOnly = false;
     change_state(MOVIE_STATE_RECORD);
 
@@ -1351,6 +1364,25 @@ uint32 VBAMovieGetFrameCounter()
 		return 0;
 
     return Movie.currentFrame;
+}
+
+uint32 VBAMovieGetRerecordCount ()
+{
+	if(!VBAMovieActive())
+		return 0;
+
+	return Movie.header.rerecord_count;
+}
+
+uint32 VBAMovieSetRerecordCount (uint32 newRerecordCount)
+{
+	uint32 oldRerecordCount = 0;
+	if(!VBAMovieActive())
+		return 0;
+
+	oldRerecordCount = Movie.header.rerecord_count;
+	Movie.header.rerecord_count = newRerecordCount;
+	return oldRerecordCount;
 }
 
 std::string VBAMovieGetAuthorInfo()
