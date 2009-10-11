@@ -51,9 +51,9 @@ Reads value from memory address. Addresses are 0x0000-0xFFFF. Addresses inexplic
 
 Returns a chunk of memory from the given address with the given length as a string. To access, use _string.byte(str,offset)_.
 
-===int memory.writebyte(int addr)===
-===int memory.writeword(int addr)===
-===int memory.writedword(int addr)===
+===memory.writebyte(int addr)===
+===memory.writeword(int addr)===
+===memory.writedword(int addr)===
 
 Writes value to memory address. Addresses are 0x0000-0xFFFF.
 
