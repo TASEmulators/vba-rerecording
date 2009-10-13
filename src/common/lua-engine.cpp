@@ -3720,22 +3720,18 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height)
 		for (x = 0; x < width; x++, scr += systemColorDepth / 8)
 		{
 			const uint8 gui_alpha = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 3];
-			const uint8 gui_red = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 2];
-			const uint8 gui_green = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 1];
-			const uint8 gui_blue = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4];
-			uint8 scr_red, scr_green, scr_blue;
-			int red, green, blue;
-
-			getColor(scr, &scr_red, &scr_green, &scr_blue);
-
 			if (gui_alpha == 0)
 			{
 				// do nothing
-				red = scr_red;
-				green = scr_green;
-				blue = scr_blue;
+				continue;
 			}
-			else if (gui_alpha == 255)
+
+			const uint8 gui_red = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 2];
+			const uint8 gui_green = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4 + 1];
+			const uint8 gui_blue = gui_data[(y * LUA_SCREEN_WIDTH + x) * 4];
+			int red, green, blue;
+
+			if (gui_alpha == 255)
 			{
 				// direct copy
 				red = gui_red;
@@ -3745,6 +3741,8 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height)
 			else
 			{
 				// alpha-blending
+				uint8 scr_red, scr_green, scr_blue;
+				getColor(scr, &scr_red, &scr_green, &scr_blue);
 				red = (((int)gui_red - scr_red) * gui_alpha / 255 + scr_red) & 255;
 				green = (((int)gui_green - scr_green) * gui_alpha / 255 + scr_green) & 255;
 				blue = (((int)gui_blue - scr_blue) * gui_alpha / 255 + scr_blue) & 255;
