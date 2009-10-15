@@ -534,9 +534,27 @@ struct registerPointerMap
 
 #define RPM_ENTRY(name,var) {name, (unsigned int*)&var, sizeof(var)},
 
-u32 dummy_reg;
 registerPointerMap regPointerMap [] = {
-	RPM_ENTRY("todo", dummy_reg)
+	// gba registers
+	RPM_ENTRY("r0", reg[0].I)
+	RPM_ENTRY("r1", reg[1].I)
+	RPM_ENTRY("r2", reg[2].I)
+	RPM_ENTRY("r3", reg[3].I)
+	RPM_ENTRY("r4", reg[4].I)
+	RPM_ENTRY("r5", reg[5].I)
+	RPM_ENTRY("r6", reg[6].I)
+	RPM_ENTRY("r7", reg[7].I)
+	RPM_ENTRY("r8", reg[8].I)
+	RPM_ENTRY("r9", reg[9].I)
+	RPM_ENTRY("r10", reg[10].I)
+	RPM_ENTRY("r11", reg[11].I)
+	RPM_ENTRY("r12", reg[12].I)
+	RPM_ENTRY("r13", reg[13].I)
+	RPM_ENTRY("r14", reg[14].I)
+	RPM_ENTRY("r15", reg[15].I)
+	RPM_ENTRY("cpsr", reg[16].I)
+	RPM_ENTRY("spsr", reg[17].I)
+	// TODO: gb registers
 	{}
 };
 
@@ -3493,8 +3511,8 @@ static const struct luaL_reg memorylib[] = {
 	{"writebyte", memory_writebyte},
 	{"writeword", memory_writeword},
 	{"writedword", memory_writedword},
-	//{"getregister", memory_getregister},
-	//{"setregister", memory_setregister},
+	{"getregister", memory_getregister},
+	{"setregister", memory_setregister},
 
 	// alternate naming scheme for word and double-word and unsigned
 	{"readbyteunsigned", memory_readbyte},
