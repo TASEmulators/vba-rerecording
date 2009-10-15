@@ -10,13 +10,26 @@ enum LuaCallID
 	LUACALL_BEFOREEMULATION,
 	LUACALL_AFTEREMULATION,
 	LUACALL_BEFOREEXIT,
+
 	LUACALL_COUNT
 };
 void CallRegisteredLuaFunctions(LuaCallID calltype);
 
+enum LuaMemHookType
+{
+	LUAMEMHOOK_WRITE,
+	LUAMEMHOOK_READ,
+	LUAMEMHOOK_EXEC,
+	LUAMEMHOOK_WRITE_SUB,
+	LUAMEMHOOK_READ_SUB,
+	LUAMEMHOOK_EXEC_SUB,
+
+	LUAMEMHOOK_COUNT
+};
+void CallRegisteredLuaMemHook(unsigned int address, int size, unsigned int value, LuaMemHookType hookType);
+
 // Just forward function declarations
 
-void VBALuaWrite(uint32 addr);
 void VBALuaFrameBoundary();
 int VBALoadLuaCode(const char *filename);
 int VBAReloadLuaCode();
@@ -33,7 +46,5 @@ void VBALuaClearGui();
 
 // And some interesting REVERSE declarations!
 char *VBAGetFreezeFilename(int slot);
-
-void VBALuaWriteInform(uint32 addr);
 
 #endif // VBA_LUA_H
