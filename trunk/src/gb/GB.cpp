@@ -3161,7 +3161,9 @@ void gbEmulate(int ticksToStop)
 		}
 		else
 		{
-			opcode = gbReadOpcode(PC.W++);
+			opcode = gbReadOpcode(PC.W);
+			CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);
+			PC.W++;
 
 			if (IFF & 0x100)
 			{
