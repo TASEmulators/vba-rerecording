@@ -534,6 +534,14 @@ struct registerPointerMap
 
 #define RPM_ENTRY(name,var) {name, (unsigned int*)&var, sizeof(var)},
 
+extern gbRegister AF;
+extern gbRegister BC;
+extern gbRegister DE;
+extern gbRegister HL;
+extern gbRegister SP;
+extern gbRegister PC;
+extern u16        IFF;
+
 registerPointerMap regPointerMap [] = {
 	// gba registers
 	RPM_ENTRY("r0", reg[0].I)
@@ -554,7 +562,21 @@ registerPointerMap regPointerMap [] = {
 	RPM_ENTRY("r15", reg[15].I)
 	RPM_ENTRY("cpsr", reg[16].I)
 	RPM_ENTRY("spsr", reg[17].I)
-	// TODO: gb registers
+	// gb registers
+	RPM_ENTRY("a", AF.B.B1)
+	RPM_ENTRY("f", AF.B.B0)
+	RPM_ENTRY("b", BC.B.B1)
+	RPM_ENTRY("c", BC.B.B0)
+	RPM_ENTRY("d", DE.B.B1)
+	RPM_ENTRY("e", DE.B.B0)
+	RPM_ENTRY("h", HL.B.B1)
+	RPM_ENTRY("l", HL.B.B0)
+	RPM_ENTRY("af", AF.W)
+	RPM_ENTRY("bc", BC.W)
+	RPM_ENTRY("de", DE.W)
+	RPM_ENTRY("hl", HL.W)
+	RPM_ENTRY("sp", SP.W)
+	RPM_ENTRY("pc", PC.W)
 	{}
 };
 
