@@ -1297,7 +1297,7 @@ u8 gbReadOpcode(register u16 address)
 void gbWriteMemory(register u16 address, register u8 value)
 {
 	gbWriteMemoryWrapped(address, value);
-	VBALuaWriteInform(address);
+	CallRegisteredLuaMemHook(address, 1, value, LUAMEMHOOK_WRITE);
 }
 
 u8 gbReadMemory(register u16 address)

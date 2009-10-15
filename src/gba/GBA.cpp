@@ -3142,7 +3142,7 @@ unwritable:
 void CPUWriteHalfWord(u32 address, u16 value)
 {
 	CPUWriteHalfWordWrapped(address, value);
-	VBALuaWriteInform(address);
+	CallRegisteredLuaMemHook(address, 2, value, LUAMEMHOOK_WRITE);
 }
 
 void CPUWriteByteWrapped(u32 address, u8 b)
@@ -3277,7 +3277,7 @@ unwritable:
 void CPUWriteByte(u32 address, u8 b)
 {
 	CPUWriteByteWrapped(address, b);
-	VBALuaWriteInform(address);
+	CallRegisteredLuaMemHook(address, 1, b, LUAMEMHOOK_WRITE);
 }
 
 u8 cpuBitsSet[256];

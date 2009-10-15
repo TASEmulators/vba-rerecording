@@ -503,7 +503,7 @@ unwritable:
 inline void CPUWriteMemory(u32 address, u32 value)
 {
 	CPUWriteMemoryWrapped(address, value);
-	VBALuaWriteInform(address);
+	CallRegisteredLuaMemHook(address, 4, value, LUAMEMHOOK_WRITE);
 }
 
 #endif // VBA_GBAINLINE_H

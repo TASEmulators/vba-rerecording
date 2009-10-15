@@ -185,4 +185,8 @@ static inline u32 swap32(u32 v)
 	#define OnFrameBoundary() // doesn't need to do anything, yet
 #endif
 
+#ifndef CTASSERT
+#define CTASSERT(x)  typedef char __assert ## y[(x) ? 1 : -1];
+#endif
+
 #endif // VBA_PORT_H
