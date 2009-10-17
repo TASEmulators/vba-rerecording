@@ -30,6 +30,9 @@ static u8 row_next[3*322];
 static u8 *rgb_row_cur = row_cur;
 static u8 *rgb_row_next = row_next;
 
+#ifdef RGB
+#undef RGB	// wingdi.h has it
+#endif
 #define RGB(r,g,b) ((r)>>3) << systemRedShift |\
   ((g) >> 3) << systemGreenShift |\
   ((b) >> 3) << systemBlueShift\

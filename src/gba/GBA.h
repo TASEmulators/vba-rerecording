@@ -28,7 +28,8 @@
 #include "../Port.h"
 
 #if (defined(WIN32) && !defined(SDL))
-#include <windows.h> // for HANDLE
+#include "../win32/stdafx.h" // for HANDLE
+//#include <windows.h> // for HANDLE
 // NOTE: if you get this error:
 // #error WINDOWS.H already included.  MFC apps must not #include <windows.h>
 // it is probably because stdafx.h is getting included at the wrong place

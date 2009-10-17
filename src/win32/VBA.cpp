@@ -1296,11 +1296,19 @@ bool systemReadJoypads()
 	return false;
 }
 
-u32 systemReadJoypad(int which, bool sensor)
+u32 systemGetJoypad(int which, bool sensor)
 {
 	if (theApp.input /* || VBALuaUsingJoypad(which)*/)
 		return theApp.input->readDevice(which, sensor, false);
 	return 0;
+}
+
+void systemSetJoypad(int which, u32 buttons)
+{
+	if(which < 0 || which > 3)
+		which = theApp.joypadDefault;
+
+	// TODO
 }
 
 extern bool vbaShuttingDown;
@@ -1734,6 +1742,36 @@ void systemGbBorderOn()
 	if (emulating && theApp.cartridgeType == 1 && gbBorderOn)
 	{
 		theApp.updateWindowSize(theApp.videoOption);
+	}
+}
+
+bool systemIsRunningGBA()
+{
+	return(theApp.cartridgeType == 0);
+}
+
+int systemGetDefaultJoypad()
+{
+	return theApp.joypadDefault;
+}
+
+bool systemIsPaused()
+{
+	return theApp.paused;
+}
+
+void systemSetPause(bool pause)
+{
+	if (pause)
+	{
+		theApp.paused = true;
+		theApp.speedupToggle = false;
+		systemSoundPause();
+	}
+	else
+	{
+		theApp.paused = false;
+		soundResume();
 	}
 }
 

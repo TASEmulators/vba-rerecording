@@ -3337,20 +3337,20 @@ void gbEmulate(int ticksToStop)
 							{
 								if (gbSgbFourPlayers)
 								{
-									gbJoymask[0] = systemReadJoypad(0, sensor);
-									gbJoymask[1] = systemReadJoypad(1, false);
-									gbJoymask[2] = systemReadJoypad(2, false);
-									gbJoymask[3] = systemReadJoypad(3, false);
+									gbJoymask[0] = systemGetJoypad(0, sensor);
+									gbJoymask[1] = systemGetJoypad(1, false);
+									gbJoymask[2] = systemGetJoypad(2, false);
+									gbJoymask[3] = systemGetJoypad(3, false);
 								}
 								else
 								{
-									gbJoymask[0] = systemReadJoypad(0, sensor);
-									gbJoymask[1] = systemReadJoypad(1, false);
+									gbJoymask[0] = systemGetJoypad(0, sensor);
+									gbJoymask[1] = systemGetJoypad(1, false);
 								}
 							}
 							else
 							{
-								gbJoymask[0] = systemReadJoypad(-1, sensor);
+								gbJoymask[0] = systemGetJoypad(-1, sensor);
 							}
 
 							VBAMovieResetIfRequested();
@@ -3809,20 +3809,20 @@ void gbEmulate(int ticksToStop)
 					{
 						if (gbSgbFourPlayers)
 						{
-							gbJoymask[0] = systemReadJoypad(0, false);
-							gbJoymask[1] = systemReadJoypad(1, false);
-							gbJoymask[2] = systemReadJoypad(2, false);
-							gbJoymask[3] = systemReadJoypad(3, false);
+							gbJoymask[0] = systemGetJoypad(0, false);
+							gbJoymask[1] = systemGetJoypad(1, false);
+							gbJoymask[2] = systemGetJoypad(2, false);
+							gbJoymask[3] = systemGetJoypad(3, false);
 						}
 						else
 						{
-							gbJoymask[0] = systemReadJoypad(0, false);
-							gbJoymask[1] = systemReadJoypad(1, false);
+							gbJoymask[0] = systemGetJoypad(0, false);
+							gbJoymask[1] = systemGetJoypad(1, false);
 						}
 					}
 					else
 					{
-						gbJoymask[0] = systemReadJoypad(-1, false);
+						gbJoymask[0] = systemGetJoypad(-1, false);
 					}
 				}
 			}

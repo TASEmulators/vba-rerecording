@@ -75,6 +75,16 @@ struct EmulatedSystem
 	bool8 laggedLast;
 };
 
+#if (defined(WIN32) && !defined(SDL))
+#   include "../win32/stdafx.h"
+#   include "../win32/MainWnd.h"
+#   include "../win32/VBA.h"
+	#define theEmulator (theApp.emulator)
+#else
+	extern struct EmulatedSystem	emulator;
+	#define theEmulator (emulator)
+#endif
+
 extern void log(const char *, ...);
 
 extern bool systemPauseOnFrame();
@@ -85,7 +95,8 @@ extern void systemDrawScreen();
 extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick... the bool is for if motion sensor should be handled
 // too
-extern u32 systemReadJoypad(int, bool);
+extern u32 systemGetJoypad(int, bool);
+extern void systemSetJoypad(int, u32);
 extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
 extern void systemSetTitle(const char *);
@@ -103,6 +114,10 @@ extern bool systemSetSoundQuality(int quality);
 extern void systemShowSpeed(int);
 extern void systemFrame(int rate);
 extern void systemGbBorderOn();
+extern bool systemIsRunningGBA();
+extern int  systemGetDefaultJoypad();
+extern bool systemIsPaused();
+extern void systemSetPause(bool pause);
 
 extern bool systemSoundOn;
 extern u16  systemColorMap16[0x10000];

@@ -2825,7 +2825,7 @@ bool systemReadJoypads()
   return true;
 }
 
-u32 systemReadJoypad(int which, bool sensor)
+u32 systemGetJoypad(int which, bool sensor)
 {
     sensorOn = sensor;
   if(which < 0 || which > 3)
@@ -2876,7 +2876,7 @@ u32 systemReadJoypad(int which, bool sensor)
   return res;
 }
 
-void systemWriteJoypad(int which, u32 buttons)
+void systemSetJoypad(int which, u32 buttons)
 {
   if(which < 0 || which > 3)
     which = sdlDefaultJoypad;
@@ -3531,6 +3531,30 @@ void systemGbBorderOn()
     else
       srcPitch = srcWidth*3;
   }
+}
+
+bool systemIsRunningGBA()
+{
+	return (rom != NULL);
+}
+
+int systemGetDefaultJoypad()
+{
+	return sdlDefaultJoypad;
+}
+
+bool systemIsPaused()
+{
+	return paused;
+}
+
+void systemSetPause(bool pause)
+{
+	paused = pause;
+	if (pause)
+		systemSoundPause();
+	else
+		systemSoundResume();
 }
 
 u16 checksumBIOS()
