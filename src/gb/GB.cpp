@@ -3356,6 +3356,11 @@ void gbEmulate(int ticksToStop)
 							VBAMovieResetIfRequested();
 						}
 
+						if (VBALuaRunning())
+						{
+							VBALuaFrameBoundary();
+						}
+
 						frameBoundary = true;
 
 						CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);

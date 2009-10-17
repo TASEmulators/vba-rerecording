@@ -1556,11 +1556,6 @@ void systemFrame(int rate)
 	theApp.emulator.lagged     = emu.lagged;
 	theApp.emulator.laggedLast = emu.laggedLast;
 
-	if (VBALuaRunning())
-	{
-		VBALuaFrameBoundary();
-	}
-
 	if (quitAfterTime >= 0 && theApp.emulator.frameCount == quitAfterTime)
 	{
 		VBAMovieStop(true);
