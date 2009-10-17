@@ -4021,7 +4021,7 @@ updateLoop:
 							// update joystick information
 							if (systemReadJoypads()) {
 								// read default joystick
-								joy = systemReadJoypad(-1, cpuEEPROMSensorEnabled);
+								joy = systemGetJoypad(-1, cpuEEPROMSensorEnabled);
 
 								VBAMovieResetIfRequested();
 							}

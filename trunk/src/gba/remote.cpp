@@ -33,6 +33,7 @@
 #  define socklen_t int
 # endif // ! HAVE_ARPA_INET_H
 #else // WIN32
+# include "../win32/stdafx.h"
 # include <winsock.h>
 # include <io.h>
 # define socklen_t int

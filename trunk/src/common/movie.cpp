@@ -38,14 +38,6 @@
 #   include "../win32/stdafx.h"
 #   include "../win32/MainWnd.h"
 #   include "../win32/VBA.h"
-
-#   define theEmulator (theApp.emulator)
-
-#else
-
-extern struct EmulatedSystem emulator;
-#   define theEmulator (emulator)
-
 #endif
 
 #include "System.h"
@@ -367,11 +359,10 @@ static void read_frame_controller_data(int i)
 	if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
 		resetSignaled = true;
 
-/* // apparently implemented from the other end, in systemReadJoypad
+/* // apparently implemented from the other end, in systemGetJoypad
  #if (!(defined(WIN32) && !defined(SDL)))
     // convert from currentButtons input format
-    extern void systemWriteJoypad(int which, u32 buttons);
-    systemWriteJoypad(i, currentButtons[i]);
+    systemSetJoypad(i, currentButtons[i]);
  #endif
  */
 }
@@ -409,10 +400,10 @@ static void write_frame_controller_data(int i)
 
     if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
     {
-/* // apparently implemented from the other end, in systemReadJoypad
+/* // apparently implemented from the other end, in systemGetJoypad
  #if (!(defined(WIN32) && !defined(SDL)))
         // convert to currentButtons input format
-        currentButtons[i] = systemReadJoypad(i,false);
+        currentButtons[i] = systemGetJoypad(i,false);
  #endif
  */
         // get the current controller data

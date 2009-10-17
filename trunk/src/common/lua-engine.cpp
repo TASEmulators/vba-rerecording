@@ -26,13 +26,9 @@ using namespace std;
 	#include "../win32/Input.h"
 	#include "../win32/MainWnd.h"
 	#include "../win32/VBA.h"
-	#define theEmulator (theApp.emulator)
 #else
-extern int sdlDefaultJoypad;
-extern struct EmulatedSystem	emulator;
 	#define stricmp strcasecmp
 	#define strnicmp strncasecmp
-	#define theEmulator (emulator)
 #endif
 
 #include "../Port.h"
@@ -132,24 +128,6 @@ static const char* luaMemHookTypeStrings [] =
 
 //make sure we have the right number of strings
 CTASSERT(sizeof(luaMemHookTypeStrings)/sizeof(*luaMemHookTypeStrings) ==  LUAMEMHOOK_COUNT)
-
-static inline bool vbaRunsGBA(void)
-{
-#if (defined(WIN32) && !defined(SDL))
-	return(theApp.cartridgeType == 0);
-#else
-	return(rom != NULL);
-#endif
-}
-
-static inline int vbaDefaultJoypad(void)
-{
-#if (defined(WIN32) && !defined(SDL))
-	return theApp.joypadDefault;
-#else
-	return sdlDefaultJoypad;
-#endif
-}
 
 // GBA memory I/O functions copied from win32/MemoryViewerDlg.cpp
 static inline u8 CPUReadByteQuick(u32 addr)
@@ -302,42 +280,6 @@ static bool getColorIOFunc(int depth, GetColorFunc *getColor, SetColorFunc *setC
 	}
 }
 
-static bool vbaIsPaused(void)
-{
-#if (defined(WIN32) && !defined(SDL))
-	return theApp.paused;
-#else
-	extern bool paused;		// from SDL.cpp
-	return paused;
-#endif
-}
-
-static void vbaSetPause(bool pause)
-{
-	if (pause)
-	{
-#if (defined(WIN32) && !defined(SDL))
-		theApp.paused = true;
-		theApp.speedupToggle = false;
-#else
-		extern bool paused; // from SDL.cpp
-		paused = true;
-#endif
-		systemSoundPause();
-	}
-	else
-	{
-#if (defined(WIN32) && !defined(SDL))
-		theApp.paused = false;
-		soundResume();
-#else
-		extern bool paused; // from SDL.cpp
-		paused = false;
-		systemSoundResume();
-#endif
-	}
-}
-
 /**
  * Resets emulator speed / pause states after script exit.
  */
@@ -347,7 +289,7 @@ static void VBALuaOnStop(void)
 	lua_joypads_used = 0;
 	gui_used = false;
 	if (wasPaused)
-		vbaSetPause(true);
+		systemSetPause(true);
 }
 
 /**
@@ -460,7 +402,7 @@ static int vba_frameadvance(lua_State *L)
 //  finishes executing anwyays. In this case, the function returns immediately.
 static int vba_pause(lua_State *L)
 {
-	vbaSetPause(true);
+	systemSetPause(true);
 	speedmode = SPEED_NORMAL;
 
 	// Return control if we're midway through a frame. We can't pause here.
@@ -999,7 +941,7 @@ static int memory_registerexec(lua_State *L)
 //Returns the lagcounter variable
 static int vba_getlagcount(lua_State *L)
 {
-	struct EmulatedSystem	&emu = vbaRunsGBA() ? GBASystem : GBSystem;
+	struct EmulatedSystem	&emu = systemIsRunningGBA() ? GBASystem : GBSystem;
 	lua_pushinteger(L, emu.lagCount);
 	return 1;
 }
@@ -1010,7 +952,7 @@ static int vba_getlagcount(lua_State *L)
 //Returns true if the current frame is a lag frame
 static int vba_lagged(lua_State *L)
 {
-	struct EmulatedSystem	&emu = vbaRunsGBA() ? GBASystem : GBSystem;
+	struct EmulatedSystem	&emu = systemIsRunningGBA() ? GBASystem : GBSystem;
 	lua_pushboolean(L, emu.laggedLast);
 	return 1;
 }
@@ -1044,7 +986,7 @@ static int memory_readbyte(lua_State *L)
 	u8	val;
 
 	addr = luaL_checkinteger(L, 1);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		val = CPUReadByteQuick(addr);
 	}
@@ -1063,7 +1005,7 @@ static int memory_readbytesigned(lua_State *L)
 	s8	val;
 
 	addr = luaL_checkinteger(L, 1);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		val = (s8) CPUReadByteQuick(addr);
 	}
@@ -1082,7 +1024,7 @@ static int memory_readword(lua_State *L)
 	u16 val;
 
 	addr = luaL_checkinteger(L, 1);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		val = CPUReadHalfWordQuick(addr);
 	}
@@ -1101,7 +1043,7 @@ static int memory_readwordsigned(lua_State *L)
 	s16 val;
 
 	addr = luaL_checkinteger(L, 1);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		val = (s16) CPUReadHalfWordQuick(addr);
 	}
@@ -1120,7 +1062,7 @@ static int memory_readdword(lua_State *L)
 	u32 val;
 
 	addr = luaL_checkinteger(L, 1);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		val = CPUReadMemoryQuick(addr);
 	}
@@ -1143,7 +1085,7 @@ static int memory_readdwordsigned(lua_State *L)
 	s32 val;
 
 	addr = luaL_checkinteger(L, 1);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		val = (s32) CPUReadMemoryQuick(addr);
 	}
@@ -1175,7 +1117,7 @@ static int memory_readbyterange(lua_State *L)
 	{
 		unsigned char	value;
 
-		if (vbaRunsGBA())
+		if (systemIsRunningGBA())
 		{
 			value = CPUReadByteQuick(a);
 		}
@@ -1198,7 +1140,7 @@ static int memory_writebyte(lua_State *L)
 
 	addr = luaL_checkinteger(L, 1);
 	val = luaL_checkinteger(L, 2);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		CPUWriteByteQuick(addr, val);
 	}
@@ -1218,7 +1160,7 @@ static int memory_writeword(lua_State *L)
 
 	addr = luaL_checkinteger(L, 1);
 	val = luaL_checkinteger(L, 2);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		CPUWriteHalfWordQuick(addr, val);
 	}
@@ -1238,7 +1180,7 @@ static int memory_writedword(lua_State *L)
 
 	addr = luaL_checkinteger(L, 1);
 	val = luaL_checkinteger(L, 2);
-	if (vbaRunsGBA())
+	if (systemIsRunningGBA())
 	{
 		CPUWriteMemoryQuick(addr, val);
 	}
@@ -1304,7 +1246,7 @@ static int joypad_set(lua_State *L)
 	}
 
 	if (which == 0)
-		which = vbaDefaultJoypad();
+		which = systemGetDefaultJoypad();
 
 	// And the table of buttons.
 	luaL_checktype(L, 2, LUA_TTABLE);
@@ -1487,7 +1429,7 @@ static int savestate_load(lua_State *L)
 //   Gets the frame counter for the movie, or the number of frames since last reset.
 int vba_framecount(lua_State *L)
 {
-	struct EmulatedSystem	&emu = vbaRunsGBA() ? GBASystem : GBSystem;
+	struct EmulatedSystem	&emu = systemIsRunningGBA() ? GBASystem : GBSystem;
 	if (!VBAMovieActive())
 	{
 		lua_pushinteger(L, emu.frameCount);
@@ -2220,7 +2162,7 @@ static int gui_fillcircle(lua_State *L)
 static int gui_gdscreenshot(lua_State *L)
 {
 	int xofs = 0, yofs = 0, ppl = 240, width = 240, height = 160;
-	if (!vbaRunsGBA())
+	if (!systemIsRunningGBA())
 	{
 		if (gbBorderOn)
 			xofs = 48, yofs = 40, ppl = 256;
@@ -3161,7 +3103,7 @@ static int input_getcurrentinputstatus(lua_State *L)
 		POINT mouse;
 
 		int xofs = 0, yofs = 0, width = 240, height = 160;
-		if (!vbaRunsGBA())
+		if (!systemIsRunningGBA())
 		{
 			if (gbBorderOn)
 				width = 256, height = 224, xofs = 48, yofs = 40;
@@ -3841,8 +3783,8 @@ int VBALoadLuaCode(const char *filename)
 	numMemHooks = 0;
 	transparencyModifier = 255; // opaque
 	lua_joypads_used = 0;		// not used
-	wasPaused = vbaIsPaused();
-	vbaSetPause(false);
+	wasPaused = systemIsPaused();
+	systemSetPause(false);
 
 	// And run it right now. :)
 	//VBALuaFrameBoundary();
@@ -3916,7 +3858,7 @@ int VBALuaRunning(void)
 int VBALuaUsingJoypad(int which)
 {
 	if (which < 0 || which > 3)
-		which = vbaDefaultJoypad();
+		which = systemGetDefaultJoypad();
 	return lua_joypads_used & (1 << which);
 }
 
@@ -3930,7 +3872,7 @@ int VBALuaUsingJoypad(int which)
 int VBALuaReadJoypad(int which)
 {
 	if (which < 0 || which > 3)
-		which = vbaDefaultJoypad();
+		which = systemGetDefaultJoypad();
 
 	//lua_joypads_used &= ~(1 << which);
 	return lua_joypads[which];
