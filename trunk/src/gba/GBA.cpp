@@ -4026,6 +4026,11 @@ updateLoop:
 								VBAMovieResetIfRequested();
 							}
 
+							if (VBALuaRunning())
+							{
+								VBALuaFrameBoundary();
+							}
+
 							frameBoundary = true;
 
 							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
