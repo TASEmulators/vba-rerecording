@@ -97,7 +97,7 @@
 #define IDD_MOVIECREATE                 156
 #define IDD_MOVIEOPEN                   157
 #define IDD_TEXTCONFIG                  158
-#define IDD_LUA_ADD                     159
+#define IDD_LUA                         159
 #define IDD_ARCHIVEFILECHOOSER          160
 #define IDD_RAMSEARCH                   161
 #define IDD_EDITWATCH                   162
@@ -557,8 +557,8 @@
 #define IDC_DECIMAL_DISPLAY             1281
 #define IDC_CHEATREFRESHBUTTON          1283
 #define IDC_CANCEL                      1284
-#define IDC_LUA_FILENAME                1285
-#define IDC_LUA_BROWSE                  1286
+#define IDC_EDIT_LUAPATH                1285
+#define IDC_BUTTON_LUABROWSE            1286
 #define IDS_FILTER_LUA                  1287
 #define IDS_SELECT_LUA_NAME             1288
 #define IDC_BUTTON1                     1289
@@ -609,6 +609,10 @@
 #define IDC_CAPTURE_DIR_RESET           1359
 #define IDC_IPS_DIR_RESET               1360
 #define IDC_LIST1                       1361
+#define IDC_BUTTON_LUARUN               1362
+#define IDC_BUTTON_LUASTOP              1363
+#define IDC_LUACONSOLE                  1364
+#define IDC_BUTTON_LUAEDIT              1365
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
 #define ID_OPTIONS_VIDEO_VSYNC          40009
@@ -932,9 +936,9 @@
 #define ID_SOUND_SOUNDCHANNELS          40459
 #define ID_CHEATS_PAUSEDURINGCHEATSEARCH 40463
 #define ID_TOOLS_LAGCOUNTER             40464
-#define ID_FILE_LUA_LOAD                40467
+#define ID_FILE_LUA_OPEN                40467
 #define ID_FILE_LUA_RELOAD              40468
-#define ID_FILE_LUA_STOP                40469
+#define ID_FILE_LUA_CLOSE_ALL           40469
 #define ID_TOOLS_LAGCOUNTER_RESET       40470
 #define ID_MOVIE_END_PAUSE              40485
 #define ID_MOVIE_END_RESTART            40489
@@ -950,6 +954,7 @@
 #define ID_WATCHES_NEWWATCH             40668
 #define ID_WATCHES_DUPLICATEWATCH       40669
 #define ID_WATCHES_UPDOWN               40670
+#define ID_FILE_LUA_STOP                40671
 #define IDC_EDIT_COMPAREVALUE           41090
 #define IDC_EDIT_COMPAREADDRESS         41091
 #define IDC_EDIT_COMPARECHANGES         41092
@@ -1010,7 +1015,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        170
 #define _APS_NEXT_COMMAND_VALUE         42406
-#define _APS_NEXT_CONTROL_VALUE         1380
+#define _APS_NEXT_CONTROL_VALUE         1366
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

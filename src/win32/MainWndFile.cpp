@@ -1159,16 +1159,28 @@ void MainWnd::OnUpdateFileSlotDisplayModificationTime(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.showSlotTime);
 }
 
-void MainWnd::OnFileLuaLoad()
+void MainWnd::OnFileLuaOpen()
 {
 	theApp.winCheckFullscreen();
-	LuaOpenDialog dlg;
-	dlg.DoModal();
+
+	if (!LuaConsoleHWnd)
+	{
+		LuaConsoleHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_LUA), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) DlgLuaScriptDialog);
+	}
+	else
+		::SetForegroundWindow(LuaConsoleHWnd);
 }
 
-void MainWnd::OnUpdateFileLuaLoad(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateFileLuaOpen(CCmdUI*pCmdUI)
 {
+	pCmdUI->SetCheck(LuaConsoleHWnd != NULL);
 	pCmdUI->Enable(true);
+}
+
+void MainWnd::OnFileLuaCloseAll()
+{
+	if(LuaConsoleHWnd)
+		::PostMessage(LuaConsoleHWnd, WM_CLOSE, 0, 0);
 }
 
 void MainWnd::OnFileLuaReload()
@@ -1176,15 +1188,8 @@ void MainWnd::OnFileLuaReload()
 	VBAReloadLuaCode();
 }
 
-void MainWnd::OnUpdateFileLuaReload(CCmdUI*pCmdUI)
-{
-	pCmdUI->Enable(true);
-}
-
 void MainWnd::OnFileLuaStop()
 {
-	// I'm going to assume that Windows will adequately guard against this being executed
-	// uselessly. Even if it wasn't, it's no big deal.
 	VBALuaStop();
 }
 
@@ -1247,8 +1252,8 @@ void MainWnd::OnUpdateFileRamWatch(CCmdUI*pCmdUI)
 	pCmdUI->Enable(TRUE);
 }
 
-void MainWnd::OnUpdateFileLuaStop(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateFileLuaCloseAll(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(VBALuaRunning());
+	pCmdUI->Enable(LuaConsoleHWnd != NULL);
 }
 

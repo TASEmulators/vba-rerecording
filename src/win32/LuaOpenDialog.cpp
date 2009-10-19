@@ -22,115 +22,235 @@
 //#include "stdafx.h"
 //#include "resource.h"
 #include "LuaOpenDialog.h"
-#include "FileDlg.h"
 #include "MainWnd.h"
 #include "WinResUtil.h"
 #include "VBA.h"
 
 #include "../common/vbalua.h"
 
-extern int emulating; // from VBA.cpp
+HWND LuaConsoleHWnd = NULL;
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// LuaOpenDialog dialog
-
-LuaOpenDialog::LuaOpenDialog(CWnd*pParent /*=NULL*/)
-	: CDialog(LuaOpenDialog::IDD, pParent)
-{}
-
-LuaOpenDialog::~LuaOpenDialog()
-{}
-
-void LuaOpenDialog::DoDataExchange(CDataExchange*pDX)
+void PrintToWindowConsole(int hDlgAsInt, const char* str)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(LuaOpenDialog)
-	DDX_Control(pDX, IDC_LUA_FILENAME, m_filename);
-	//}}AFX_DATA_MAP
-}
+	HWND hDlg = (HWND)hDlgAsInt;
+	HWND hConsole = GetDlgItem(hDlg, IDC_LUACONSOLE);
 
-BEGIN_MESSAGE_MAP(LuaOpenDialog, CDialog)
-//{{AFX_MSG_MAP(LuaOpenDialog)
-ON_WM_DROPFILES()
-ON_BN_CLICKED(IDC_LUA_BROWSE, OnBnClickedBrowse)
-//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// LuaOpenDialog message handlers
-
-BOOL LuaOpenDialog::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
-
-	GetDlgItem(IDC_LUA_FILENAME)->SetWindowText(luaName);
-
-	// scroll to show the rightmost side of the lua filename
-	((CEdit*)GetDlgItem(IDC_LUA_FILENAME))->SetSel((DWORD)(luaName.GetLength()-1), FALSE);
-
-	return TRUE; // return TRUE unless you set the focus to a control
-	// EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void LuaOpenDialog::OnBnClickedBrowse()
-{
-	theApp.winCheckFullscreen();	// FIXME: necessary or not?
-
-	CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
-	CString luaDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_LUA_DIR);
-
-	CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
-	CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
-
-	LPCTSTR exts[] = { ".lua", NULL };
-
-	FileDlg dlg(this, luaName, filter, 1, "lua", exts, luaDir, title, false, true);
-
-	if (dlg.DoModal() == IDCANCEL)
+	int length = GetWindowTextLength(hConsole);
+	if(length >= 250000)
 	{
-		return;
+		// discard first half of text if it's getting too long
+		SendMessage(hConsole, EM_SETSEL, 0, length/2);
+		SendMessage(hConsole, EM_REPLACESEL, false, (LPARAM)"");
+		length = GetWindowTextLength(hConsole);
 	}
+	SendMessage(hConsole, EM_SETSEL, length, length);
 
-	luaName = dlg.GetPathName();
+	//LuaPerWindowInfo& info = LuaWindowInfo[hDlg];
 
-	GetDlgItem(IDC_LUA_FILENAME)->SetWindowText(luaName);
-
-	// scroll to show the rightmost side of the lua filename
-	((CEdit*)GetDlgItem(IDC_LUA_FILENAME))->SetSel((DWORD)(luaName.GetLength()-1), FALSE);
-}
-
-void LuaOpenDialog::OnOK()
-{
-	CString filename;
-	m_filename.GetWindowText(filename);
-	if (VBALoadLuaCode(filename))
 	{
-		CDialog::OnOK();
-		// For user's convenience, don't close dialog unless we're done.
-		// Users who make syntax errors and fix/reload will thank us.
-	}
-	else
-	{
-		// Errors are displayed by the Lua code.
+		SendMessage(hConsole, EM_REPLACESEL, false, (LPARAM)str);
 	}
 }
 
-void LuaOpenDialog::OnDropFiles(HDROP hDropInfo)
+void WinLuaOnStart(int hDlgAsInt)
 {
-	char szFile[1024];
-	if (DragQueryFile(hDropInfo, 0, szFile, 1024))
-	{
-		DragFinish(hDropInfo);
-		CString filename = szFile;
-		m_filename.SetWindowText(filename);
-	}
+	HWND hDlg = (HWND)hDlgAsInt;
+	//LuaPerWindowInfo& info = LuaWindowInfo[hDlg];
+	//info.started = true;
+	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_LUABROWSE), false); // disable browse while running because it misbehaves if clicked in a frameadvance loop
+	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_LUASTOP), true);
+	SetWindowText(GetDlgItem(hDlg, IDC_BUTTON_LUARUN), "Restart");
+	SetWindowText(GetDlgItem(hDlg, IDC_LUACONSOLE), ""); // clear the console
+//	Show_Genesis_Screen(HWnd); // otherwise we might never show the first thing the script draws
 }
 
+void WinLuaOnStop(int hDlgAsInt)
+{
+	HWND hDlg = (HWND)hDlgAsInt;
+	//LuaPerWindowInfo& info = LuaWindowInfo[hDlg];
+
+	HWND prevWindow = GetActiveWindow();
+	SetActiveWindow(hDlg); // bring to front among other script/secondary windows, since a stopped script will have some message for the user that would be easier to miss otherwise
+	if(prevWindow == AfxGetMainWnd()->GetSafeHwnd()) SetActiveWindow(prevWindow);
+
+	//info.started = false;
+	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_LUABROWSE), true);
+	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_LUASTOP), false);
+	SetWindowText(GetDlgItem(hDlg, IDC_BUTTON_LUARUN), "Run");
+//	if(statusOK)
+//		Show_Genesis_Screen(MainWindow->getHWnd()); // otherwise we might never show the last thing the script draws
+	//if(info.closeOnStop)
+	//	PostMessage(hDlg, WM_CLOSE, 0, 0);
+}
+
+INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	RECT r;
+	RECT r2;
+	int dx1, dy1, dx2, dy2;
+
+	switch (msg) {
+
+	case WM_INITDIALOG:
+	{
+		// disable resizing
+		LONG wndStyle = GetWindowLong(hDlg, GWL_STYLE);
+		wndStyle &= ~WS_THICKFRAME;
+		SetWindowLong(hDlg, GWL_STYLE, wndStyle);
+
+		// remove the 30000 character limit from the console control
+		SendMessage(GetDlgItem(hDlg, IDC_LUACONSOLE),EM_LIMITTEXT,0,0);
+
+		GetWindowRect(AfxGetMainWnd()->GetSafeHwnd(), &r);
+		dx1 = (r.right - r.left) / 2;
+		dy1 = (r.bottom - r.top) / 2;
+
+		GetWindowRect(hDlg, &r2);
+		dx2 = (r2.right - r2.left) / 2;
+		dy2 = (r2.bottom - r2.top) / 2;
+
+		int windowIndex = 0;//std::find(LuaScriptHWnds.begin(), LuaScriptHWnds.end(), hDlg) - LuaScriptHWnds.begin();
+		int staggerOffset = windowIndex * 24;
+		r.left += staggerOffset;
+		r.right += staggerOffset;
+		r.top += staggerOffset;
+		r.bottom += staggerOffset;
+
+		// push it away from the main window if we can
+		const int width = (r.right-r.left); 
+		const int width2 = (r2.right-r2.left); 
+		if(r.left+width2 + width < GetSystemMetrics(SM_CXSCREEN))
+		{
+			r.right += width;
+			r.left += width;
+		}
+		else if((int)r.left - (int)width2 > 0)
+		{
+			r.right -= width2;
+			r.left -= width2;
+		}
+
+		SetWindowPos(hDlg, NULL, r.left, r.top, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+
+		DragAcceptFiles(hDlg, true);
+		SetDlgItemText(hDlg, IDC_EDIT_LUAPATH, VBAGetLuaScriptName());
+		return true;
+	}	break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+			case IDOK:
+			case IDCANCEL: {
+				EndDialog(hDlg, true); // goto case WM_CLOSE;
+			}	break;
+
+			case IDC_BUTTON_LUARUN:
+			{
+				char filename[MAX_PATH];
+				GetDlgItemText(hDlg, IDC_EDIT_LUAPATH, filename, MAX_PATH);
+				VBALoadLuaCode(filename);
+			}	break;
+
+			case IDC_BUTTON_LUASTOP:
+			{
+				VBALuaStop();
+			}	break;
+
+			case IDC_BUTTON_LUAEDIT:
+			{
+				char Str_Tmp [1024]; // shadow added because the global one is unreliable
+				SendDlgItemMessage(hDlg,IDC_EDIT_LUAPATH,WM_GETTEXT,(WPARAM)512,(LPARAM)Str_Tmp);
+				// tell the OS to open the file with its associated editor,
+				// without blocking on it or leaving a command window open.
+				ShellExecute(NULL, "edit", Str_Tmp, NULL, NULL, SW_SHOWNORMAL);
+			}	break;
+
+			case IDC_BUTTON_LUABROWSE:
+			{
+				CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
+				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
+
+				CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
+				CString luaDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_LUA_DIR);
+
+				char *p = filter.GetBuffer(0);
+				while ((p = strchr(p, '|')) != NULL)
+					*p++ = 0;
+
+				OPENFILENAME  ofn;
+				ZeroMemory( (LPVOID)&ofn, sizeof(OPENFILENAME) );
+				ofn.lpstrFile       = luaName.GetBuffer(MAX_PATH);
+				ofn.nMaxFile        = MAX_PATH;
+				ofn.lStructSize     = sizeof(OPENFILENAME);
+				ofn.hwndOwner       = hDlg;
+				ofn.lpstrFilter     = filter;
+				ofn.nFilterIndex    = 0;
+				ofn.lpstrInitialDir = luaDir;
+				ofn.lpstrTitle      = title;
+				ofn.lpstrDefExt     = "lua";
+				ofn.Flags           = OFN_HIDEREADONLY | OFN_FILEMUSTEXIST | OFN_ENABLESIZING | OFN_EXPLORER; // hide previously-ignored read-only checkbox (the real read-only box is in the open-movie dialog itself)
+				if(GetOpenFileName( &ofn ))
+				{
+					SetWindowText(GetDlgItem(hDlg, IDC_EDIT_LUAPATH), luaName);
+				}
+				return true;
+
+
+/*
+
+				CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
+				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
+
+				CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
+				CString luaDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_LUA_DIR);
+
+				FileDlg dlg(this, luaName, filter, 1, "lua", exts, luaDir, title, false, true);
+
+				if (dlg.DoModal() != IDCANCEL)
+				{
+					luaName = dlg.GetPathName();
+
+					SetWindowText(GetDlgItem(hDlg, IDC_EDIT_LUAPATH), luaName);
+				}
+				return true;*/
+			}	break;
+
+			case IDC_EDIT_LUAPATH:
+			{
+				char filename[MAX_PATH];
+				GetDlgItemText(hDlg, IDC_EDIT_LUAPATH, filename, MAX_PATH);
+				FILE* file = fopen(filename, "rb");
+				EnableWindow(GetDlgItem(hDlg, IDOK), file != NULL);
+				if(file)
+					fclose(file);
+			}	break;
+		}
+		break;
+
+	case WM_CLOSE: {
+		VBALuaStop();
+		DragAcceptFiles(hDlg, FALSE);
+		LuaConsoleHWnd = NULL;
+	}	break;
+
+	case WM_DROPFILES: {
+		HDROP hDrop;
+		//UINT fileNo;
+		UINT fileCount;
+		char filename[_MAX_PATH];
+
+		hDrop = (HDROP)wParam;
+		fileCount = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+		if (fileCount > 0) {
+			DragQueryFile(hDrop, 0, filename, sizeof(filename));
+			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_LUAPATH), filename);
+		}
+		DragFinish(hDrop);
+		return true;
+	}	break;
+
+	}
+
+	return false;
+
+}

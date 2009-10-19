@@ -278,7 +278,7 @@ struct
 	{ "InputDisplay(!)",				ID_TOOLS_INPUTDISPLAY							},
 	{ "LagCounter(!)",					ID_TOOLS_LAGCOUNTER								},
 //  { "LagCounterReset(!)",				ID_TOOLS_LAGCOUNTER_RESET						},
-	{ "LuaLoad(!)",						ID_FILE_LUA_LOAD								},
+	{ "LuaLoad(!)",						ID_FILE_LUA_OPEN								},
 	{ "LuaReload(!)",					ID_FILE_LUA_RELOAD								},
 	{ "LuaStop(!)",						ID_FILE_LUA_STOP								},
 	{ "AVIRecording",					ID_TOOLS_AVIRECORDING							},
