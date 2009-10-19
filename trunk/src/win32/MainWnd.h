@@ -510,12 +510,12 @@ protected:
 	afx_msg BOOL OnFileSaveSlot(UINT nID);
 	afx_msg BOOL OnSelectSlot(UINT nID);
 
-	afx_msg void OnFileLuaLoad();
-	afx_msg void OnUpdateFileLuaLoad(CCmdUI *pCmdUI);
+	afx_msg void OnFileLuaOpen();
+	afx_msg void OnUpdateFileLuaOpen(CCmdUI *pCmdUI);
+	afx_msg void OnFileLuaCloseAll();
+	afx_msg void OnUpdateFileLuaCloseAll(CCmdUI *pCmdUI);
 	afx_msg void OnFileLuaReload();
-	afx_msg void OnUpdateFileLuaReload(CCmdUI *pCmdUI);
 	afx_msg void OnFileLuaStop();
-	afx_msg void OnUpdateFileLuaStop(CCmdUI *pCmdUI);
 	afx_msg void OnFileRamSearch();
 	afx_msg void OnUpdateFileRamSearch(CCmdUI *pCmdUI);
 	afx_msg void OnFileRamWatch();

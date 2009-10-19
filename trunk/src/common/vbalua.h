@@ -44,6 +44,8 @@ bool8 VBALuaRerecordCountSkip();
 void VBALuaGui(uint8 *screen, int ppl, int width, int height);
 void VBALuaClearGui();
 
+char* VBAGetLuaScriptName();
+
 // And some interesting REVERSE declarations!
 char *VBAGetFreezeFilename(int slot);
 
