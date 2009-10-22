@@ -2478,6 +2478,76 @@ static int gui_fillcircle(lua_State *L)
 	return 0;
 }
 
+static int gui_getpixel(lua_State *L) {
+
+	int x = luaL_checkinteger(L, 1);
+	int y = luaL_checkinteger(L, 2);
+
+	int pixWidth   = 240, pixHeight = 160;
+	int scrWidth   = 240, scrHeight = 160;
+	int scrOffsetX = 0, scrOffsetY = 0;
+	int pitch;
+	if (!systemIsRunningGBA())
+	{
+		if (gbBorderOn)
+		{
+			pixWidth   = 256, pixHeight = 224;
+			scrOffsetX = 48, scrOffsetY = 40;
+		}
+		else
+		{
+			pixWidth = 160, pixHeight = 144;
+		}
+		scrWidth = 160, scrHeight = 144;
+	}
+	pitch = pixWidth*(systemColorDepth/8)+(systemColorDepth == 24 ? 0 : 4);
+	scrOffsetY++; // don't know why it's needed
+
+	if(!(x >= 0 && y >= 0 && x < scrWidth && y < scrHeight) /*!gui_check_boundary(x,y)*/)
+	{
+		lua_pushinteger(L, 0);
+		lua_pushinteger(L, 0);
+		lua_pushinteger(L, 0);
+	}
+	else
+	{
+		switch(systemColorDepth)
+		{
+		case 16:
+			{
+				uint16 *screen = (uint16*) (&pix[scrOffsetY*pitch+scrOffsetX*2]);
+				uint16 pixColor = screen[y*pitch/2 + x];
+				lua_pushinteger(L, (pixColor >> 8) & 0xF8); // red
+				lua_pushinteger(L, (pixColor >> 3) & 0xFC); // green
+				lua_pushinteger(L, (pixColor << 3) & 0xF8); // blue
+			}
+			break;
+		case 24:
+			{
+				uint8 *screen = &pix[scrOffsetY*pitch+scrOffsetX*3];
+				lua_pushinteger(L, screen[y*pitch + x*3 + 2]); // red
+				lua_pushinteger(L, screen[y*pitch + x*3 + 1]); // green
+				lua_pushinteger(L, screen[y*pitch + x*3 + 0]); // blue
+			}
+			break;
+		case 32:
+			{
+				uint8 *screen = &pix[scrOffsetY*pitch+scrOffsetX*4];
+				lua_pushinteger(L, screen[y*pitch + x*4 + 2]); // red
+				lua_pushinteger(L, screen[y*pitch + x*4 + 1]); // green
+				lua_pushinteger(L, screen[y*pitch + x*4 + 0]); // blue
+			}
+			break;
+		default:
+			lua_pushinteger(L, 0);
+			lua_pushinteger(L, 0);
+			lua_pushinteger(L, 0);
+			break;
+		}
+	}
+	return 3;
+}
+
 // gui.gdscreenshot()
 //
 //  Returns a screen shot as a string in gd's v1 file format.
@@ -3892,6 +3962,7 @@ static const struct luaL_reg guilib[] = {
 	{"popup", gui_popup},
 	{"gdscreenshot", gui_gdscreenshot},
 	{"gdoverlay", gui_gdoverlay},
+	{"getpixel", gui_getpixel},
 
 	// alternative names
 	{"drawtext", gui_text},
@@ -3905,6 +3976,7 @@ static const struct luaL_reg guilib[] = {
 	{"drawrect", gui_drawbox},
 	{"drawimage", gui_gdoverlay},
 	{"image", gui_gdoverlay},
+	{"readpixel", gui_getpixel},
 	{NULL,NULL}
 };
 
