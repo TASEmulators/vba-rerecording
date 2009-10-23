@@ -173,8 +173,8 @@ int32 gbDMASpeedVersion  = 1;
 // emulator features
 int32 gbBattery         = 0;
 int32 gbCaptureNumber   = 0;
-bool8 gbCapture         = false;
-bool8 gbCapturePrevious = false;
+bool  gbCapture         = false;
+bool  gbCapturePrevious = false;
 int32 gbJoymask[4]      = { 0, 0, 0, 0 };
 
 int32 gbEchoRAMFixOn = 1;
@@ -3375,7 +3375,7 @@ void gbEmulate(int ticksToStop)
 						newmask = (gbJoymask[0] >> 10);
 
 						speedup    = (newmask & 1) ? true : false;
-						gbCapture |= (newmask & 2) ? 1 : 0;
+						gbCapture |= (newmask & 2) ? true : false;
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -3394,7 +3394,7 @@ void gbEmulate(int ticksToStop)
 								systemScreenCapture(gbCaptureNumber);
 							}
 							gbCapturePrevious = gbCapture;
-							gbCapture = 0;
+							gbCapture = false;
 						}
 						else
 						{

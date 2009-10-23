@@ -148,8 +148,8 @@ bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = fals
 
 static bool8 pauseAfterFrameAdvance = false;
 
-int32 capture         = 0;
-int32 capturePrevious = 0;
+bool  capture         = false;
+bool  capturePrevious = false;
 int32 captureNumber   = 0;
 
 const int32 TIMER_TICKS[4] = {
@@ -4069,7 +4069,7 @@ updateLoop:
 								cheatsCheckKeys(P1^0x3FF, ext);
 							cpuDmaTicksToUpdate += cheatTicks;
 							speedup  = (ext & 1) ? true : false;
-							capture |= (ext & 2) ? 1 : 0;
+							capture |= (ext & 2) ? true : false;
 
 							DISPSTAT |= 1;
 							DISPSTAT &= 0xFFFD;
@@ -4095,7 +4095,7 @@ updateLoop:
 									systemScreenCapture(captureNumber);
 								}
 								capturePrevious = capture;
-								capture = 0;
+								capture = false;
 							}
 							else
 							{
