@@ -4069,7 +4069,7 @@ updateLoop:
 								cheatsCheckKeys(P1^0x3FF, ext);
 							cpuDmaTicksToUpdate += cheatTicks;
 							speedup  = (ext & 1) ? true : false;
-							capture |= (ext & 2) ? true : false;
+							capture |= (ext & 2) ? 1 : 0;
 
 							DISPSTAT |= 1;
 							DISPSTAT &= 0xFFFD;
@@ -4095,7 +4095,7 @@ updateLoop:
 									systemScreenCapture(captureNumber);
 								}
 								capturePrevious = capture;
-								capture = false;
+								capture = 0;
 							}
 							else
 							{
