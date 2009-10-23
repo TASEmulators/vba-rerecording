@@ -940,6 +940,7 @@
 #define ID_FILE_LUA_RELOAD              40468
 #define ID_FILE_LUA_CLOSE_ALL           40469
 #define ID_TOOLS_LAGCOUNTER_RESET       40470
+#define ID_FILE_QUICKSCREENCAPTURE      40471
 #define ID_MOVIE_END_PAUSE              40485
 #define ID_MOVIE_END_RESTART            40489
 #define ID_MOVIE_END_STOP               40490

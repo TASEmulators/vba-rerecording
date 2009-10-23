@@ -3374,15 +3374,8 @@ void gbEmulate(int ticksToStop)
 
 						newmask = (gbJoymask[0] >> 10);
 
-						speedup   = (newmask & 1) ? true : false;
-						gbCapture = (newmask & 2) ? true : false;
-
-						if (gbCapture && !gbCapturePrevious)
-						{
-							gbCaptureNumber++;
-							systemScreenCapture(gbCaptureNumber);
-						}
-						gbCapturePrevious = gbCapture;
+						speedup    = (newmask & 1) ? true : false;
+						gbCapture |= (newmask & 2) ? true : false;
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -3393,6 +3386,15 @@ void gbEmulate(int ticksToStop)
 
 							systemDrawScreen();
 							gbFrameSkipCount = 0;
+
+							if (gbCapture && !gbCapturePrevious)
+							{
+								gbCaptureNumber++;
+								//systemScreenMessage("");
+								systemScreenCapture(gbCaptureNumber);
+							}
+							gbCapturePrevious = gbCapture;
+							gbCapture = 0;
 						}
 						else
 						{
