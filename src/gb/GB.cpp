@@ -3375,7 +3375,7 @@ void gbEmulate(int ticksToStop)
 						newmask = (gbJoymask[0] >> 10);
 
 						speedup    = (newmask & 1) ? true : false;
-						gbCapture |= (newmask & 2) ? true : false;
+						gbCapture |= (newmask & 2) ? 1 : 0;
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
