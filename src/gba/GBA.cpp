@@ -4068,15 +4068,8 @@ updateLoop:
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1^0x3FF, ext);
 							cpuDmaTicksToUpdate += cheatTicks;
-							speedup = (ext & 1) ? true : false;
-							capture = (ext & 2) ? true : false;
-
-							if (capture && !capturePrevious)
-							{
-								captureNumber++;
-								systemScreenCapture(captureNumber);
-							}
-							capturePrevious = capture;
+							speedup  = (ext & 1) ? true : false;
+							capture |= (ext & 2) ? true : false;
 
 							DISPSTAT |= 1;
 							DISPSTAT &= 0xFFFD;
@@ -4094,11 +4087,21 @@ updateLoop:
 							{
 								systemDrawScreen();
 								frameCount = 0;
+
+								if (capture && !capturePrevious)
+								{
+									captureNumber++;
+									//systemScreenMessage("");
+									systemScreenCapture(captureNumber);
+								}
+								capturePrevious = capture;
+								capture = false;
 							}
 							else
 							{
 								frameCount++;
 							}
+
 ///              if(systemPauseOnFrame())
 ///                ticks = 0;
 							if (pauseAfterFrameAdvance)

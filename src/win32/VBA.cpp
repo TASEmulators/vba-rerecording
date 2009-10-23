@@ -1482,6 +1482,9 @@ void systemScreenCapture(int captureNumber)
 {
 	if (theApp.m_pMainWnd)
 		((MainWnd *)theApp.m_pMainWnd)->screenCapture(captureNumber);
+
+	//if (theApp.m_pMainWnd)
+	//	theApp.m_pMainWnd->PostMessage(WM_COMMAND, (WPARAM)ID_FILE_QUICKSCREENCAPTURE, (LPARAM)NULL);
 }
 
 u32 systemGetClock()

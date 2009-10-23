@@ -140,6 +140,7 @@ protected:
 	afx_msg void OnUpdateFileExportBatteryfile(CCmdUI*pCmdUI);
 	afx_msg void OnFileExportGamesharksnapshot();
 	afx_msg void OnUpdateFileExportGamesharksnapshot(CCmdUI*pCmdUI);
+	afx_msg void OnFileQuickScreencapture();
 	afx_msg void OnFileScreencapture();
 	afx_msg void OnUpdateFileScreencapture(CCmdUI*pCmdUI);
 	afx_msg void OnFileRominformation();

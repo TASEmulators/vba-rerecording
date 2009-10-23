@@ -679,6 +679,15 @@ void MainWnd::OnUpdateFileExportGamesharksnapshot(CCmdUI*pCmdUI)
 	pCmdUI->Enable(emulating && theApp.cartridgeType == 0);
 }
 
+void MainWnd::OnFileQuickScreencapture()
+{
+	extern int32 captureNumber;   // GBA.cpp
+	extern int32 gbCaptureNumber; // GB.cpp
+
+	int vbaCaptureNumber = systemIsRunningGBA() ? captureNumber : gbCaptureNumber;
+	screenCapture(vbaCaptureNumber - 1);
+}
+
 void MainWnd::OnFileScreencapture()
 {
 	theApp.winCheckFullscreen();
