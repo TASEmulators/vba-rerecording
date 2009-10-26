@@ -115,7 +115,7 @@ Before the next frame is drawn, one may draw to the buffer. The buffer is cleare
 
 All functions assume that the height of the image is 256 and the width is 239.
 
-Color can be given as "0xrrggbbaa" or as a name (e.g. "red").
+Color can be given as "0xRRGGBBAA" or as a name (e.g. "red"). For alpha, 00 is transparent, FF is fully visible.
 
 ===gui.pixel(int x, int y, type color)===
 
@@ -149,9 +149,11 @@ Sets the opacity of drawings depending on alpha. 0.0 is invisible, 1.0 is drawn 
 
 4.0 is invisible, 0.0 is drawn over. Values less than 0.0 or greater than 4.0 work by extrapolation.
 
-===gui.text(int x, int y, string msg)===
+===gui.text(int x, int y, string msg, type color, type outline)===
 
 Draws the given text at (x,y). Not to be confused with _vba.message(string msg)_.
+
+For transparent outlines, set outline to "clear" or 0x00000000.
 
 ===gui.gdoverlay(int x=0, int y=0, string gdimage, float alpha=1.0)===
 
