@@ -53,6 +53,7 @@ public:
 	void write();
 	void setSpeed(float rate);
 	bool isPlaying();
+	void clearAudioBuffer();
 };
 
 DirectSound::DirectSound()
@@ -510,6 +511,23 @@ void DirectSound::write()
 		// Release the data back to DirectSound.
 		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2,
 		                          dwBytes2);
+	}
+}
+
+void DirectSound::clearAudioBuffer()
+{
+	LPVOID lpvPtr1;
+	DWORD  dwBytes1;
+	LPVOID lpvPtr2;
+	DWORD  dwBytes2;
+	HRESULT hr = dsbSecondary->Lock(0, soundBufferTotalLen, &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2, 0);
+	if(!FAILED(hr))
+	{
+		if(lpvPtr1)
+			memset(lpvPtr1, 0, dwBytes1);
+		if(lpvPtr2)
+			memset(lpvPtr2, 0, dwBytes2);
+		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2, dwBytes2);
 	}
 }
 

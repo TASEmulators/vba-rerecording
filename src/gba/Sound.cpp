@@ -1541,6 +1541,6 @@ void soundReadGame(gzFile gzFile, int version)
 	soundTicks        = (soundtick_t) soundTicks_int32;
 	SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
 	//}
-	soundDSBValue = (u8) soundDSBValue_int32;
+	soundDSBValue = (u8) (soundDSBValue_int32 & 0xff);
 }
 

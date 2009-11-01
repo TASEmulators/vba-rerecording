@@ -41,6 +41,13 @@ using namespace std;
 #include "../gb/gbGlobals.h"
 #include "../gba/Sound.h"
 
+#ifdef _WIN32
+#include "../win32/Sound.h"
+static void Clear_Sound_Buffer() { if(theApp.sound) theApp.sound->clearAudioBuffer(); }
+#else
+static void Clear_Sound_Buffer() {}
+#endif
+
 extern "C"
 {
 #include "../lua/src/lua.h"
@@ -690,7 +697,7 @@ static const char* toCString(lua_State* L, int idx)
 	int n = idx>0 ? idx : lua_gettop(L);
 	lua_getglobal(L, "tostring");
 	lua_CFunction cf = lua_tocfunction(L,-1);
-	if(cf == tostring) // optimization: if using our own C tostring function, we can bypass the call through Lua and all the string object allocation that would entail
+	if(cf == tostring || lua_isnil(L,-1)) // optimization: if using our own C tostring function, we can bypass the call through Lua and all the string object allocation that would entail
 	{
 		lua_pop(L,1);
 		return rawToCString(L, idx);
@@ -727,6 +734,26 @@ static int print(lua_State *L)
 		info_print(uid, str);
 	else
 		puts(str);
+
+	//worry(L, 100);
+	return 0;
+}
+static int printerror(lua_State *L, int idx)
+{
+	lua_checkstack(L, lua_gettop(L) + 4);
+
+	if(idx < 0)
+		idx = lua_gettop(L) + 1 + idx;
+
+	const char* str = rawToCString(L, idx);
+
+	int uid = info_uid;//luaStateToUIDMap[L->l_G->mainthread];
+	//LuaContextInfo& info = GetCurrentInfo();
+
+	if(info_print)
+		info_print(uid, str);
+	else
+		fputs(str, stderr);
 
 	//worry(L, 100);
 	return 0;
@@ -940,11 +967,12 @@ void HandleCallbackError(lua_State *L)
 		lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
 
 		// Error?
-#if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua run error", MB_OK | MB_ICONSTOP);
-#else
-		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(LUA, -1));
-#endif
+//#if (defined(WIN32) && !defined(SDL))
+//		info_print(info_uid, lua_tostring(LUA, -1)); //Clear_Sound_Buffer(); AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua run error", MB_OK | MB_ICONSTOP);
+//#else
+//		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(LUA, -1));
+//#endif
+		printerror(LUA, -1);
 		VBALuaStop();
 	}
 }
@@ -1927,6 +1955,16 @@ static inline bool gui_check_boundary(int x, int y)
 	return !(x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= LUA_SCREEN_HEIGHT);
 }
 
+// check if any part of a box is in the lua canvas
+static inline bool gui_checkbox(int x1, int y1, int x2, int y2) {
+	if((x1 <  0 && x2 <  0)
+	|| (x1 >= LUA_SCREEN_WIDTH && x2 >= LUA_SCREEN_WIDTH)
+	|| (y1 <  0 && y2 <  0)
+	|| (y1 >= LUA_SCREEN_HEIGHT && y2 >= LUA_SCREEN_HEIGHT))
+		return false;
+	return true;
+}
+
 // write a pixel to gui_data (do not check boundaries for speedup)
 static inline void gui_drawpixel_fast(int x, int y, uint32 colour)
 {
@@ -2046,6 +2084,9 @@ static void gui_drawbox_internal(int x1, int y1, int x2, int y2, uint32 colour)
 	if (y2 >= LUA_SCREEN_HEIGHT)
 		y2 = LUA_SCREEN_HEIGHT;
 
+	if(!gui_checkbox(x1,y1,x2,y2))
+		return;
+
 	//gui_prepare();
 	gui_drawline_internal(x1, y1, x2, y1, true, colour);
 	gui_drawline_internal(x1, y2, x2, y2, true, colour);
@@ -2073,6 +2114,9 @@ static void gui_drawcircle_internal(int x0, int y0, int radius, uint32 colour)
 	int ddF_y = -2 * radius;
 	int x = 0;
 	int y = radius;
+
+	if(!gui_checkbox(x0-radius,y0-radius,x0+radius,y0+radius))
+		return;
 
 	gui_drawpixel_internal(x0, y0 + radius, colour);
 	gui_drawpixel_internal(x0, y0 - radius, colour);
@@ -2168,6 +2212,9 @@ static void gui_fillcircle_internal(int x0, int y0, int radius, uint32 colour)
 	int ddF_y = -2 * radius;
 	int x = 0;
 	int y = radius;
+
+	if(!gui_checkbox(x0-radius,y0-radius,x0+radius,y0+radius))
+		return;
 
 	gui_drawline_internal(x0, y0 - radius, x0, y0 + radius, true, colour);
 
@@ -2389,6 +2436,9 @@ static int gui_drawline(lua_State *L)
 	//		luaL_error(L,"bad coordinates");
 	gui_prepare();
 
+	if(!gui_checkbox(x1,y1,x2,y2))
+		return 0;
+
 	gui_drawline_internal(x1, y1, x2, y2, true, colour);
 
 	return 0;
@@ -2454,6 +2504,9 @@ static int gui_fillbox(lua_State *L)
 	//	if (!gui_check_boundary(x2, y2))
 	//		luaL_error(L,"bad coordinates");
 	gui_prepare();
+
+	if(!gui_checkbox(x1,y1,x2,y2))
+		return 0;
 
 	gui_fillbox_internal(x1, y1, x2, y2, colour);
 
@@ -2909,7 +2962,8 @@ static int gui_text(lua_State *L)
 
 	x = luaL_checkinteger(L, 1);
 	y = luaL_checkinteger(L, 2);
-	msg = luaL_checkstring(L, 3);
+	//msg = luaL_checkstring(L, 3);
+	msg = toCString(L, 3);
 
 	//	if (x < 0 || x >= LUA_SCREEN_WIDTH || y < 0 || y >= (LUA_SCREEN_HEIGHT - font_height))
 	//		luaL_error(L,"bad coordinates");
@@ -3143,6 +3197,7 @@ int gui_popup(lua_State *L)
 	else
 		return luaL_error(L, "invalid popup type \"%s\"", type);
 
+	Clear_Sound_Buffer();
 	int result = AfxGetApp()->m_pMainWnd->MessageBox(message, "Lua Script Pop-up", t);
 
 	lua_settop(L, 1);
@@ -3662,7 +3717,7 @@ static UBits barg(lua_State *L, int idx)
 #ifdef SWAPPED_DOUBLE
   b = (UBits)(bn.b >> 32);
 #else
-  b = (UBits)bn.b;
+  b = (UBits)(bn.b & 0xffffffff);
 #endif
 #elif defined(LUA_NUMBER_INT) || defined(LUA_NUMBER_LONG) || \
       defined(LUA_NUMBER_LONGLONG) || defined(LUA_NUMBER_LONG_LONG) || \
@@ -3810,6 +3865,7 @@ static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg)
 
 #if (defined(WIN32) && !defined(SDL))
 		// Uh oh
+		Clear_Sound_Buffer();
 		int ret = AfxGetApp()->m_pMainWnd->MessageBox("The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)",
 												  "Lua Script Gone Nuts?", MB_YESNO);
 
@@ -4050,11 +4106,12 @@ void VBALuaFrameBoundary(void)
 		lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
 
 		// Error?
-#if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(thread, -1), "Lua run error", MB_OK | MB_ICONSTOP);
-#else
-		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(thread, -1));
-#endif
+//#if (defined(WIN32) && !defined(SDL))
+//		info_print(info_uid, lua_tostring(thread, -1)); //Clear_Sound_Buffer(); AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(thread, -1), "Lua run error", MB_OK | MB_ICONSTOP);
+//#else
+//		fprintf(stderr, "Lua thread bombed out: %s\n", lua_tostring(thread, -1));
+//#endif
+		printerror(thread, -1);
 	}
 	else
 	{
@@ -4169,11 +4226,12 @@ int VBALoadLuaCode(const char *filename)
 
 	if (result)
 	{
-#if (defined(WIN32) && !defined(SDL))
-		AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua load error", MB_OK | MB_ICONSTOP);
-#else
-		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA, -1));
-#endif
+//#if (defined(WIN32) && !defined(SDL))
+//		info_print(info_uid, lua_tostring(LUA, -1)); //Clear_Sound_Buffer(); AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua load error", MB_OK | MB_ICONSTOP);
+//#else
+//		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA, -1));
+//#endif
+		printerror(LUA, -1);
 
 		// Wipe the stack. Our thread
 		lua_settop(LUA, 0);
@@ -4345,11 +4403,12 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height)
 			lua_pushnil(LUA);
 			lua_setfield(LUA, LUA_REGISTRYINDEX, guiCallbackTable);
 
-#if (defined(WIN32) && !defined(SDL))
-			AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua Error in GUI function", MB_OK);
-#else
-			fprintf(stderr, "Lua error in gui.register function: %s\n", lua_tostring(LUA, -1));
-#endif
+//#if (defined(WIN32) && !defined(SDL))
+//			info_print(info_uid, lua_tostring(LUA, -1)); //AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua Error in GUI function", MB_OK);
+//#else
+//			fprintf(stderr, "Lua error in gui.register function: %s\n", lua_tostring(LUA, -1));
+//#endif
+			printerror(LUA, -1);
 		}
 	}
 

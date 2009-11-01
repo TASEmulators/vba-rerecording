@@ -25,6 +25,7 @@
 #include "Reg.h"
 #include "StringTokenizer.h"
 #include "WinResUtil.h"
+#include "Sound.h"
 #include "VBA.h"
 
 #include "../gba/CheatSearch.h"
@@ -172,6 +173,7 @@ static void dlgSystemMessage(CWnd *hWnd, int number, const char *defaultMsg, ...
 	buffer.FormatV(msg, valist);
 
 	theApp.winCheckFullscreen();
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
 
 	hWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK|MB_ICONERROR);
 
