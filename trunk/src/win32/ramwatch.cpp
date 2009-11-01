@@ -7,6 +7,7 @@
 #include "ram_search.h"
 #include "ramwatch.h"
 #include "reg.h"
+#include "Sound.h"
 #include <assert.h>
 #include <windows.h>
 #include <string>
@@ -171,6 +172,7 @@ bool InsertWatch(const AddressWatcher& Watch, HWND parent)
 
 	rswatches[WatchCount] = Watch;
 	rswatches[WatchCount].CurValue = GetCurrentValue(rswatches[WatchCount]);
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
 	DialogBox(hInst, MAKEINTRESOURCE(IDD_PROMPT), parent, (DLGPROC) PromptWatchNameProc);
 
 	return WatchCount > prevWatchCount;
@@ -230,6 +232,7 @@ bool AskSave()
 	//returns false only if a save was attempted but failed or was cancelled
 	if (RWfileChanged)
 	{
+		if(theApp.sound) theApp.sound->clearAudioBuffer();
 		int answer = MessageBox(MESSAGEBOXPARENT, "Save Changes?", "Ram Watch", MB_YESNOCANCEL);
 		if(answer == IDYES)
 			if(!QuickSaveWatches())
@@ -397,6 +400,7 @@ void OpenRWRecentFile(int memwRFileNumber)
 	FILE *WatchFile = fopen(Str_Tmp,"rb");
 	if (!WatchFile)
 	{
+		if(theApp.sound) theApp.sound->clearAudioBuffer();
 		int answer = MessageBox(MESSAGEBOXPARENT,"Error opening file.","ERROR",MB_OKCANCEL);
 		if (answer == IDOK)
 		{
@@ -470,6 +474,8 @@ int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 	ofn.lpstrTitle = Titre;
 	ofn.lpstrDefExt = Ext;
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
 
 	if (GetOpenFileName(&ofn)) return 1;
 
@@ -569,6 +575,7 @@ bool Load_Watches(bool clear, const char* filename)
 	FILE* WatchFile = fopen(filename,"rb");
 	if (!WatchFile)
 	{
+		if(theApp.sound) theApp.sound->clearAudioBuffer();
 		MessageBox(MESSAGEBOXPARENT,"Error opening file.","ERROR",MB_OK);
 		return false;
 	}
@@ -892,6 +899,10 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			CheckMenuItem(ramwatchmenu, RAMMENU_FILE_SAVEWINDOW, RWSaveWindowPos ? MF_CHECKED : MF_UNCHECKED);
 			break;
 
+		case WM_ENTERMENULOOP:
+			if(theApp.sound) theApp.sound->clearAudioBuffer();
+			break;
+
 		case WM_MENUSELECT:
  		case WM_ENTERSIZEMOVE:
 			//Clear_Sound_Buffer();
@@ -1000,6 +1011,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 					watchIndex = ListView_GetSelectionMark(GetDlgItem(hDlg,IDC_WATCHLIST));
 					if(watchIndex != -1)
 					{
+						if(theApp.sound) theApp.sound->clearAudioBuffer();
 						DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_EDITWATCH), hDlg, (DLGPROC) EditWatchProc,(LPARAM) watchIndex);
 						SetFocus(GetDlgItem(hDlg,IDC_WATCHLIST));
 					}
@@ -1008,6 +1020,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 					rswatches[WatchCount].Address = rswatches[WatchCount].WrongEndian = 0;
 					rswatches[WatchCount].Size = 'b';
 					rswatches[WatchCount].Type = 's';
+					if(theApp.sound) theApp.sound->clearAudioBuffer();
 					DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_EDITWATCH), hDlg, (DLGPROC) EditWatchProc,(LPARAM) WatchCount);
 					SetFocus(GetDlgItem(hDlg,IDC_WATCHLIST));
 					return true;
@@ -1019,6 +1032,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 						rswatches[WatchCount].WrongEndian = rswatches[watchIndex].WrongEndian;
 						rswatches[WatchCount].Size = rswatches[watchIndex].Size;
 						rswatches[WatchCount].Type = rswatches[watchIndex].Type;
+						if(theApp.sound) theApp.sound->clearAudioBuffer();
 						DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_EDITWATCH), hDlg, (DLGPROC) EditWatchProc,(LPARAM) WatchCount);
 						SetFocus(GetDlgItem(hDlg,IDC_WATCHLIST));
 					}
@@ -1103,6 +1117,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							AddCheat dlg (address/*, hDlg*/);
 							if(sizeType != -1) dlg.sizeType = sizeType;
 							if(numberType != -1) dlg.numberType = numberType;
+							if(theApp.sound) theApp.sound->clearAudioBuffer();
 							dlg.DoModal();
 						}
 						else
@@ -1110,6 +1125,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							AddGBCheat dlg (address/*, hDlg*/);
 							if(sizeType != -1) dlg.sizeType = sizeType;
 							if(numberType != -1) dlg.numberType = numberType;
+							if(theApp.sound) theApp.sound->clearAudioBuffer();
 							dlg.DoModal();
 						}
 					}

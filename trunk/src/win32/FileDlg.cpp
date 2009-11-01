@@ -25,6 +25,7 @@
 #include <dlgs.h>
 #include "resource.h"
 #include "FileDlg.h"
+#include "Sound.h"
 #include "VBA.h"
 
 #ifdef _DEBUG
@@ -208,6 +209,8 @@ int FileDlg::getFilterIndex()
 
 int FileDlg::DoModal()
 {
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
+
 	BOOL res = isSave ? GetSaveFileName(&m_ofn) :
 	           GetOpenFileName(&m_ofn);
 

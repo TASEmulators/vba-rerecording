@@ -32,6 +32,7 @@
 #include "stdafx.h"
 #include "ResizeDlg.h"
 #include "VBA.h"
+#include "Sound.h"
 #include "WinHelper.h"
 
 // moved functions to this file to reduce number of files
@@ -82,6 +83,7 @@ void AssertFailed(char *file, int line, char *exp)
 
 	sprintf(buffer, "File %s\nLine %d\nExpression %s\nPress Retry to debug",
 	        file, line, exp);
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
 	int res = MessageBox(*theApp.m_pMainWnd, buffer, "Assertion failed!",
 	                     MB_ICONHAND | MB_SETFOREGROUND | MB_TASKMODAL |
 	                     MB_ABORTRETRYIGNORE);
@@ -134,6 +136,7 @@ void ApiFailure(char *pcszFilename, int nLine, char *pcszExpression)
 	(void)LocalFree((LPVOID)lpMsgBuf);
 	HWND hwndParent = ::GetActiveWindow();
 	hwndParent = ::GetLastActivePopup(hwndParent);
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
 	int nCode = ::MessageBoxA(hwndParent,
 	                          szMessage,
 	                          "Debug Helper",

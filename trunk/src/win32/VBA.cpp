@@ -1504,6 +1504,7 @@ void systemMessage(int number, const char *defaultMsg, ...)
 	buffer.FormatV(msg, valist);
 
 	theApp.winCheckFullscreen();
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
 
 	AfxGetApp()->m_pMainWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK|MB_ICONERROR);
 

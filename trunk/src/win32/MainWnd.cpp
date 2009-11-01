@@ -35,7 +35,9 @@
 #include "7zip/7zip.h"
 #include "7zip/OpenArchive.h"
 #include "ram_search.h"
+#include "LuaOpenDialog.h"
 #include "ramwatch.h"
+#include "Sound.h"
 #include "VBA.h"
 
 #include "../AutoBuild.h"
@@ -1141,6 +1143,10 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 			TranslateAccelerator(RamWatchHWnd, RamWatchAccels, pMsg);
 		return TRUE;
 	}
+	else if(LuaConsoleHWnd && ::IsDialogMessage(LuaConsoleHWnd, pMsg))
+	{
+		return TRUE;
+	}
 	else if (CWnd::PreTranslateMessage(pMsg))
 	{
 		return TRUE;
@@ -1316,6 +1322,8 @@ void MainWnd::OnActivateApp(BOOL bActive, DWORD hTask)
 
 void MainWnd::OnDropFiles(HDROP hDropInfo)
 {
+	if(theApp.sound) theApp.sound->clearAudioBuffer();
+
 	char szFile[1024];
 	char ext[1024];
 

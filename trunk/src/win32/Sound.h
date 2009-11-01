@@ -32,6 +32,7 @@ public:
 	virtual void write()  = 0;
 	virtual void setSpeed(float rate) = 0;
 	virtual bool isPlaying() = 0;
+	virtual void clearAudioBuffer() {}
 };
 
 #endif

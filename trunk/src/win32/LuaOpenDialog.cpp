@@ -25,6 +25,7 @@
 #include "MainWnd.h"
 #include "WinResUtil.h"
 #include "VBA.h"
+#include "Sound.h"
 
 #include "../common/vbalua.h"
 
@@ -264,7 +265,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			case IDC_BUTTON_LUAEDIT:
 			{
-				char Str_Tmp [1024]; // shadow added because the global one is unreliable
+				char Str_Tmp [1024];
 				SendDlgItemMessage(hDlg,IDC_EDIT_LUAPATH,WM_GETTEXT,(WPARAM)512,(LPARAM)Str_Tmp);
 				// tell the OS to open the file with its associated editor,
 				// without blocking on it or leaving a command window open.
@@ -275,6 +276,8 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			case IDC_BUTTON_LUABROWSE:
 			{
+				if(theApp.sound) theApp.sound->clearAudioBuffer();
+
 				CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
 				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
 
@@ -309,7 +312,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 				char filename[MAX_PATH];
 				GetDlgItemText(hDlg, IDC_EDIT_LUAPATH, filename, MAX_PATH);
 				FILE* file = fopen(filename, "rb");
-				EnableWindow(GetDlgItem(hDlg, IDOK), file != NULL);
+				EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_LUAEDIT), file != NULL);
 				if(file)
 					fclose(file);
 			}	break;
