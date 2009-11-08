@@ -30,6 +30,8 @@
 #include "../common/vbalua.h"
 
 HWND LuaConsoleHWnd = NULL;
+HFONT hFont = NULL;
+LOGFONT LuaConsoleLogFont;
 
 struct ControlLayoutInfo
 {
@@ -172,6 +174,8 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 
 		DragAcceptFiles(hDlg, true);
 		SetDlgItemText(hDlg, IDC_EDIT_LUAPATH, VBAGetLuaScriptName());
+
+		SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &LuaConsoleLogFont, 0); // reset with an acceptable font
 		return true;
 	}	break;
 
@@ -316,12 +320,41 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 				if(file)
 					fclose(file);
 			}	break;
+
+			case IDC_LUACONSOLE_CHOOSEFONT:
+			{
+				CHOOSEFONT cf;
+
+				ZeroMemory(&cf, sizeof(cf));
+				cf.lStructSize = sizeof(CHOOSEFONT);
+				cf.hwndOwner = hDlg;
+				cf.lpLogFont = &LuaConsoleLogFont;
+				cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
+				if (ChooseFont(&cf)) {
+					if (hFont) {
+						DeleteObject(hFont);
+						hFont = NULL;
+					}
+					hFont = CreateFontIndirect(&LuaConsoleLogFont);
+					if (hFont)
+						SendDlgItemMessage(hDlg, IDC_LUACONSOLE, WM_SETFONT, (WPARAM)hFont, 0);
+				}
+			}	break;
+
+			case IDC_LUACONSOLE_CLEAR:
+			{
+				SetWindowText(GetDlgItem(hDlg, IDC_LUACONSOLE), "");
+			}	break;
 		}
 		break;
 
 	case WM_CLOSE: {
 		VBALuaStop();
 		DragAcceptFiles(hDlg, FALSE);
+		if (hFont) {
+			DeleteObject(hFont);
+			hFont = NULL;
+		}
 		LuaConsoleHWnd = NULL;
 	}	break;
 
