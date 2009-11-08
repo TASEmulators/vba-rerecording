@@ -1,11 +1,6 @@
 TODO: Update and filter logs.
 TODO: Fix potential or existing bugs in this file.
 
----VBA-rr v23--
-
-
-VBA-rr V22 released November 8, 2009 - SVN 182
-
 ---VBA-rr V21+(interim)---
 09-04-2009 aquanull - Added Pixelate 3x and Pixelate 4x filters for fun.
 08-18-2009 aquanull - Fixed GDI/D3D/OpenGL display with 3x filters.
