@@ -1,4 +1,4 @@
-#summary VBA rerecording V21 changelog
+#summary VBA rerecording V22 changelog
 ==New Features==
  * *Added RAM search and RAM watch dialogs from Gens!*
  * Added support for loading ROMs and movies in 7z/rar/zip/etc archives, including multi-file archive selection support
