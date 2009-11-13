@@ -1640,12 +1640,17 @@ static int joypad_set(lua_State *L)
 	lua_joypads_used |= 1 << (which - 1);
 	lua_joypads[which - 1] = 0;
 
-	int i;
-	for (i = 0; i < 10; i++)
+	for (int i = 0; i < 10; i++)
 	{
-		lua_getfield(L, 2, button_mappings[i]);
-		if (!lua_isnil(L, -1))
-			lua_joypads[which - 1] |= 1 << i;
+		const char* name = button_mappings[i];
+		lua_getfield(L, 2, name);
+		if (!lua_isnil(L, -1)) {
+			bool pressed = lua_toboolean(L,-1) != 0;
+			if (pressed)
+				lua_joypads[which-1] |= 1 << i;
+			else
+				lua_joypads[which-1] &= ~(1 << i);
+		}
 		lua_pop(L, 1);
 	}
 
@@ -4146,6 +4151,9 @@ void CallExitFunction(void)
 void VBALuaFrameBoundary(void)
 {
 	//	printf("Lua Frame\n");
+
+	lua_joypads_used = 0;
+
 	// HA!
 	if (!LUA || !luaRunning)
 		return;
@@ -4159,8 +4167,6 @@ void VBALuaFrameBoundary(void)
 	// Lua calling C must know that we're busy inside a frame boundary
 	frameBoundary = true;
 	frameAdvanceWaiting = false;
-
-	lua_joypads_used = 0;
 
 	numTries = 1000;
 
