@@ -19,7 +19,7 @@
 // FileDlg.cpp: implementation of the FileDlg class.
 //
 //////////////////////////////////////////////////////////////////////
-#define WINVER 0x0410 // windows 98 - just for this 1 file - just in case
+//#define WINVER 0x0410 // windows 98 - just for this 1 file - just in case
 #include "stdafx.h"
 #include <commdlg.h>
 #include <dlgs.h>
