@@ -1,0 +1,741 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>VBA_VS2010</ProjectName>
+    <ProjectGuid>{200824A0-CDBA-45D7-83B8-E5A8468792EC}</ProjectGuid>
+    <RootNamespace>VBA</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)__bins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)__bins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_debug</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)_release</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;userconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;HAVE_STDINT_H;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc80.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcw.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_release.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>lib/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libci.lib;nafxcw.lib;libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>$(OutDir)$(TargetName).tlb</TypeLibraryName>
+    </Midl>
+    <PreBuildEvent>
+      <Command>defaultconfig\SubWCRev.bat</Command>
+    </PreBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;userconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;HAVE_STDINT_H;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc80.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcwd.lib;libcmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_debug.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>lib/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libci.lib;nafxcwd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>$(OutDir)$(TargetName).tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>defaultconfig\SubWCRev.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\common\lua-engine.cpp" />
+    <ClCompile Include="..\src\common\memgzio.c" />
+    <ClCompile Include="..\src\common\movie.cpp" />
+    <ClCompile Include="..\src\common\nesvideos-piece.cpp" />
+    <ClCompile Include="..\src\common\Text.cpp" />
+    <ClCompile Include="..\src\common\unzip.cpp" />
+    <ClCompile Include="..\src\common\Util.cpp" />
+    <ClCompile Include="..\src\gba\agbprint.cpp" />
+    <ClCompile Include="..\src\gba\armdis.cpp" />
+    <ClCompile Include="..\src\gba\bios.cpp" />
+    <ClCompile Include="..\src\gba\Cheats.cpp" />
+    <ClCompile Include="..\src\gba\CheatSearch.cpp" />
+    <ClCompile Include="..\src\gba\EEprom.cpp" />
+    <ClCompile Include="..\src\gba\elf.cpp" />
+    <ClCompile Include="..\src\gba\Flash.cpp" />
+    <ClCompile Include="..\src\gba\GBA.cpp" />
+    <ClCompile Include="..\src\gba\GBAGfx.cpp" />
+    <ClCompile Include="..\src\gba\Globals.cpp" />
+    <ClCompile Include="..\src\gba\Mode0.cpp" />
+    <ClCompile Include="..\src\gba\Mode1.cpp" />
+    <ClCompile Include="..\src\gba\Mode2.cpp" />
+    <ClCompile Include="..\src\gba\Mode3.cpp" />
+    <ClCompile Include="..\src\gba\Mode4.cpp" />
+    <ClCompile Include="..\src\gba\Mode5.cpp" />
+    <ClCompile Include="..\src\gba\remote.cpp" />
+    <ClCompile Include="..\src\gba\RTC.cpp" />
+    <ClCompile Include="..\src\gba\Sound.cpp" />
+    <ClCompile Include="..\src\gba\Sram.cpp" />
+    <ClCompile Include="..\src\gb\GB.cpp" />
+    <ClCompile Include="..\src\gb\gbCheats.cpp" />
+    <ClCompile Include="..\src\gb\gbDis.cpp" />
+    <ClCompile Include="..\src\gb\gbGfx.cpp" />
+    <ClCompile Include="..\src\gb\gbGlobals.cpp" />
+    <ClCompile Include="..\src\gb\gbMemory.cpp" />
+    <ClCompile Include="..\src\gb\gbPrinter.cpp" />
+    <ClCompile Include="..\src\gb\gbSGB.cpp" />
+    <ClCompile Include="..\src\gb\gbSound.cpp" />
+    <ClCompile Include="..\src\lua\src\lapi.c" />
+    <ClCompile Include="..\src\lua\src\lauxlib.c" />
+    <ClCompile Include="..\src\lua\src\lbaselib.c" />
+    <ClCompile Include="..\src\lua\src\lcode.c" />
+    <ClCompile Include="..\src\lua\src\ldblib.c" />
+    <ClCompile Include="..\src\lua\src\ldebug.c" />
+    <ClCompile Include="..\src\lua\src\ldo.c" />
+    <ClCompile Include="..\src\lua\src\ldump.c" />
+    <ClCompile Include="..\src\lua\src\lfunc.c" />
+    <ClCompile Include="..\src\lua\src\lgc.c" />
+    <ClCompile Include="..\src\lua\src\linit.c" />
+    <ClCompile Include="..\src\lua\src\liolib.c" />
+    <ClCompile Include="..\src\lua\src\llex.c" />
+    <ClCompile Include="..\src\lua\src\lmathlib.c" />
+    <ClCompile Include="..\src\lua\src\lmem.c" />
+    <ClCompile Include="..\src\lua\src\loadlib.c" />
+    <ClCompile Include="..\src\lua\src\lobject.c" />
+    <ClCompile Include="..\src\lua\src\lopcodes.c" />
+    <ClCompile Include="..\src\lua\src\loslib.c" />
+    <ClCompile Include="..\src\lua\src\lparser.c" />
+    <ClCompile Include="..\src\lua\src\lstate.c" />
+    <ClCompile Include="..\src\lua\src\lstring.c" />
+    <ClCompile Include="..\src\lua\src\lstrlib.c" />
+    <ClCompile Include="..\src\lua\src\ltable.c" />
+    <ClCompile Include="..\src\lua\src\ltablib.c" />
+    <ClCompile Include="..\src\lua\src\ltm.c" />
+    <ClCompile Include="..\src\lua\src\lundump.c" />
+    <ClCompile Include="..\src\lua\src\lvm.c" />
+    <ClCompile Include="..\src\lua\src\lzio.c" />
+    <ClCompile Include="..\src\lua\src\print.c" />
+    <ClCompile Include="lib\libpng\png.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngerror.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pnggccrd.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngget.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngmem.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngpread.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngread.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngrio.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngrtran.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngrutil.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngset.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngtrans.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngvcrd.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwio.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwrite.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwtran.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwutil.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\adler32.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\compress.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\crc32.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\deflate.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\example.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzio.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\infblock.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\infcodes.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inffast.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inflate.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inftrees.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\infutil.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\trees.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\uncompr.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\zutil.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcapimin.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcapistd.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jccoefct.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jccolor.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcdctmgr.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jchuff.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcinit.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcmainct.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcmarker.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcmaster.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcomapi.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcparam.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcphuff.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcprepct.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jcsample.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jctrans.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdapimin.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdapistd.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdatadst.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdatasrc.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdcoefct.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdcolor.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jddctmgr.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdhuff.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdinput.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdmainct.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdmarker.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdmaster.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdmerge.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdphuff.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdpostct.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdsample.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jdtrans.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jerror.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jfdctflt.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jfdctfst.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jfdctint.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jidctflt.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jidctfst.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jidctint.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jidctred.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jmemmgr.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jmemnobs.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jquant1.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jquant2.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="lib\libjpeg\jutils.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+    </ClCompile>
+    <ClCompile Include="..\src\filters\2xSaI.cpp" />
+    <ClCompile Include="..\src\filters\admame.cpp" />
+    <ClCompile Include="..\src\filters\bilinear.cpp" />
+    <ClCompile Include="..\src\filters\hq2x.cpp" />
+    <ClCompile Include="..\src\filters\hq3x32.cpp" />
+    <ClCompile Include="..\src\filters\hq_shared32.cpp" />
+    <ClCompile Include="..\src\filters\interframe.cpp" />
+    <ClCompile Include="..\src\filters\motionblur.cpp" />
+    <ClCompile Include="..\src\filters\pixel.cpp" />
+    <ClCompile Include="..\src\filters\scanline.cpp" />
+    <ClCompile Include="..\src\filters\simple2x.cpp" />
+    <ClCompile Include="..\src\win32\AcceleratorManager.cpp" />
+    <ClCompile Include="..\src\win32\AVIWrite.cpp" />
+    <ClCompile Include="..\src\win32\CmdAccelOb.cpp" />
+    <ClCompile Include="..\src\win32\Direct3D.cpp" />
+    <ClCompile Include="..\src\win32\DirectDraw.cpp" />
+    <ClCompile Include="..\src\win32\DirectInput.cpp" />
+    <ClCompile Include="..\src\win32\DirectSound.cpp" />
+    <ClCompile Include="..\src\win32\GDIDisplay.cpp" />
+    <ClCompile Include="..\src\win32\MainWnd.cpp" />
+    <ClCompile Include="..\src\win32\MainWndCheats.cpp" />
+    <ClCompile Include="..\src\win32\MainWndFile.cpp" />
+    <ClCompile Include="..\src\win32\MainWndHelp.cpp" />
+    <ClCompile Include="..\src\win32\MainWndOptions.cpp" />
+    <ClCompile Include="..\src\win32\MainWndTools.cpp" />
+    <ClCompile Include="..\src\win32\OpenGL.cpp" />
+    <ClCompile Include="..\src\win32\Reg.cpp" />
+    <ClCompile Include="..\src\win32\stdafx.cpp" />
+    <ClCompile Include="..\src\win32\StringTokenizer.cpp" />
+    <ClCompile Include="..\src\win32\VBA.cpp" />
+    <ClCompile Include="..\src\win32\WavWriter.cpp" />
+    <ClCompile Include="..\src\win32\WinResUtil.cpp" />
+    <ClCompile Include="..\src\win32\AboutDialog.cpp" />
+    <ClCompile Include="..\src\win32\AccelEditor.cpp" />
+    <ClCompile Include="..\src\win32\Associate.cpp" />
+    <ClCompile Include="..\src\win32\BugReport.cpp" />
+    <ClCompile Include="..\src\win32\Commands.cpp" />
+    <ClCompile Include="..\src\win32\Directories.cpp" />
+    <ClCompile Include="..\src\win32\Disassemble.cpp" />
+    <ClCompile Include="..\src\win32\ExportGSASnapshot.cpp" />
+    <ClCompile Include="..\src\win32\FileDlg.cpp" />
+    <ClCompile Include="..\src\win32\GBACheats.cpp" />
+    <ClCompile Include="..\src\win32\GBCheatsDlg.cpp" />
+    <ClCompile Include="..\src\win32\GBColorDlg.cpp" />
+    <ClCompile Include="..\src\win32\GBDisassemble.cpp" />
+    <ClCompile Include="..\src\win32\GBMapView.cpp" />
+    <ClCompile Include="..\src\win32\GBMemoryViewerDlg.cpp" />
+    <ClCompile Include="..\src\win32\GBOamView.cpp" />
+    <ClCompile Include="..\src\win32\GBPaletteView.cpp" />
+    <ClCompile Include="..\src\win32\GBPrinterDlg.cpp" />
+    <ClCompile Include="..\src\win32\GBTileView.cpp" />
+    <ClCompile Include="..\src\win32\GDBConnection.cpp" />
+    <ClCompile Include="..\src\win32\GSACodeSelect.cpp" />
+    <ClCompile Include="..\src\win32\IOViewer.cpp" />
+    <ClCompile Include="..\src\win32\Joypad.cpp" />
+    <ClCompile Include="..\src\win32\LangSelect.cpp" />
+    <ClCompile Include="..\src\win32\Logging.cpp" />
+    <ClCompile Include="..\src\win32\LuaOpenDialog.cpp" />
+    <ClCompile Include="..\src\win32\MapView.cpp" />
+    <ClCompile Include="..\src\win32\MaxScale.cpp" />
+    <ClCompile Include="..\src\win32\MemoryViewer.cpp" />
+    <ClCompile Include="..\src\win32\MemoryViewerAddressSize.cpp" />
+    <ClCompile Include="..\src\win32\MemoryViewerDlg.cpp" />
+    <ClCompile Include="..\src\win32\ModeConfirm.cpp" />
+    <ClCompile Include="..\src\win32\MovieCreate.cpp" />
+    <ClCompile Include="..\src\win32\MovieOpen.cpp" />
+    <ClCompile Include="..\src\win32\OamView.cpp" />
+    <ClCompile Include="..\src\win32\PaletteView.cpp" />
+    <ClCompile Include="..\src\win32\ram_search.cpp" />
+    <ClCompile Include="..\src\win32\ramwatch.cpp" />
+    <ClCompile Include="..\src\win32\ResizeDlg.cpp" />
+    <ClCompile Include="..\src\win32\RewindInterval.cpp" />
+    <ClCompile Include="..\src\win32\RomInfo.cpp" />
+    <ClCompile Include="..\src\win32\TextOptions.cpp" />
+    <ClCompile Include="..\src\win32\Throttle.cpp" />
+    <ClCompile Include="..\src\win32\TileView.cpp" />
+    <ClCompile Include="..\src\win32\VideoMode.cpp" />
+    <ClCompile Include="..\src\win32\BitmapControl.cpp" />
+    <ClCompile Include="..\src\win32\ColorButton.cpp" />
+    <ClCompile Include="..\src\win32\ColorControl.cpp" />
+    <ClCompile Include="..\src\win32\Hyperlink.cpp" />
+    <ClCompile Include="..\src\win32\KeyboardEdit.cpp" />
+    <ClCompile Include="..\src\win32\PaletteViewControl.cpp" />
+    <ClCompile Include="..\src\win32\ZoomControl.cpp" />
+    <ClCompile Include="..\src\win32\7zip\7zip.cpp" />
+    <ClCompile Include="..\src\win32\7zip\OpenArchive.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\filters\2xSaImmx.asm">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="..\src\win32\gbadvance.ico" />
+    <None Include="..\ChangeLog" />
+    <None Include="..\Changelog.txt" />
+    <None Include="..\README" />
+    <None Include="..\README-win.txt" />
+    <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
+    <None Include="..\TODO.txt" />
+    <None Include="..\VBArr-V21-changelog.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\AutoBuild.h" />
+    <ClInclude Include="..\src\common\inputGlobal.h" />
+    <ClInclude Include="..\src\common\memgzio.h" />
+    <ClInclude Include="..\src\common\movie.h" />
+    <ClInclude Include="..\src\common\nesvideos-piece.h" />
+    <ClInclude Include="..\src\NLS.h" />
+    <ClInclude Include="..\src\Port.h" />
+    <ClInclude Include="..\src\common\System.h" />
+    <ClInclude Include="..\src\common\Text.h" />
+    <ClInclude Include="..\src\common\unzip.h" />
+    <ClInclude Include="..\src\common\Util.h" />
+    <ClInclude Include="..\src\common\vbalua.h" />
+    <ClInclude Include="..\src\version.h" />
+    <ClInclude Include="..\src\common\zutil.h" />
+    <ClInclude Include="..\src\filters\hq2x.h" />
+    <ClInclude Include="..\src\filters\hq3x32.h" />
+    <ClInclude Include="..\src\filters\hq_shared32.h" />
+    <ClInclude Include="..\src\filters\interp.h" />
+    <ClInclude Include="..\src\filters\lq2x.h" />
+    <ClInclude Include="..\src\gba\agbprint.h" />
+    <ClInclude Include="..\src\gba\arm-new.h" />
+    <ClInclude Include="..\src\gba\armdis.h" />
+    <ClInclude Include="..\src\gba\bios.h" />
+    <ClInclude Include="..\src\gba\Cheats.h" />
+    <ClInclude Include="..\src\gba\CheatSearch.h" />
+    <ClInclude Include="..\src\gba\EEprom.h" />
+    <ClInclude Include="..\src\gba\elf.h" />
+    <ClInclude Include="..\src\gba\Flash.h" />
+    <ClInclude Include="..\src\gba\GBA.h" />
+    <ClInclude Include="..\src\gba\GBAGfx.h" />
+    <ClInclude Include="..\src\gba\GBAinline.h" />
+    <ClInclude Include="..\src\gba\Globals.h" />
+    <ClInclude Include="..\src\gba\RTC.h" />
+    <ClInclude Include="..\src\gba\Sound.h" />
+    <ClInclude Include="..\src\gba\Sram.h" />
+    <ClInclude Include="..\src\gba\thumb.h" />
+    <ClInclude Include="..\src\gb\GB.h" />
+    <ClInclude Include="..\src\gb\gbCheats.h" />
+    <ClInclude Include="..\src\gb\gbCodes.h" />
+    <ClInclude Include="..\src\gb\gbCodesCB.h" />
+    <ClInclude Include="..\src\gb\gbGlobals.h" />
+    <ClInclude Include="..\src\gb\gbMemory.h" />
+    <ClInclude Include="..\src\gb\gbPrinter.h" />
+    <ClInclude Include="..\src\gb\gbSGB.h" />
+    <ClInclude Include="..\src\gb\gbSound.h" />
+    <ClInclude Include="..\src\win32\AcceleratorManager.h" />
+    <ClInclude Include="..\src\win32\AVIWrite.h" />
+    <ClInclude Include="..\src\win32\CmdAccelOb.h" />
+    <ClInclude Include="..\src\win32\Display.h" />
+    <ClInclude Include="..\src\win32\Input.h" />
+    <ClInclude Include="..\src\win32\IUpdate.h" />
+    <ClInclude Include="..\src\win32\MainWnd.h" />
+    <ClInclude Include="..\src\win32\PerfTimer.h" />
+    <ClInclude Include="..\src\win32\Reg.h" />
+    <ClInclude Include="..\src\win32\Sound.h" />
+    <ClInclude Include="..\src\win32\stdafx.h" />
+    <ClInclude Include="..\src\win32\StringTokenizer.h" />
+    <ClInclude Include="..\src\win32\VBA.h" />
+    <ClInclude Include="..\src\win32\WavWriter.h" />
+    <ClInclude Include="..\src\win32\WinHelper.h" />
+    <ClInclude Include="..\src\win32\WinResUtil.h" />
+    <ClInclude Include="..\src\win32\AboutDialog.h" />
+    <ClInclude Include="..\src\win32\AccelEditor.h" />
+    <ClInclude Include="..\src\win32\Associate.h" />
+    <ClInclude Include="..\src\win32\BugReport.h" />
+    <ClInclude Include="..\src\win32\Directories.h" />
+    <ClInclude Include="..\src\win32\Disassemble.h" />
+    <ClInclude Include="..\src\win32\ExportGSASnapshot.h" />
+    <ClInclude Include="..\src\win32\FileDlg.h" />
+    <ClInclude Include="..\src\win32\GBACheats.h" />
+    <ClInclude Include="..\src\win32\GBCheatsDlg.h" />
+    <ClInclude Include="..\src\win32\GBColorDlg.h" />
+    <ClInclude Include="..\src\win32\GBDisassemble.h" />
+    <ClInclude Include="..\src\win32\GBMapView.h" />
+    <ClInclude Include="..\src\win32\GBMemoryViewerDlg.h" />
+    <ClInclude Include="..\src\win32\GBOamView.h" />
+    <ClInclude Include="..\src\win32\GBPaletteView.h" />
+    <ClInclude Include="..\src\win32\GBPrinterDlg.h" />
+    <ClInclude Include="..\src\win32\GBTileView.h" />
+    <ClInclude Include="..\src\win32\GDBConnection.h" />
+    <ClInclude Include="..\src\win32\GSACodeSelect.h" />
+    <ClInclude Include="..\src\win32\IOViewer.h" />
+    <ClInclude Include="..\src\win32\IOViewerRegs.h" />
+    <ClInclude Include="..\src\win32\Joypad.h" />
+    <ClInclude Include="..\src\win32\KeyboardEdit.h" />
+    <ClInclude Include="..\src\win32\LangSelect.h" />
+    <ClInclude Include="..\src\win32\Logging.h" />
+    <ClInclude Include="..\src\win32\LuaOpenDialog.h" />
+    <ClInclude Include="..\src\win32\MapView.h" />
+    <ClInclude Include="..\src\win32\MaxScale.h" />
+    <ClInclude Include="..\src\win32\MemoryViewer.h" />
+    <ClInclude Include="..\src\win32\MemoryViewerAddressSize.h" />
+    <ClInclude Include="..\src\win32\MemoryViewerDlg.h" />
+    <ClInclude Include="..\src\win32\ModeConfirm.h" />
+    <ClInclude Include="..\src\win32\MovieCreate.h" />
+    <ClInclude Include="..\src\win32\MovieOpen.h" />
+    <ClInclude Include="..\src\win32\OamView.h" />
+    <ClInclude Include="..\src\win32\PaletteView.h" />
+    <ClInclude Include="..\src\win32\ram_search.h" />
+    <ClInclude Include="..\src\win32\ramwatch.h" />
+    <ClInclude Include="..\src\win32\ResizeDlg.h" />
+    <ClInclude Include="..\src\win32\RewindInterval.h" />
+    <ClInclude Include="..\src\win32\RomInfo.h" />
+    <ClInclude Include="..\src\win32\TextOptions.h" />
+    <ClInclude Include="..\src\win32\Throttle.h" />
+    <ClInclude Include="..\src\win32\TileView.h" />
+    <ClInclude Include="..\src\win32\VideoMode.h" />
+    <ClInclude Include="..\src\win32\BitmapControl.h" />
+    <ClInclude Include="..\src\win32\ColorButton.h" />
+    <ClInclude Include="..\src\win32\ColorControl.h" />
+    <ClInclude Include="..\src\win32\Hyperlink.h" />
+    <ClInclude Include="..\src\win32\PaletteViewControl.h" />
+    <ClInclude Include="..\src\win32\ZoomControl.h" />
+    <ClInclude Include="..\src\win32\7zip\7zip.h" />
+    <ClInclude Include="..\src\win32\7zip\7zipstreams.h" />
+    <ClInclude Include="..\src\win32\7zip\OpenArchive.h" />
+    <ClInclude Include="..\src\lua\src\lapi.h" />
+    <ClInclude Include="..\src\lua\src\lauxlib.h" />
+    <ClInclude Include="..\src\lua\src\lcode.h" />
+    <ClInclude Include="..\src\lua\src\ldebug.h" />
+    <ClInclude Include="..\src\lua\src\ldo.h" />
+    <ClInclude Include="..\src\lua\src\lfunc.h" />
+    <ClInclude Include="..\src\lua\src\lgc.h" />
+    <ClInclude Include="..\src\lua\src\llex.h" />
+    <ClInclude Include="..\src\lua\src\llimits.h" />
+    <ClInclude Include="..\src\lua\src\lmem.h" />
+    <ClInclude Include="..\src\lua\src\lobject.h" />
+    <ClInclude Include="..\src\lua\src\lopcodes.h" />
+    <ClInclude Include="..\src\lua\src\lparser.h" />
+    <ClInclude Include="..\src\lua\src\lstate.h" />
+    <ClInclude Include="..\src\lua\src\lstring.h" />
+    <ClInclude Include="..\src\lua\src\ltable.h" />
+    <ClInclude Include="..\src\lua\src\ltm.h" />
+    <ClInclude Include="..\src\lua\src\lua.h" />
+    <ClInclude Include="..\src\lua\src\luaconf.h" />
+    <ClInclude Include="..\src\lua\src\lualib.h" />
+    <ClInclude Include="..\src\lua\src\lundump.h" />
+    <ClInclude Include="..\src\lua\src\lvm.h" />
+    <ClInclude Include="..\src\lua\src\lzio.h" />
+    <ClInclude Include="..\src\win32\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\win32\7zip\7zip.rc" />
+    <ResourceCompile Include="..\src\win32\VBA.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">\VisualBoyAdvance\src\win32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">\VisualBoyAdvance\src\win32</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\win32\7zip\7z\7zip_2010.vcxproj">
+      <Project>{5646c572-a578-49f8-9da9-3e00a8cbfe3f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="\emusrc\vbar210\src\win32\vba.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
