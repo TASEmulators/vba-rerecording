@@ -36,7 +36,10 @@ static std::string wstrToStr(const wchar_t* wstr)
 	setlocale(LC_CTYPE, ".ACP");
 	size_t n = wcstombs(NULL, wstr, 0);
 	if (n == (size_t)-1)	// failed
+	{
+		setlocale(LC_CTYPE, "C");
 		return std::string();
+	}
 	char* str = (char*)_alloca(n + 1);
 	wcstombs(str, wstr, n);
 	str[n] = '\0';
