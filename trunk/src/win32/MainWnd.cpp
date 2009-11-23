@@ -591,7 +591,7 @@ bool MainWnd::FileRun()
 	if(ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions, sizeof(s_romIgnoreExtensions)/sizeof(*s_romIgnoreExtensions)))
 	{
 		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
-		theApp.filename = LogicalName;
+		theApp.szFile = theApp.filename = LogicalName;
 		ReleaseTempFileCategory("rom", PhysicalName);
 	}
 	else
@@ -610,9 +610,9 @@ bool MainWnd::FileRun()
 	const char* PhysicalName = theApp.szFile;
 #endif
 
-	theApp.dir		= getDirFromFile(theApp.filename);
+	theApp.dir		= getDirFromFile(LogicalName);
 
-	CString ipsname = getRelatedFilename(theApp.filename, IDS_IPS_DIR, ".ips");
+	CString ipsname = getRelatedFilename(LogicalName, IDS_IPS_DIR, ".ips");
 
 	IMAGE_TYPE type = utilFindType(PhysicalName);
 
