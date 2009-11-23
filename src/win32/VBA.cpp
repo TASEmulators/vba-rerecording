@@ -906,11 +906,13 @@ invalidArgument:
 				loadSettings();
 			}
 		}
+
+/*
 		int index = filename.ReverseFind('.');
 
 		if (index != -1)
 			filename = filename.Left(index);
-
+*/
 		if (szFile.GetLength() > 0)
 		{
 			if (((MainWnd *)m_pMainWnd)->FileRun())

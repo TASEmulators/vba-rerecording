@@ -497,10 +497,6 @@ void MainWnd::OnToolsSoundStartrecording()
 		if (index != -1)
 			wavName = wavName.Left(index);
 	}
-	else if (emulating)
-	{
-		wavName = theApp.filename;
-	}
 
 	LPCTSTR exts[] = { ".wav", NULL };
 
@@ -561,10 +557,6 @@ void MainWnd::OnToolsStartAVIRecording()
 		int index = aviName.ReverseFind('.');
 		if (index != -1)
 			aviName = aviName.Left(index);
-	}
-	else if (emulating)
-	{
-		aviName = theApp.filename;
 	}
 
 	LPCTSTR exts[] = { ".avi", NULL };
