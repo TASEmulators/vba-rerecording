@@ -7,7 +7,7 @@
  * Now the emulator will never write to the Windows Registry anymore.
  * Added an option to make the emulator prefer the old-fashion save/movie/etc. file naming to the new-fashion.
  * Enabled directory override edit boxes
- * Added directory overrides for GBx rom, cheats, ips, LUA scritps, AVI and sound recording.
+ * Added directory overrides for GBx rom, cheats, ips, LUA scripts, AVI and sound recording.
  * Re-added the "Open GBx ROM..." menu command. "Open ROM..." changed to "Open GBA ROM...".
  * Cleaned hotkeys (somehow). Old hotkeys settings might fail.
 ----
