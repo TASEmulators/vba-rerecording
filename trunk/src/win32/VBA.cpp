@@ -1359,10 +1359,6 @@ void systemDrawScreen()
 		}
 	}
 
-	// This piece was moved from src/win32/DirectDraw.cpp.
-	// However, it is redundant from those in such as Direct3D.cpp.
-	// So, tentatively reverted to v19.3
-	//
 	// theApp.display->render() is called after video logging,
 	// text messages cannot be recorded to the video, of course.
 	//
