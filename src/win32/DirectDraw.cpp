@@ -338,8 +338,7 @@ bool DirectDrawDisplay::initialize()
 	theApp.mode640Available = false;
 	theApp.mode800Available = false;
 	// check for available fullscreen modes
-	pDirectDraw->EnumDisplayModes(DDEDM_STANDARDVGAMODES, NULL, NULL,
-	                              checkModesAvailable);
+	pDirectDraw->EnumDisplayModes(DDEDM_STANDARDVGAMODES, NULL, NULL, checkModesAvailable);
 
 	DWORD flags = DDSCL_NORMAL;
 
@@ -349,8 +348,7 @@ bool DirectDrawDisplay::initialize()
 		        DDSCL_EXCLUSIVE |
 		        DDSCL_FULLSCREEN;
 
-	hret = pDirectDraw->SetCooperativeLevel(pWnd->m_hWnd,
-	                                        flags);
+	hret = pDirectDraw->SetCooperativeLevel(pWnd->m_hWnd, flags);
 
 	if (hret != DD_OK)
 	{
@@ -379,15 +377,13 @@ bool DirectDrawDisplay::initialize()
 	ddsd.dwSize         = sizeof(ddsd);
 	ddsd.dwFlags        = DDSD_CAPS;
 	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-	if (theApp.videoOption > VIDEO_4X)
+
+	if (theApp.videoOption > VIDEO_4X && theApp.tripleBuffering)
 	{
-		if (theApp.tripleBuffering)
-		{
-			// setup triple buffering
-			ddsd.dwFlags |= DDSD_BACKBUFFERCOUNT;
-			ddsd.ddsCaps.dwCaps   |= DDSCAPS_COMPLEX | DDSCAPS_FLIP;
-			ddsd.dwBackBufferCount = 2;
-		}
+		// setup triple buffering
+		ddsd.dwFlags		  |= DDSD_BACKBUFFERCOUNT;
+		ddsd.ddsCaps.dwCaps   |= DDSCAPS_COMPLEX | DDSCAPS_FLIP;
+		ddsd.dwBackBufferCount = 2;
 	}
 
 	hret = pDirectDraw->CreateSurface(&ddsd, &ddsPrimary, NULL);
@@ -425,7 +421,6 @@ bool DirectDrawDisplay::initialize()
 			winlog("Failed to get attached surface %08x", hret);
 			return FALSE;
 		}
-
 		ddsFlip->AddRef();
 		clear();
 	}
@@ -726,11 +721,6 @@ void DirectDrawDisplay::render()
 	}
 #endif
 
-	if (theApp.vsync && !fastForward)
-	{
-		hret = pDirectDraw->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
-	}
-
 	DDSURFACEDESC2 ddsDesc;
 
 	ZeroMemory(&ddsDesc, sizeof(ddsDesc));
@@ -739,11 +729,10 @@ void DirectDrawDisplay::render()
 
 	hret = ddsOffscreen->Lock(NULL,
 	                          &ddsDesc,
-	                          DDLOCK_WRITEONLY|
 #ifndef FINAL_VERSION
-	                          DDLOCK_NOSYSLOCK|
+	                          DDLOCK_NOSYSLOCK |
 #endif
-	                          DDLOCK_SURFACEMEMORYPTR,
+	                          DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT,
 	                          NULL);
 
 	if (hret == DDERR_SURFACELOST)
@@ -757,11 +746,10 @@ void DirectDrawDisplay::render()
 			{
 				hret = ddsOffscreen->Lock(NULL,
 				                          &ddsDesc,
-				                          DDLOCK_WRITEONLY|
 #ifndef FINAL_VERSION
-				                          DDLOCK_NOSYSLOCK|
+				                          DDLOCK_NOSYSLOCK |
 #endif
-				                          DDLOCK_SURFACEMEMORYPTR,
+				                          DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT,
 				                          NULL);
 			}
 		}
@@ -909,6 +897,12 @@ gbaLoopEnd:
 
 	if (hret == DD_OK)
 	{
+		// the correct place to wait
+		if (theApp.vsync && !fastForward)
+		{
+			hret = pDirectDraw->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
+		}
+
 		ddsOffscreen->PageLock(0);
 		if (theApp.tripleBuffering && theApp.videoOption > VIDEO_4X)
 		{
