@@ -1288,8 +1288,8 @@ bool systemReadJoypads()
 {
 	// this function is called at every frame, even if vba is fast-forwarded.
 	// so we try to limit the input frequency here just in case.
-	static u32 lastTime = 0;
-	if((int)(systemGetClock() - lastTime) < 10)
+	static u32 lastTime = systemGetClock();
+	if((u32)(systemGetClock() - lastTime) < 10)
 		return true; // must return true because it's related to movie timing
 	lastTime = systemGetClock();
 
@@ -1602,6 +1602,9 @@ void systemFrame(int rate)
 
 			int target = (100000/(rate*theApp.throttle));
 			int d      = (target - diff);
+
+			if(d > 1000) // added to avoid 500-day waits for vba to start emulating.
+				d = 1000; // I suspect most users aren't that patient, and would find 1 second to be a more reasonable delay.
 
 			sleepAmt = 0.8f * sleepAmt + 0.2f * (float)d;
 			if (d - sleepAmt <= 1.5f && d - sleepAmt >= -1.5f)
