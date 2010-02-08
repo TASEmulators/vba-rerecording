@@ -429,8 +429,8 @@ ON_COMMAND(ID_TOOLS_REWIND, OnToolsRewind)
 ON_UPDATE_COMMAND_UI(ID_TOOLS_REWIND, OnUpdateToolsRewind)
 ON_COMMAND(ID_TOOLS_CUSTOMIZE, OnToolsCustomize)
 ON_UPDATE_COMMAND_UI(ID_TOOLS_CUSTOMIZE, OnUpdateToolsCustomize)
-ON_COMMAND(ID_TOOLS_CUSTOMIZE_COMMON, OnToolsCustomizeCommon)
-ON_UPDATE_COMMAND_UI(ID_TOOLS_CUSTOMIZE_COMMON, OnUpdateToolsCustomizeCommon)
+// ON_COMMAND(ID_TOOLS_CUSTOMIZE_COMMON, OnToolsCustomizeCommon)
+// ON_UPDATE_COMMAND_UI(ID_TOOLS_CUSTOMIZE_COMMON, OnUpdateToolsCustomizeCommon)
 ON_COMMAND(ID_HELP_BUGREPORT, OnHelpBugreport)
 ON_WM_MOUSEMOVE()
 ON_WM_INITMENU()
@@ -485,6 +485,7 @@ ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_X1, ID_OPTIONS_VIDEO_X4, OnOptionVideoSize)
 ON_COMMAND_EX_RANGE(ID_OPTIONS_VIDEO_LAYERS_BG0, ID_OPTIONS_VIDEO_LAYERS_OBJWIN, OnVideoLayer)
 ON_UPDATE_COMMAND_UI_RANGE(ID_OPTIONS_VIDEO_LAYERS_BG0, ID_OPTIONS_VIDEO_LAYERS_OBJWIN, OnUpdateVideoLayer)
 ON_COMMAND(ID_SYSTEM_MINIMIZE, OnSystemMinimize)
+ON_COMMAND(ID_SYSTEM_MAXIMIZE, OnSystemMaximize)
 ON_COMMAND_EX_RANGE(ID_OPTIONS_EMULATOR_SHOWSPEED_NONE, ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT, OnOptionsEmulatorShowSpeed)
 ON_UPDATE_COMMAND_UI_RANGE(ID_OPTIONS_EMULATOR_SHOWSPEED_NONE,
                            ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT,
@@ -845,6 +846,7 @@ static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
 
 			state.DoUpdate(pWnd, false);
 			// FIXME: SLOW recursive call, especially when you hold down Frame Advance
+			// Enabling/disabling of accel keys is thus currently UNFIXED by commenting out the following code line
 //			InitMenuKludge(state.m_pMenu, state.m_pSubMenu, pWnd);
 		}
 		else
@@ -1079,6 +1081,10 @@ void MainWnd::OnContextMenu(CWnd*pWnd, CPoint point)
 void MainWnd::OnSystemMinimize()
 {
 	ShowWindow(SW_SHOWMINIMIZED);
+}
+void MainWnd::OnSystemMaximize()
+{
+	ShowWindow(SW_SHOWMAXIMIZED);
 }
 
 bool MainWnd::fileOpenSelect(int cartridgeType)

@@ -38,6 +38,8 @@ class AccelEditor : public ResizeDlg
 public:
 	CAcceleratorManager mgr;
 	void InitCommands();
+	void AddCommandsFromTable();
+	void AddCommandsFromMenu(CMenu *pMenu, HTREEITEM hParent);
 	AccelEditor(CWnd*pParent = NULL);  // standard constructor
 
 	// Dialog Data
@@ -45,11 +47,10 @@ public:
 	enum { IDD = IDD_ACCEL_EDITOR };
 	CListBox      m_currents;
 	CStatic       m_alreadyAffected;
-	CListBox      m_commands;
-	CListBox      m_commands_hidden;
+	CTreeCtrl     m_commands;
 	CKeyboardEdit m_key;
+	CList<HTREEITEM>  m_hItems;
 	//}}AFX_DATA
-	bool m_commonOnly;
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
@@ -65,7 +66,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnCancel();
 	afx_msg void OnOk();
-	afx_msg void OnSelchangeCommands();
+	afx_msg void OnTvnSelchangedCommands(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnReset();
 	afx_msg void OnAssign();
 	afx_msg void OnRemove();

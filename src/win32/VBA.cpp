@@ -704,16 +704,15 @@ BOOL VBA::InitInstance()
 
 	winAccelMgr.Connect((MainWnd *)m_pMainWnd);
 
-	extern void winAccelAddCommands(CAcceleratorManager&);
+	extern void winAccelAddCommandsFromMenu(CAcceleratorManager &mgr, CMenu *pMenu, const CString &parentStr);
+	extern void winAccelAddCommandsFromTable(CAcceleratorManager &mgr);
 
-	winAccelAddCommands(winAccelMgr);
+	winAccelAddCommandsFromMenu(winAccelMgr, &m_menu, CString());
+	winAccelAddCommandsFromTable(winAccelMgr);
 
 	winAccelMgr.CreateDefaultTable();
-
 	winAccelMgr.Load();
-
 	winAccelMgr.UpdateWndTable();
-
 	winAccelMgr.UpdateMenu(menu);
 
 	if (m_lpCmdLine[0])

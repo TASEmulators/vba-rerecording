@@ -113,8 +113,8 @@ u8  soundBuffer[6][735];
 u16 soundFinalWave[1470];
 u16 soundFrameSound[735*30*2]; // for avi logging
 
-int32       soundBufferLen      = 1470;
-int32       soundBufferTotalLen = 14700;
+u32         soundBufferLen      = 1470;
+u32         soundBufferTotalLen = 14700;
 int32       soundQuality        = 2;
 int32       soundPaused         = 1;
 int32       soundPlay         = 0;
@@ -126,8 +126,8 @@ int32 soundLevel1            = 0;
 int32 soundLevel2            = 0;
 int32 soundBalance           = 0;
 int32 soundMasterOn          = 0;
-int32 soundIndex             = 0;
-int32 soundBufferIndex       = 0;
+u32   soundIndex             = 0;
+u32   soundBufferIndex       = 0;
 int32 soundFrameSoundWritten = 0;
 int32 soundDebug             = 0;
 bool8 soundOffFlag           = false;

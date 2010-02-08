@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by vba.rc
+// Used by VBA.rc
 //
 #define IDS_UNSUPPORTED_VBA_SGM         1
 #define IDS_CANNOT_LOAD_SGM             2
@@ -615,6 +615,7 @@
 #define IDC_BUTTON_LUAEDIT              1365
 #define IDC_LUACONSOLE_CLEAR            1366
 #define IDC_LUACONSOLE_CHOOSEFONT       1367
+#define IDC_TREE1                       1368
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
 #define ID_OPTIONS_VIDEO_VSYNC          40009
@@ -802,6 +803,7 @@
 #define ID_FILE_EXPORT_SETTINGSTOINI    40215
 #define ID_OPTIONS_FRAMESKIP_THROTTLE_NOTHROTTLE 40216
 #define ID_OPTIONS_FRAMESKIP_THROTTLE_OTHER 40221
+#define ID_SYSTEM_MAXIMIZE              40222
 #define ID_OPTIONS_FILTER_SCANLINES     40223
 #define ID_OPTIONS_VIDEO_RENDERMETHOD_GDI 40228
 #define ID_OPTIONS_VIDEO_RENDERMETHOD_DIRECTDRAW 40229
@@ -1018,7 +1020,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        170
 #define _APS_NEXT_COMMAND_VALUE         42406
-#define _APS_NEXT_CONTROL_VALUE         1368
+#define _APS_NEXT_CONTROL_VALUE         1369
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

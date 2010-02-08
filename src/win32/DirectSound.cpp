@@ -450,16 +450,16 @@ void DirectSound::write()
 				{
 					dsbSecondary->GetCurrentPosition(&play, NULL);
 
-					if ((int)(soundNextPosition+soundBufferLen) < (int)soundBufferTotalLen)
+					if (soundNextPosition + soundBufferLen < soundBufferTotalLen)
 					{
 						if (play < soundNextPosition
-						    || play > soundNextPosition+soundBufferLen)
+						    || play > soundNextPosition + soundBufferLen)
 							break;
 					}
 					else
 					{
 						if (play < soundNextPosition
-						    && play > (soundNextPosition+soundBufferLen)%soundBufferTotalLen)
+						    && play > (soundNextPosition + soundBufferLen) % soundBufferTotalLen)
 							break;
 					}
 
