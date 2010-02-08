@@ -51,8 +51,8 @@ extern void soundResume();
 
 extern u8 soundWavePattern[4][32];
 
-extern int32       soundBufferLen;
-extern int32       soundBufferTotalLen;
+extern u32         soundBufferLen;
+extern u32         soundBufferTotalLen;
 extern int32       soundQuality;
 extern int32       soundPaused;
 extern int32       soundPlay;
@@ -64,8 +64,8 @@ extern int32 soundLevel1;
 extern int32 soundLevel2;
 extern int32 soundBalance;
 extern int32 soundMasterOn;
-extern int32 soundIndex;
-extern int32 soundBufferIndex;
+extern u32   soundIndex;
+extern u32   soundBufferIndex;
 extern int32 soundFrameSoundWritten;
 int32        soundVIN = 0;
 extern int32 soundDebug;

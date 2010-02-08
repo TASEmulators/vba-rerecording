@@ -103,6 +103,7 @@ protected:
 	afx_msg void OnUpdateOptionsEmulatorShowSpeed(CCmdUI *pCmdUI);
 	afx_msg BOOL OnOptionsEmulatorShowSpeed(UINT nID);
 	afx_msg void OnSystemMinimize();
+	afx_msg void OnSystemMaximize();
 	afx_msg void OnUpdateVideoLayer(CCmdUI*pCmdUI);
 	afx_msg BOOL OnVideoLayer(UINT nID);
 	afx_msg BOOL OnOptionVideoSize(UINT nID);
@@ -458,8 +459,8 @@ protected:
 	afx_msg void OnUpdateToolsRewind(CCmdUI*pCmdUI);
 	afx_msg void OnToolsCustomize();
 	afx_msg void OnUpdateToolsCustomize(CCmdUI*pCmdUI);
-	afx_msg void OnToolsCustomizeCommon();
-	afx_msg void OnUpdateToolsCustomizeCommon(CCmdUI*pCmdUI);
+//	afx_msg void OnToolsCustomizeCommon();
+//	afx_msg void OnUpdateToolsCustomizeCommon(CCmdUI*pCmdUI);
 	afx_msg void OnToolsCopyVBAWatchSetting();
 	afx_msg void OnToolsCopyVBxWatchSetting();
 	afx_msg void OnHelpBugreport();

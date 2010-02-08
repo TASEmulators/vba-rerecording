@@ -819,6 +819,7 @@ void MainWnd::OnUpdateToolsCustomize(CCmdUI*pCmdUI)
 	pCmdUI->Enable(theApp.videoOption != VIDEO_320x240);
 }
 
+/*
 void MainWnd::OnToolsCustomizeCommon()
 {
 	AccelEditor dlg;
@@ -837,4 +838,4 @@ void MainWnd::OnUpdateToolsCustomizeCommon(CCmdUI*pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption != VIDEO_320x240);
 }
-
+*/

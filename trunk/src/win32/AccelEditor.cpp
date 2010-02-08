@@ -43,7 +43,6 @@ AccelEditor::AccelEditor(CWnd*pParent /*=NULL*/)
 	// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	mgr = theApp.winAccelMgr;
-	m_commonOnly = false;
 }
 
 void AccelEditor::DoDataExchange(CDataExchange*pDX)
@@ -53,19 +52,18 @@ void AccelEditor::DoDataExchange(CDataExchange*pDX)
 	DDX_Control(pDX, IDC_CURRENTS, m_currents);
 	DDX_Control(pDX, IDC_ALREADY_AFFECTED, m_alreadyAffected);
 	DDX_Control(pDX, IDC_COMMANDS, m_commands);
-	DDX_Control(pDX, IDC_COMMANDS_HIDDEN, m_commands_hidden);
 	DDX_Control(pDX, IDC_EDIT_KEY, m_key);
 	//}}AFX_DATA_MAP
 }
 
 BEGIN_MESSAGE_MAP(AccelEditor, CDialog)
 //{{AFX_MSG_MAP(AccelEditor)
-ON_BN_CLICKED(ID_OK, OnOk)
-ON_LBN_SELCHANGE(IDC_COMMANDS, OnSelchangeCommands)
-ON_BN_CLICKED(IDC_RESET, OnReset)
-ON_BN_CLICKED(IDC_ASSIGN, OnAssign)
-ON_BN_CLICKED(ID_CANCEL, OnCancel)
-ON_BN_CLICKED(IDC_REMOVE, OnRemove)
+ON_BN_CLICKED(ID_OK, &AccelEditor::OnOk)
+ON_BN_CLICKED(IDC_RESET, &AccelEditor::OnReset)
+ON_BN_CLICKED(IDC_ASSIGN, &AccelEditor::OnAssign)
+ON_BN_CLICKED(ID_CANCEL, &AccelEditor::OnCancel)
+ON_BN_CLICKED(IDC_REMOVE, &AccelEditor::OnRemove)
+ON_NOTIFY(TVN_SELCHANGED, IDC_COMMANDS, &AccelEditor::OnTvnSelchangedCommands)
 //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -103,40 +101,88 @@ BOOL AccelEditor::OnInitDialog()
 	             // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void AccelEditor::InitCommands()
+void AccelEditor::AddCommandsFromTable()
 {
-	m_commands.ResetContent();
-	m_commands_hidden.ResetContent();
-	m_alreadyAffected.SetWindowText("");
-
 	POSITION pos = mgr.m_mapAccelString.GetStartPosition();
-
 	while (pos != NULL)
 	{
 		CString command;
 		WORD    wID;
 		mgr.m_mapAccelString.GetNextAssoc(pos, command, wID);
+		int nPos = command.Find('\\');
 
-		CString tempStr    = command;
-		int     commonMark = tempStr.Find("(!)", 0);
-		if (commonMark >= 0)
-			tempStr.Truncate(commonMark); // cut off the (!)
-
-		if (!m_commonOnly || commonMark >= 0)
+		if (nPos == 0)	// skip menu commands
 		{
-			int index = m_commands.AddString(tempStr);
-			m_commands.SetItemData(index, wID);
+			continue;
+		}
+
+		HTREEITEM newItem   = TVI_ROOT;
+#if 0
+/*
+		while (nPos != -1)
+		{
+			newItem = m_commands.InsertItem(command.Left(nPos), newItem);
+			command.Delete(0, nPos + 1);
+			nPos = command.Find('\\');
+		}
+*/
+#endif
+		newItem = m_commands.InsertItem(command, newItem);
+		m_commands.SetItemData(newItem, wID);
+		m_hItems.AddTail(newItem);
+	}
+}
+
+// recursive calls
+void AccelEditor::AddCommandsFromMenu(CMenu *pMenu, HTREEITEM hParent)
+{
+	UINT nIndexMax = pMenu->GetMenuItemCount();
+	for (UINT nIndex = 0; nIndex < nIndexMax; ++nIndex)
+	{
+		UINT nID = pMenu->GetMenuItemID(nIndex);
+		if (nID == 0)
+			continue; // menu separator or invalid cmd - ignore it
+
+		if (nID == (UINT)-1)
+		{
+			// possibly a submenu
+			CMenu *pSubMenu = pMenu->GetSubMenu(nIndex);
+			if (pSubMenu != NULL)
+			{
+				CString tempStr;
+				pMenu->GetMenuString(nIndex, tempStr, MF_BYPOSITION);
+				tempStr.Remove('&');
+				HTREEITEM newItem = m_commands.InsertItem(tempStr, hParent);
+				AddCommandsFromMenu(pSubMenu, newItem);
+			}
 		}
 		else
 		{
-			int index = m_commands_hidden.AddString(tempStr);
-			m_commands_hidden.SetItemData(index, wID);
+			// normal menu item
+			// generate the strings
+			CString command;
+			pMenu->GetMenuString(nIndex, command, MF_BYPOSITION);
+			int nPos = command.ReverseFind('\t');
+			if (nPos != -1)
+			{
+				command.Delete(nPos, command.GetLength() - nPos);
+			}
+			command.Remove('&');
+			HTREEITEM newItem = m_commands.InsertItem(command, hParent);
+			m_commands.SetItemData(newItem, nID);
+			m_hItems.AddTail(newItem);
 		}
 	}
+}
 
-	// Update the currents accels associated with the selected command
-	if (m_commands.SetCurSel(0) != LB_ERR)
-		OnSelchangeCommands();
+void AccelEditor::InitCommands()
+{
+	m_commands.DeleteAllItems();
+	m_hItems.RemoveAll();
+	m_alreadyAffected.SetWindowText("");
+
+	AddCommandsFromMenu(&theApp.m_menu, TVI_ROOT);
+	AddCommandsFromTable();
 }
 
 void AccelEditor::OnCancel()
@@ -149,14 +195,17 @@ void AccelEditor::OnOk()
 	EndDialog(TRUE);
 }
 
-void AccelEditor::OnSelchangeCommands()
+void AccelEditor::OnTvnSelchangedCommands(NMHDR *pNMHDR, LRESULT *pResult)
 {
+//	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+
+	// TODO: Add your control notification handler code here
 	// Check if some commands exist.
-	int index = m_commands.GetCurSel();
-	if (index == LB_ERR)
+	HTREEITEM hItem = m_commands.GetSelectedItem();
+	if (hItem == NULL)
 		return;
 
-	WORD wIDCommand = LOWORD(m_commands.GetItemData(index));
+	WORD wIDCommand = LOWORD(m_commands.GetItemData(hItem));
 	m_currents.ResetContent();
 
 	CCmdAccelOb*pCmdAccel;
@@ -172,13 +221,17 @@ void AccelEditor::OnSelchangeCommands()
 		{
 			pAccel = pCmdAccel->m_Accels.GetNext(pos);
 			pAccel->GetString(szBuffer);
-			index = m_currents.AddString(szBuffer);
+			int index = m_currents.AddString(szBuffer);
 			// and a pointer to the accel object.
 			m_currents.SetItemData(index, (DWORD)pAccel);
 		}
+		m_currents.SetCurSel(m_currents.GetCount() - 1);
 	}
 	// Init the key editor
-	//  m_pKey->ResetKey();
+//  m_pKey->ResetKey();
+//	m_alreadyAffected.SetWindowText("");
+
+	*pResult = 0;
 }
 
 void AccelEditor::OnReset()
@@ -192,6 +245,8 @@ void AccelEditor::OnReset()
 
 void AccelEditor::OnAssign()
 {
+	m_alreadyAffected.SetWindowText("");
+
 	// Control if it's not already affected
 	CCmdAccelOb*pCmdAccel;
 	CAccelsOb*  pAccel;
@@ -205,17 +260,18 @@ void AccelEditor::OnAssign()
 		return; // no valid key, abort
 
 	// get the currently selected group
-	int index = m_commands.GetCurSel();
-	if (index == LB_ERR)
+	HTREEITEM hItem = m_commands.GetSelectedItem();
+	if (hItem == NULL)
 		return;
 
 	// Get the object who manage the accels list, associated to the command.
-	wIDCommand = LOWORD(m_commands.GetItemData(index));
+	wIDCommand = LOWORD(m_commands.GetItemData(hItem));
 
-	int count = m_commands.GetCount();
-	for (int index2 = 0; index2 < count; index2++)
+	POSITION posItem = m_hItems.GetHeadPosition();
+	while (posItem != NULL)
 	{
-		WORD wIDCommand2 = LOWORD(m_commands.GetItemData(index2));
+		hItem = m_hItems.GetNext(posItem);
+		WORD wIDCommand2 = LOWORD(m_commands.GetItemData(hItem));
 		mgr.m_mapAccelTable.Lookup(wIDCommand2, pCmdAccel);
 
 		pos = pCmdAccel->m_Accels.GetHeadPosition();
@@ -228,60 +284,17 @@ void AccelEditor::OnAssign()
 				// (the parts that are commented out allow for a one-to-many mapping,
 				//  which is only disabled because the MFC stuff that automagically activates the commands
 				//  doesn't seem to be capable of activating more than one command per accelerator...)
-//		if (wIDCommand != wIDCommand2) {
+//				if (wIDCommand != wIDCommand2) {
 				// the key is already affected by a different command and also not already affected by the same commmand
 
-				CString tempStr    = pCmdAccel->m_szCommand;
-				int     commonMark = tempStr.Find("(!)", 0);
-				if (commonMark >= 0)
-					tempStr.Truncate(commonMark); // cut off the (!)
-
-				m_alreadyAffected.SetWindowText(tempStr);
-//		} else {
-//		  // the key is already affected by the same command
-				m_key.SetSel(0, -1);
-				mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel);
-//          m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
-				return; // abort
-//		}
-			}
-		}
-	}
-
-	// also check against any currently hidden commands
-	int count2 = m_commands_hidden.GetCount();
-	for (int index3 = 0; index3 < count2; index3++)
-	{
-		WORD wIDCommand2 = LOWORD(m_commands_hidden.GetItemData(index3));
-		mgr.m_mapAccelTable.Lookup(wIDCommand2, pCmdAccel);
-
-		pos = pCmdAccel->m_Accels.GetHeadPosition();
-		while (pos != NULL)
-		{
-			pAccel = pCmdAccel->m_Accels.GetNext(pos);
-			if (pAccel->IsEqual(wKey, bCtrl, bAlt, bShift))
-			{
-				// the key is already affected (in the same or other command)
-				// (the parts that are commented out allow for a one-to-many mapping,
-				//  which is only disabled because the MFC stuff that automagically activates the commands
-				//  doesn't seem to be capable of activating more than one command per accelerator...)
-//		if (wIDCommand != wIDCommand2) {
-				// the key is already affected by a different command and also not already affected by the same commmand
-				CString tempStr = pCmdAccel->m_szCommand; // store because pCmdAccel changes after this
-				m_alreadyAffected.SetWindowText(tempStr);
-//		} else {
-//		  // the key is already affected by the same command
-				m_key.SetSel(0, -1);
-				mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel);
-//          m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
-
-				// unhide the conflicting command
-				// note that it will also stay in the hidden list, but that doesn't matter
-				int newIndex = m_commands.AddString(tempStr);
-				m_commands.SetItemData(newIndex, wIDCommand2);
-
-				return; // abort
-//		}
+					m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
+//				} else {
+		  			// the key is already affected by the same command
+					m_key.SetSel(0, -1);
+					mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel);
+//        			m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
+					return; // abort
+//				}
 			}
 		}
 	}
@@ -309,11 +322,12 @@ void AccelEditor::OnAssign()
 	CString szBuffer;
 	pAccel->GetString(szBuffer);
 
-	index = m_currents.AddString(szBuffer);
+	int index = m_currents.AddString(szBuffer);
 	m_currents.SetItemData(index, (DWORD)pAccel);
+	m_currents.SetCurSel(index);
 
 	// Reset the key editor.
-	m_key.ResetKey();
+//	m_key.ResetKey();
 }
 
 void AccelEditor::OnRemove()
@@ -324,12 +338,12 @@ void AccelEditor::OnRemove()
 		return;
 
 	// 2nd part.
-	int indexCmd = m_commands.GetCurSel();
-	if (indexCmd == LB_ERR)
+	HTREEITEM hItem = m_commands.GetSelectedItem();
+	if (hItem == NULL)
 		return;
 
 	// Ref to the ID command
-	WORD wIDCommand = LOWORD(m_commands.GetItemData(indexCmd));
+	WORD wIDCommand = LOWORD(m_commands.GetItemData(hItem));
 
 	// Run through the accels,and control if it can be deleted.
 	CCmdAccelOb*pCmdAccel;
@@ -353,7 +367,7 @@ void AccelEditor::OnRemove()
 					delete pAccel;
 					// and update the listboxes/key editor/static text
 					m_currents.DeleteString(indexCurrent);
-					m_key.ResetKey();
+//					m_key.ResetKey();
 					m_alreadyAffected.SetWindowText("");
 					return;
 				}
@@ -369,4 +383,3 @@ void AccelEditor::OnRemove()
 	}
 	systemMessage(0, "internal error (CAccelDlgHelper::Remove : Lookup failed)");
 }
-

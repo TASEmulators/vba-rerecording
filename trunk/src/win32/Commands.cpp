@@ -30,295 +30,14 @@ static bool initialized = false;
 
 struct
 {
-	const char *command;				// a (!) puts it in the "common hotkeys" list
+	const char *command;
 	WORD        id;
 } winAccelCommands[] = {
-	{ "OpenGBARom(!)",					ID_FILE_OPEN									},
-	{ "OpenGBxRom(!)",					ID_FILE_OPENGAMEBOY								},
-	{ "LoadFromFile",					ID_FILE_LOAD									},
-	{ "SaveToFile",						ID_FILE_SAVE									},
-	{ "LoadSlot01(!)",					ID_FILE_LOADGAME_SLOT1							},
-	{ "LoadSlot02(!)",					ID_FILE_LOADGAME_SLOT2							},
-	{ "LoadSlot03(!)",					ID_FILE_LOADGAME_SLOT3							},
-	{ "LoadSlot04(!)",					ID_FILE_LOADGAME_SLOT4							},
-	{ "LoadSlot05(!)",					ID_FILE_LOADGAME_SLOT5							},
-	{ "LoadSlot06(!)",					ID_FILE_LOADGAME_SLOT6							},
-	{ "LoadSlot07(!)",					ID_FILE_LOADGAME_SLOT7							},
-	{ "LoadSlot08(!)",					ID_FILE_LOADGAME_SLOT8							},
-	{ "LoadSlot09(!)",					ID_FILE_LOADGAME_SLOT9							},
-	{ "LoadSlot10(!)",					ID_FILE_LOADGAME_SLOT10							},
-	{ "AutoLoadMostRecent",				ID_FILE_LOADGAME_AUTOLOADMOSTRECENT				},
-	{ "MakeRecentOnLoad",				ID_FILE_LOADGAME_MAKERECENT						},
-	{ "MakeCurrentOnLoad",				ID_FILE_LOADGAME_MAKECURRENT					},
-	{ "LoadMostRecent(!)",				ID_FILE_LOADGAME_MOSTRECENT						},
-	{ "CurrentSlotLoad(!)",				ID_FILE_LOADGAME_CURRENT						},
-	{ "SaveSlot01(!)",					ID_FILE_SAVEGAME_SLOT1							},
-	{ "SaveSlot02(!)",					ID_FILE_SAVEGAME_SLOT2							},
-	{ "SaveSlot03(!)",					ID_FILE_SAVEGAME_SLOT3							},
-	{ "SaveSlot04(!)",					ID_FILE_SAVEGAME_SLOT4							},
-	{ "SaveSlot05(!)",					ID_FILE_SAVEGAME_SLOT5							},
-	{ "SaveSlot06(!)",					ID_FILE_SAVEGAME_SLOT6							},
-	{ "SaveSlot07(!)",					ID_FILE_SAVEGAME_SLOT7							},
-	{ "SaveSlot08(!)",					ID_FILE_SAVEGAME_SLOT8							},
-	{ "SaveSlot09(!)",					ID_FILE_SAVEGAME_SLOT9							},
-	{ "SaveSlot10(!)",					ID_FILE_SAVEGAME_SLOT10							},
-	{ "SaveOldestSlot(!)",				ID_FILE_SAVEGAME_OLDESTSLOT						},
-	{ "CurrentSlotSave(!)",				ID_FILE_SAVEGAME_CURRENT						},
-	{ "MakeCurrentOnSave",				ID_FILE_SAVEGAME_MAKECURRENT					},
-	{ "CurrentSlotNext(!)",				ID_FILE_SAVEGAME_INCREMENTSLOT					},
-	{ "CurrentSlotPrev(!)",				ID_FILE_SAVEGAME_DECREMENTSLOT					},
-	{ "ClearRecentRomList",				ID_FILE_RECENT_RESET							},
-	{ "LockRecentRomList",				ID_FILE_RECENT_FREEZE							},
-	{ "SetCurrentSlot01(!)",			ID_SELECT_SLOT1									},
-	{ "SetCurrentSlot02(!)",			ID_SELECT_SLOT2									},
-	{ "SetCurrentSlot03(!)",			ID_SELECT_SLOT3									},
-	{ "SetCurrentSlot04(!)",			ID_SELECT_SLOT4									},
-	{ "SetCurrentSlot05(!)",			ID_SELECT_SLOT5									},
-	{ "SetCurrentSlot06(!)",			ID_SELECT_SLOT6									},
-	{ "SetCurrentSlot07(!)",			ID_SELECT_SLOT7									},
-	{ "SetCurrentSlot08(!)",			ID_SELECT_SLOT8									},
-	{ "SetCurrentSlot09(!)",			ID_SELECT_SLOT9									},
-	{ "SetCurrentSlot10(!)",			ID_SELECT_SLOT10								},
-	{ "RecentRom01",					ID_FILE_MRU_FILE1								},
-	{ "RecentRom02",					ID_FILE_MRU_FILE2								},
-	{ "RecentRom03",					ID_FILE_MRU_FILE3								},
-	{ "RecentRom04",					ID_FILE_MRU_FILE4								},
-	{ "RecentRom05",					ID_FILE_MRU_FILE5								},
-	{ "RecentRom06",					ID_FILE_MRU_FILE6								},
-	{ "RecentRom07",					ID_FILE_MRU_FILE7								},
-	{ "RecentRom08",					ID_FILE_MRU_FILE8								},
-	{ "RecentRom09",					ID_FILE_MRU_FILE9								},
-	{ "RecentRom10",					ID_FILE_MRU_FILE10								},
-	{ "PauseGame(!)",					ID_FILE_PAUSE									},
-	{ "FrameAdvance(!)",				ID_DEBUG_NEXTFRAME								},
-	{ "ResetGame(!)",					ID_FILE_RESET									},
-	{ "Close",							ID_FILE_CLOSE									},
-	{ "ImportBatteryFile",				ID_FILE_IMPORT_BATTERYFILE						},
-	{ "ImportGamesharkCodeFile",		ID_FILE_IMPORT_GAMESHARKCODEFILE				},
-	{ "ImportGamesharkSnapshot",		ID_FILE_IMPORT_GAMESHARKSNAPSHOT				},
-	{ "ExportBatteryFile",				ID_FILE_EXPORT_BATTERYFILE						},
-	{ "ExportGamesharkSnapshot",		ID_FILE_EXPORT_GAMESHARKSNAPSHOT				},
-	{ "RomInformation",					ID_FILE_ROMINFORMATION							},
-	{ "ToggleMenu",						ID_FILE_TOGGLEMENU								},
-	{ "Exit",							ID_FILE_EXIT									},
-	{ "FrameSkip0",						ID_OPTIONS_VIDEO_FRAMESKIP_0					},
-	{ "FrameSkip1",						ID_OPTIONS_VIDEO_FRAMESKIP_1					},
-	{ "FrameSkip2",						ID_OPTIONS_VIDEO_FRAMESKIP_2					},
-	{ "FrameSkip3",						ID_OPTIONS_VIDEO_FRAMESKIP_3					},
-	{ "FrameSkip4",						ID_OPTIONS_VIDEO_FRAMESKIP_4					},
-	{ "FrameSkip5",						ID_OPTIONS_VIDEO_FRAMESKIP_5					},
-	{ "FrameSkip6",						ID_OPTIONS_VIDEO_FRAMESKIP_6					},
-	{ "FrameSkip7",						ID_OPTIONS_VIDEO_FRAMESKIP_7					},
-	{ "FrameSkip8",						ID_OPTIONS_VIDEO_FRAMESKIP_8					},
-	{ "FrameSkip9",						ID_OPTIONS_VIDEO_FRAMESKIP_9					},
-	{ "Speed006%",						ID_OPTIONS_FRAMESKIP_THROTTLE_6					},
-	{ "Speed015%",						ID_OPTIONS_FRAMESKIP_THROTTLE_15				},
-	{ "Speed025%",						ID_OPTIONS_FRAMESKIP_THROTTLE_25				},
-	{ "Speed037%",						ID_OPTIONS_FRAMESKIP_THROTTLE_37				},
-	{ "Speed050%",						ID_OPTIONS_FRAMESKIP_THROTTLE_50				},
-	{ "Speed075%",						ID_OPTIONS_FRAMESKIP_THROTTLE_75				},
-	{ "Speed087%",						ID_OPTIONS_FRAMESKIP_THROTTLE_87				},
-	{ "Speed100%(!)",					ID_OPTIONS_FRAMESKIP_THROTTLE_100				},
-	{ "Speed112%",						ID_OPTIONS_FRAMESKIP_THROTTLE_112				},
-	{ "Speed125%",						ID_OPTIONS_FRAMESKIP_THROTTLE_125				},
-	{ "Speed150%",						ID_OPTIONS_FRAMESKIP_THROTTLE_150				},
-	{ "Speed200%",						ID_OPTIONS_FRAMESKIP_THROTTLE_200				},
-	{ "Speed300%",						ID_OPTIONS_FRAMESKIP_THROTTLE_300				},
-	{ "SpeedOther",						ID_OPTIONS_FRAMESKIP_THROTTLE_OTHER				},
-	{ "SpeedIncrease(!)",				ID_OPTIONS_FRAMESKIP_THROTTLE_INCREASE			},
-	{ "SpeedDecrease(!)",				ID_OPTIONS_FRAMESKIP_THROTTLE_DECREASE			},
-	{ "VideoRenderGDI",					ID_OPTIONS_VIDEO_RENDERMETHOD_GDI				},
-	{ "VideoRenderDDRAW",				ID_OPTIONS_VIDEO_RENDERMETHOD_DIRECTDRAW		},
-	{ "VideoRenderD3D",					ID_OPTIONS_VIDEO_RENDERMETHOD_DIRECT3D			},
-	{ "VideoRenderOGL",					ID_OPTIONS_VIDEO_RENDERMETHOD_OPENGL			},
-	{ "VideoRenderVsync",				ID_OPTIONS_VIDEO_VSYNC							},
-	{ "VideoX1",						ID_OPTIONS_VIDEO_X1								},
-	{ "VideoX2",						ID_OPTIONS_VIDEO_X2								},
-	{ "VideoX3",						ID_OPTIONS_VIDEO_X3								},
-	{ "VideoX4",						ID_OPTIONS_VIDEO_X4								},
-	{ "Video320x240",					ID_OPTIONS_VIDEO_FULLSCREEN320X240				},
-	{ "Video640x480",					ID_OPTIONS_VIDEO_FULLSCREEN640X480				},
-	{ "Video800x600",					ID_OPTIONS_VIDEO_FULLSCREEN800X600				},
-//  { "Video1024x768",					ID_OPTIONS_VIDEO_FULLSCREEN1024X768				},
-//  { "Video1600x1200",					ID_OPTIONS_VIDEO_FULLSCREEN1600X1200			},
-//  { "VideoFullscreenRecent",			ID_OPTIONS_VIDEO_FULLSCREENRECENT				}, // better idea than above
-	{ "VideoFullscreen",				ID_OPTIONS_VIDEO_FULLSCREEN						},
-	{ "VideoFullscreenMaxScale",		ID_OPTIONS_VIDEO_FULLSCREENMAXSCALE				},
-	{ "VideoAutoHideMenu",				ID_OPTIONS_EMULATOR_AUTOHIDEMENU				},
-	{ "VideoLayersBg0",					ID_OPTIONS_VIDEO_LAYERS_BG0						},
-	{ "VideoLayersBg1",					ID_OPTIONS_VIDEO_LAYERS_BG1						},
-	{ "VideoLayersBg2",					ID_OPTIONS_VIDEO_LAYERS_BG2						},
-	{ "VideoLayersBg3",					ID_OPTIONS_VIDEO_LAYERS_BG3						},
-	{ "VideoLayersOBJ",					ID_OPTIONS_VIDEO_LAYERS_OBJ						},
-	{ "VideoLayersWIN0",				ID_OPTIONS_VIDEO_LAYERS_WIN0					},
-	{ "VideoLayersWIN1",				ID_OPTIONS_VIDEO_LAYERS_WIN1					},
-	{ "VideoLayersOBJWIN",				ID_OPTIONS_VIDEO_LAYERS_OBJWIN					},
-	{ "EmulationAutoIPSPatch",			ID_OPTIONS_EMULATOR_AUTOMATICALLYIPSPATCH		},
-	{ "EmulationRTC",					ID_OPTIONS_EMULATOR_REALTIMECLOCK				},
-	{ "EmulationGBALagReduction",		ID_EMULATOR_GBALAG								},
-	{ "EmulationUseOldGBTiming",		ID_EMULATOR_USEOLDGBTIMING						},
-	{ "EmulationSaveAuto",				ID_OPTIONS_EMULATOR_SAVETYPE_AUTOMATIC			},
-	{ "EmulationSaveEEPROM",			ID_OPTIONS_EMULATOR_SAVETYPE_EEPROM				},
-	{ "EmulationSaveSRAM",				ID_OPTIONS_EMULATOR_SAVETYPE_SRAM				},
-	{ "EmulationSaveFLASH",				ID_OPTIONS_EMULATOR_SAVETYPE_FLASH				},
-	{ "EmulationSaveEEPROMSensor",		ID_OPTIONS_EMULATOR_SAVETYPE_EEPROMSENSOR		},
-	{ "EmulationSaveFlash64K",			ID_OPTIONS_EMULATOR_SAVETYPE_FLASH512K			},
-	{ "EmulationSaveFlash128K",			ID_OPTIONS_EMULATOR_SAVETYPE_FLASH1M			},
-//  { "EmulationRemoveIntros",			ID_OPTIONS_EMULATOR_REMOVEINTROSGBA				},
-	{ "EmulationUseBIOS",				ID_OPTIONS_EMULATOR_USEBIOSFILE					},
-	{ "EmulationSkipBIOSIntro",			ID_OPTIONS_EMULATOR_SKIPBIOS					},
-	{ "EmulationSelectBIOS",			ID_OPTIONS_EMULATOR_SELECTBIOSFILE				},
-	{ "GameboyBorder",					ID_OPTIONS_GAMEBOY_BORDER						},
-	{ "GameboyBorderAutomatic",			ID_OPTIONS_GAMEBOY_BORDERAUTOMATIC				},
-	{ "GameboyColors",					ID_OPTIONS_GAMEBOY_COLORS						},
-	{ "EmulatorAssociate",				ID_OPTIONS_EMULATOR_ASSOCIATE					},
-	{ "EmulatorDirectories",			ID_OPTIONS_EMULATOR_DIRECTORIES					},
-	{ "EmulatorUseSkin",				ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN				},
-	{ "EmulatorSelectSkin",				ID_OPTIONS_VIDEO_RENDEROPTIONS_SELECTSKIN		},
-	{ "EmulatorSelectLanguage",			ID_OPTIONS_LANGUAGE_OTHER						},
-	{ "SpeedShowNone",					ID_OPTIONS_EMULATOR_SHOWSPEED_NONE				},
-	{ "SpeedShowPercentage",			ID_OPTIONS_EMULATOR_SHOWSPEED_PERCENTAGE		},
-	{ "SpeedShowDetailed",				ID_OPTIONS_EMULATOR_SHOWSPEED_DETAILED			},
-	{ "SpeedShowTransparent",			ID_OPTIONS_EMULATOR_SHOWSPEED_TRANSPARENT		},
-	{ "SpeedTurboMode(!)",				ID_OPTIONS_EMULATOR_SPEEDUPTOGGLE				},
-	{ "ToolsAGBPrint",					ID_OPTIONS_EMULATOR_AGBPRINT					},
-	{ "SoundOff",						ID_OPTIONS_SOUND_OFF							},
-	{ "SoundMute",						ID_OPTIONS_SOUND_MUTE							},
-	{ "SoundOn",						ID_OPTIONS_SOUND_ON								},
-	{ "SoundChannel1",					ID_OPTIONS_SOUND_CHANNEL1						},
-	{ "SoundChannel2",					ID_OPTIONS_SOUND_CHANNEL2						},
-	{ "SoundChannel3",					ID_OPTIONS_SOUND_CHANNEL3						},
-	{ "SoundChannel4",					ID_OPTIONS_SOUND_CHANNEL4						},
-	{ "SoundDirectSoundA",				ID_OPTIONS_SOUND_DIRECTSOUNDA					},
-	{ "SoundDirectSoundB",				ID_OPTIONS_SOUND_DIRECTSOUNDB					},
-	{ "Sound11Khz",						ID_OPTIONS_SOUND_11KHZ							},
-	{ "Sound22Khz",						ID_OPTIONS_SOUND_22KHZ							},
-	{ "Sound44Khz",						ID_OPTIONS_SOUND_44KHZ							},
-	{ "SoundMuteFrameAdvance",			ID_OPTIONS_SOUND_MUTEFRAMEADVANCE				},
-	{ "SoundReverseStereo",				ID_OPTIONS_SOUND_REVERSESTEREO					},
-	{ "SoundEcho",						ID_OPTIONS_SOUND_ECHO							},
-	{ "SoundLowPassFilter",				ID_OPTIONS_SOUND_LOWPASSFILTER					},
-	{ "SoundVolume0.25x",				ID_OPTIONS_SOUND_VOLUME_25X						},
-	{ "SoundVolume0.5x",				ID_OPTIONS_SOUND_VOLUME_5X						},
-	{ "SoundVolume1x",					ID_OPTIONS_SOUND_VOLUME_1X						},
-	{ "SoundVolume2x",					ID_OPTIONS_SOUND_VOLUME_2X						},
-	{ "SoundVolume3x",					ID_OPTIONS_SOUND_VOLUME_3X						},
-	{ "SoundVolume4x",					ID_OPTIONS_SOUND_VOLUME_4X						},
-	{ "FilterNormal",					ID_OPTIONS_FILTER_NORMAL						},
-	{ "FilterTVMode",					ID_OPTIONS_FILTER_TVMODE						},
-	{ "Filter2xSaI",					ID_OPTIONS_FILTER_2XSAI							},
-	{ "FilterSuper2xSaI",				ID_OPTIONS_FILTER_SUPER2XSAI					},
-	{ "FilterSuperEagle",				ID_OPTIONS_FILTER_SUPEREAGLE					},
-	{ "FilterPixelate",					ID_OPTIONS_FILTER16BIT_PIXELATEEXPERIMENTAL		},
-	{ "FilterMotionBlur",				ID_OPTIONS_FILTER16BIT_MOTIONBLUREXPERIMENTAL	},
-	{ "FilterAdMameScale2x",			ID_OPTIONS_FILTER16BIT_ADVANCEMAMESCALE2X		},
-	{ "FilterSimple2x",					ID_OPTIONS_FILTER16BIT_SIMPLE2X					},
-	{ "FilterBilinear",					ID_OPTIONS_FILTER_BILINEAR						},
-	{ "FilterBilinearPlus",				ID_OPTIONS_FILTER_BILINEARPLUS					},
-	{ "FilterScanlines",				ID_OPTIONS_FILTER_SCANLINES						},
-	{ "FilterHq2x",						ID_OPTIONS_FILTER_HQ2X							},
-	{ "FilterHq2x2",					ID_OPTIONS_FILTER_HQ2X2							},
-	{ "FilterLq2x",						ID_OPTIONS_FILTER_LQ2X							},
-	{ "FilterHq3x2",					ID_OPTIONS_FILTER_HQ3X2							},
-	{ "FilterIFBNone",					ID_OPTIONS_FILTER_INTERFRAMEBLENDING_NONE		},
-	{ "FilterIFBMotionBlur",			ID_OPTIONS_FILTER_INTERFRAMEBLENDING_MOTIONBLUR },
-	{ "FilterIFBSmart",					ID_OPTIONS_FILTER_INTERFRAMEBLENDING_SMART		},
-	{ "FilterDisableMMX",				ID_OPTIONS_FILTER_DISABLEMMX					},
-	{ "JoypadConfigure1",				ID_OPTIONS_JOYPAD_CONFIGURE_1					},
-	{ "JoypadConfigure2",				ID_OPTIONS_JOYPAD_CONFIGURE_2					},
-	{ "JoypadConfigure3",				ID_OPTIONS_JOYPAD_CONFIGURE_3					},
-	{ "JoypadConfigure4",				ID_OPTIONS_JOYPAD_CONFIGURE_4					},
-	{ "JoypadMotionConfigure",			ID_OPTIONS_JOYPAD_MOTIONCONFIGURE				},
-	{ "JoypadMotionAllowLeftPlusRight", ID_OPTIONS_JOYPAD_ALLOWLEFTRIGHT				},
-	{ "JoypadAutofireA(!)",				ID_OPTIONS_JOYPAD_AUTOFIRE_A					},
-	{ "JoypadAutofireB(!)",				ID_OPTIONS_JOYPAD_AUTOFIRE_B					},
-	{ "JoypadAutofireL(!)",				ID_OPTIONS_JOYPAD_AUTOFIRE_L					},
-	{ "JoypadAutofireR(!)",				ID_OPTIONS_JOYPAD_AUTOFIRE_R					},
-	{ "JoypadAutofireStart(!)",			ID_OPTIONS_JOYPAD_AUTOFIRE_START				},
-	{ "JoypadAutofireSelect(!)",		ID_OPTIONS_JOYPAD_AUTOFIRE_SELECT				},
-	{ "JoypadAutofireUp(!)",			ID_OPTIONS_JOYPAD_AUTOFIRE_UP					},
-	{ "JoypadAutofireDown(!)",			ID_OPTIONS_JOYPAD_AUTOFIRE_DOWN					},
-	{ "JoypadAutofireLeft(!)",			ID_OPTIONS_JOYPAD_AUTOFIRE_LEFT					},
-	{ "JoypadAutofireRight(!)",			ID_OPTIONS_JOYPAD_AUTOFIRE_RIGHT				},
-	{ "JoypadAutofireClearAl(!)l",		ID_OPTIONS_JOYPAD_AUTOFIRE_CLEAR				},
-	{ "JoypadAutoholdA(!)",				ID_STICKY_A										},
-	{ "JoypadAutoholdB(!)",				ID_STICKY_B										},
-	{ "JoypadAutoholdL(!)",				ID_STICKY_L										},
-	{ "JoypadAutoholdR(!)",				ID_STICKY_R										},
-	{ "JoypadAutoholdStart(!)",			ID_STICKY_START									},
-	{ "JoypadAutoholdSelect(!)",		ID_STICKY_SELECT								},
-	{ "JoypadAutoholdUp(!)",			ID_STICKY_UP									},
-	{ "JoypadAutoholdDown(!)",			ID_STICKY_DOWN									},
-	{ "JoypadAutoholdLeft(!)",			ID_STICKY_LEFT									},
-	{ "JoypadAutoholdRight(!)",			ID_STICKY_RIGHT									},
-	{ "JoypadAutoholdClearAll(!)",		ID_STICKY_CLEAR									},
-	{ "CheatsSearch",					ID_CHEATS_SEARCHFORCHEATS						},
-	{ "CheatsList",						ID_CHEATS_CHEATLIST								},
-	{ "CheatsLoad",						ID_CHEATS_LOADCHEATLIST							},
-	{ "CheatsSave",						ID_CHEATS_SAVECHEATLIST							},
-	{ "CheatsDisable",					ID_CHEATS_DISABLECHEATS							},
-	{ "DebugGDB",						ID_TOOLS_DEBUG_GDB								},
-	{ "DebugGDBLoad",					ID_TOOLS_DEBUG_LOADANDWAIT						},
-	{ "DebugGDBBreak",					ID_TOOLS_DEBUG_BREAK							},
-	{ "DebugGDBDisconnect",				ID_TOOLS_DEBUG_DISCONNECT						},
-	{ "Disassemble",					ID_TOOLS_DISASSEMBLE							},
-	{ "IOViewer",						ID_TOOLS_IOVIEWER								},
-	{ "Logging",						ID_TOOLS_LOGGING								},
-	{ "MapViewer",						ID_TOOLS_MAPVIEW								},
-	{ "MemoryViewer",					ID_TOOLS_MEMORYVIEWER							},
-	{ "OAMViewer",						ID_TOOLS_OAMVIEWER								},
-	{ "PaletteViewer",					ID_TOOLS_PALETTEVIEW							},
-	{ "TileViewer",						ID_TOOLS_TILEVIEWER								},
-	{ "FrameSearch(!)",					ID_DEBUG_FRAMESEARCH							},
-	{ "FrameSearchRewind(!)",			ID_DEBUG_FRAMESEARCHPREV						},
-	{ "FrameSearchEnd(!)",				ID_DEBUG_FRAMESEARCHLOAD						},
-	{ "Rewind(!)",						ID_TOOLS_REWIND									},
-	{ "RewindSettings",					ID_OPTIONS_EMULATOR_REWINDINTERVAL				},
-	{ "FrameCounter(!)",				ID_TOOLS_FRAMECOUNTER							},
-	{ "InputDisplay(!)",				ID_TOOLS_INPUTDISPLAY							},
-	{ "LagCounter(!)",					ID_TOOLS_LAGCOUNTER								},
-//  { "LagCounterReset(!)",				ID_TOOLS_LAGCOUNTER_RESET						},
-	{ "LuaLoad(!)",						ID_FILE_LUA_OPEN								},
-	{ "LuaReload(!)",					ID_FILE_LUA_RELOAD								},
-	{ "LuaStop(!)",						ID_FILE_LUA_STOP								},
-	{ "AVIRecording",					ID_TOOLS_AVIRECORDING							},
-	{ "SoundRecording",					ID_TOOLS_SOUNDRECORDING							},
-	{ "ScreenCapture",					ID_FILE_SCREENCAPTURE							},
-	{ "MoviePlay(!)",					ID_MOVIE_PLAY									},
-	{ "MovieRecord(!)",					ID_MOVIE_RECORD									},
-	{ "MovieStop(!)",					ID_MOVIE_STOP									},
-	{ "MovieReadOnly(!)",				ID_MOVIE_READONLY								},
-	{ "MovieResumeRecord(!)",			ID_MOVIE_RESUME_RECORD							},
-	{ "MoviePlayFromBeginning(!)",		ID_MOVIE_RESTART_PLAY							},
-	{ "MovieOnEndPause",				ID_MOVIE_END_PAUSE								},
-	{ "MovieOnEndStop",					ID_MOVIE_END_STOP								},
-	{ "MovieOnEndRestart",				ID_MOVIE_END_RESTART							},
-	{ "MovieOnEndRerecord",				ID_MOVIE_END_RERECORD							},
-	{ "CustomizeAllCommands",			ID_TOOLS_CUSTOMIZE								},
-	{ "CustomizeCommonHotkeys",			ID_TOOLS_CUSTOMIZE_COMMON						},
-	{ "HelpBugReport",					ID_HELP_BUGREPORT								},
-	{ "HelpFAQ",						ID_HELP_FAQ										},
-	{ "HelpAbout",						ID_HELP_ABOUT									},
-	{ "Minimize",						ID_SYSTEM_MINIMIZE								},
+	{	"Minimize",				ID_SYSTEM_MINIMIZE	},
+	{	"Maximize",				ID_SYSTEM_MAXIMIZE	},
 };
 
-bool winAccelGetID(const char *command, WORD& id)
-{
-	if (!initialized)
-	{
-		int count = sizeof(winAccelCommands)/sizeof(winAccelCommands[0]);
-
-		for (int i = 0; i < count; i++)
-		{
-			winAccelStrings.SetAt(winAccelCommands[i].command, winAccelCommands[i].id);
-		}
-		initialized = true;
-	}
-
-	return winAccelStrings.Lookup(command, id) ? true : false;
-}
-
-void winAccelAddCommands(CAcceleratorManager& mgr)
+void winAccelAddCommandsFromTable(CAcceleratorManager &mgr)
 {
 	int count = sizeof(winAccelCommands)/sizeof(winAccelCommands[0]);
 
@@ -326,6 +45,49 @@ void winAccelAddCommands(CAcceleratorManager& mgr)
 	{
 		if (!mgr.AddCommandAccel(winAccelCommands[i].id, winAccelCommands[i].command, false))
 			mgr.CreateEntry(winAccelCommands[i].id, winAccelCommands[i].command);
+	}
+}
+
+// recursive calls
+void winAccelAddCommandsFromMenu(CAcceleratorManager &mgr, CMenu *pMenu, const CString &parentStr)
+{
+	UINT nIndexMax = pMenu->GetMenuItemCount();
+	for (UINT nIndex = 0; nIndex < nIndexMax; ++nIndex)
+	{
+		UINT nID = pMenu->GetMenuItemID(nIndex);
+		if (nID == 0)
+			continue; // menu separator or invalid cmd - ignore it
+
+		if (nID == (UINT)-1)
+		{
+			// possibly a submenu
+			CMenu *pSubMenu = pMenu->GetSubMenu(nIndex);
+			if (pSubMenu != NULL)
+			{
+				CString tempStr;
+				pMenu->GetMenuString(nIndex, tempStr, MF_BYPOSITION);
+				tempStr.Remove('&');
+				winAccelAddCommandsFromMenu(mgr, pSubMenu, parentStr + '\\' + tempStr);
+			}
+		}
+		else
+		{
+			// normal menu item
+			// generate the strings
+			CString command;
+			pMenu->GetMenuString(nIndex, command, MF_BYPOSITION);
+			int nPos = command.ReverseFind('\t');
+			if (nPos != -1)
+			{
+				command.Delete(nPos, command.GetLength() - nPos);
+			}
+			command.Remove('&');
+			command = parentStr + '\\' + command;
+			if (!mgr.AddCommandAccel(nID, command, false))
+			{
+				mgr.CreateEntry(nID, command);
+			}
+		}
 	}
 }
 
