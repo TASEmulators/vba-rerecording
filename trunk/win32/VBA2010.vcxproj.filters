@@ -789,9 +789,6 @@
     <None Include="..\TODO.txt">
       <Filter>Docs</Filter>
     </None>
-    <None Include="..\VBArr-V21-changelog.txt">
-      <Filter>Docs</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\AutoBuild.h">

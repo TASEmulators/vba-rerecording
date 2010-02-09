@@ -577,7 +577,6 @@
     <None Include="..\README-win.txt" />
     <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
     <None Include="..\TODO.txt" />
-    <None Include="..\VBArr-V21-changelog.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\AutoBuild.h" />

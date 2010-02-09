@@ -132,32 +132,6 @@ void MainWnd::OnUpdateFileReset(CCmdUI*pCmdUI)
 void MainWnd::OnUpdateFileRecentFreeze(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.recentFreeze);
-
-	if (pCmdUI->m_pMenu == NULL)
-		return;
-
-	CMenu *pMenu = pCmdUI->m_pMenu;
-
-	int i;
-	for (i = 0; i < 10; i++)
-	{
-		if (!pMenu->RemoveMenu(ID_FILE_MRU_FILE1+i, MF_BYCOMMAND))
-			break;
-	}
-
-	for (i = 0; i < 10; i++)
-	{
-		CString p = theApp.recentFiles[i];
-		if (p.GetLength() == 0)
-			break;
-		int index = max(p.ReverseFind('/'), max(p.ReverseFind('\\'), p.ReverseFind('|')));
-
-		if (index != -1)
-			p = p.Right(p.GetLength()-index-1);
-
-		pMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1+i, p);
-	}
-	theApp.winAccelMgr.UpdateMenu((HMENU)*pMenu);
 }
 
 BOOL MainWnd::OnFileRecentFile(UINT nID)
@@ -987,7 +961,40 @@ void MainWnd::OnUpdateFileLoadgameMostrecent(CCmdUI*pCmdUI)
 	pCmdUI->Enable(enabled);
 }
 
-void MainWnd::OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI)
+void MainWnd::OnUpdateFileRecentFile(CCmdUI *pCmdUI)
+{
+	int fileID = pCmdUI->m_nID - ID_FILE_MRU_FILE1;
+
+	CString p = theApp.recentFiles[fileID];
+
+	int index = max(p.ReverseFind('/'), max(p.ReverseFind('\\'), p.ReverseFind('|')));
+
+	if (index != -1)
+	{
+		p.Delete(0, index + 1);
+	}
+
+	BOOL bExist = FALSE;
+
+	if (p.IsEmpty())
+	{
+		p.Format("No Recent ROM #%d", fileID + 1);
+	}
+	else
+	{
+		bExist = TRUE;
+	}
+
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		pCmdUI->SetText(p);
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+	}
+
+	pCmdUI->Enable(bExist);
+}
+
+void MainWnd::OnUpdateFileLoadSlot(CCmdUI *pCmdUI)
 {
 	int slotID = pCmdUI->m_nID - ID_FILE_LOADGAME_SLOT1 + 1;
 
@@ -1002,7 +1009,7 @@ void MainWnd::OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI)
 	pCmdUI->Enable(emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, slotID), status));
 }
 
-void MainWnd::OnUpdateFileSaveGameSlot(CCmdUI *pCmdUI)
+void MainWnd::OnUpdateFileSaveSlot(CCmdUI *pCmdUI)
 {
 	if (pCmdUI->m_pMenu != NULL)
 	{
