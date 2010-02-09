@@ -83,9 +83,6 @@ protected:
 	//{{AFX_MSG(MainWnd)
 	afx_msg LRESULT OnConfirmMode(WPARAM, LPARAM);
 	afx_msg LRESULT OnMySysCommand(WPARAM, LPARAM);
-	afx_msg void OnUpdateFileLoadGameSlot(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateFileSaveGameSlot(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateSelectSlot(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateOptionsJoypadAutofire(CCmdUI *pCmdUI);
 	afx_msg BOOL OnOptionsJoypadAutofire(UINT nID);
 	afx_msg void OnUpdateOptionsJoypadSticky(CCmdUI *pCmdUI);
@@ -507,6 +504,10 @@ protected:
 	afx_msg void OnOptionsVideoTextdisplayoptions();
 	afx_msg void OnUpdateOptionsVideoTextdisplayoptions(CCmdUI *pCmdUI);
 
+	afx_msg void OnUpdateFileRecentFile(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateFileLoadSlot(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateFileSaveSlot(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateSelectSlot(CCmdUI *pCmdUI);
 	afx_msg BOOL OnFileRecentFile(UINT nID);
 	afx_msg BOOL OnFileLoadSlot(UINT nID);
 	afx_msg BOOL OnFileSaveSlot(UINT nID);

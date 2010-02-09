@@ -180,7 +180,8 @@ void AccelEditor::InitCommands()
 	m_commands.DeleteAllItems();
 	m_hItems.RemoveAll();
 	m_alreadyAffected.SetWindowText("");
-
+	
+	theApp.updateMenuBar();
 	AddCommandsFromMenu(&theApp.m_menu, TVI_ROOT);
 	AddCommandsFromTable();
 }

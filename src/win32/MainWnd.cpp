@@ -439,12 +439,12 @@ ON_WM_ACTIVATEAPP()
 ON_WM_DROPFILES()
 
 ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE10, OnFileRecentFile)
-
 ON_COMMAND_EX_RANGE(ID_FILE_LOADGAME_SLOT1, ID_FILE_LOADGAME_SLOT10, OnFileLoadSlot)
 ON_COMMAND_EX_RANGE(ID_FILE_SAVEGAME_SLOT1, ID_FILE_SAVEGAME_SLOT10, OnFileSaveSlot)
 ON_COMMAND_EX_RANGE(ID_SELECT_SLOT1, ID_SELECT_SLOT10, OnSelectSlot)
-ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_LOADGAME_SLOT1, ID_FILE_LOADGAME_SLOT10, OnUpdateFileLoadGameSlot)
-ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_SAVEGAME_SLOT1, ID_FILE_SAVEGAME_SLOT10, OnUpdateFileSaveGameSlot)
+ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE10, OnUpdateFileRecentFile)
+ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_LOADGAME_SLOT1, ID_FILE_LOADGAME_SLOT10, OnUpdateFileLoadSlot)
+ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_SAVEGAME_SLOT1, ID_FILE_SAVEGAME_SLOT10, OnUpdateFileSaveSlot)
 ON_UPDATE_COMMAND_UI_RANGE(ID_SELECT_SLOT1, ID_SELECT_SLOT10, OnUpdateSelectSlot)
 
 ON_COMMAND(ID_FILE_SAVEGAME_OLDESTSLOT, OnFileSavegameOldestslot)
@@ -813,103 +813,6 @@ bool MainWnd::FileRun()
 	return true;
 }
 
-// recursive kludge
-static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
-{
-	ASSERT(pMenu != NULL);
-
-	CCmdUI state;
-	state.m_pParentMenu = pParentMenu;
-	state.m_pMenu = pMenu;
-	ASSERT(state.m_pOther == NULL);
-
-	state.m_nIndexMax = pMenu->GetMenuItemCount();
-	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
-	     state.m_nIndex++)
-	{
-		state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
-		if (state.m_nID == 0)
-			continue; // menu separator or invalid cmd - ignore it
-
-		ASSERT(state.m_pOther == NULL);
-		ASSERT(state.m_pMenu != NULL);
-		if (state.m_nID == (UINT)-1)
-		{
-			// possibly a popup menu, route to first item of that popup
-			state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
-			if (state.m_pSubMenu == NULL ||
-			    (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
-			    state.m_nID == (UINT)-1)
-			{
-				continue; // first item of popup can't be routed to
-			}
-
-			state.DoUpdate(pWnd, false);
-			// FIXME: SLOW recursive call, especially when you hold down Frame Advance
-			// Enabling/disabling of accel keys is thus currently UNFIXED by commenting out the following code line
-//			InitMenuKludge(state.m_pMenu, state.m_pSubMenu, pWnd);
-		}
-		else
-		{
-			// normal menu item
-			// Auto enable/disable if frame window has 'm_bAutoMenuEnable'
-			//    set and command is _not_ a system command.
-			state.m_pSubMenu = NULL;
-			state.DoUpdate(pWnd, state.m_nID < 0xF000);
-		}
-
-		// adjust for menu deletions and additions
-		UINT nCount = pMenu->GetMenuItemCount();
-		if (nCount < state.m_nIndexMax)
-		{
-			state.m_nIndex -= (state.m_nIndexMax - nCount);
-			while (state.m_nIndex < nCount &&
-			       pMenu->GetMenuItemID(state.m_nIndex) == state.m_nID)
-			{
-				state.m_nIndex++;
-			}
-		}
-		state.m_nIndexMax = nCount;
-	}
-}
-
-void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
-{
-	ASSERT(pMenu != NULL);
-
-	CCmdUI state;
-	state.m_pMenu = pMenu;
-	ASSERT(state.m_pOther == NULL);
-	ASSERT(state.m_pParentMenu == NULL);
-
-	// determine if menu is popup in top-level menu and set m_pOther to
-	//  it if so (m_pParentMenu == NULL indicates that it is secondary popup)
-	HMENU hParentMenu;
-	if (AfxGetThreadState()->m_hTrackingMenu == pMenu->m_hMenu)
-		state.m_pParentMenu = pMenu; // parent == child for tracking popup
-	else if ((hParentMenu = ::GetMenu(m_hWnd)) != NULL)
-	{
-		CWnd*pParent = GetTopLevelParent();
-		// child windows don't have menus -- need to go to the top!
-		if (pParent != NULL &&
-		    (hParentMenu = ::GetMenu(pParent->m_hWnd)) != NULL)
-		{
-			int nIndexMax = ::GetMenuItemCount(hParentMenu);
-			for (int nIndex = 0; nIndex < nIndexMax; nIndex++)
-			{
-				if (::GetSubMenu(hParentMenu, nIndex) == pMenu->m_hMenu)
-				{
-					// when popup is found, m_pParentMenu is containing menu
-					state.m_pParentMenu = CMenu::FromHandle(hParentMenu);
-					break;
-				}
-			}
-		}
-	}
-
-	InitMenuKludge(state.m_pParentMenu, state.m_pMenu, this);
-}
-
 void MainWnd::OnMove(int x, int y)
 {
 	CWnd::OnMove(x, y);
@@ -1239,6 +1142,123 @@ void MainWnd::OnMouseMove(UINT nFlags, CPoint point)
 	CWnd::OnMouseMove(nFlags, point);
 }
 
+// FIXME: this fix for accel keys is ugly
+static bool recursiveCall = true;
+static bool fullUpdated = false;
+
+// recursive kludge
+static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
+{
+	ASSERT(pMenu != NULL);
+
+	CCmdUI state;
+	state.m_pParentMenu = pParentMenu;
+	state.m_pMenu = pMenu;
+	ASSERT(state.m_pOther == NULL);
+
+	state.m_nIndexMax = pMenu->GetMenuItemCount();
+	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
+	     state.m_nIndex++)
+	{
+		state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
+		if (state.m_nID == 0)
+			continue; // menu separator or invalid cmd - ignore it
+
+		ASSERT(state.m_pOther == NULL);
+		ASSERT(state.m_pMenu != NULL);
+		if (state.m_nID == (UINT)-1)
+		{
+			// possibly a popup menu, route to first item of that popup
+			state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
+			if (state.m_pSubMenu == NULL ||
+			    (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
+			    state.m_nID == (UINT)-1)
+			{
+				continue; // first item of popup can't be routed to
+			}
+
+			state.DoUpdate(pWnd, false);
+			if (recursiveCall)
+			{
+				// FIXME: slow recursive calls to fix enabling/disabling of accel keys
+				InitMenuKludge(state.m_pMenu, state.m_pSubMenu, pWnd);
+			}
+		}
+		else
+		{
+			// normal menu item
+			// Auto enable/disable if frame window has 'm_bAutoMenuEnable'
+			//    set and command is _not_ a system command.
+			state.m_pSubMenu = NULL;
+			state.DoUpdate(pWnd, state.m_nID < 0xF000);
+		}
+
+		// adjust for menu deletions and additions
+		UINT nCount = pMenu->GetMenuItemCount();
+		if (nCount < state.m_nIndexMax)
+		{
+			state.m_nIndex -= (state.m_nIndexMax - nCount);
+			while (state.m_nIndex < nCount &&
+			       pMenu->GetMenuItemID(state.m_nIndex) == state.m_nID)
+			{
+				state.m_nIndex++;
+			}
+		}
+		state.m_nIndexMax = nCount;
+	}
+}
+
+void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
+{
+	ASSERT(pMenu != NULL);
+
+	CCmdUI state;
+	state.m_pMenu = pMenu;
+	ASSERT(state.m_pOther == NULL);
+	ASSERT(state.m_pParentMenu == NULL);
+
+	// determine if menu is popup in top-level menu and set m_pOther to
+	//  it if so (m_pParentMenu == NULL indicates that it is secondary popup)
+	HMENU hParentMenu;
+	if (AfxGetThreadState()->m_hTrackingMenu == pMenu->m_hMenu)
+		state.m_pParentMenu = pMenu; // parent == child for tracking popup
+	else if ((hParentMenu = ::GetMenu(m_hWnd)) != NULL)
+	{
+		CWnd*pParent = GetTopLevelParent();
+		// children windows don't have menus -- need to go to the top!
+		if (pParent != NULL &&
+		    (hParentMenu = ::GetMenu(pParent->m_hWnd)) != NULL)
+		{
+			int nIndexMax = ::GetMenuItemCount(hParentMenu);
+			for (int nIndex = 0; nIndex < nIndexMax; nIndex++)
+			{
+				if (::GetSubMenu(hParentMenu, nIndex) == pMenu->m_hMenu)
+				{
+					// when popup is found, m_pParentMenu is containing menu
+					state.m_pParentMenu = CMenu::FromHandle(hParentMenu);
+					break;
+				}
+			}
+		}
+	}
+
+	// FIXME: magic to workaround the accel key bug without slowing down too much
+	if (translatingAccelerator && !fullUpdated && state.m_pParentMenu == &theApp.m_menu)
+	{
+		state.m_pMenu == &theApp.m_menu;
+		recursiveCall = true;
+		fullUpdated = true;
+	}
+	else if (!translatingAccelerator && fullUpdated)
+	{
+		fullUpdated = false;
+	}
+
+	InitMenuKludge(state.m_pParentMenu, state.m_pMenu, this);
+
+	recursiveCall = false;
+}
+
 void MainWnd::OnInitMenu(CMenu *pMenu)
 {
 	CWnd::OnInitMenu(pMenu);
@@ -1328,6 +1348,9 @@ void MainWnd::OnActivateApp(BOOL bActive, DWORD hTask)
 
 void MainWnd::OnDropFiles(HDROP hDropInfo)
 {
+	// FIXME: required for the accel key fix
+	fullUpdated = false;
+
 	if(theApp.sound) theApp.sound->clearAudioBuffer();
 
 	char szFile[1024];

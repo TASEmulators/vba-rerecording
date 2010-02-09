@@ -529,11 +529,17 @@ void MainWnd::OnToolsSoundStoprecording()
 
 void MainWnd::OnUpdateToolsSoundRecording(CCmdUI*pCmdUI)
 {
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		if (!theApp.soundRecording)
+			pCmdUI->SetText(winResLoadString(IDS_STARTSOUNDRECORDING));
+		else
+			pCmdUI->SetText(winResLoadString(IDS_STOPSOUNDRECORDING));
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+	}
+
 	pCmdUI->Enable(emulating);
-	if (!theApp.soundRecording)
-		pCmdUI->SetText(winResLoadString(IDS_STARTSOUNDRECORDING));
-	else
-		pCmdUI->SetText(winResLoadString(IDS_STOPSOUNDRECORDING));
 }
 
 void MainWnd::OnToolsAVIRecording()

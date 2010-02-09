@@ -3,6 +3,7 @@
 * Fix the buggy stateful settings.
 * Fix the bugs with vba-over.ini settings.
 * Fix the frame timing?
+* Fix non-smooth motion on LCDs@60Hz
 * Enable GBA mode recording for special GBC games like Shantae that can utilize GBA's hardware feature?
 * Resolve all other issues on the tracker.
 * Convert the repository from Subversion to Mercurial?

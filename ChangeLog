@@ -1,5 +1,20 @@
-TODO: Update and filter logs.
-TODO: Fix potential or existing bugs in this file.
+TODO: Repair this log.
+
+---VBA-rr v23--
+02-10-2010 aquanull - Finally fixed accelerator keys.
+02-09-2010 aquanull - A more organized hot-key configuration dialog.
+02-05-2010 nitsuja - fix input disable bug from r153 and throttler Sleep(1.6 years) bug, which were making vba impossible to use at least half of the time
+01-15-2010 aquanull - Fixed torn graphics with good old Direct Draw with VSync enabled.
+11-23-2009 aquanull - Fixed crash when playing a movie from power-on with a ROM selected from a multi-
+file archive.
+11-22-2009 aquanull - Hopefully fixed multi-byte character set support.
+11-19-2009 aquanull - Fixed Escape shortcut key.
+11-12-2009 gochaism - Lua: fixed joypad.set, it works fine even though the script has no frame-advance
+loop.
+11-12-2009 gochaism - Lua: changed joypad.set, it no longer adds input if the field value means false.
+
+VBA-rr V22 released November 8, 2009 - SVN 182
+??-??-???? ???????? - (missing log)
 
 ---VBA-rr V21+(interim)---
 09-04-2009 aquanull - Added Pixelate 3x and Pixelate 4x filters for fun.
