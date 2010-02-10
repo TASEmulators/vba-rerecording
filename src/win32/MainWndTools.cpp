@@ -658,11 +658,17 @@ void MainWnd::OnToolsStopAVIRecording()
 
 void MainWnd::OnUpdateToolsAVIRecording(CCmdUI*pCmdUI)
 {
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		if (!theApp.aviRecording)
+			pCmdUI->SetText(winResLoadString(IDS_STARTAVIRECORDING));
+		else
+			pCmdUI->SetText(winResLoadString(IDS_STOPAVIRECORDING));
+
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+	}
+
 	pCmdUI->Enable(emulating);
-	if (!theApp.aviRecording)
-		pCmdUI->SetText(winResLoadString(IDS_STARTAVIRECORDING));
-	else
-		pCmdUI->SetText(winResLoadString(IDS_STOPAVIRECORDING));
 }
 
 void MainWnd::OnToolsRecordMovie()

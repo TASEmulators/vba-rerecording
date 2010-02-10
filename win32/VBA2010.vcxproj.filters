@@ -64,7 +64,7 @@
     <Filter Include="Source Files\Win32\7zip">
       <UniqueIdentifier>{732c0324-f30d-491f-b7a7-d57731b24ae6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Win32\Controls">
+    <Filter Include="Source Files\Win32\7zip\Controls">
       <UniqueIdentifier>{7b48d92c-475f-482a-9916-dfbbab7b62b2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Win32\Dialogs">
@@ -331,7 +331,7 @@
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\BitmapControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\BugReport.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
@@ -340,10 +340,10 @@
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\ColorButton.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\ColorControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\Commands.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
@@ -412,7 +412,7 @@
       <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\Hyperlink.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\IOViewer.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
@@ -421,7 +421,7 @@
       <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\KeyboardEdit.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\LangSelect.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
@@ -484,7 +484,7 @@
       <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\PaletteViewControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\ramwatch.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
@@ -532,7 +532,7 @@
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\ZoomControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
+      <Filter>Source Files\Win32\7zip\Controls</Filter>
     </ClCompile>
     <ClCompile Include="lib\libjpeg\jcapimin.c">
       <Filter>Source Files\libjpeg</Filter>
