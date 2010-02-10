@@ -1040,6 +1040,12 @@ void MainWnd::OnPaint()
 
 static bool translatingAccelerator = false;
 
+// FIXME: this fix for accel keys is ugly
+//   using too many static variables for a single accel key kludge
+static bool recursiveCall = true;
+static bool fullUpdated = false;
+static WPARAM lastKey = 0;
+
 BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 {
 	if (RamSearchHWnd && ::IsDialogMessage(RamSearchHWnd, pMsg))
@@ -1097,6 +1103,11 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 				}
 			}
 		}
+		else if (lastKey != pMsg->wParam)
+		{
+			fullUpdated = false;
+			lastKey = pMsg->wParam;
+		}
 
 		translatingAccelerator = false;
 		return bHit;
@@ -1142,10 +1153,6 @@ void MainWnd::OnMouseMove(UINT nFlags, CPoint point)
 	CWnd::OnMouseMove(nFlags, point);
 }
 
-// FIXME: this fix for accel keys is ugly
-static bool recursiveCall = true;
-static bool fullUpdated = false;
-
 // recursive kludge
 static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
 {
@@ -1170,9 +1177,7 @@ static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
 		{
 			// possibly a popup menu, route to first item of that popup
 			state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
-			if (state.m_pSubMenu == NULL ||
-			    (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
-			    state.m_nID == (UINT)-1)
+			if (state.m_pSubMenu == NULL)
 			{
 				continue; // first item of popup can't be routed to
 			}
@@ -1245,7 +1250,7 @@ void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 	// FIXME: magic to workaround the accel key bug without slowing down too much
 	if (translatingAccelerator && !fullUpdated && state.m_pParentMenu == &theApp.m_menu)
 	{
-		state.m_pMenu == &theApp.m_menu;
+		state.m_pMenu = state.m_pParentMenu;
 		recursiveCall = true;
 		fullUpdated = true;
 	}
@@ -1261,7 +1266,7 @@ void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 
 void MainWnd::OnInitMenu(CMenu *pMenu)
 {
-	CWnd::OnInitMenu(pMenu);
+//	CWnd::OnInitMenu(pMenu);
 
 	if (translatingAccelerator)
 	{

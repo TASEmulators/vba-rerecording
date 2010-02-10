@@ -2146,8 +2146,8 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Lua Scripting"
         BEGIN
-            MENUITEM "&New Lua Script Window...",   ID_FILE_LUA_OPEN, GRAYED
-            MENUITEM "Close &All Script Windows",   ID_FILE_LUA_CLOSE_ALL, GRAYED
+            MENUITEM "&New Lua Script Window...",   ID_FILE_LUA_OPEN
+            MENUITEM "Close &All Script Windows",   ID_FILE_LUA_CLOSE_ALL
         END
         MENUITEM SEPARATOR
         POPUP "&Movie"
