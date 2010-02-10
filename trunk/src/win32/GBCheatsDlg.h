@@ -141,7 +141,6 @@ class GBCheatList : public CDialog
 	// Construction
 public:
 	void refresh();
-	bool duringRefresh;
 	GBCheatList(CWnd*pParent = NULL);  // standard constructor
 
 	// Dialog Data
@@ -159,6 +158,8 @@ protected:
 
 	// Implementation
 protected:
+	bool duringRefresh;
+
 	// Generated message map functions
 	//{{AFX_MSG(GBCheatList)
 	afx_msg void OnOk();
@@ -189,10 +190,6 @@ public:
 	CEdit m_code;
 	//}}AFX_DATA
 
-	int     addLength;
-	CString addTitle;
-	bool    (*addVerify)(const char *, const char *);
-
 	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(AddGBCode)
@@ -202,6 +199,10 @@ protected:
 
 	// Implementation
 protected:
+	int     addLength;
+	CString addTitle;
+	bool    (*addVerify)(const char *, const char *);
+
 	// Generated message map functions
 	//{{AFX_MSG(AddGBCode)
 	afx_msg void OnOk();
