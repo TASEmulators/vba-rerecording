@@ -100,7 +100,6 @@ public:
 	bool addCheat();
 	afx_msg void OnSizeType(UINT id);
 	afx_msg void OnNumberType(UINT id);
-	u32 address;
 	AddCheat(u32 address, CWnd*pParent = NULL);  // standard constructor
 
 	// Dialog Data
@@ -122,6 +121,8 @@ protected:
 
 	// Implementation
 protected:
+	u32   address;
+
 	// Generated message map functions
 	//{{AFX_MSG(AddCheat)
 	afx_msg void OnOk();
@@ -138,9 +139,6 @@ class GBACheatList : public CDialog
 	// Construction
 public:
 	void refresh();
-	bool duringRefresh;
-	bool restoreValues;
-
 	GBACheatList(CWnd*pParent = NULL);  // standard constructor
 
 	// Dialog Data
@@ -159,6 +157,9 @@ protected:
 
 	// Implementation
 protected:
+	bool duringRefresh;
+	bool restoreValues;
+
 	// Generated message map functions
 	//{{AFX_MSG(GBACheatList)
 	afx_msg void OnAddCheat();

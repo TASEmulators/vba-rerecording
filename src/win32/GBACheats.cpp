@@ -808,7 +808,6 @@ GBACheatList::GBACheatList(CWnd*pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(GBACheatList)
 	// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-	duringRefresh = false;
 }
 
 void GBACheatList::DoDataExchange(CDataExchange*pDX)
@@ -986,6 +985,8 @@ BOOL GBACheatList::OnInitDialog()
 	               TRUE);
 
 	m_list.SetExtendedStyle(LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT);
+
+	duringRefresh = false;
 
 	restoreValues = regQueryDwordValue("cheatsRestore", 0) ?
 	                true : false;

@@ -31,6 +31,9 @@ BOOL MovieOpen::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	pauseFrame = 0;
+	ZeroMemory(&movieInfo, sizeof SMovie);
+
 	SetArchiveParentHWND(GetSafeHwnd());
 
 	GetDlgItem(IDC_CHECK_HIDEBORDER)->ShowWindow(FALSE);
