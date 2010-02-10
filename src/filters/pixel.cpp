@@ -188,11 +188,11 @@ void PixelateNx(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 			finishM += dstPitch;
 			do // dst magnificated pixel
 			{
-				*dst2 = product;
+				*dst2++ = product;
 				do
 				{
-					*++dst2 = col;
-				} while ((u8 *)dst2 < finishM);
+					*dst2 = col;
+				} while ((u8 *)++dst2 < finishM);
 				dst2    += dstNextP;
 				finishM += dstPitch;
 			} while ((u8 *)dst2 < finishP);

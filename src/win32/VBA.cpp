@@ -943,26 +943,22 @@ void VBA::adjustDestRect()
 	dest.bottom = point.y;
 	dest.right  = point.x;
 
-	// make sure that dest rect lies in the monitor
-	if (videoOption >= VIDEO_320x240)
+	if (videoOption > VIDEO_4X)
 	{
+		// make sure that dest rect lies in the monitor
 		dest.top    -= windowPositionY;
 		dest.left   -= windowPositionX;
 		dest.bottom -= windowPositionY;
 		dest.right  -= windowPositionX;
-	}
 
-	int menuSkip = 0;
+		int menuSkip = 0;
 
-	if (videoOption >= VIDEO_320x240 && menuToggle)
-	{
-		int m = GetSystemMetrics(SM_CYMENU);
-		menuSkip     = m;
-		dest.bottom -= m;
-	}
+		if (menuToggle)
+		{
+			menuSkip     = GetSystemMetrics(SM_CYMENU);
+			dest.bottom -= menuSkip;
+		}
 
-	if (videoOption > VIDEO_4X)
-	{
 		int top  = (fsHeight - surfaceSizeY) / 2;
 		int left = (fsWidth - surfaceSizeX) / 2;
 		dest.top    += top;
@@ -971,7 +967,7 @@ void VBA::adjustDestRect()
 		dest.right  += left;
 		if (fullScreenStretch)
 		{
-			dest.top    = 0+menuSkip;
+			dest.top    = menuSkip;
 			dest.left   = 0;
 			dest.right  = fsWidth;
 			dest.bottom = fsHeight;
@@ -2289,8 +2285,7 @@ static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
 
 	if (hinstDll)
 	{
-		GETMENUBARINFO func = (GETMENUBARINFO)GetProcAddress(hinstDll,
-		                                                     "GetMenuBarInfo");
+		GETMENUBARINFO func = (GETMENUBARINFO)GetProcAddress(hinstDll, "GetMenuBarInfo");
 
 		if (func)
 		{
@@ -2328,58 +2323,19 @@ void VBA::updateWindowSize(int value)
 		regSetDwordValue("fsColorDepth", fsColorDepth);
 	}
 
-	if (((value >= VIDEO_320x240) &&
-	     (videoOption != value)) ||
-	    (videoOption >= VIDEO_320x240 &&
-	     value <= VIDEO_4X) ||
-	    fsForceChange)
+	if (display && 
+		(((value >= VIDEO_320x240 || videoOption >= VIDEO_320x240) && videoOption != value) ||
+	    fsForceChange))
 	{
-		fsForceChange     = false;
-		changingVideoSize = true;
-		shutdownDisplay();
-		if (input)
-		{
-			delete input;
-			input = NULL;
-		}
-		m_pMainWnd->DragAcceptFiles(FALSE);
-		CWnd *pWnd = m_pMainWnd;
-		m_pMainWnd = NULL;
-		pWnd->DestroyWindow();
-		delete pWnd;
-		videoOption = value;
-		if (!initDisplay())
-		{
-			if (videoOption == VIDEO_320x240 ||
-			    videoOption == VIDEO_640x480 ||
-			    videoOption == VIDEO_800x600 ||
-			    videoOption == VIDEO_OTHER)
-			{
-				regSetDwordValue("video", VIDEO_1X);
-				if (pVideoDriverGUID)
-					regSetDwordValue("defaultVideoDriver", TRUE);
-			}
-			changingVideoSize = false;
-			AfxPostQuitMessage(0);
-			return;
-		}
-		if (!initInput())
-		{
-			changingVideoSize = false;
-			AfxPostQuitMessage(0);
-			return;
-		}
-		input->checkKeys();
-		updateMenuBar();
-		changingVideoSize = FALSE;
-		updateWindowSize(videoOption);
-		return;
+		fsForceChange = false;
+		videoOption   = value;
+		initDisplay();
 	}
+
+	videoOption   = value;
 
 	sizeX = 240;
 	sizeY = 160;
-
-	videoOption = value;
 
 	if (cartridgeType == 1)
 	{
@@ -2400,9 +2356,6 @@ void VBA::updateWindowSize(int value)
 			gbBorderRowSkip    = 0;
 		}
 	}
-
-	surfaceSizeX = sizeX;
-	surfaceSizeY = sizeY;
 
 	switch (videoOption)
 	{
@@ -2426,62 +2379,103 @@ void VBA::updateWindowSize(int value)
 	case VIDEO_640x480:
 	case VIDEO_800x600:
 	case VIDEO_OTHER:
-	{
-		int scaleX = 1;
-		int scaleY = 1;
-		scaleX = (fsWidth / sizeX);
-		scaleY = (fsHeight / sizeY);
-		int min = scaleX < scaleY ? scaleX : scaleY;
-		if (fsMaxScale)
-			min = min > fsMaxScale ? fsMaxScale : min;
-		surfaceSizeX = min * sizeX;
-		surfaceSizeY = min * sizeY;
-		if ((fullScreenStretch && (display != NULL &&
-		                           (display->getType() != DIRECT_3D)))
-		    || (display != NULL && display->getType() >= DIRECT_3D))
+		// Need to fix this code later. For now, Fullscreen takes the whole screen.
+		if (fullScreenStretch)
 		{
 			surfaceSizeX = fsWidth;
 			surfaceSizeY = fsHeight;
 		}
+		else
+		{
+			double scaleX = (double)fsWidth / (double)sizeX;
+			double scaleY = (double)fsHeight / (double)sizeY;
+			double scaleMin = scaleX < scaleY ? scaleX : scaleY;
+			if (fsMaxScale)
+				scaleMin = scaleMin > fsMaxScale ? fsMaxScale : scaleMin;
+			surfaceSizeX = (int)(scaleMin * sizeX);
+			surfaceSizeY = (int)(scaleMin * sizeY);
+		}
 		break;
 	}
-	}
 
+	rect.left   = 0;
+	rect.top    = 0;
 	rect.right  = sizeX;
 	rect.bottom = sizeY;
+
+	dest.left   = 0;
+	dest.top    = 0;
+	dest.right  = surfaceSizeX;
+	dest.bottom = surfaceSizeY;
 
 	int winSizeX = sizeX;
 	int winSizeY = sizeY;
 
+	DWORD style   = WS_POPUP | WS_VISIBLE;
+	DWORD styleEx = 0;
+
 	if (videoOption <= VIDEO_4X)
 	{
-		dest.left   = 0;
-		dest.top    = 0;
-		dest.right  = surfaceSizeX;
-		dest.bottom = surfaceSizeY;
-
-		DWORD style = WS_POPUP | WS_VISIBLE;
-
 		style |= WS_OVERLAPPEDWINDOW;
 
-		menuToggle = TRUE;
+		AdjustWindowRectEx(&dest, style, TRUE, 0); //WS_EX_TOPMOST);
+
+		winSizeX = dest.right  - dest.left;
+		winSizeY = dest.bottom - dest.top;
+	}
+	else
+	{
 		AdjustWindowRectEx(&dest, style, flagHideMenu ? FALSE : TRUE, 0); //WS_EX_TOPMOST);
 
-		winSizeX = dest.right-dest.left;
-		winSizeY = dest.bottom-dest.top;
-
-		m_pMainWnd->SetWindowPos(0, //HWND_TOPMOST,
-		                         windowPositionX,
-		                         windowPositionY,
-		                         winSizeX,
-		                         winSizeY,
-		                         SWP_NOMOVE | SWP_SHOWWINDOW);
-
-		winCheckMenuBarInfo(winSizeX, winSizeY);
+		winSizeX = fsWidth;
+		winSizeY = fsHeight;
 	}
+
+	int x = 0;
+	int y = 0;
+
+	if (theApp.videoOption <= VIDEO_4X)
+	{
+		x = windowPositionX;
+		y = windowPositionY;
+	}
+
+	if (m_pMainWnd == NULL)
+	{
+		// Create a window
+		MainWnd *pWnd = new MainWnd;
+		m_pMainWnd    = pWnd;
+
+		pWnd->CreateEx(styleEx,
+		               theApp.wndClass,
+		               VBA_NAME_AND_VERSION,
+		               style,
+		               x, y, winSizeX, winSizeY,
+		               NULL,
+		               0);
+
+		if (!(HWND)*pWnd)
+		{
+			winlog("Error creating Window %08x\n", GetLastError());
+			AfxPostQuitMessage(0);
+			return;
+		}
+	}
+	else
+	{
+		m_pMainWnd->SetWindowPos(0, //HWND_TOPMOST,
+	                         	x,
+	                         	y,
+	                         	winSizeX,
+	                         	winSizeY,
+	                         	SWP_NOMOVE | SWP_SHOWWINDOW);
+	}
+
+	winCheckMenuBarInfo(winSizeX, winSizeY);
 
 	adjustDestRect();
 
+	updateMenuBar();
 	updateIFB();
 	updateFilter();
 
@@ -2490,64 +2484,29 @@ void VBA::updateWindowSize(int value)
 
 bool VBA::initDisplay()
 {
-	return updateRenderMethod(false);
-}
-
-bool VBA::updateRenderMethod(bool force)
-{
-	bool res = updateRenderMethod0(force);
-
-	while (!res && renderMethod > 0)
-	{
-		if (renderMethod == OPENGL)
-			renderMethod = DIRECT_3D;
-		else if (renderMethod == DIRECT_3D)
-			renderMethod = DIRECT_DRAW;
-		else if (renderMethod == DIRECT_DRAW)
-		{
-			if (videoOption > VIDEO_4X)
-			{
-				videoOption = VIDEO_2X;
-				force       = true;
-			}
-			else
-				renderMethod = GDI;
-		}
-
-		res = updateRenderMethod(force);
-	}
-	return res;
-}
-
-bool VBA::updateRenderMethod0(bool force)
-{
-	bool initInput = false;
-
 	if (display)
 	{
-		if (display->getType() != renderMethod || force)
+		changingVideoSize = true;
+		shutdownDisplay();
+		if (input)
 		{
-			initInput         = true;
-			changingVideoSize = true;
-			shutdownDisplay();
-			if (input)
-			{
-				delete input;
-				input = NULL;
-			}
-			CWnd *pWnd = m_pMainWnd;
-
-			m_pMainWnd = NULL;
-			pWnd->DragAcceptFiles(FALSE);
-			pWnd->DestroyWindow();
-			delete pWnd;
-
-			display = NULL;
-			regSetDwordValue("renderMethod", renderMethod);
+			delete input;
+			input = NULL;
 		}
+		CWnd *pWnd = m_pMainWnd;
+
+		m_pMainWnd = NULL;
+		pWnd->DragAcceptFiles(FALSE);
+		pWnd->DestroyWindow();
+		delete pWnd;
+
+		display = NULL;
 	}
+
 	if (display == NULL)
 	{
+		updateWindowSize(videoOption);
+		
 		switch (renderMethod)
 		{
 		case GDI:
@@ -2566,36 +2525,67 @@ bool VBA::updateRenderMethod0(bool force)
 
 		if (display->initialize())
 		{
-			adjustDestRect();
-			updateMenuBar();
-			if (initInput)
+			if (input == NULL)
 			{
-				if (!this->initInput())
+				if (!initInput())
 				{
 					changingVideoSize = false;
 					AfxPostQuitMessage(0);
 					return false;
 				}
-				input->checkKeys();
-				updateMenuBar();
-				changingVideoSize = false;
-				updateWindowSize(videoOption);
-
-				m_pMainWnd->ShowWindow(SW_SHOW);
-				m_pMainWnd->UpdateWindow();
-				m_pMainWnd->SetFocus();
-
-				return true;
 			}
-			else
-			{
-				changingVideoSize = false;
-				return true;
-			}
-		}
-		changingVideoSize = false;
+
+			input->checkKeys();
+
+			changingVideoSize = false;
 	}
+		else
+		{
+			if (videoOption == VIDEO_320x240 ||
+			    videoOption == VIDEO_640x480 ||
+			    videoOption == VIDEO_800x600 ||
+			    videoOption == VIDEO_OTHER)
+			{
+				regSetDwordValue("video", VIDEO_1X);
+				if (pVideoDriverGUID)
+					regSetDwordValue("defaultVideoDriver", TRUE);
+			}
+			changingVideoSize = false;
+			return false;
+		}
+	}
+	changingVideoSize = false;
 	return true;
+}
+
+bool VBA::updateRenderMethod(bool force)
+{
+	bool res = true;
+	if (force || (display && display->getType() != renderMethod))
+	{
+		res = initDisplay();
+
+		while (!res && renderMethod > 0)
+		{
+			if (renderMethod == OPENGL)
+				renderMethod = DIRECT_3D;
+			else if (renderMethod == DIRECT_3D)
+				renderMethod = DIRECT_DRAW;
+			else if (renderMethod == DIRECT_DRAW)
+				renderMethod = GDI;
+
+			res = initDisplay();
+		}
+	}
+
+	updateIFB();
+	updateFilter();
+
+	m_pMainWnd->RedrawWindow(NULL, NULL, RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
+
+	regSetDwordValue("renderMethod", renderMethod);
+
+	return res;
 }
 
 void VBA::winCheckFullscreen()
