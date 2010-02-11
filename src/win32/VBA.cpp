@@ -2538,7 +2538,7 @@ bool VBA::initDisplay()
 			input->checkKeys();
 
 			changingVideoSize = false;
-	}
+		}
 		else
 		{
 			if (videoOption == VIDEO_320x240 ||
