@@ -84,7 +84,7 @@ OpenGLDisplay::OpenGLDisplay()
 	width      = 0;
 	height     = 0;
 	size       = 0.0f;
-	filterData = (u8 *)malloc(4*16*256*192); // sufficient for 4x filters @ 32bit color depth
+	filterData = (u8 *)malloc(4*16*256*256); // sufficient for 4x filters @ 32bit color depth
 	failed     = false;
 }
 
@@ -484,8 +484,7 @@ void OpenGLDisplay::resize(int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(0.0, (GLdouble)(w), (GLdouble)(h),
-	        0.0, 0.0, 1.0);
+	glOrtho(0.0, (GLdouble)(w), (GLdouble)(h), 0.0, 0.0, 1.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }

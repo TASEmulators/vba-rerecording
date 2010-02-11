@@ -75,7 +75,7 @@ static int calculateShift(u32 mask)
 
 GDIDisplay::GDIDisplay()
 {
-	filterData = (u8 *)malloc(4*16*256*192); // sufficient for 4x filters @ 32bit color depth
+	filterData = (u8 *)malloc(4*16*256*256); // sufficient for 4x filters @ 32bit color depth
 }
 
 GDIDisplay::~GDIDisplay()
