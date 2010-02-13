@@ -2460,6 +2460,8 @@ void VBA::updateWindowSize(int value)
 			AfxPostQuitMessage(0);
 			return;
 		}
+
+		updateMenuBar(); // add menubar first of all, or winCheckMenuBarInfo() will change window height randomly.
 	}
 	else
 	{
