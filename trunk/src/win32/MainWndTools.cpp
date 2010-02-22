@@ -822,8 +822,9 @@ void MainWnd::OnToolsCustomize()
 		theApp.winAccelMgr = dlg.mgr;
 		theApp.winAccelMgr.UpdateWndTable();
 		theApp.winAccelMgr.Write();
-		theApp.winAccelMgr.UpdateMenu(theApp.menu);
 	}
+
+	theApp.winAccelMgr.UpdateMenu(theApp.menu);	// we should always do this since the menu has been reloaded
 }
 
 void MainWnd::OnUpdateToolsCustomize(CCmdUI*pCmdUI)
