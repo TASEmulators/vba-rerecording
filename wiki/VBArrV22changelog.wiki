@@ -44,7 +44,7 @@
  * Fixed small bugs in Memory Viewer
  *(Probably) the gbx SRAM issue ( issue 29 ) is now fixed.
 ----
-==Misc/Exerimental==
+==Misc/Experimental==
  * Unfreezed GBx "from SRAM" check for the time being. VBA now tells you that the feature might be problematic.
  * Removed all the skin functions and CxImage.
  * Provided several options for what to do at movie end (buggy right now). 
