@@ -748,6 +748,7 @@ void MainWnd::OnFileTogglemenu()
 				theApp.display->checkFullScreen();
 			DrawMenuBar();
 		}
+		theApp.winAccelMgr.UpdateMenu(theApp.menu);
 	}
 	else
 	{

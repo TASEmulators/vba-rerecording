@@ -831,24 +831,3 @@ void MainWnd::OnUpdateToolsCustomize(CCmdUI*pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption != VIDEO_320x240);
 }
-
-/*
-void MainWnd::OnToolsCustomizeCommon()
-{
-	AccelEditor dlg;
-	dlg.m_commonOnly = true;
-
-	if (dlg.DoModal())
-	{
-		theApp.winAccelMgr = dlg.mgr;
-		theApp.winAccelMgr.UpdateWndTable();
-		theApp.winAccelMgr.Write();
-		theApp.winAccelMgr.UpdateMenu(theApp.menu);
-	}
-}
-
-void MainWnd::OnUpdateToolsCustomizeCommon(CCmdUI*pCmdUI)
-{
-	pCmdUI->Enable(theApp.videoOption != VIDEO_320x240);
-}
-*/
