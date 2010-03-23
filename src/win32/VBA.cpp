@@ -2478,6 +2478,7 @@ void VBA::updateWindowSize(int value)
 	adjustDestRect();
 
 	updateMenuBar();
+	winAccelMgr.UpdateMenu(menu);
 	updateIFB();
 	updateFilter();
 

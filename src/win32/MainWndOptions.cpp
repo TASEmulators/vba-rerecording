@@ -474,7 +474,6 @@ void MainWnd::OnOptionsVideoFullscreen()
 			theApp.m_pMainWnd->PostMessage(VBA_CONFIRM_MODE);
 		}
 	}
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoFullscreen(CCmdUI*pCmdUI)
@@ -535,7 +534,6 @@ void MainWnd::OnOptionsVideoRendermethodGdi()
 {
 	theApp.renderMethod = GDI;
 	theApp.updateRenderMethod(false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoRendermethodGdi(CCmdUI*pCmdUI)
@@ -547,7 +545,6 @@ void MainWnd::OnOptionsVideoRendermethodDirectdraw()
 {
 	theApp.renderMethod = DIRECT_DRAW;
 	theApp.updateRenderMethod(false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoRendermethodDirectdraw(CCmdUI*pCmdUI)
@@ -559,7 +556,6 @@ void MainWnd::OnOptionsVideoRendermethodDirect3d()
 {
 	theApp.renderMethod = DIRECT_3D;
 	theApp.updateRenderMethod(false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoRendermethodDirect3d(CCmdUI*pCmdUI)
@@ -571,7 +567,6 @@ void MainWnd::OnOptionsVideoRendermethodOpengl()
 {
 	theApp.renderMethod = OPENGL;
 	theApp.updateRenderMethod(false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsVideoRendermethodOpengl(CCmdUI*pCmdUI)
@@ -1726,7 +1721,6 @@ void MainWnd::OnUpdateOptionsFilterDisablemmx(CCmdUI*pCmdUI)
 void MainWnd::OnOptionsLanguageSystem()
 {
 	theApp.winSetLanguageOption(0, false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsLanguageSystem(CCmdUI*pCmdUI)
@@ -1737,7 +1731,6 @@ void MainWnd::OnUpdateOptionsLanguageSystem(CCmdUI*pCmdUI)
 void MainWnd::OnOptionsLanguageEnglish()
 {
 	theApp.winSetLanguageOption(1, false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsLanguageEnglish(CCmdUI*pCmdUI)
@@ -1749,7 +1742,6 @@ void MainWnd::OnOptionsLanguageOther()
 {
 	theApp.winCheckFullscreen();
 	theApp.winSetLanguageOption(2, false);
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnUpdateOptionsLanguageOther(CCmdUI*pCmdUI)
@@ -2312,7 +2304,6 @@ void MainWnd::winConfirmMode()
 			theApp.updateVideoSize(ID_OPTIONS_VIDEO_X2);
 		}
 	}
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 void MainWnd::OnOptionsVideoFullscreenmaxscale()
