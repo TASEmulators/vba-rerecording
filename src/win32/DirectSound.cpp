@@ -399,7 +399,7 @@ void DirectSound::write()
 			// alternate avi record routine has been added in VBA.cpp
 			if (!theApp.altAviRecordMethod && theApp.aviRecording)
 			{
-				if (theApp.aviRecorder)
+				if (theApp.aviRecorder && !theApp.aviRecorder->IsPaused())
 				{
 					if (dsbSecondary)
 					{
