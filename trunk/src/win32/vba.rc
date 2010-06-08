@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -2170,6 +2170,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Stop Movie",                 ID_MOVIE_STOP
         END
+        MENUITEM "Pause/Resume AVI Recording",  ID_TOOLS_PAUSEAVIRECORDING
         MENUITEM "Start/Stop &AVI Recording...", ID_TOOLS_AVIRECORDING
         MENUITEM "Start/Stop &WAV Recording...", ID_TOOLS_SOUNDRECORDING
         MENUITEM SEPARATOR
@@ -2349,6 +2350,8 @@ STRINGTABLE
 BEGIN
     IDS_STARTAVIRECORDING   "Start &AVI Recording..."
     IDS_STOPAVIRECORDING    "Stop &AVI Recording"
+    IDS_PAUSEAVIRECORDING   "Pause AVI Recording"
+    IDS_RESUMEAVIRECORDING  "Resume AVI Recording"
 END
 
 STRINGTABLE
@@ -2602,7 +2605,7 @@ BEGIN
     IDS_SELECT_PLUGIN_DIR   "Select Plugin directory:"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

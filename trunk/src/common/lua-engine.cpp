@@ -3682,6 +3682,20 @@ static int avi_framecount(lua_State *L)
 	return 1;
 }
 
+static int avi_pause(lua_State *L)
+{
+	if (theApp.aviRecorder != NULL)
+		theApp.aviRecorder->Pause(true);
+	return 1;
+}
+
+static int avi_resume(lua_State *L)
+{
+	if (theApp.aviRecorder != NULL)
+		theApp.aviRecorder->Pause(false);
+	return 1;
+}
+
 // same as math.random, but uses SFMT instead of C rand()
 // FIXME: this function doesn't care multi-instance,
 
@@ -4127,6 +4141,8 @@ static const struct luaL_reg inputlib[] = {
 // I add avilib as a workaround for enhanced video encoding.
 static const struct luaL_reg avilib[] = {
 	{"framecount", avi_framecount},
+	{"pause", avi_pause},
+	{"resume", avi_resume},
 	{NULL, NULL}
 };
 

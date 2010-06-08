@@ -1429,7 +1429,7 @@ void systemDrawScreen()
 					}
 				}
 
-				if (theApp.aviRecorder != NULL)
+				if (theApp.aviRecorder != NULL && !theApp.aviRecorder->IsPaused())
 				{
 					assert(
 					    width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && systemColorDepth <=

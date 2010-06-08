@@ -646,6 +646,11 @@ void MainWnd::OnToolsStartAVIRecording()
 	}
 }
 
+void MainWnd::OnToolsPauseAVIRecording()
+{
+	theApp.aviRecorder->Pause(!theApp.aviRecorder->IsPaused());
+}
+
 void MainWnd::OnToolsStopAVIRecording()
 {
 	if (theApp.aviRecorder != NULL)
@@ -669,6 +674,29 @@ void MainWnd::OnUpdateToolsAVIRecording(CCmdUI*pCmdUI)
 	}
 
 	pCmdUI->Enable(emulating);
+}
+
+void MainWnd::OnUpdateToolsPauseAVIRecording(CCmdUI*pCmdUI)
+{
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		if (!theApp.aviRecording)
+		{
+			pCmdUI->SetText(winResLoadString(IDS_PAUSEAVIRECORDING));
+			theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+			pCmdUI->Enable(false);
+		}
+		else
+		{
+			if (!theApp.aviRecorder->IsPaused())
+				pCmdUI->SetText(winResLoadString(IDS_PAUSEAVIRECORDING));
+			else
+				pCmdUI->SetText(winResLoadString(IDS_RESUMEAVIRECORDING));
+
+			theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+			pCmdUI->Enable(emulating);
+		}
+	}
 }
 
 void MainWnd::OnToolsRecordMovie()
