@@ -39,6 +39,8 @@ class AVIWrite {
   void SetSoundFormat(WAVEFORMATEX *);
   bool AddSound(const u8 *sound, int len);
   int videoFrames();
+  void Pause(bool pause);
+  bool IsPaused();
 
  private:
   int m_fps;
@@ -60,6 +62,7 @@ class AVIWrite {
   bool m_failed;
   int m_segmentNumber;
   bool m_usePrevOptions;
+  bool m_pauseRecording;
   char m_aviFileName[MAX_PATH];
   char m_aviBaseName[MAX_PATH];
   char m_aviExtension[MAX_PATH];

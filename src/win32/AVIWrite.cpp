@@ -37,6 +37,7 @@ AVIWrite::AVIWrite()
 	m_totalBytes       = 0;
 	m_segmentNumber    = 0;
 	m_usePrevOptions   = false;
+	m_pauseRecording   = false;
 
 	AVIFileInit();
 }
@@ -283,4 +284,14 @@ void AVIWrite::SetFPS(int f)
 int AVIWrite::videoFrames()
 {
 	return m_videoFramesTotal;
+}
+
+void AVIWrite::Pause(bool pause)
+{
+	m_pauseRecording = pause;
+}
+
+bool AVIWrite::IsPaused()
+{
+	return m_pauseRecording;
 }

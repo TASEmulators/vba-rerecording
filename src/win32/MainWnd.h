@@ -426,9 +426,11 @@ protected:
 	afx_msg void OnToolsSoundRecording();
 	afx_msg void OnUpdateToolsSoundRecording(CCmdUI*pCmdUI);
 	afx_msg void OnToolsStartAVIRecording();
+	afx_msg void OnToolsPauseAVIRecording();
 	afx_msg void OnToolsStopAVIRecording();
 	afx_msg void OnToolsAVIRecording();
 	afx_msg void OnUpdateToolsAVIRecording(CCmdUI*pCmdUI);
+	afx_msg void OnUpdateToolsPauseAVIRecording(CCmdUI*pCmdUI);
 	afx_msg void OnPaint();
 	afx_msg void OnToolsRecordMovie();
 	afx_msg void OnUpdateToolsRecordMovie(CCmdUI*pCmdUI);
