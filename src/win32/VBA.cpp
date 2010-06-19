@@ -336,6 +336,7 @@ VBA::VBA()
 	useOldSync				= false;
 	useOldGBTiming			= false;
 	allowLeftRight			= false;
+	autofireAccountForLag   = false;
 	muteFrameAdvance		= false;
 	frameAdvanceMuteNow		= false;
 	winGbPrinterEnabled		= false;
@@ -1992,6 +1993,7 @@ void VBA::loadSettings()
 	useOldGBTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
 
 	allowLeftRight = regQueryDwordValue("allowLeftRight", false) ? true : false;
+	autofireAccountForLag = regQueryDwordValue("autofireAccountForLag", false) ? true : false;
 
 	int res = regQueryDwordValue("soundEnable", 0x30f);
 
@@ -2883,6 +2885,7 @@ void VBA::saveSettings()
 	regSetDwordValue("useOldGBTiming", useOldGBTiming);
 
 	regSetDwordValue("allowLeftRight", allowLeftRight);
+	regSetDwordValue("autofireAccountforLag", autofireAccountForLag);
 
 	regSetDwordValue("soundEnable", soundGetEnable() & 0x30f);
 	regSetDwordValue("soundOff", soundOffFlag);

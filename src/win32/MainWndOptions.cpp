@@ -1830,6 +1830,16 @@ void MainWnd::OnUpdateOptionsJoypadAllowLeftRight(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.allowLeftRight);
 }
 
+void MainWnd::OnOptionsJoypadAutofireAccountForLag()
+{
+	theApp.autofireAccountForLag = !theApp.autofireAccountForLag;
+}
+
+void MainWnd::OnUpdateOptionsJoypadAutofireAccountForLag(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.autofireAccountForLag);
+}
+
 BOOL MainWnd::OnOptionsJoypadAutofire(UINT nID)
 {
 	int & autoFire  = (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);

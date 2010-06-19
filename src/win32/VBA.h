@@ -121,6 +121,7 @@ public:
 	CString   biosFileName;
 	bool      useOldGBTiming;
 	bool      allowLeftRight;
+	bool      autofireAccountForLag;
 	bool      active;
 	bool      paused;
 	CString   recentFiles[10];
