@@ -370,6 +370,8 @@ protected:
 	afx_msg void OnUpdateOptionsJoypadMotionconfigure(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsJoypadAllowLeftRight();
 	afx_msg void OnUpdateOptionsJoypadAllowLeftRight(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsJoypadAutofireAccountForLag();
+	afx_msg void OnUpdateOptionsJoypadAutofireAccountForLag(CCmdUI*pCmdUI);
 	afx_msg void OnCheatsSearchforcheats();
 	afx_msg void OnUpdateCheatsSearchforcheats(CCmdUI*pCmdUI);
 	afx_msg void OnCheatsCheatlist();

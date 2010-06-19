@@ -1144,7 +1144,12 @@ u32 DirectInput::readDevice(int which, bool sensor, bool free)
 	{
 		currentButtons[i] |= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
 		if (!free)
-			theApp.autoFireToggle = !theApp.autoFireToggle;
+		{
+			if (!theApp.autofireAccountForLag || theApp.autofireAccountForLag && !theApp.emulator.lagged)
+			{
+				theApp.autoFireToggle = !theApp.autoFireToggle;
+			}
+		}
 	}
 	if (theApp.autoHold)
 		currentButtons[i] ^= theApp.autoHold;

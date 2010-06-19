@@ -1814,6 +1814,7 @@ BEGIN
                 MENUITEM "R&ight",                      ID_OPTIONS_JOYPAD_AUTOFIRE_RIGHT
                 MENUITEM SEPARATOR
                 MENUITEM "&Clear All",                  ID_OPTIONS_JOYPAD_AUTOFIRE_CLEAR
+                MENUITEM "Account For Lag",             ID_OPTIONS_JOYPAD_AUTOFIRE_ACCOUNTFORLAG
             END
             POPUP "Auto-&Hold"
             BEGIN
