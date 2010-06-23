@@ -223,6 +223,16 @@ void MainWnd::OnDebugNextframe()
 void MainWnd::OnUpdateDebugNextframe(CCmdUI*pCmdUI)
 {}
 
+void MainWnd::OnDebugNextframeAccountForLag()
+{
+	theApp.nextframeAccountForLag = !theApp.nextframeAccountForLag;
+}
+
+void MainWnd::OnUpdateDebugNextframeAccountForLag(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.nextframeAccountForLag);
+}
+
 #if (defined(WIN32) && !defined(SDL))
 extern u32 currentButtons [4];     // from DirectInput.cpp
 #else

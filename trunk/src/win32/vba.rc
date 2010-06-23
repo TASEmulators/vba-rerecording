@@ -1767,6 +1767,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Pause",                      ID_FILE_PAUSE
         MENUITEM "&Frame Advance",              ID_DEBUG_NEXTFRAME
+        MENUITEM "    account for lag",         ID_DEBUG_NEXTFRAME_ACCOUNTFORLAG
         MENUITEM "Re&wind",                     ID_TOOLS_REWIND
         MENUITEM "Rewind Se&ttings...",         ID_OPTIONS_EMULATOR_REWINDINTERVAL
         MENUITEM SEPARATOR

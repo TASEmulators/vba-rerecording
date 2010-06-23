@@ -337,6 +337,7 @@ VBA::VBA()
 	useOldGBTiming			= false;
 	allowLeftRight			= false;
 	autofireAccountForLag   = false;
+	nextframeAccountForLag  = false;
 	muteFrameAdvance		= false;
 	frameAdvanceMuteNow		= false;
 	winGbPrinterEnabled		= false;
@@ -1731,8 +1732,17 @@ bool systemPauseOnFrame()
 {
 	if (theApp.winPauseNextFrame)
 	{
-		theApp.paused = true;
-		theApp.winPauseNextFrame = false;
+		if (!theApp.nextframeAccountForLag || theApp.nextframeAccountForLag && !theApp.emulator.lagged)
+		{
+			theApp.winPauseNextFrame = false;
+			theApp.paused = true;
+		}
+		else
+		{
+			theApp.winPauseNextFrame = true;
+			return false;
+		}
+
 		return true;
 	}
 	return false;
@@ -1994,6 +2004,7 @@ void VBA::loadSettings()
 
 	allowLeftRight = regQueryDwordValue("allowLeftRight", false) ? true : false;
 	autofireAccountForLag = regQueryDwordValue("autofireAccountForLag", false) ? true : false;
+	nextframeAccountForLag = regQueryDwordValue("nextframeAccountForLag", false) ? true : false;
 
 	int res = regQueryDwordValue("soundEnable", 0x30f);
 
@@ -2886,6 +2897,7 @@ void VBA::saveSettings()
 
 	regSetDwordValue("allowLeftRight", allowLeftRight);
 	regSetDwordValue("autofireAccountforLag", autofireAccountForLag);
+	regSetDwordValue("nextframeAccountforLag", nextframeAccountForLag);
 
 	regSetDwordValue("soundEnable", soundGetEnable() & 0x30f);
 	regSetDwordValue("soundOff", soundOffFlag);

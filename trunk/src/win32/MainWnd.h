@@ -400,6 +400,8 @@ protected:
 	afx_msg void OnUpdateToolsTileviewer(CCmdUI*pCmdUI);
 	afx_msg void OnDebugNextframe();
 	afx_msg void OnUpdateDebugNextframe(CCmdUI*pCmdUI);
+	afx_msg void OnDebugNextframeAccountForLag();
+	afx_msg void OnUpdateDebugNextframeAccountForLag(CCmdUI*pCmdUI);
 	afx_msg void OnDebugFramesearch();
 	afx_msg void OnUpdateDebugFramesearch(CCmdUI*pCmdUI);
 	afx_msg void OnDebugFramesearchPrev();
