@@ -122,6 +122,7 @@ public:
 	bool      useOldGBTiming;
 	bool      allowLeftRight;
 	bool      autofireAccountForLag;
+	bool      nextframeAccountForLag;
 	bool      active;
 	bool      paused;
 	CString   recentFiles[10];
