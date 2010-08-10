@@ -1016,6 +1016,7 @@
 #define IDC_C_WATCH_EDIT                43402
 #define IDC_C_WATCH_REMOVE              43403
 #define IDC_C_WATCH_UP                  43404
+#define IDC_C_WATCH_SEPARATE            55555
 #define IDC_PROMPT_TEXT                 44000
 #define IDC_PROMPT_TEXT2                44001
 #define IDC_PROMPT_EDIT                 44005
