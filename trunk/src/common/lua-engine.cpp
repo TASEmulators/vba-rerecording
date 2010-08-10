@@ -93,7 +93,7 @@ static const char *guiCallbackTable = "VBA.GUI";
 static bool8 frameAdvanceWaiting = false;
 
 // We save our pause status in the case of a natural death.
-static bool8 wasPaused = false;
+//static bool8 wasPaused = false;
 
 // Transparency strength. 255=opaque, 0=so transparent it's invisible
 static int transparencyModifier = 255;
@@ -313,8 +313,8 @@ static void VBALuaOnStop(void)
 	luaRunning = false;
 	lua_joypads_used = 0;
 	gui_used = false;
-	if (wasPaused)
-		systemSetPause(true);
+	//if (wasPaused)
+	//	systemSetPause(true);
 }
 
 /**
@@ -4346,11 +4346,9 @@ int VBALoadLuaCode(const char *filename)
 	numMemHooks = 0;
 	transparencyModifier = 255; // opaque
 	lua_joypads_used = 0;		// not used
-	wasPaused = systemIsPaused();
-	systemSetPause(false);
+	//wasPaused = systemIsPaused();
+	//systemSetPause(false);
 
-	// And run it right now. :)
-	//VBALuaFrameBoundary();
 	// Set up our protection hook to be executed once every 10,000 bytecode instructions.
 	lua_sethook(thread, VBALuaHookFunction, LUA_MASKCOUNT, 10000);
 
@@ -4368,6 +4366,9 @@ int VBALoadLuaCode(const char *filename)
 #endif
 	if (info_onstart)
 		info_onstart(info_uid);
+
+	// And run it right now. :)
+	VBALuaFrameBoundary();
 
 	// We're done.
 	return 1;
