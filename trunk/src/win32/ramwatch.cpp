@@ -84,9 +84,6 @@ bool VerifyWatchNotAlreadyAdded(const AddressWatcher& watch)
 
 bool InsertWatch(const AddressWatcher& Watch, char *Comment)
 {
-	if(!VerifyWatchNotAlreadyAdded(Watch))
-		return false;
-
 	if(WatchCount >= MAX_WATCH_COUNT)
 		return false;
 
