@@ -732,6 +732,17 @@ void MainWnd::OnUpdateOptionsEmulatorSynchronize(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(synchronize);
 }
 
+void MainWnd::OnOptionsEmulatorAlwaysOnTop()
+{
+	theApp.alwaysOnTop = !theApp.alwaysOnTop;
+	SetWindowPos((theApp.alwaysOnTop ? &wndTopMost : &wndNoTopMost), 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+}
+
+void MainWnd::OnUpdateOptionsEmulatorAlwaysOnTop(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.alwaysOnTop);
+}
+
 void MainWnd::OnOptionsEmulatorPausewheninactive()
 {
 	theApp.pauseWhenInactive = !theApp.pauseWhenInactive;
@@ -740,6 +751,49 @@ void MainWnd::OnOptionsEmulatorPausewheninactive()
 void MainWnd::OnUpdateOptionsEmulatorPausewheninactive(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.pauseWhenInactive);
+}
+
+BOOL MainWnd::OnOptionsPriority(UINT nID)
+{
+	switch (nID)
+	{
+	case ID_OPTIONS_PRIORITY_HIGHEST:
+		theApp.threadPriority = 0;
+		break;
+	case ID_OPTIONS_PRIORITY_ABOVENORMAL:
+		theApp.threadPriority = 1;
+		break;
+	case ID_OPTIONS_PRIORITY_NORMAL:
+		theApp.threadPriority = 2;
+		break;
+	case ID_OPTIONS_PRIORITY_BELOWNORMAL:
+		theApp.threadPriority = 3;
+		break;
+	default:
+		return FALSE;
+	}
+	theApp.updatePriority();
+
+	return TRUE;
+}
+
+void MainWnd::OnUpdateOptionsPriority(CCmdUI *pCmdUI)
+{
+	switch (pCmdUI->m_nID)
+	{
+	case ID_OPTIONS_PRIORITY_HIGHEST:
+		pCmdUI->SetCheck(theApp.threadPriority == 0);
+		break;
+	case ID_OPTIONS_PRIORITY_ABOVENORMAL:
+		pCmdUI->SetCheck(theApp.threadPriority == 1);
+		break;
+	case ID_OPTIONS_PRIORITY_NORMAL:
+		pCmdUI->SetCheck(theApp.threadPriority == 2);
+		break;
+	case ID_OPTIONS_PRIORITY_BELOWNORMAL:
+		pCmdUI->SetCheck(theApp.threadPriority == 3);
+		break;
+	}
 }
 
 void MainWnd::OnOptionsEmulatorSpeeduptoggle()
@@ -1477,49 +1531,6 @@ void MainWnd::OnOptionsGameboyColors()
 		{
 			memcpy(gbPalette, &systemGbPalette[dlg.getWhich()*8], 8*sizeof(u16));
 		}
-	}
-}
-
-BOOL MainWnd::OnOptionsPriority(UINT nID)
-{
-	switch (nID)
-	{
-	case ID_OPTIONS_PRIORITY_HIGHEST:
-		theApp.threadPriority = 0;
-		break;
-	case ID_OPTIONS_PRIORITY_ABOVENORMAL:
-		theApp.threadPriority = 1;
-		break;
-	case ID_OPTIONS_PRIORITY_NORMAL:
-		theApp.threadPriority = 2;
-		break;
-	case ID_OPTIONS_PRIORITY_BELOWNORMAL:
-		theApp.threadPriority = 3;
-		break;
-	default:
-		return FALSE;
-	}
-	theApp.updatePriority();
-
-	return TRUE;
-}
-
-void MainWnd::OnUpdateOptionsPriority(CCmdUI *pCmdUI)
-{
-	switch (pCmdUI->m_nID)
-	{
-	case ID_OPTIONS_PRIORITY_HIGHEST:
-		pCmdUI->SetCheck(theApp.threadPriority == 0);
-		break;
-	case ID_OPTIONS_PRIORITY_ABOVENORMAL:
-		pCmdUI->SetCheck(theApp.threadPriority == 1);
-		break;
-	case ID_OPTIONS_PRIORITY_NORMAL:
-		pCmdUI->SetCheck(theApp.threadPriority == 2);
-		break;
-	case ID_OPTIONS_PRIORITY_BELOWNORMAL:
-		pCmdUI->SetCheck(theApp.threadPriority == 3);
-		break;
 	}
 }
 
