@@ -866,7 +866,7 @@ BOOL VBA::InitInstance()
 				{
 					enoughArgs = true;
 invalidArgument:
-					char str [1024];
+					char str [2048];	// the string is larger than 1024 bytes
 					strcpy(str, "");
 					if (_stricmp(argv[i], "-h") != 0)
 						if (enoughArgs)
@@ -2056,6 +2056,8 @@ void VBA::loadSettings()
 	else
 		gbSerialFunction = NULL;
 
+	alwaysOnTop = regQueryDwordValue("alwaysOnTop", false) ? true : false;
+
 	pauseWhenInactive = regQueryDwordValue("pauseWhenInactive", 1) ? true : false;
 
 	filenamePreference = regQueryDwordValue("filenamePreference", 0);
@@ -2085,8 +2087,7 @@ void VBA::loadSettings()
 	if (winSaveType < 0 || winSaveType > 5)
 		winSaveType = 0;
 
-	cpuEnhancedDetection = regQueryDwordValue("enhancedDetection", 1) ? true :
-	                       false;
+	cpuEnhancedDetection = regQueryDwordValue("enhancedDetection", 1) ? true : false;
 
 	ifbType = regQueryDwordValue("ifbType", 0);
 	if (ifbType < 0 || ifbType > 2)
@@ -2425,7 +2426,7 @@ void VBA::updateWindowSize(int value)
 	int winSizeY = sizeY;
 
 	DWORD style   = WS_POPUP | WS_VISIBLE;
-	DWORD styleEx = 0;
+	DWORD styleEx = alwaysOnTop ? WS_EX_TOPMOST : 0;
 
 	if (videoOption <= VIDEO_4X)
 	{
@@ -2924,6 +2925,8 @@ void VBA::saveSettings()
 	regSetDwordValue("showSpeedTransparent", showSpeedTransparent);
 
 	regSetDwordValue("gbPrinter", winGbPrinterEnabled);
+
+	regSetDwordValue("alwaysOnTop", alwaysOnTop);
 
 	regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
 

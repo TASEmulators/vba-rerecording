@@ -242,7 +242,9 @@ protected:
 	afx_msg void OnUpdateOptionsVideoRenderoptionsSelectskin(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsVideoRenderoptionsSkin();
 	afx_msg void OnUpdateOptionsVideoRenderoptionsSkin(CCmdUI*pCmdUI);
+
 	afx_msg void OnContextMenu(CWnd*pWnd, CPoint point);
+
 	afx_msg void OnOptionsEmulatorAssociate();
 	afx_msg void OnOptionsEmulatorDirectories();
 	afx_msg void OnOptionsEmulatorFilenamePreference(UINT nID);
@@ -251,6 +253,8 @@ protected:
 	afx_msg void OnUpdateOptionsVideoDisablestatusmessages(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorSynchronize();
 	afx_msg void OnUpdateOptionsEmulatorSynchronize(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsEmulatorAlwaysOnTop();
+	afx_msg void OnUpdateOptionsEmulatorAlwaysOnTop(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorPausewheninactive();
 	afx_msg void OnUpdateOptionsEmulatorPausewheninactive(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorSpeeduptoggle();

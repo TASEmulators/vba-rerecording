@@ -94,6 +94,7 @@ static inline uint16 Read16(const uint8 *& ptr) /* const version */
 	return v;
 }
 
+// WHY?
 static inline uint16 Read16(uint8 *& ptr) /* non-const version */
 {
 	uint16 v = (ptr[0] | (ptr[1]<<8));

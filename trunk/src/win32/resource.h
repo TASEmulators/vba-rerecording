@@ -1005,6 +1005,7 @@
 #define RW_MENU_LAST_RECENT_FILE        42370
 #define ID_OPTIONS_PREFER_ARCHIVE_NAME  42400
 #define ID_OPTIONS_PREFER_ROM_NAME      42401
+#define ID_OPTIONS_EMULATOR_ALWAYSONTOP 42402
 #define ID_FILE_SLOT_DISPLAYMODIFICATIONTIME 42405
 #define ID_TOOLS_PAUSEAVIRECORDING      42406
 #define ID_AUTO_TAKELAGINTOACCOUNT      42407
@@ -1016,17 +1017,17 @@
 #define IDC_C_WATCH_EDIT                43402
 #define IDC_C_WATCH_REMOVE              43403
 #define IDC_C_WATCH_UP                  43404
-#define IDC_C_WATCH_SEPARATE            55555
 #define IDC_PROMPT_TEXT                 44000
 #define IDC_PROMPT_TEXT2                44001
 #define IDC_PROMPT_EDIT                 44005
+#define IDC_C_WATCH_SEPARATE            55555
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        170
-#define _APS_NEXT_COMMAND_VALUE         42413
+#define _APS_NEXT_COMMAND_VALUE         42411
 #define _APS_NEXT_CONTROL_VALUE         1368
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

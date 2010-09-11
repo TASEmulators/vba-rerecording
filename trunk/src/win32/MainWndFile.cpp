@@ -71,26 +71,16 @@ void MainWnd::OnFilePause()
 {
 	if (!theApp.paused)
 	{
-/*		if (theApp.throttle > 25)
-		{
-			// less immediate response, better update
-			// FIXME: fails to pause at the first frame immeadiately after loading a ROM
-			OnDebugNextframe();
-		}
-		else
-		{
-*/			// more immediate response, worse update
-			theApp.paused   = !theApp.paused;
+		// more immediate response, worse update
+		theApp.paused   = !theApp.paused;
 
-			// otherwise would crash when not emulating
-			if (emulating)
-			{
-				theApp.painting = true;
-				systemDrawScreen();
-				theApp.painting = false;
-			}
-/*		}
-*/
+		// otherwise would crash when not emulating
+		if (emulating)
+		{
+			theApp.painting = true;
+			systemDrawScreen();
+			theApp.painting = false;
+		}
 		theApp.wasPaused = true;
 		soundPause();
 	}

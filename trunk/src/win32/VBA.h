@@ -149,6 +149,7 @@ public:
 	int       captureFormat;
 	bool      tripleBuffering;
 	bool      autoHideMenu;
+	bool       speedupToggle;
 	int       throttle;
 	u32       throttleLastTime;
 ///  u32 autoFrameSkipLastTime;
@@ -168,7 +169,7 @@ public:
 	int        glFilter;
 	int        glType;
 	bool       pauseWhenInactive;
-	bool       speedupToggle;
+	bool       alwaysOnTop;
 	bool       useOldSync;
 	bool       muteFrameAdvance;
 	bool       frameAdvanceMuteNow;
