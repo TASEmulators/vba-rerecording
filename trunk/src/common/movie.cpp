@@ -969,12 +969,12 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 
 void DisplayPressedKeys()
 {
-    uint32 keys = currentButtons[0] & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
+    uint32 keys = currentButtons[theApp.joypadDefault] & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
 
     const static char KeyMap[]   =  {'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^'};
     const static int  KeyOrder[] = {5, 6, 4, 7,  0, 1, 9, 8, 3, 2,  12, 15, 13, 14,  10}; // < ^ > v   A B  L R  S s  { = } _  !
-    char string[256];
-    sprintf(string, "                       ");
+    char buffer[256];
+    sprintf(buffer, "                       ");
 
 	#ifndef WIN32
 
@@ -984,10 +984,10 @@ void DisplayPressedKeys()
     {
         int j    = KeyOrder[i];
         int mask = (1 << (j));
-        string[strlen("    ")+i] = ((keys & mask) != 0) ? KeyMap[j] : ' ';
+        buffer[strlen("    ") + i] = ((keys & mask) != 0) ? KeyMap[j] : ' ';
 	}
 
-    systemScreenMessage(string, 2, 20);
+    systemScreenMessage(buffer, 2, 20);
 
 	#else
 
@@ -995,43 +995,46 @@ void DisplayPressedKeys()
     uint32     autoHeldKeys = eraseAll ? 0 : theApp.autoHold & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
     uint32     autoFireKeys =
         eraseAll ? 0 : (theApp.autoFire|theApp.autoFire2) & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
-    uint32 pressedKeys = eraseAll ? 0 : keys;
+    uint32     pressedKeys = eraseAll ? 0 : keys;
 
     char colorList[64];
-    memset(colorList, 1, strlen(string));
+    memset(colorList, 1, strlen(buffer));
 
     static int lastKeys = 0;
 
-    int i;
-    for (i = 0; i < 15; i++)
-    {
-        const int  j         = KeyOrder[i];
-        const int  mask      = (1 << (j));
-        bool       pressed   = ((pressedKeys & mask) != 0);
-        const bool autoHeld  = (autoHeldKeys & mask) != 0;
-        const bool autoFired = (autoFireKeys & mask) != 0;
-        const bool erased    = (lastKeys & mask) != 0 && (!pressed && !autoHeld && !(autoFired && !pressed));
-        extern int textMethod;
-        if (textMethod != 2 && (autoHeld || (autoFired && !pressed) || erased))
-        {
-            int colorNum = 1;     // default is white
-            if (autoHeld)
-				colorNum += (pressed ? 2 : 1);     // yellow if pressed, red if not
-            else if (autoFired)
-				colorNum += 5;     // blue if autofired and not currently pressed
-            else if (erased)
-				colorNum += 8;     // black on black
+    if (!eraseAll)
+	{
+		for (int i = 0; i < 15; i++)
+		{
+			const int  j         = KeyOrder[i];
+			const int  mask      = (1 << (j));
+			bool       pressed   = (pressedKeys  & mask) != 0;
+			const bool autoHeld  = (autoHeldKeys & mask) != 0;
+			const bool autoFired = (autoFireKeys & mask) != 0;
+			const bool erased    = (lastKeys & mask) != 0 && (!pressed && !autoHeld && !autoFired);
+			extern int textMethod;
+			if (textMethod != 2 && (autoHeld || (autoFired && !pressed) || erased))
+			{
+				int colorNum = 1;     // default is white
+				if (autoHeld)
+					colorNum += (pressed ? 2 : 1);     // yellow if pressed, red if not
+				else if (autoFired)
+					colorNum += 5;     // blue if autofired and not currently pressed
+				else if (erased)
+					colorNum += 8;     // black on black
 
-            colorList[strlen("    ")+i] = colorNum;
-            pressed = true;
+				colorList[strlen("    ")+i] = colorNum;
+				pressed = true;
+			}
+			buffer[strlen("    ") + i] = pressed ? KeyMap[j] : ' ';
 		}
-        string[strlen("    ")+i] = pressed ? KeyMap[j] : ' ';
 	}
-    lastKeys  = currentButtons[0];
+
+    lastKeys  = currentButtons[theApp.joypadDefault];
     lastKeys |= theApp.autoHold & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
     lastKeys |= (theApp.autoFire|theApp.autoFire2) & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
 
-    systemScreenMessage(string, 2, 20, colorList);
+    systemScreenMessage(buffer, 2, 20, colorList);
 
 	#endif
 }
@@ -1075,7 +1078,7 @@ void VBAUpdateFrameCountDisplay()
 #       if (defined(WIN32) && !defined(SDL))
 			if (theApp.frameCounter)
 			{
-		        sprintf(frameDisplayString, "%d", Movie.currentFrame);
+		        sprintf(frameDisplayString, "%d (movie)", Movie.currentFrame);
 		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
 					strcat(frameDisplayString, lagFrameDisplayString);
@@ -1092,11 +1095,10 @@ void VBAUpdateFrameCountDisplay()
 #       if (defined(WIN32) && !defined(SDL))
 		    if (theApp.frameCounter)
 		    {
-		        sprintf(frameDisplayString, "%d", emu.frameCount);
+		        sprintf(frameDisplayString, "%d (no movie)", emu.frameCount);
 		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
 					strcat(frameDisplayString, lagFrameDisplayString);
-		        strcat(frameDisplayString, " (no movie)");
 		        systemScreenMessage(frameDisplayString, 1, 600);
 			}
 #       else
@@ -1148,16 +1150,8 @@ void VBAMovieUpdate(int controllerNum)
                     change_state(MOVIE_STATE_RECORD);
 
                     systemScreenMessage("Movie re-record");
-                    fseek(Movie.file, Movie.header.offset_to_controller_data+(Movie.bytesPerFrame * (Movie.currentFrame+1)),
-   SEEK_SET);
- #if (defined(WIN32) && !defined(SDL))
-                        theApp.paused = true;
-                        theApp.speedupToggle = false;
- #else
-                        extern bool paused; // from SDL.cpp
-                        paused = true;
- #endif
-                        systemSoundPause();
+                    fseek(Movie.file, Movie.header.offset_to_controller_data+(Movie.bytesPerFrame * (Movie.currentFrame+1)), SEEK_SET);
+					systemSetPause(true);
 */
 		            VBAMovieSwitchToRecording();
 		            willPause = true;
@@ -1172,7 +1166,7 @@ void VBAMovieUpdate(int controllerNum)
 #if (defined(WIN32) && !defined(SDL))
  		            willPause = theApp.movieOnEndPause;
 #else
-                        	willPause = false; // SDL FIXME
+                    willPause = false; // SDL FIXME
 #endif
  		            break;
 				}
@@ -1204,26 +1198,12 @@ void VBAMovieUpdate(int controllerNum)
 	}
 
     VBAUpdateFrameCountDisplay();
-
-#if (defined(WIN32) && !defined(SDL))
-    if (theApp.inputDisplay)
-#else
-    if (false) /// SDL FIXME
-#endif
-
-		DisplayPressedKeys();
+	DisplayPressedKeys();
 
     // if the movie's been set to pause at a certain frame
     if (willPause || VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
     {
-#if (defined(WIN32) && !defined(SDL))
-        theApp.paused = true;
-        theApp.speedupToggle = false;
-#else
-        extern bool paused;     // from SDL.cpp
-        paused = true;
-#endif
-        systemSoundPause();
+		systemSetPause(true);
         Movie.pauseFrame = -1;
 	}
 }
@@ -1585,6 +1565,9 @@ void VBAMovieRestart()
                                                  // variables
 
         Movie.RecordedThisSession = modified;
+
+//		systemScreenMessage("movie replay (restart)");
+		systemRefreshScreen();
 	}
 }
 

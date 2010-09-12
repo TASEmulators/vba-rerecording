@@ -69,27 +69,8 @@ void MainWnd::OnFileOpenGBx()
 
 void MainWnd::OnFilePause()
 {
-	if (!theApp.paused)
-	{
-		// more immediate response, worse update
-		theApp.paused   = !theApp.paused;
-
-		// otherwise would crash when not emulating
-		if (emulating)
-		{
-			theApp.painting = true;
-			systemDrawScreen();
-			theApp.painting = false;
-		}
-		theApp.wasPaused = true;
-		soundPause();
-	}
-	else
-	{
-		theApp.paused = !theApp.paused;
-		theApp.wasPaused = false;
-		soundResume();
-	}
+	theApp.paused = !theApp.paused;
+	systemSetPause(theApp.paused);
 }
 
 void MainWnd::OnUpdateFilePause(CCmdUI*pCmdUI)
@@ -104,7 +85,6 @@ void MainWnd::OnFileReset()
 		if (VBAMovieGetState() == MOVIE_STATE_PLAY)
 		{
 			VBAMovieRestart();
-			systemScreenMessage("movie play restart");
 		}
 		else
 		{
@@ -130,10 +110,10 @@ BOOL MainWnd::OnFileRecentFile(UINT nID)
 	{
 		theApp.szFile = theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1];
 		if (FileRun())
-			emulating = true;
+			emulating = TRUE;
 		else
 		{
-			emulating = false;
+			emulating = FALSE;
 			soundPause();
 		}
 	}
