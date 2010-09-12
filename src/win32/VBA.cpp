@@ -1310,6 +1310,13 @@ void systemSetJoypad(int which, u32 buttons)
 	// TODO
 }
 
+void systemRefreshScreen()
+{
+//	VBAUpdateFrameCountDisplay();
+//	extern void DisplayPressedKeys(); DisplayPressedKeys();
+	theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL);
+}
+
 extern bool vbaShuttingDown;
 extern long linearSoundFrameCount;
 long        linearFrameCount = 0;
@@ -1329,6 +1336,8 @@ void systemDrawScreen()
 			linearSoundFrameCount = linearFrameCount;
 		}
 	}
+
+/*// necessary?
 	else
 	{
 		static bool updatingFrameCount = false;
@@ -1339,7 +1348,7 @@ void systemDrawScreen()
 			updatingFrameCount = false;
 		}
 	}
-
+//*/
 	if (theApp.display == NULL)
 		return;
 
@@ -1360,18 +1369,18 @@ void systemDrawScreen()
 	// text messages cannot be recorded to the video, of course.
 	//
 	// "in-game" text rendering
-	if (textMethod == 0 && !theApp.painting) // transparent text shouldn't be painted twice
+	if (textMethod == 0 && !theApp.painting) // transparent text shouldn't be painted twice, but new messages would be missing!
 	{
+		DrawLuaGui();	// huh?
+
 		int copyX = 240, copyY = 160;
-		int pitch;
 		if (theApp.cartridgeType == 1)
 			if (gbBorderOn)
 				copyX = 256, copyY = 224;
 			else
 				copyX = 160, copyY = 144;
-		pitch = copyX*(systemColorDepth/8)+(systemColorDepth == 24 ? 0 : 4);
+		int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);	// FIXME: sure?
 
-		DrawLuaGui();
 		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
 	}
 
@@ -1454,11 +1463,16 @@ void systemDrawScreen()
 		while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
 	}
 
+#if 0
+/*
 	// draw Lua graphics in-game but after video logging
+	// but just see above
 	if (textMethod != 0 && !theApp.painting) // transparent text shouldn't be painted twice
 	{
 		DrawLuaGui();
 	}
+//*/
+#endif
 
 	if (theApp.ifbFunction)
 	{
@@ -1649,10 +1663,6 @@ void systemScreenMessage(const char *msg, int slot, int duration, const char *co
 	if (slot < 0 || slot > SCREEN_MESSAGE_SLOTS)
 		return;
 
-	if (slot == 0 && (theApp.paused || (theApp.frameSearching)))
-		theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL); // update the display when a main-slot message appears while the
-                                                              // game is paused
-
 	theApp.screenMessage[slot] = true;
 	theApp.screenMessageTime[slot]        = GetTickCount();
 	theApp.screenMessageDuration[slot]    = duration;
@@ -1661,6 +1671,9 @@ void systemScreenMessage(const char *msg, int slot, int duration, const char *co
 
 	if (theApp.screenMessageBuffer[slot].GetLength() > 40)
 		theApp.screenMessageBuffer[slot] = theApp.screenMessageBuffer[slot].Left(40);
+
+	if (/*slot == 0 &&*/ (theApp.paused || (theApp.frameSearching)))
+		theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL); // update the display when a main-slot message appears while the game is paused
 }
 
 int systemGetSensorX()
@@ -1775,15 +1788,19 @@ void systemSetPause(bool pause)
 {
 	if (pause)
 	{
+		theApp.wasPaused = true;
 		theApp.paused = true;
 		theApp.speedupToggle = false;
-		systemSoundPause();
+		soundPause();
 	}
 	else
 	{
+		theApp.wasPaused = false;
 		theApp.paused = false;
 		soundResume();
 	}
+
+	systemRefreshScreen();;
 }
 
 void VBA::saveRewindStateIfNecessary()
@@ -2432,14 +2449,14 @@ void VBA::updateWindowSize(int value)
 	{
 		style |= WS_OVERLAPPEDWINDOW;
 
-		AdjustWindowRectEx(&dest, style, TRUE, 0); //WS_EX_TOPMOST);
+		AdjustWindowRectEx(&dest, style, TRUE, styleEx);
 
 		winSizeX = dest.right  - dest.left;
 		winSizeY = dest.bottom - dest.top;
 	}
 	else
 	{
-		AdjustWindowRectEx(&dest, style, flagHideMenu ? FALSE : TRUE, 0); //WS_EX_TOPMOST);
+		AdjustWindowRectEx(&dest, style, flagHideMenu ? FALSE : TRUE, styleEx);
 
 		winSizeX = fsWidth;
 		winSizeY = fsHeight;

@@ -90,6 +90,7 @@ extern void log(const char *, ...);
 extern bool systemPauseOnFrame();
 extern void systemGbPrint(u8 *, int, int, int, int);
 extern void systemScreenCapture(int);
+extern void systemRefreshScreen();
 extern void systemDrawScreen();
 // updates the joystick data
 extern bool systemReadJoypads();

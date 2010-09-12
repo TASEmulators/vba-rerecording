@@ -599,7 +599,7 @@ bool MainWnd::FileRun()
 
 	char LogicalName[2048], PhysicalName[2048];
 	// FIXME: assertion failure in fopen.c if canceled
-	if(ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions, sizeof(s_romIgnoreExtensions)/sizeof(*s_romIgnoreExtensions)))
+	if (ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions, sizeof(s_romIgnoreExtensions)/sizeof(*s_romIgnoreExtensions)))
 	{
 		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
 		theApp.szFile = theApp.filename = LogicalName;
@@ -820,6 +820,8 @@ bool MainWnd::FileRun()
 	if (AutoRWLoad)
 		MainWnd::OnFileRamWatch();     //auto load ramwatch
 
+	systemRefreshScreen();
+
 	return true;
 }
 
@@ -889,6 +891,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 					theApp.adjustDestRect();
 					if (theApp.display)
 						theApp.display->resize(theApp.dest.right-theApp.dest.left, theApp.dest.bottom-theApp.dest.top);
+					systemRefreshScreen();	// useful when shrinking
 				}
 			}
 			else
@@ -1413,7 +1416,8 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				{
 					if (VBAMovieActive())
 						VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
-					FileRun();
+					if (!FileRun())
+						return;
 				}
 				else
 					return;
@@ -1510,7 +1514,8 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					{
 						if (VBAMovieActive())
 							VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
-						FileRun();
+						if (!FileRun())
+							return;
 						fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 					}
 					else

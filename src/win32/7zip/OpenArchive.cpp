@@ -210,7 +210,7 @@ static struct TempFiles
 		TemporaryFile()
 		{
 			filename[0] = 0;
-			category[0] = 0;
+			// category[0] = 0;	// error
 		}
 		bool Delete(bool returnFalseOnRegistryRemovalFailure=false)
 		{

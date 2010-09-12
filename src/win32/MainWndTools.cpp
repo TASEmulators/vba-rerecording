@@ -346,6 +346,7 @@ void MainWnd::OnUpdateDebugFramesearchLoad(CCmdUI*pCmdUI)
 void MainWnd::OnToolsFrameCounter()
 {
 	theApp.frameCounter = !theApp.frameCounter;
+	extern void VBAUpdateFrameCountDisplay(); VBAUpdateFrameCountDisplay();
 }
 
 void MainWnd::OnUpdateToolsFrameCounter(CCmdUI*pCmdUI)
@@ -356,6 +357,7 @@ void MainWnd::OnUpdateToolsFrameCounter(CCmdUI*pCmdUI)
 void MainWnd::OnToolsLagCounter()
 {
 	theApp.lagCounter = !theApp.lagCounter;
+	extern void VBAUpdateFrameCountDisplay(); VBAUpdateFrameCountDisplay();
 }
 
 void MainWnd::OnUpdateToolsLagCounter(CCmdUI*pCmdUI)

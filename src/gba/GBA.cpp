@@ -3710,6 +3710,8 @@ void CPUReset(bool userReset)
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
 	lastTime = systemGetClock();
+
+	systemRefreshScreen();
 }
 
 void CPUInterrupt()
@@ -4109,13 +4111,8 @@ updateLoop:
 				#if (defined(WIN32) && !defined(SDL))
 								if (theApp.muteFrameAdvance)
 									theApp.frameAdvanceMuteNow = true;
-								theApp.paused = true;
-				#else
-								extern bool paused; // from SDL.cpp
-								paused = true;
 				#endif
-								// prevents the sound from looping annoyingly after a frame advance in GBA games
-								systemSoundPause();
+								systemSetPause(true);
 							}
 							else
 							{
@@ -4459,7 +4456,7 @@ updateLoop:
 									UPDATE_REG(0x202, IF);
 								}
 							}
-							TM3D        = tm3d;
+							TM3D        = tm3d & 0xFFFF;
 							timer3Ticks = 0x10000 - TM3D;
 							UPDATE_REG(0x10C, TM3D);
 						}

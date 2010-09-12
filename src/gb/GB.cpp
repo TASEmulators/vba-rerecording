@@ -1810,6 +1810,8 @@ void gbReset(bool userReset)
 
 	gbLastTime   = systemGetClock();
 	gbFrameCount = 0;
+
+	systemRefreshScreen();
 }
 
 void gbWriteSaveMBC1(const char *name)
@@ -3406,13 +3408,8 @@ void gbEmulate(int ticksToStop)
 #if (defined(WIN32) && !defined(SDL))
 							if (theApp.muteFrameAdvance)
 								theApp.frameAdvanceMuteNow = true;
-							theApp.paused = true;
-#else
-							extern bool paused; // from SDL.cpp
-							paused = true;
 #endif
-							// prevents the sound from looping annoyingly after a frame advance in GBA games
-							systemSoundPause();
+							systemSetPause(true);
 						}
 						else
 						{
