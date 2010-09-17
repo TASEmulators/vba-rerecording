@@ -43,7 +43,7 @@ BOOL MovieOpen::OnInitDialog()
 	GetDlgItem(IDC_EDIT_PAUSEFRAME)->EnableWindow(FALSE);
 	GetDlgItem(IDC_CHECK_PAUSEFRAME)->EnableWindow(FALSE);
 
-	CheckDlgButton(IDC_READONLY, theApp.movieReadOnly);
+	CheckDlgButton(IDC_READONLY, TRUE);
 	m_editDescription.SetReadOnly(theApp.movieReadOnly);
 
 	m_editFilename.LimitText(_MAX_PATH);
