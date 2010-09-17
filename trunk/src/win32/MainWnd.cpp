@@ -1398,7 +1398,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			uint32 romGameCode;
 			uint16 checksum;
 			uint8  crc;
-
+			
 			if (VBAMovieGetInfo(movieName, &movieInfo) != SUCCESS)
 			{
 				return;
@@ -1545,7 +1545,7 @@ romcheck_exit:
 			extern void loadBIOS();
 			loadBIOS();
 
-			int code = VBAMovieOpen(movieName, theApp.movieReadOnly);
+			int code = VBAMovieOpen(movieName, TRUE);
 
 			if (code != SUCCESS)
 			{
