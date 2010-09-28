@@ -168,11 +168,12 @@ public:
 	int        d3dFilter;
 	int        glFilter;
 	int        glType;
+	bool	   muteWhenInactive;
+	bool       muteFrameAdvance;
 	bool       pauseWhenInactive;
+	bool       enableBackgroundInput;
 	bool       alwaysOnTop;
 	bool       useOldSync;
-	bool       muteFrameAdvance;
-	bool       frameAdvanceMuteNow;
 	bool       winGbPrinterEnabled;
 	int        threadPriority;
 	bool       disableMMX;
@@ -185,7 +186,6 @@ public:
 	int        autoFire, autoFire2;
 	int        autoHold;
 	bool       autoFireToggle;
-	bool       winPauseNextFrame;
 	bool       frameCounter;
 	bool       lagCounter;
 	bool       inputDisplay;
@@ -206,6 +206,8 @@ public:
 	int32      sensorX;
 	int32      sensorY;
 	int        mouseCounter;
+	bool       frameAdvanceMuteNow;
+	bool       winPauseNextFrame;
 	bool       wasPaused;
 	int        fsMaxScale;
 	int        romSize;

@@ -16,8 +16,8 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include "../Port.h"
 #include "hq_shared32.h"
-#include "../common/System.h"
 #include "interp.h" 
 
 #define SIZE_PIXEL 2 // 16bit = 2 bytes

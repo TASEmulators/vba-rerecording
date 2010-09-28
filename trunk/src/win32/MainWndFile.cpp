@@ -440,7 +440,7 @@ BOOL MainWnd::OnSelectSlot(UINT nID)
 
 	CString buffer;
 	buffer.Format("Slot %d selected", nID + 1);
-	systemScreenMessage(buffer, 0, 600);
+	systemScreenMessage(buffer, 0);
 
 	return true;
 }
@@ -704,9 +704,6 @@ void MainWnd::OnUpdateFileRominformation(CCmdUI*pCmdUI)
 
 void MainWnd::OnFileTogglemenu()
 {
-///  if(theApp.videoOption <= VIDEO_4X)
-///    return;
-
 	theApp.menuToggle = !theApp.menuToggle;
 
 	if (theApp.menuToggle)
@@ -1097,7 +1094,7 @@ void MainWnd::OnFileSavegameIncrementSlot()
 
 	char str [32];
 	sprintf(str, "Current Slot: %d", theApp.currentSlot + 1);
-	systemScreenMessage(str, 0, 600);
+	systemScreenMessage(str, 0);
 }
 
 void MainWnd::OnUpdateFileSavegameIncrementSlot(CCmdUI*pCmdUI)
@@ -1121,7 +1118,7 @@ void MainWnd::OnFileSavegameDecrementSlot()
 
 	char str [32];
 	sprintf(str, "Current Slot: %d", theApp.currentSlot + 1);
-	systemScreenMessage(str, 0, 600);
+	systemScreenMessage(str, 0);
 }
 
 void MainWnd::OnUpdateFileSavegameDecrementSlot(CCmdUI*pCmdUI)

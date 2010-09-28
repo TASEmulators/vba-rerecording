@@ -677,16 +677,16 @@ void DirectDrawDisplay::render()
 		if (theApp.filterFunction)
 		{
 			if (systemColorDepth == 16)
-				(*theApp.filterFunction)(pix+theApp.filterWidth*2+4,
-				                         theApp.filterWidth*2+4,
+				(*theApp.filterFunction)(pix + theApp.filterWidth * 2 + 4,
+				                         theApp.filterWidth * 2 + 4,
 				                         (u8 *)theApp.delta,
 				                         (u8 *)ddsDesc.lpSurface,
 				                         ddsDesc.lPitch,
 				                         theApp.filterWidth,
 				                         theApp.filterHeight);
 			else
-				(*theApp.filterFunction)(pix+theApp.filterWidth*4+4,
-				                         theApp.filterWidth*4+4,
+				(*theApp.filterFunction)(pix + theApp.filterWidth * 4 + 4,
+				                         theApp.filterWidth * 4 + 4,
 				                         (u8 *)theApp.delta,
 				                         (u8 *)ddsDesc.lpSurface,
 				                         ddsDesc.lPitch,
@@ -801,7 +801,7 @@ gbaLoopEnd:
 
 	if (hret == DD_OK)
 	{
-		// the correct place to wait
+		// the correct point where to wait
 		if (theApp.vsync && !fastForward)
 		{
 			hret = pDirectDraw->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
@@ -857,7 +857,8 @@ gbaLoopEnd:
 		{
 			if (theApp.screenMessage[slot])
 			{
-				if (((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+				if ((theApp.screenMessageDuration[slot] < 0 || 
+					(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
 				    (!theApp.disableStatusMessage || slot == 1 || slot == 2))
 				{
 					if (!textMessageStarted)
@@ -920,7 +921,8 @@ gbaLoopEnd:
 			{
 				if (theApp.screenMessage[slot])
 				{
-					if (((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+					if ((theApp.screenMessageDuration[slot] < 0 || 
+						(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
 					    (!theApp.disableStatusMessage || slot == 1 || slot == 2))
 					{
 						TextOut(hdc, theApp.dest.left+10, theApp.dest.bottom - 20*(slot+1), theApp.screenMessageBuffer[slot],

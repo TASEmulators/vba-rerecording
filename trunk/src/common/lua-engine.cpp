@@ -4369,7 +4369,7 @@ int VBALoadLuaCode(const char *filename)
 
 	// And run it right now. :)
 	VBALuaFrameBoundary();
-	systemDrawScreen();
+	systemRenderFrame();
 
 	// We're done.
 	return 1;

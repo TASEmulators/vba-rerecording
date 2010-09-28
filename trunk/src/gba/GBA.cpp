@@ -4087,7 +4087,7 @@ updateLoop:
 
 							if (frameCount >= framesToSkip || pauseAfterFrameAdvance)
 							{
-								systemDrawScreen();
+								systemRenderFrame();
 								frameCount = 0;
 
 								if (capture && !capturePrevious)

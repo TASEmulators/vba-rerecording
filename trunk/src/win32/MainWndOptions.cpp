@@ -753,6 +753,16 @@ void MainWnd::OnUpdateOptionsEmulatorPausewheninactive(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.pauseWhenInactive);
 }
 
+void MainWnd::OnOptionsEmulatorEnableBackgroundInput()
+{
+	theApp.enableBackgroundInput = !theApp.enableBackgroundInput;
+}
+
+void MainWnd::OnUpdateOptionsEmulatorEnableBackgroundInput(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.enableBackgroundInput);
+}
+
 BOOL MainWnd::OnOptionsPriority(UINT nID)
 {
 	switch (nID)
@@ -1219,6 +1229,16 @@ void MainWnd::OnOptionsSoundMuteFrameAdvance()
 void MainWnd::OnUpdateOptionsSoundMuteFrameAdvance(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.muteFrameAdvance);
+}
+
+void MainWnd::OnOptionsSoundMuteWhenInactive()
+{
+	theApp.muteWhenInactive = !theApp.muteWhenInactive;
+}
+
+void MainWnd::OnUpdateOptionsSoundMuteWhenInactive(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.muteWhenInactive);
 }
 
 void MainWnd::OnOptionsSound11khz()
@@ -2015,7 +2035,7 @@ BOOL MainWnd::OnOptionsJoypadAutofire(UINT nID)
 		return FALSE;
 	}
 
-	extern void DisplayPressedKeys(); DisplayPressedKeys();
+	extern void VBAUpdateButtonPressDisplay(); VBAUpdateButtonPressDisplay();
 
 	return TRUE;
 }
@@ -2245,7 +2265,7 @@ BOOL MainWnd::OnOptionsJoypadSticky(UINT nID)
 		return FALSE;
 	}
 
-	extern void DisplayPressedKeys(); DisplayPressedKeys();
+	extern void VBAUpdateButtonPressDisplay(); VBAUpdateButtonPressDisplay();
 
 	return TRUE;
 }

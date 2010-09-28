@@ -231,6 +231,8 @@ ON_COMMAND(ID_OPTIONS_EMULATOR_ALWAYSONTOP, OnOptionsEmulatorAlwaysOnTop)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_EMULATOR_ALWAYSONTOP, OnUpdateOptionsEmulatorAlwaysOnTop)
 ON_COMMAND(ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE, OnOptionsEmulatorPausewheninactive)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE, OnUpdateOptionsEmulatorPausewheninactive)
+ON_COMMAND(ID_OPTIONS_EMULATOR_BACKGROUNDINPUT, OnOptionsEmulatorEnableBackgroundInput)
+ON_UPDATE_COMMAND_UI(ID_OPTIONS_EMULATOR_BACKGROUNDINPUT, OnUpdateOptionsEmulatorEnableBackgroundInput)
 ON_COMMAND(ID_OPTIONS_EMULATOR_SPEEDUPTOGGLE, OnOptionsEmulatorSpeeduptoggle)
 
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_EMULATOR_SPEEDUPTOGGLE, OnUpdateOptionsEmulatorSpeeduptoggle)
@@ -290,6 +292,8 @@ ON_COMMAND(ID_OPTIONS_SOUND_REVERSESTEREO, OnOptionsSoundReversestereo)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_SOUND_REVERSESTEREO, OnUpdateOptionsSoundReversestereo)
 ON_COMMAND(ID_OPTIONS_SOUND_MUTEFRAMEADVANCE, OnOptionsSoundMuteFrameAdvance)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_SOUND_MUTEFRAMEADVANCE, OnUpdateOptionsSoundMuteFrameAdvance)
+ON_COMMAND(ID_OPTIONS_SOUND_MUTEWHENINACTIVE, OnOptionsSoundMuteWhenInactive)
+ON_UPDATE_COMMAND_UI(ID_OPTIONS_SOUND_MUTEWHENINACTIVE, OnUpdateOptionsSoundMuteWhenInactive)
 ON_COMMAND(ID_OPTIONS_SOUND_11KHZ, OnOptionsSound11khz)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_SOUND_11KHZ, OnUpdateOptionsSound11khz)
 ON_COMMAND(ID_OPTIONS_SOUND_22KHZ, OnOptionsSound22khz)
@@ -1042,12 +1046,9 @@ void MainWnd::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	if (emulating)
+	if (emulating && (!theApp.active || theApp.paused))
 	{
-		theApp.painting = true;
-		systemDrawScreen();
-		theApp.painting = false;
-		theApp.renderedFrames--;
+		systemRedrawScreen();
 	}
 }
 
@@ -1057,6 +1058,7 @@ static bool translatingAccelerator = false;
 //   using too many static variables for a single accel key kludge
 static bool recursiveCall = true;
 static bool fullUpdated = false;
+static bool lastKeyModifier = false;	// maybe better check current key press status instead
 static WPARAM lastKey = 0;
 
 BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
@@ -1084,12 +1086,13 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 		translatingAccelerator = true;
 
 		bool bHit = theApp.hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, theApp.hAccel, pMsg);
+		bool isModifier = pMsg->wParam == VK_SHIFT || pMsg->wParam == VK_CONTROL || pMsg->wParam == VK_MENU;
 
 		// HACK to get around the fact that TranslateAccelerator can't handle modifier-only accelerators
 		// (it would be better to fix TranslateAccelerator, but its code is in a Microsoft library...)
 		if (!bHit)
 		{
-			if (pMsg->wParam == VK_SHIFT || pMsg->wParam == VK_CONTROL || pMsg->wParam == VK_MENU)
+			if (isModifier)
 			{
 				// do a linear loop through all accelerators to find modifier-only ones...
 				CCmdAccelOb*pCmdAccel;
@@ -1109,21 +1112,38 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 						{
 							if ((pAccelOb->m_cVirt & modifiers) == modifiers) // if modifier matches
 							{
+								bHit = true;
 								SendMessage(WM_COMMAND, pCmdAccel->m_wIDCommand, 0); // tell Windows to call the right function
 							}
 						}
 					}
 				}
 			}
+
+			if (!bHit)
+			{
+				lastKeyModifier = true;
+			}
 		}
-		else if (lastKey != pMsg->wParam)
+		
+		if (bHit)
 		{
-			fullUpdated = false;
-			lastKey = pMsg->wParam;
+			if (lastKeyModifier && !isModifier)
+			{
+				fullUpdated = false;
+				lastKeyModifier = false;
+			}
+
+			if (lastKey != pMsg->wParam)
+			{
+				fullUpdated = false;
+				lastKey = pMsg->wParam;
+			}
 		}
 
+
 		translatingAccelerator = false;
-		return bHit;
+		return bHit ? TRUE : FALSE;
 	}
 
 	return FALSE;
@@ -1297,9 +1317,9 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 {
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
-	bool a = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
+	bool activated = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
 /*
-		// FIXME: this is a logical error, which will the emulator fail to pause when the focus is lost
+		// FIXME: this might be a logical error, which causes the emulator fail to pause when the focus is lost
 		//   see what theApp.pauseDuringCheatSearch is supposed to be used for: MainWndCheats.cpp
 		//   it would be problematic to use, as long as the old cheat search is still using it
 		|| (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
@@ -1308,12 +1328,16 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 	;
 
 	extern bool inputActive;
-	inputActive = a;
+	inputActive = !theApp.pauseWhenInactive && theApp.enableBackgroundInput || activated;
 
-	if (a && theApp.input)
+	theApp.active = !theApp.pauseWhenInactive || activated;
+	if (activated)
 	{
-		theApp.active = a;
-		theApp.input->activate();
+		if (theApp.input)
+		{
+			theApp.input->activate();
+		}
+
 		if (!theApp.paused)
 		{
 			if (emulating)
@@ -1332,17 +1356,19 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 			{
 				soundPause();
 			}
-			theApp.active = a;
 		}
 
 		memset(theApp.delta, 255, sizeof(theApp.delta));
 	}
 
+	if (theApp.muteWhenInactive)
+	{
+		soundSetMuted(!activated);
+	}
+
 	if (theApp.paused && emulating)
 	{
-		theApp.painting = true;
-		systemDrawScreen();
-		theApp.painting = false;
+		systemRefreshScreen();
 	}
 }
 

@@ -206,6 +206,7 @@ u8    soundDSFifoB[32];
 u8    soundDSBValue = 0;
 
 int32 soundEnableFlag = 0x3ff;
+int32 soundMutedFlag  = 0;
 
 s16   soundFilter[4000];
 s16   soundRight[5] = { 0, 0, 0, 0, 0 };
@@ -1339,6 +1340,7 @@ void soundEnable(int channels)
 	int c = channels & 0x0f;
 
 	soundEnableFlag |= ((channels & 0x30f) |c | (c << 4));
+	soundMutedFlag |= ((channels & 0x30f) |c | (c << 4));
 	extern u8 *gbMemory;
 	if (ioMem)
 		soundBalance = (ioMem[NR51] & soundEnableFlag);
@@ -1351,6 +1353,7 @@ void soundDisable(int channels)
 	int c = channels & 0x0f;
 
 	soundEnableFlag &= (~((channels & 0x30f)|c|(c<<4)));
+	soundMutedFlag &= (~((channels & 0x30f)|c|(c<<4)));
 	extern u8 *gbMemory;
 	if (ioMem)
 		soundBalance = (ioMem[NR51] & soundEnableFlag);
@@ -1361,6 +1364,25 @@ void soundDisable(int channels)
 int soundGetEnable()
 {
 	return (soundEnableFlag & 0x30f);
+}
+
+void soundSetMuted(bool isMuted)
+{
+	int32 old = soundMutedFlag;
+	if (isMuted)
+	{
+		soundDisable(soundEnableFlag);
+	}
+	else
+	{
+		soundEnable(soundMutedFlag);
+	}
+	soundMutedFlag = old;
+}
+
+int soundGetMuted()
+{
+	return (soundMutedFlag & 0x30f);
 }
 
 void soundReset()

@@ -1983,6 +1983,7 @@ BEGIN
             MENUITEM "O&ff",                        ID_OPTIONS_SOUND_OFF
             MENUITEM SEPARATOR
             MENUITEM "Mute Frame &Advance",         ID_OPTIONS_SOUND_MUTEFRAMEADVANCE
+            MENUITEM "Mute When &Inactive",         ID_OPTIONS_SOUND_MUTEWHENINACTIVE
             MENUITEM "&Use Old Synchronization",    ID_OPTIONS_SOUND_USEOLDSYNCHRONIZATION
             MENUITEM "&Reverse Stereo",             ID_OPTIONS_SOUND_REVERSESTEREO
             MENUITEM SEPARATOR
@@ -2062,7 +2063,7 @@ BEGIN
         POPUP "&Head-Up Display"
         BEGIN
             MENUITEM "&Frame Counter",              ID_TOOLS_FRAMECOUNTER
-            MENUITEM "&Lag Counter",                ID_TOOLS_LAGCOUNTER
+            MENUITEM "    &Lag Counter",            ID_TOOLS_LAGCOUNTER
             MENUITEM "&Input Display",              ID_TOOLS_INPUTDISPLAY
             MENUITEM SEPARATOR
             MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
@@ -2079,7 +2080,8 @@ BEGIN
         END
         POPUP "&Preferences"
         BEGIN
-            MENUITEM "Always On Top",               ID_OPTIONS_EMULATOR_ALWAYSONTOP
+            MENUITEM "Always On &Top",              ID_OPTIONS_EMULATOR_ALWAYSONTOP
+            MENUITEM "Enable &Background Input",    ID_OPTIONS_EMULATOR_BACKGROUNDINPUT
             MENUITEM "Pause When &Inactive",        ID_OPTIONS_EMULATOR_PAUSEWHENINACTIVE
             POPUP "Process &Priority"
             BEGIN

@@ -35,7 +35,7 @@
  * - the whole source code of the program is released with the binary.
  */
 
-#include "../common/System.h"
+#include "../Port.h"
 
 #ifdef MMX
 extern "C" bool cpu_mmx;

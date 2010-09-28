@@ -1,6 +1,13 @@
 TODO: Repair this log.
 
 ---VBA-rr v23--
+09-27-2010 aquanull - Really finally fixed accelerator keys.
+09-27-2010 aquanull - Fixed several screen redraw problems.
+09-26-2010 aquanull - Added "Enable Background Input" option.
+09-26-2010 aquanull - Added "Mute When Inactive" option.
+09-12-2010 aquanull - Added "Always On Top" option.
+09-12-2010 aquanull - Fixed the random error in application start up.
+09-12-2010 aquanull - Fixed the error raised when the user canceled selecting from an archive after dragging & dropping a certain types of files onto the main window.
 02-10-2010 aquanull - Finally fixed accelerator keys.
 02-09-2010 aquanull - A more organized hot-key configuration dialog.
 02-05-2010 nitsuja - fix input disable bug from r153 and throttler Sleep(1.6 years) bug, which were making vba impossible to use at least half of the time
