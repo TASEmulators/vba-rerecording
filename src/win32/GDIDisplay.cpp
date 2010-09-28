@@ -262,7 +262,7 @@ void GDIDisplay::render()
 		bi->bmiHeader.biWidth  = theApp.rect.right;
 		bi->bmiHeader.biHeight = -theApp.rect.bottom;
 
-		(*filterFunction)(pix+pitch,
+		(*filterFunction)(pix + pitch,
 						  pitch,
 						  (u8 *)theApp.delta,
 						  (u8 *)filterData,
@@ -349,7 +349,8 @@ void GDIDisplay::render()
 		{
 			if (theApp.screenMessage[slot])
 			{
-				if (((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+				if ((theApp.screenMessageDuration[slot] < 0 || 
+					(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
 				    (!theApp.disableStatusMessage || slot == 1 || slot == 2))
 				{
 					dc->SetBkMode(TRANSPARENT);

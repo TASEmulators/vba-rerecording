@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 #include <memory.h>
-#include "../common/System.h"
+#include "../Port.h"
 
 #ifdef MMX
 extern "C" bool cpu_mmx;

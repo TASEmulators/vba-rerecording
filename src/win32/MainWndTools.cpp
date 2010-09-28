@@ -270,7 +270,7 @@ void MainWnd::OnDebugFramesearch()
 
 	char str [32];
 	sprintf(str, "%d frame search", theApp.frameSearchLength);
-	systemScreenMessage(str, 0, 600);
+	systemScreenMessage(str, 0);
 
 	theApp.frameSearchSkipping = true;
 
@@ -301,9 +301,9 @@ void MainWnd::OnDebugFramesearchPrev()
 		// try it
 		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE*0], REWIND_SIZE);
 
-		char str [32];
+		char str[32];
 		sprintf(str, "%d frame search", theApp.frameSearchLength);
-		systemScreenMessage(str, 0, 600);
+		systemScreenMessage(str, 0);
 
 		theApp.frameSearchSkipping = true;
 
@@ -329,9 +329,9 @@ void MainWnd::OnDebugFramesearchLoad()
 		theApp.paused = true;
 
 		if (theApp.frameSearching)
-			systemScreenMessage("end frame search", 0, 600);
+			systemScreenMessage("end frame search", 0);
 		else
-			systemScreenMessage("restore search end", 0, 600);
+			systemScreenMessage("restore search end", 0);
 	}
 	theApp.frameSearching      = false;
 	theApp.frameSearchSkipping = false;
@@ -376,7 +376,7 @@ void MainWnd::OnToolsInputDisplay()
 {
 	theApp.inputDisplay = !theApp.inputDisplay;
 	systemScreenMessage(theApp.inputDisplay ? "Input Display On" : "Input Display Off");
-	extern void DisplayPressedKeys(); DisplayPressedKeys();
+	extern void VBAUpdateButtonPressDisplay(); VBAUpdateButtonPressDisplay();
 }
 
 void MainWnd::OnUpdateToolsInputDisplay(CCmdUI*pCmdUI)

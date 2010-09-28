@@ -2704,14 +2704,13 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 
 	gbSoundReadGame(version, gzFile);
 
+#if 0
 	if (gbBorderOn)
 	{
 		gbSgbRenderBorder();
 	}
-#if (defined(WIN32) && !defined(SDL))
-	theApp.painting = true;
-	systemDrawScreen();
-	theApp.painting = false;
+
+	systemRefreshScreen();
 #endif
 
 	if (version > GBSAVE_GAME_VERSION_1)
@@ -3386,7 +3385,7 @@ void gbEmulate(int ticksToStop)
 							if (gbBorderOn)
 								gbSgbRenderBorder(); // clear unnecessary things on border (e.g. in-game text message)
 
-							systemDrawScreen();
+							systemRenderFrame();
 							gbFrameSkipCount = 0;
 
 							if (gbCapture && !gbCapturePrevious)

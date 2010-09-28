@@ -184,7 +184,8 @@ void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 	{
 		if (theApp.screenMessage[slot])
 		{
-			if (((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+			if ((theApp.screenMessageDuration[slot] < 0 || 
+				(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
 			    (!theApp.disableStatusMessage || slot == 1 || slot == 2))
 			{
 				drawText(dest,
@@ -205,16 +206,15 @@ void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 // draw Lua graphics in game screen
 void DrawLuaGui()
 {
-	int copyX       = 240, copyY = 160;
-	int screenX     = 240, screenY = 160;
-	int copyOffsetX = 0, copyOffsetY = 0;
-	int pitch;
+	int copyX       = 240, copyY       = 160;
+	int screenX     = 240, screenY     = 160;
+	int copyOffsetX = 0,   copyOffsetY = 0;
 	if (theApp.cartridgeType == 1)
 	{
 		if (gbBorderOn)
 		{
-			copyX       = 256, copyY = 224;
-			copyOffsetX = 48, copyOffsetY = 40;
+			copyX       = 256, copyY       = 224;
+			copyOffsetX = 48,  copyOffsetY = 40;
 		}
 		else
 		{
@@ -222,11 +222,11 @@ void DrawLuaGui()
 		}
 		screenX = 160, screenY = 144;
 	}
-	pitch = copyX*(systemColorDepth/8)+(systemColorDepth == 24 ? 0 : 4);
+	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
-	copyOffsetY++; // don't know why it's needed
+	++copyOffsetY; // don't know why it's needed
 
-	VBALuaGui(&pix[copyOffsetY*pitch+copyOffsetX*(systemColorDepth/8)], copyX, screenX, screenY);
+	VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
 	VBALuaClearGui();
 }
 
@@ -327,11 +327,13 @@ VBA::VBA()
 	glType					= 0;
 	regEnabled				= false;
 	pauseWhenInactive		= true;
+	muteWhenInactive		= true;
+	enableBackgroundInput	= false;
+	alwaysOnTop				= false;
 	filenamePreference		= true;
 	frameCounter			= false;
 	lagCounter				= false;
 	inputDisplay			= false;
-	movieReadOnly			= true;
 	speedupToggle			= false;
 	useOldSync				= false;
 	useOldGBTiming			= false;
@@ -339,6 +341,7 @@ VBA::VBA()
 	autofireAccountForLag   = false;
 	nextframeAccountForLag  = false;
 	muteFrameAdvance		= false;
+	muteWhenInactive		= false;
 	frameAdvanceMuteNow		= false;
 	winGbPrinterEnabled		= false;
 	threadPriority			= 2;
@@ -363,6 +366,9 @@ VBA::VBA()
 	sensorX					= 2047;
 	sensorY					= 2047;
 	mouseCounter			= 0;
+	movieReadOnly			= true;
+	movieOnEndPause			= false;
+	movieOnEndBehavior		= 0;
 	wasPaused				= false;
 	fsMaxScale				= 0;
 	romSize					= 0;
@@ -635,12 +641,12 @@ static void CorrectPath(char *path)
 
 void debugSystemScreenMessage1(const char *msg)
 {
-	systemScreenMessage(msg, 3, 60);
+	systemScreenMessage(msg, 3);
 }
 
 void debugSystemScreenMessage2(const char *msg)
 {
-	systemScreenMessage(msg, 4, 60);
+	systemScreenMessage(msg, 4);
 }
 
 BOOL VBA::InitInstance()
@@ -1312,8 +1318,6 @@ void systemSetJoypad(int which, u32 buttons)
 
 void systemRefreshScreen()
 {
-//	VBAUpdateFrameCountDisplay();
-//	extern void DisplayPressedKeys(); DisplayPressedKeys();
 	theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL);
 }
 
@@ -1321,55 +1325,15 @@ extern bool vbaShuttingDown;
 extern long linearSoundFrameCount;
 long        linearFrameCount = 0;
 
-void systemDrawScreen()
+void systemRenderFrame()
 {
 	if (vbaShuttingDown)
 		return;
 
-	if (!theApp.painting)
-	{
-		linearFrameCount++;
-		if (!theApp.sound)
-		{
-			if (linearFrameCount > 10000)
-				linearFrameCount -= 10000;
-			linearSoundFrameCount = linearFrameCount;
-		}
-	}
+	++theApp.renderedFrames;
 
-/*// necessary?
-	else
-	{
-		static bool updatingFrameCount = false;
-		if (!updatingFrameCount) // recursion-preventing paranoia
-		{
-			updatingFrameCount = true;
-			VBAUpdateFrameCountDisplay();
-			updatingFrameCount = false;
-		}
-	}
-//*/
-	if (theApp.display == NULL)
-		return;
-
-	theApp.renderedFrames++;
-
-	if (theApp.updateCount)
-	{
-		POSITION pos = theApp.updateList.GetHeadPosition();
-		while (pos)
-		{
-			IUpdateListener *up = theApp.updateList.GetNext(pos);
-			if (up)
-				up->update();
-		}
-	}
-
-	// theApp.display->render() is called after video logging,
-	// text messages cannot be recorded to the video, of course.
-	//
 	// "in-game" text rendering
-	if (textMethod == 0 && !theApp.painting) // transparent text shouldn't be painted twice, but new messages would be missing!
+	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
 	{
 		DrawLuaGui();	// huh?
 
@@ -1384,107 +1348,124 @@ void systemDrawScreen()
 		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
 	}
 
-	if (!theApp.painting)
+	++linearFrameCount;
+	if (!theApp.sound)
 	{
-		int width  = 240;
-		int height = 160;
-		switch (theApp.cartridgeType)
+		if (linearFrameCount > 10000)
+			linearFrameCount -= 10000;
+		linearSoundFrameCount = linearFrameCount;
+	}
+
+	// record avi
+	int width  = 240;
+	int height = 160;
+	switch (theApp.cartridgeType)
+	{
+	case 0:
+		width  = 240;
+		height = 160;
+		break;
+	case 1:
+		if (gbBorderOn)
 		{
-		case 0:
-			width  = 240;
-			height = 160;
-			break;
-		case 1:
-			if (gbBorderOn)
-			{
-				width  = 256;
-				height = 224;
-			}
-			else
-			{
-				width  = 160;
-				height = 144;
-			}
-			break;
+			width  = 256;
+			height = 224;
 		}
-
-		bool firstFrameLogged = false;
-		linearFrameCount--;
-		do
+		else
 		{
-			linearFrameCount++;
+			width  = 160;
+			height = 144;
+		}
+		break;
+	}
 
-			if (theApp.aviRecording && (!theApp.altAviRecordMethod || (theApp.altAviRecordMethod && !firstFrameLogged)))
+	bool firstFrameLogged = false;
+	--linearFrameCount;
+	do
+	{
+		++linearFrameCount;
+
+		if (theApp.aviRecording && (!theApp.altAviRecordMethod || (theApp.altAviRecordMethod && !firstFrameLogged)))
+		{
+			// usually aviRecorder is created when vba starts avi recording, though
+			if (theApp.aviRecorder == NULL)
 			{
-				// usually aviRecorder is created when vba starts avi recording, though
-				if (theApp.aviRecorder == NULL)
+				theApp.aviRecorder = new AVIWrite();
+
+				theApp.aviRecorder->SetFPS(60);
+
+				BITMAPINFOHEADER bi;
+				memset(&bi, 0, sizeof(bi));
+				bi.biSize      = 0x28;
+				bi.biPlanes    = 1;
+				bi.biBitCount  = 24;
+				bi.biWidth     = width;
+				bi.biHeight    = height;
+				bi.biSizeImage = 3 * width * height;
+				theApp.aviRecorder->SetVideoFormat(&bi);
+				if (!theApp.aviRecorder->Open(theApp.aviRecordName))
 				{
-					theApp.aviRecorder = new AVIWrite();
-
-					theApp.aviRecorder->SetFPS(60);
-
-					BITMAPINFOHEADER bi;
-					memset(&bi, 0, sizeof(bi));
-					bi.biSize      = 0x28;
-					bi.biPlanes    = 1;
-					bi.biBitCount  = 24;
-					bi.biWidth     = width;
-					bi.biHeight    = height;
-					bi.biSizeImage = 3*width*height;
-					theApp.aviRecorder->SetVideoFormat(&bi);
-					if (!theApp.aviRecorder->Open(theApp.aviRecordName))
-					{
-						delete theApp.aviRecorder;
-						theApp.aviRecorder  = NULL;
-						theApp.aviRecording = false;
-					}
-				}
-
-				if (theApp.aviRecorder != NULL && !theApp.aviRecorder->IsPaused())
-				{
-					assert(
-					    width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && systemColorDepth <=
-					    BMP_BUFFER_MAX_DEPTH*8);
-					utilWriteBMP(bmpBuffer, width, height, systemColorDepth, pix);
-					theApp.aviRecorder->AddFrame(bmpBuffer);
+					delete theApp.aviRecorder;
+					theApp.aviRecorder  = NULL;
+					theApp.aviRecording = false;
 				}
 			}
 
-			if (theApp.nvVideoLog)
+			if (theApp.aviRecorder != NULL && !theApp.aviRecorder->IsPaused())
 			{
-				// convert from whatever bit depth to 16-bit, while stripping away extra pixels
-				assert(width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && 16 <= BMP_BUFFER_MAX_DEPTH*8);
-				utilWriteBMP(bmpBuffer, width, -height, 16, pix);
-				NESVideoLoggingVideo((u8 *)bmpBuffer, width, height, 0x1000000 * 60);
+				assert(
+					width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && systemColorDepth <=
+					BMP_BUFFER_MAX_DEPTH * 8);
+				utilWriteBMP(bmpBuffer, width, height, systemColorDepth, pix);
+				theApp.aviRecorder->AddFrame(bmpBuffer);
 			}
-
-			firstFrameLogged = true;
 		}
-		while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
-	}
 
-#if 0
-/*
-	// draw Lua graphics in-game but after video logging
-	// but just see above
-	if (textMethod != 0 && !theApp.painting) // transparent text shouldn't be painted twice
+		if (theApp.nvVideoLog)
+		{
+			// convert from whatever bit depth to 16-bit, while stripping away extra pixels
+			assert(width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && 16 <= BMP_BUFFER_MAX_DEPTH * 8);
+			utilWriteBMP(bmpBuffer, width, -height, 16, pix);
+			NESVideoLoggingVideo((u8 *)bmpBuffer, width, height, 0x1000000 * 60);
+		}
+
+		firstFrameLogged = true;
+	}
+	while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
+	
+	// update viewers etc.
+	if (theApp.updateCount)
 	{
-		DrawLuaGui();
+		POSITION pos = theApp.updateList.GetHeadPosition();
+		while (pos)
+		{
+			IUpdateListener *up = theApp.updateList.GetNext(pos);
+			if (up)
+				up->update();
+		}
 	}
-//*/
-#endif
-
+	
+	// interframe blending
 	if (theApp.ifbFunction)
 	{
 		if (systemColorDepth == 16)
-			theApp.ifbFunction(pix+theApp.filterWidth*2+4, theApp.filterWidth*2+4,
+			theApp.ifbFunction(pix + theApp.filterWidth * 2 + 4, theApp.filterWidth * 2 + 4,
 			                   theApp.filterWidth, theApp.filterHeight);
 		else
-			theApp.ifbFunction(pix+theApp.filterWidth*4+4, theApp.filterWidth*4+4,
+			theApp.ifbFunction(pix + theApp.filterWidth * 4 + 4, theApp.filterWidth * 4 + 4,
 			                   theApp.filterWidth, theApp.filterHeight);
 	}
 
-	theApp.display->render();
+	systemRedrawScreen();
+}
+
+void systemRedrawScreen()
+{
+	if (vbaShuttingDown)
+		return;
+
+	if (theApp.display)
+		theApp.display->render();
 }
 
 void systemScreenCapture(int captureNumber)
@@ -1539,9 +1520,10 @@ void systemShowSpeed(int speed)
 		if (theApp.showSpeed == 1)
 			buffer.Format(VBA_NAME_AND_VERSION "-%3d%%", systemSpeed);
 		else
-			buffer.Format(VBA_NAME_AND_VERSION "-%3d%%(%d, %d fps)", systemSpeed,
-			              systemFrameSkip,
-			              theApp.showRenderedFrames);
+			buffer.Format(VBA_NAME_AND_VERSION "-%3d%% (%d fps | %d skipped)", 
+						  systemSpeed, 
+						  theApp.showRenderedFrames, 
+						  systemFrameSkip);
 
 		systemSetTitle(buffer);
 	}
@@ -1561,7 +1543,7 @@ void systemFrame(int rate)
 				wfx.nChannels       = 2;
 				wfx.nSamplesPerSec  = 44100 / soundQuality;
 				wfx.wBitsPerSample  = 16;
-				wfx.nBlockAlign     = (wfx.wBitsPerSample/8) * wfx.nChannels;
+				wfx.nBlockAlign     = (wfx.wBitsPerSample / 8) * wfx.nChannels;
 				wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 				wfx.cbSize = 0;
 				theApp.aviRecorder->SetSoundFormat(&wfx);
@@ -1611,10 +1593,10 @@ void systemFrame(int rate)
 			if (theApp.wasPaused)
 				diff = 0;
 
-			int target = (100000/(rate*theApp.throttle));
+			int target = (100000 / (rate * theApp.throttle));
 			int d      = (target - diff);
 
-			if(d > 1000) // added to avoid 500-day waits for vba to start emulating.
+			if (d > 1000) // added to avoid 500-day waits for vba to start emulating.
 				d = 1000; // I suspect most users aren't that patient, and would find 1 second to be a more reasonable delay.
 
 			sleepAmt = 0.8f * sleepAmt + 0.2f * (float)d;
@@ -1663,7 +1645,7 @@ void systemScreenMessage(const char *msg, int slot, int duration, const char *co
 	if (slot < 0 || slot > SCREEN_MESSAGE_SLOTS)
 		return;
 
-	theApp.screenMessage[slot] = true;
+	theApp.screenMessage[slot]			  = true;
 	theApp.screenMessageTime[slot]        = GetTickCount();
 	theApp.screenMessageDuration[slot]    = duration;
 	theApp.screenMessageBuffer[slot]      = msg;
@@ -1672,8 +1654,9 @@ void systemScreenMessage(const char *msg, int slot, int duration, const char *co
 	if (theApp.screenMessageBuffer[slot].GetLength() > 40)
 		theApp.screenMessageBuffer[slot] = theApp.screenMessageBuffer[slot].Left(40);
 
-	if (/*slot == 0 &&*/ (theApp.paused || (theApp.frameSearching)))
-		theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL); // update the display when a main-slot message appears while the game is paused
+	// update the display when a main slot message appears while the game is paused
+	if (slot == 0 && (theApp.paused || (theApp.frameSearching)))
+		systemRefreshScreen();
 }
 
 int systemGetSensorX()
@@ -1708,16 +1691,16 @@ void systemSoundPause()
 		theApp.sound->pause();
 }
 
-void systemSoundReset()
-{
-	if (theApp.sound)
-		theApp.sound->reset();
-}
-
 void systemSoundResume()
 {
 	if (theApp.sound)
 		theApp.sound->resume();
+}
+
+void systemSoundReset()
+{
+	if (theApp.sound)
+		theApp.sound->reset();
 }
 
 void systemWriteDataToSoundBuffer()
@@ -1881,6 +1864,13 @@ BOOL VBA::OnIdle(LONG lCount)
 			}
 		}
 		return TRUE;
+	}
+	else if (emulating)	// this fixes reseting while paused
+	{
+		VBAUpdateButtonPressDisplay();
+		VBAUpdateFrameCountDisplay();
+		systemRefreshScreen();
+//		return TRUE;			// FIXME: unworthy
 	}
 
 	return FALSE;
@@ -2074,8 +2064,8 @@ void VBA::loadSettings()
 		gbSerialFunction = NULL;
 
 	alwaysOnTop = regQueryDwordValue("alwaysOnTop", false) ? true : false;
-
 	pauseWhenInactive = regQueryDwordValue("pauseWhenInactive", 1) ? true : false;
+	enableBackgroundInput = regQueryDwordValue("enableBackgroundInput", 0) ? true : false;
 
 	filenamePreference = regQueryDwordValue("filenamePreference", 0);
 
@@ -2089,6 +2079,7 @@ void VBA::loadSettings()
 	useOldSync = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 
 	muteFrameAdvance = regQueryDwordValue("muteFrameAdvance", 0) ? TRUE : FALSE;
+	muteWhenInactive = regQueryDwordValue("muteWhenInactive", 0) ? TRUE : FALSE;
 
 	captureFormat = regQueryDwordValue("captureFormat", 0);
 
@@ -2096,9 +2087,12 @@ void VBA::loadSettings()
 
 	recentFreeze = regQueryDwordValue("recentFreeze", false) ? true : false;
 
+	agbPrintEnable(regQueryDwordValue("agbPrint", 0) ? true : false);
+
 	autoIPS = regQueryDwordValue("autoIPS", true) ? true : false;
 
-	cpuDisableSfx = regQueryDwordValue("disableSfx", 0) ? true : false;
+	winRtcEnable = regQueryDwordValue("rtcEnabled", 0) ? true : false;
+	rtcEnable(winRtcEnable);
 
 	winSaveType = regQueryDwordValue("saveType", 0);
 	if (winSaveType < 0 || winSaveType > 5)
@@ -2106,18 +2100,15 @@ void VBA::loadSettings()
 
 	cpuEnhancedDetection = regQueryDwordValue("enhancedDetection", 1) ? true : false;
 
-	ifbType = regQueryDwordValue("ifbType", 0);
-	if (ifbType < 0 || ifbType > 2)
-		ifbType = 0;
-
 	winFlashSize = regQueryDwordValue("flashSize", 0x10000);
 	if (winFlashSize != 0x10000 && winFlashSize != 0x20000)
 		winFlashSize = 0x10000;
 
-	agbPrintEnable(regQueryDwordValue("agbPrint", 0) ? true : false);
+	cpuDisableSfx = regQueryDwordValue("disableSfx", 0) ? true : false;
 
-	winRtcEnable = regQueryDwordValue("rtcEnabled", 0) ? true : false;
-	rtcEnable(winRtcEnable);
+	ifbType = regQueryDwordValue("ifbType", 0);
+	if (ifbType < 0 || ifbType > 2)
+		ifbType = 0;
 
 	autoHideMenu = regQueryDwordValue("autoHideMenu", 0) ? true : false;
 
@@ -2917,7 +2908,7 @@ void VBA::saveSettings()
 	regSetDwordValue("autofireAccountforLag", autofireAccountForLag);
 	regSetDwordValue("nextframeAccountforLag", nextframeAccountForLag);
 
-	regSetDwordValue("soundEnable", soundGetEnable() & 0x30f);
+	regSetDwordValue("soundEnable", (soundGetMuted() | soundGetEnable()) & 0x30f);
 	regSetDwordValue("soundOff", soundOffFlag);
 	regSetDwordValue("soundQuality", soundQuality);
 	regSetDwordValue("soundEcho", soundEcho);
@@ -2944,8 +2935,8 @@ void VBA::saveSettings()
 	regSetDwordValue("gbPrinter", winGbPrinterEnabled);
 
 	regSetDwordValue("alwaysOnTop", alwaysOnTop);
-
 	regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
+	regSetDwordValue("enableBackgroundInput", enableBackgroundInput);
 
 	regSetDwordValue("filenamePreference", filenamePreference);
 
@@ -2959,6 +2950,7 @@ void VBA::saveSettings()
 	regSetDwordValue("useOldSync", useOldSync);
 
 	regSetDwordValue("muteFrameAdvance", muteFrameAdvance);
+	regSetDwordValue("muteWhenInactive", muteWhenInactive);
 
 	regSetDwordValue("captureFormat", captureFormat);
 
@@ -2966,21 +2958,19 @@ void VBA::saveSettings()
 
 	regSetDwordValue("recentFreeze", recentFreeze);
 
+	regSetDwordValue("agbPrint", agbPrintIsEnabled());
+
 	regSetDwordValue("autoIPS", autoIPS);
+
+	regSetDwordValue("rtcEnabled", winRtcEnable);
+
+	regSetDwordValue("saveType", winSaveType);
+	regSetDwordValue("enhancedDetection", cpuEnhancedDetection);
+	regSetDwordValue("flashSize", winFlashSize);
 
 	regSetDwordValue("disableSfx", cpuDisableSfx);
 
-	regSetDwordValue("saveType", winSaveType);
-
-	regSetDwordValue("enhancedDetection", cpuEnhancedDetection);
-
 	regSetDwordValue("ifbType", ifbType);
-
-	regSetDwordValue("flashSize", winFlashSize);
-
-	regSetDwordValue("agbPrint", agbPrintIsEnabled());
-
-	regSetDwordValue("rtcEnabled", winRtcEnable);
 
 	regSetDwordValue("autoHideMenu", autoHideMenu);
 

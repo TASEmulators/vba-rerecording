@@ -135,6 +135,7 @@ const char *VBAChooseMovieFilename(bool8 read_only);
 // methods used by the emulation
 void VBAMovieInit();
 void VBAMovieUpdate(int controllerNum = 0);
+void VBAUpdateButtonPressDisplay();
 void VBAUpdateFrameCountDisplay();
 //bool8 VBAMovieRewind (uint32 at_frame);
 void VBAMovieFreeze(uint8**buf, uint32*size);

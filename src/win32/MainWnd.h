@@ -105,7 +105,6 @@ protected:
 	afx_msg BOOL OnVideoLayer(UINT nID);
 	afx_msg BOOL OnOptionVideoSize(UINT nID);
 	afx_msg BOOL OnOptionsFrameskip(UINT nID);
-	afx_msg void OnOptionsSound44khz();
 	afx_msg void OnFileTogglemenu();
 
 	afx_msg void OnClose();
@@ -257,6 +256,8 @@ protected:
 	afx_msg void OnUpdateOptionsEmulatorAlwaysOnTop(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorPausewheninactive();
 	afx_msg void OnUpdateOptionsEmulatorPausewheninactive(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsEmulatorEnableBackgroundInput();
+	afx_msg void OnUpdateOptionsEmulatorEnableBackgroundInput(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorSpeeduptoggle();
 	afx_msg void OnUpdateOptionsEmulatorSpeeduptoggle(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorRemoveintrosgba();
@@ -314,10 +315,13 @@ protected:
 	afx_msg void OnUpdateOptionsSoundReversestereo(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsSoundMuteFrameAdvance();
 	afx_msg void OnUpdateOptionsSoundMuteFrameAdvance(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsSoundMuteWhenInactive();
+	afx_msg void OnUpdateOptionsSoundMuteWhenInactive(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsSound11khz();
 	afx_msg void OnUpdateOptionsSound11khz(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsSound22khz();
 	afx_msg void OnUpdateOptionsSound22khz(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsSound44khz();
 	afx_msg void OnUpdateOptionsSound44khz(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsSoundChannel1();
 	afx_msg void OnUpdateOptionsSoundChannel1(CCmdUI*pCmdUI);

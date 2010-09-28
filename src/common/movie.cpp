@@ -967,17 +967,16 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
     {loadingMovie = false; return SUCCESS;}
 }
 
-void DisplayPressedKeys()
+void VBAUpdateButtonPressDisplay()
 {
-    uint32 keys = currentButtons[theApp.joypadDefault] & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
+    uint32 keys = currentButtons[theApp.joypadDefault] & BUTTON_REGULAR_RECORDING_MASK;
 
     const static char KeyMap[]   =  {'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^'};
     const static int  KeyOrder[] = {5, 6, 4, 7,  0, 1, 9, 8, 3, 2,  12, 15, 13, 14,  10}; // < ^ > v   A B  L R  S s  { = } _  !
     char buffer[256];
     sprintf(buffer, "                       ");
 
-	#ifndef WIN32
-
+#ifndef WIN32
     // don't bother color-coding autofire and such
     int i;
     for (i = 0; i < 15; i++)
@@ -987,15 +986,12 @@ void DisplayPressedKeys()
         buffer[strlen("    ") + i] = ((keys & mask) != 0) ? KeyMap[j] : ' ';
 	}
 
-    systemScreenMessage(buffer, 2, 20);
-
-	#else
-
-    const bool eraseAll     = !theApp.inputDisplay;
-    uint32     autoHeldKeys = eraseAll ? 0 : theApp.autoHold & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
-    uint32     autoFireKeys =
-        eraseAll ? 0 : (theApp.autoFire|theApp.autoFire2) & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
-    uint32     pressedKeys = eraseAll ? 0 : keys;
+    systemScreenMessage(buffer, 2, -1);
+#else
+    const bool eraseAll = !theApp.inputDisplay;
+    uint32 autoHeldKeys = eraseAll ? 0 : theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
+    uint32 autoFireKeys = eraseAll ? 0 : (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
+    uint32 pressedKeys  = eraseAll ? 0 : keys;
 
     char colorList[64];
     memset(colorList, 1, strlen(buffer));
@@ -1031,12 +1027,11 @@ void DisplayPressedKeys()
 	}
 
     lastKeys  = currentButtons[theApp.joypadDefault];
-    lastKeys |= theApp.autoHold & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
-    lastKeys |= (theApp.autoFire|theApp.autoFire2) & (BUTTON_REGULAR_MASK|BUTTON_RECORDINGONLY_MASK);
+    lastKeys |= theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
+    lastKeys |= (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
 
-    systemScreenMessage(buffer, 2, 20, colorList);
-
-	#endif
+    systemScreenMessage(buffer, 2, -1, colorList);
+#endif
 }
 
 void VBAUpdateFrameCountDisplay()
@@ -1044,8 +1039,9 @@ void VBAUpdateFrameCountDisplay()
 #if (!(defined(WIN32) && !defined(SDL)))
     extern int cartridgeType; // from SDL.cpp
 #endif
-    char frameDisplayString [64];
-    char lagFrameDisplayString [64];
+	const int MAGICAL_NUMBER = 64;	// FIXME: this won't do any better, but only to remind you of sz issues
+    char frameDisplayString[MAGICAL_NUMBER];
+    char lagFrameDisplayString[MAGICAL_NUMBER];
     struct EmulatedSystem &emu =
 #if (defined(WIN32) && !defined(SDL))
         (theApp.cartridgeType == 0) // GBA
@@ -1062,11 +1058,17 @@ void VBAUpdateFrameCountDisplay()
 			if (theApp.frameCounter)
 			{
 		        sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
-		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
-					strcat(frameDisplayString, lagFrameDisplayString);
-		        systemScreenMessage(frameDisplayString, 1, 600);
+				{
+					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
+					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+				}
 			}
+			else
+			{
+				frameDisplayString[0] = '\0';
+			}
+		    systemScreenMessage(frameDisplayString, 1, -1);
 #           else
 			/// SDL FIXME
 #           endif
@@ -1079,11 +1081,17 @@ void VBAUpdateFrameCountDisplay()
 			if (theApp.frameCounter)
 			{
 		        sprintf(frameDisplayString, "%d (movie)", Movie.currentFrame);
-		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
-					strcat(frameDisplayString, lagFrameDisplayString);
-		        systemScreenMessage(frameDisplayString, 1, 600);
+				{
+					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
+					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+				}
 			}
+			else
+			{
+				frameDisplayString[0] = '\0';
+			}
+		    systemScreenMessage(frameDisplayString, 1, -1);
 #       else
 			/// SDL FIXME
 #       endif
@@ -1096,11 +1104,17 @@ void VBAUpdateFrameCountDisplay()
 		    if (theApp.frameCounter)
 		    {
 		        sprintf(frameDisplayString, "%d (no movie)", emu.frameCount);
-		        sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
 		        if (theApp.lagCounter)
-					strcat(frameDisplayString, lagFrameDisplayString);
-		        systemScreenMessage(frameDisplayString, 1, 600);
+				{
+					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
+					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+				}
 			}
+			else
+			{
+				frameDisplayString[0] = '\0';
+			}
+		    systemScreenMessage(frameDisplayString, 1, -1);
 #       else
 		    /// SDL FIXME
 #       endif
@@ -1198,7 +1212,7 @@ void VBAMovieUpdate(int controllerNum)
 	}
 
     VBAUpdateFrameCountDisplay();
-	DisplayPressedKeys();
+	VBAUpdateButtonPressDisplay();
 
     // if the movie's been set to pause at a certain frame
     if (willPause || VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)

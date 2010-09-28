@@ -507,16 +507,16 @@ void Direct3DDisplay::render()
 			if (theApp.filterFunction)
 			{
 				if (systemColorDepth == 16)
-					theApp.filterFunction(pix+theApp.filterWidth*2+4,
-					                      theApp.filterWidth*2+4,
+					theApp.filterFunction(pix + theApp.filterWidth * 2 + 4,
+					                      theApp.filterWidth*2 + 4,
 					                      (u8 *)theApp.delta,
 					                      (u8 *)locked.pBits,
 					                      locked.Pitch,
 					                      theApp.filterWidth,
 					                      theApp.filterHeight);
 				else
-					theApp.filterFunction(pix+theApp.filterWidth*4+4,
-					                      theApp.filterWidth*4+4,
+					theApp.filterFunction(pix + theApp.filterWidth * 4 + 4,
+					                      theApp.filterWidth * 4 + 4,
 					                      (u8 *)theApp.delta,
 					                      (u8 *)locked.pBits,
 					                      locked.Pitch,
@@ -649,7 +649,8 @@ gbaLoopEnd:
 			{
 				if (theApp.screenMessage[slot])
 				{
-					if (((int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+					if ((theApp.screenMessageDuration[slot] < 0 || 
+						(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
 					    (!theApp.disableStatusMessage || slot == 1 || slot == 2) && pFont)
 					{
 						pFont->Begin();

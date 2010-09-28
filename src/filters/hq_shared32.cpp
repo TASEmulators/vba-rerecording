@@ -16,8 +16,8 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include "../Port.h"
 #include "hq_shared32.h"
-#include "../common/System.h"
 #include "interp.h"
 
 const unsigned __int64 reg_blank = 0x0000000000000000;

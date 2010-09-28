@@ -91,7 +91,8 @@ extern bool systemPauseOnFrame();
 extern void systemGbPrint(u8 *, int, int, int, int);
 extern void systemScreenCapture(int);
 extern void systemRefreshScreen();
-extern void systemDrawScreen();
+extern void systemRenderFrame();
+extern void systemRedrawScreen();
 // updates the joystick data
 extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick... the bool is for if motion sensor should be handled
