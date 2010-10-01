@@ -1433,18 +1433,6 @@ void systemRenderFrame()
 	}
 	while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
 	
-	// update viewers etc.
-	if (theApp.updateCount)
-	{
-		POSITION pos = theApp.updateList.GetHeadPosition();
-		while (pos)
-		{
-			IUpdateListener *up = theApp.updateList.GetNext(pos);
-			if (up)
-				up->update();
-		}
-	}
-	
 	// interframe blending
 	if (theApp.ifbFunction)
 	{
@@ -1466,6 +1454,18 @@ void systemRedrawScreen()
 
 	if (theApp.display)
 		theApp.display->render();
+	
+	// update viewers etc.
+	if (theApp.updateCount)
+	{
+		POSITION pos = theApp.updateList.GetHeadPosition();
+		while (pos)
+		{
+			IUpdateListener *up = theApp.updateList.GetNext(pos);
+			if (up)
+				up->update();
+		}
+	}
 }
 
 void systemScreenCapture(int captureNumber)
