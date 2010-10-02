@@ -27,7 +27,7 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../NLS.h"
 #include "../common/Util.h"
 

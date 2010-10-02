@@ -28,15 +28,13 @@
 #include "WinResUtil.h"
 #include "VBA.h"
 
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-extern int emulating;
 
 #define CPUReadByteQuick(addr) \
     ::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask]

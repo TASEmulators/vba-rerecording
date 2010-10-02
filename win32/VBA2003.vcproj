@@ -203,7 +203,7 @@
 					RelativePath="..\src\gba\bios.cpp">
 				</File>
 				<File
-					RelativePath="..\src\gba\Cheats.cpp">
+					RelativePath="..\src\gba\GBACheats.cpp">
 				</File>
 				<File
 					RelativePath="..\src\gba\CheatSearch.cpp">
@@ -224,7 +224,7 @@
 					RelativePath="..\src\gba\GBAGfx.cpp">
 				</File>
 				<File
-					RelativePath="..\src\gba\Globals.cpp">
+					RelativePath="..\src\gba\GBAGlobals.cpp">
 				</File>
 				<File
 					RelativePath="..\src\gba\Mode0.cpp">
@@ -251,7 +251,7 @@
 					RelativePath="..\src\gba\RTC.cpp">
 				</File>
 				<File
-					RelativePath="..\src\gba\Sound.cpp">
+					RelativePath="..\src\gba\GBASound.cpp">
 				</File>
 				<File
 					RelativePath="..\src\gba\Sram.cpp">
@@ -1205,10 +1205,16 @@
 					RelativePath="..\src\win32\StringTokenizer.cpp">
 				</File>
 				<File
+					RelativePath="..\src\win32\System.cpp">
+				</File>
+				<File
 					RelativePath="..\src\win32\VBA.cpp">
 				</File>
 				<File
 					RelativePath="..\src\win32\WavWriter.cpp">
+				</File>
+				<File
+					RelativePath="..\src\win32\WinMiscUtil.cpp">
 				</File>
 				<File
 					RelativePath="..\src\win32\WinResUtil.cpp">
@@ -1243,7 +1249,7 @@
 						RelativePath="..\src\win32\FileDlg.cpp">
 					</File>
 					<File
-						RelativePath="..\src\win32\GBACheats.cpp">
+						RelativePath="..\src\win32\GBACheatsDlg.cpp">
 					</File>
 					<File
 						RelativePath="..\src\win32\GBCheatsDlg.cpp">
@@ -1429,12 +1435,12 @@
 			<File
 				RelativePath="..\src\version.h">
 			</File>
-			<File
-				RelativePath="..\src\common\zutil.h">
-			</File>
 			<Filter
 				Name="Filters"
 				Filter="">
+				<File
+					RelativePath="..\src\filters\filters.h">
+				</File>
 				<File
 					RelativePath="..\src\filters\hq2x.h">
 				</File>
@@ -1467,7 +1473,7 @@
 					RelativePath="..\src\gba\bios.h">
 				</File>
 				<File
-					RelativePath="..\src\gba\Cheats.h">
+					RelativePath="..\src\gba\GBACheats.h">
 				</File>
 				<File
 					RelativePath="..\src\gba\CheatSearch.h">
@@ -1491,13 +1497,13 @@
 					RelativePath="..\src\gba\GBAinline.h">
 				</File>
 				<File
-					RelativePath="..\src\gba\Globals.h">
+					RelativePath="..\src\gba\GBAGlobals.h">
 				</File>
 				<File
 					RelativePath="..\src\gba\RTC.h">
 				</File>
 				<File
-					RelativePath="..\src\gba\Sound.h">
+					RelativePath="..\src\gba\GBASound.h">
 				</File>
 				<File
 					RelativePath="..\src\gba\Sram.h">
@@ -1586,6 +1592,9 @@
 					RelativePath="..\src\win32\WinHelper.h">
 				</File>
 				<File
+					RelativePath="..\src\win32\WinMiscUtil.h">
+				</File>
+				<File
 					RelativePath="..\src\win32\WinResUtil.h">
 				</File>
 				<Filter
@@ -1616,7 +1625,7 @@
 						RelativePath="..\src\win32\FileDlg.h">
 					</File>
 					<File
-						RelativePath="..\src\win32\GBACheats.h">
+						RelativePath="..\src\win32\GBACheatsDlg.h">
 					</File>
 					<File
 						RelativePath="..\src\win32\GBCheatsDlg.h">

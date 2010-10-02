@@ -20,7 +20,7 @@
 //
 #include "stdafx.h"
 #include <mmsystem.h>
-#include <assert.h>
+#include <cassert>
 
 #include "resource.h"
 #include "VBA.h"
@@ -30,76 +30,27 @@
 #include "LangSelect.h"
 #include "MainWnd.h"
 #include "Reg.h"
-#include "Sound.h"
 #include "WavWriter.h"
 #include "WinResUtil.h"
+#include "WinMiscUtil.h"
 #include "ramwatch.h"
 
-//#include "../common/System.h"
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/agbprint.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
 #include "../gba/CheatSearch.h"
 #include "../gba/RTC.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 #include "../common/Util.h"
 #include "../common/Text.h"
 #include "../common/movie.h"
 #include "../common/nesvideos-piece.h"
 #include "../common/vbalua.h"
+#include "../filters/filters.h"
 #include "../version.h"
-
-extern void Pixelate2x16(u8*, u32, u8*, u8*, u32, int, int);
-extern void Pixelate2x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Pixelate3x16)(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Pixelate3x32)(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Pixelate4x16)(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Pixelate4x32)(u8*, u32, u8*, u8*, u32, int, int);
-extern void MotionBlur(u8*, u32, u8*, u8*, u32, int, int);
-extern void MotionBlur32(u8*, u32, u8*, u8*, u32, int, int);
-extern void _2xSaI(u8*, u32, u8*, u8*, u32, int, int);
-extern void _2xSaI32(u8*, u32, u8*, u8*, u32, int, int);
-extern void Super2xSaI(u8*, u32, u8*, u8*, u32, int, int);
-extern void Super2xSaI32(u8*, u32, u8*, u8*, u32, int, int);
-extern void SuperEagle(u8*, u32, u8*, u8*, u32, int, int);
-extern void SuperEagle32(u8*, u32, u8*, u8*, u32, int, int);
-extern void AdMame2x(u8*, u32, u8*, u8*, u32, int, int);
-extern void AdMame2x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void Simple2x16(u8*, u32, u8*, u8*, u32, int, int);
-extern void Simple2x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Simple3x16)(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Simple3x32)(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Simple4x16)(u8*, u32, u8*, u8*, u32, int, int);
-extern void (*Simple4x32)(u8*, u32, u8*, u8*, u32, int, int);
-extern void Bilinear(u8*, u32, u8*, u8*, u32, int, int);
-extern void Bilinear32(u8*, u32, u8*, u8*, u32, int, int);
-extern void BilinearPlus(u8*, u32, u8*, u8*, u32, int, int);
-extern void BilinearPlus32(u8*, u32, u8*, u8*, u32, int, int);
-extern void Scanlines(u8*, u32, u8*, u8*, u32, int, int);
-extern void Scanlines32(u8*, u32, u8*, u8*, u32, int, int);
-extern void ScanlinesTV(u8*, u32, u8*, u8*, u32, int, int);
-extern void ScanlinesTV32(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq2x(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq2x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq2xS(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq2xS32(u8*, u32, u8*, u8*, u32, int, int);
-extern void lq2x(u8*, u32, u8*, u8*, u32, int, int);
-extern void lq2x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq3x(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq3x32(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq3xS(u8*, u32, u8*, u8*, u32, int, int);
-extern void hq3xS32(u8*, u32, u8*, u8*, u32, int, int);
-
-extern void SmartIB(u8*, u32, int, int);
-extern void SmartIB32(u8*, u32, int, int);
-extern void MotionBlurIB(u8*, u32, int, int);
-extern void InterlaceIB(u8*, u32, int, int);
-extern void MotionBlurIB32(u8*, u32, int, int);
-
-extern void toolsLog(const char *);
 
 extern IDisplay *newGDIDisplay();
 extern IDisplay *newDirectDrawDisplay();
@@ -108,16 +59,12 @@ extern IDisplay *newOpenGLDisplay();
 
 extern Input *newDirectInput();
 
-extern ISound *newDirectSound();
-
 extern void remoteStubSignal(int, int);
 extern void remoteOutput(char *, u32);
 extern void remoteStubMain();
 extern void remoteSetProtocol(int);
 extern void remoteCleanUp();
 extern int remoteSocket;
-
-extern void InterframeCleanup();
 
 void winlog(const char *msg, ...);
 
@@ -127,56 +74,29 @@ void winlog(const char *msg, ...);
 static char THIS_FILE[] = __FILE__;
 #endif
 
-int  emulating         = 0;
-bool debugger          = false;
-int  RGB_LOW_BITS_MASK = 0;
+bool debugger = false;
 
-int  systemFrameSkip = 0;
-int  systemSpeed     = 0;
-bool systemSoundOn   = false;
-u32  systemColorMap32[0x10000];
-u16  systemColorMap16[0x10000];
-u16  systemGbPalette[24];
-int  systemRedShift = 0;
-int  systemBlueShift         = 0;
-int  systemGreenShift        = 0;
-int  systemColorDepth        = 16;
-int  systemVerbose           = 0;
-int  systemDebug             = 0;
-int  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-#define BMP_BUFFER_MAX_WIDTH (256)
-#define BMP_BUFFER_MAX_HEIGHT (224)
-#define BMP_BUFFER_MAX_DEPTH (4)
-static u8 bmpBuffer [BMP_BUFFER_MAX_WIDTH*BMP_BUFFER_MAX_HEIGHT*BMP_BUFFER_MAX_DEPTH];
-
-char movieFileToPlay [1024];
-bool playMovieFile         = false;
+char movieFileToPlay[1024];
+bool playMovieFile		   = false;
 bool playMovieFileReadOnly = false;
 char wavFileToOutput [1024];
-bool outputWavFile  = false;
-bool outputAVIFile  = false;
-bool flagHideMenu   = false;
-int  quitAfterTime  = -1;
-int  pauseAfterTime = -1;
+bool outputWavFile	= false;
+bool outputAVIFile	= false;
+bool flagHideMenu	= false;
+int	 quitAfterTime	= -1;
+int	 pauseAfterTime = -1;
 
 void winSignal(int, int);
 void winOutput(char *, u32);
 
-void (*dbgSignal)(int, int)    = winSignal;
+void (*dbgSignal)(int, int)	   = winSignal;
 void (*dbgOutput)(char *, u32) = winOutput;
 
 #ifdef MMX
 extern "C" bool cpu_mmx;
 #endif
 
-void directXMessage(const char *msg)
-{
-	systemMessage(
-	    IDS_DIRECTX_7_REQUIRED,
-	    "DirectX 7.0 or greater is required to run.\nDownload at http://www.microsoft.com/directx.\n\nError found at: %s",
-	    msg);
-}
+// nowhere good to put them to
 
 void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 {
@@ -184,8 +104,8 @@ void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 	{
 		if (theApp.screenMessage[slot])
 		{
-			if ((theApp.screenMessageDuration[slot] < 0 || 
-				(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
+			if ((theApp.screenMessageDuration[slot] < 0 ||
+			     (int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
 			    (!theApp.disableStatusMessage || slot == 1 || slot == 2))
 			{
 				drawText(dest,
@@ -206,14 +126,14 @@ void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 // draw Lua graphics in game screen
 void DrawLuaGui()
 {
-	int copyX       = 240, copyY       = 160;
-	int screenX     = 240, screenY     = 160;
+	int copyX		= 240, copyY       = 160;
+	int screenX		= 240, screenY     = 160;
 	int copyOffsetX = 0,   copyOffsetY = 0;
 	if (theApp.cartridgeType == 1)
 	{
 		if (gbBorderOn)
 		{
-			copyX       = 256, copyY       = 224;
+			copyX		= 256, copyY       = 224;
 			copyOffsetX = 48,  copyOffsetY = 40;
 		}
 		else
@@ -230,284 +150,41 @@ void DrawLuaGui()
 	VBALuaClearGui();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// VBA
-
-BEGIN_MESSAGE_MAP(VBA, CWinApp)
-//{{AFX_MSG_MAP(VBA)
-// NOTE - the ClassWizard will add and remove mapping macros here.
-//    DO NOT EDIT what you see in these blocks of generated code!
-//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// VBA construction
-
-VBA::VBA()
+void directXMessage(const char *msg)
 {
-	mode320Available		= false;
-	mode640Available		= false;
-	mode800Available		= false;
-	windowPositionX			= 0;
-	windowPositionY			= 0;
-	filterFunction			= NULL;
-	ifbFunction				= NULL;
-	ifbType					= 0;
-	filterType				= 0;
-	filterWidth				= 0;
-	filterHeight			= 0;
-	fsWidth					= 0;
-	fsHeight				= 0;
-	fsColorDepth			= 0;
-	fsForceChange			= false;
-	surfaceSizeX			= 0;
-	surfaceSizeY			= 0;
-	sizeX					= 0;
-	sizeY					= 0;
-	videoOption				= 0;
-	fullScreenStretch		= false;
-	disableStatusMessage	= false;
-	showSpeed				= 1;
-	showSpeedTransparent	= true;
-	showRenderedFrames		= 0;
-	for (int j = 0; j < SCREEN_MESSAGE_SLOTS; j++)
-	{
-		screenMessage[j]			= false;
-		screenMessageTime[j]		= 0;
-		screenMessageDuration[j]	= 0;
-	}
-	menuToggle = true;
-	display = NULL;
-	menu = NULL;
-	popup = NULL;
-	cartridgeType = 0;
-	soundInitialized = false;
-	useBiosFile = false;
-	skipBiosFile = false;
-	active = true;
-	paused = false;
-	recentFreeze = false;
-	autoSaveLoadCheatList		= false;
-	pauseDuringCheatSearch		= false;
-	modelessCheatDialogIsOpen	= false;
-//	winout						= NULL;
-//	removeIntros				= false;
-	autoIPS						= true;
-	winGbBorderOn				= 0;
-	hideMovieBorder				= false;
-	winFlashSize				= 0x10000;
-	winRtcEnable				= false;
-	winSaveType					= 0;
-	rewindMemory				= NULL;
-	frameSearchMemory			= NULL;
-	rewindPos					= 0;
-	rewindTopPos				= 0;
-	rewindCounter				= 0;
-	rewindCount					= 0;
-	rewindSaveNeeded			= false;
-	rewindTimer					= 0;
-	captureFormat				= 0;
-	tripleBuffering				= true;
-	autoHideMenu				= false;
-	throttle					= 100;
-	throttleLastTime			= 0;
-///  autoFrameSkipLastTime		= 0;
-///  autoFrameSkip				= false;
-	vsync						= false;
-	changingVideoSize			= false;
-	pVideoDriverGUID			= NULL;
-	renderMethod				= DIRECT_DRAW;
-	iconic						= false;
-	ddrawEmulationOnly			= false;
-	ddrawUsingEmulationOnly		= false;
-	ddrawDebug				= false;
-	ddrawUseVideoMemory		= false;
-	d3dFilter				= 0;
-	glFilter				= 0;
-	glType					= 0;
-	regEnabled				= false;
-	pauseWhenInactive		= true;
-	muteWhenInactive		= true;
-	enableBackgroundInput	= false;
-	alwaysOnTop				= false;
-	filenamePreference		= true;
-	frameCounter			= false;
-	lagCounter				= false;
-	inputDisplay			= false;
-	speedupToggle			= false;
-	useOldSync				= false;
-	useOldGBTiming			= false;
-	allowLeftRight			= false;
-	autofireAccountForLag   = false;
-	nextframeAccountForLag  = false;
-	muteFrameAdvance		= false;
-	muteWhenInactive		= false;
-	frameAdvanceMuteNow		= false;
-	winGbPrinterEnabled		= false;
-	threadPriority			= 2;
-	disableMMX				= false;
-	languageOption			= 0;
-	languageModule			= NULL;
-	languageName			= "";
-	renderedFrames			= 0;
-	input					= NULL;
-	joypadDefault			= 0;
-	autoFire				= 0;
-	autoFire2				= 0;
-	autoHold				= 0;
-	autoFireToggle			= false;
-	winPauseNextFrame		= false;
-	soundRecording			= false;
-	soundRecorder			= NULL;
-	sound					= NULL;
-	aviRecording			= false;
-	aviRecorder				= NULL;
-	painting				= false;
-	sensorX					= 2047;
-	sensorY					= 2047;
-	mouseCounter			= 0;
-	movieReadOnly			= true;
-	movieOnEndPause			= false;
-	movieOnEndBehavior		= 0;
-	wasPaused				= false;
-	fsMaxScale				= 0;
-	romSize					= 0;
-	autoLoadMostRecent		= false;
-	loadMakesRecent			= false;
-	loadMakesCurrent		= false;
-	saveMakesCurrent		= false;
-	currentSlot				= 0;
-	showSlotTime			= false;
-	frameSearchLoadValid	= false;
-	frameSearching			= false;
-	frameSearchSkipping		= false;
-	nvVideoLog				= false;
-	nvAudioLog				= false;
-	LoggingEnabled			= 0;
-///  FPS = 60;
-
-	updateCount = 0;
-
-	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-	ZeroMemory(&emulator, sizeof(emulator));
-
-	hAccel = NULL;
-
-	for (int i = 0; i < 24;)
-	{
-		systemGbPalette[i++] = (0x1f) | (0x1f << 5) | (0x1f << 10);
-		systemGbPalette[i++] = (0x15) | (0x15 << 5) | (0x15 << 10);
-		systemGbPalette[i++] = (0x0c) | (0x0c << 5) | (0x0c << 10);
-		systemGbPalette[i++] = 0;
-	}
-
-	VBAMovieInit();
-
-	TIMECAPS tc;
-	if (timeGetDevCaps(&tc, sizeof(TIMECAPS))== TIMERR_NOERROR)
-	{
-		wmTimerRes = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
-		timeBeginPeriod (wmTimerRes);
-	}
-	else
-	{
-		wmTimerRes = 5;
-		timeBeginPeriod (wmTimerRes);
-	}
+	systemMessage(
+	    IDS_DIRECTX_7_REQUIRED,
+	    "DirectX 7.0 or greater is required to run.\nDownload at http://www.microsoft.com/directx.\n\nError found at: %s",
+	    msg);
 }
 
-VBA::~VBA()
+void winlog(const char *msg, ...)
 {
-	InterframeCleanup();
+	CString buffer;
+	va_list valist;
 
-	saveSettings();
-/*
-   if(moviePlaying) {
-    if(movieFile != NULL) {
-      fclose(movieFile);
-      movieFile = NULL;
-    }
-    moviePlaying = false;
-    movieLastJoypad = 0;
-   }
- */
-	if (VBAMovieActive())
-		VBAMovieStop(true);
-/*
-   if(movieRecording) {
-    if(movieFile != NULL) {
-      // record the last joypad change so that the correct time can be
-      // recorded
-      fwrite(&movieFrame, 1, sizeof(int32), movieFile);
-      fwrite(&movieLastJoypad, 1, sizeof(u32), movieFile);
-      fclose(movieFile);
-      movieFile = NULL;
-    }
-    movieRecording = false;
-    moviePlaying = false;
-    movieLastJoypad = 0;
-   }
- */
-	if (aviRecorder)
-	{
-		delete aviRecorder;
-		aviRecorder  = NULL;
-		aviRecording = false;
-	}
+	va_start(valist, msg);
+	buffer.FormatV(msg, valist);
 
-	if (soundRecorder)
-	{
-		delete soundRecorder;
-		soundRecorder = NULL;
-	}
-	soundRecording = false;
-	soundPause();
-	soundShutdown();
+	FILE *winout = fopen("vba-trace.log", "w");
 
-	if (gbRom != NULL || rom != NULL)
-	{
-		if (autoSaveLoadCheatList)
-			((MainWnd *)m_pMainWnd)->winSaveCheatListDefault();
-		((MainWnd *)m_pMainWnd)->writeBatteryFile();
-		cheatSearchCleanup(&cheatSearchData);
-		emulator.emuCleanUp();
+	fputs(buffer, winout);
 
-		if (VBAMovieActive())
-			VBAMovieStop(false);
-	}
+	fclose(winout);
 
-	if (input)
-		delete input;
-
-	shutdownDisplay();
-
-	if (rewindMemory)
-		free(rewindMemory);
-
-	if (frameSearchMemory)
-		free(frameSearchMemory);
-
-	timeEndPeriod (wmTimerRes);
+	va_end(valist);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only VBA object
-
-VBA theApp;
-#include <afxdisp.h>
-/////////////////////////////////////////////////////////////////////////////
-// VBA initialization
 
 // code from SDL_main.c for Windows
 /* Parse a command line buffer into arguments */
+
 static int parseCommandLine(char *cmdline, char **argv)
 {
 	char *bufp;
-	int   argc;
+	int	  argc;
 
 	argc = 0;
-	for (bufp = cmdline; *bufp;)
+	for (bufp = cmdline; *bufp; )
 	{
 		/* Skip leading whitespace */
 		while (isspace(*bufp))
@@ -564,90 +241,353 @@ static int parseCommandLine(char *cmdline, char **argv)
 	return(argc);
 }
 
-static void CorrectPath(CString & path)
-{
-	CString tempStr;
-	FILE *  tempFile;
-
-	if (tempFile = fopen(path, "rb"))
-	{
-		fclose(tempFile);
-	}
-	else
-	{
-		for (int i = 0; i < 11; i++)
-		{
-			switch (i)
-			{
-			case 0:
-			{
-				char curDir [_MAX_PATH];
-				GetCurrentDirectory(_MAX_PATH, curDir);
-				curDir[_MAX_PATH-1] = '\0';
-				tempStr = curDir;
-			}   break;
-			case 1:
-				tempStr = regQueryStringValue(IDS_ROM_DIR, "."); break;
-			case 2:
-				tempStr = regQueryStringValue(IDS_GBXROM_DIR, "."); break;
-			case 3:
-				tempStr = regQueryStringValue(IDS_BATTERY_DIR, "."); break;
-			case 4:
-				tempStr = regQueryStringValue(IDS_SAVE_DIR, "."); break;
-			case 5:
-				tempStr = regQueryStringValue(IDS_MOVIE_DIR, "."); break;
-			case 6:
-				tempStr = regQueryStringValue(IDS_CHEAT_DIR, "."); break;
-			case 7:
-				tempStr = regQueryStringValue(IDS_IPS_DIR, "."); break;
-			case 8:
-				tempStr = regQueryStringValue(IDS_AVI_DIR, "."); break;
-			case 9:
-				tempStr = regQueryStringValue(IDS_WAV_DIR, "."); break;
-			case 10:
-				tempStr = regQueryStringValue(IDS_CAPTURE_DIR, "."); break;
-			/*
-			                // what do these do?
-			                case 11: tempStr = "C:";
-			                case 12: {
-			                    tempStr = regQueryStringValue(IDS_ROM_DIR,".");
-			                    char * slash = (char*)strrchr(tempStr, '\\'); // should use member func intstead
-			                    if(slash)
-			                        slash[0] = '\0';
-			                }	break;
-			 */
-			default:
-				break;
-			}
-			tempStr += "\\";
-			tempStr += path;
-
-			if (tempFile = fopen(tempStr, "rb"))
-			{
-				fclose(tempFile);
-				path = tempStr;
-				break;
-			}
-		}
-	}
-}
-
-static void CorrectPath(char *path)
-{
-	CString pathCStr = path;
-	CorrectPath(pathCStr);
-	strcpy(path, pathCStr);
-}
-
-void debugSystemScreenMessage1(const char *msg)
+static void debugSystemScreenMessage1(const char *msg)
 {
 	systemScreenMessage(msg, 3);
 }
 
-void debugSystemScreenMessage2(const char *msg)
+static void debugSystemScreenMessage2(const char *msg)
 {
 	systemScreenMessage(msg, 4);
 }
+
+static void winSignal(int, int)
+{}
+
+#define CPUReadByteQuick(addr) \
+    map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
+
+static void winOutput(char *s, u32 addr)
+{
+	if (s)
+	{
+		log(s);
+	}
+	else
+	{
+		CString str;
+		char	c;
+
+		c = CPUReadByteQuick(addr);
+		addr++;
+		while (c)
+		{
+			str += c;
+			c	 = CPUReadByteQuick(addr);
+			addr++;
+		}
+		log(str);
+	}
+}
+
+typedef BOOL (WINAPI *GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
+
+static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
+{
+	HINSTANCE hinstDll;
+	DWORD	  dwVersion = 0;
+
+	hinstDll = /**/ ::LoadLibrary("USER32.DLL");
+
+	if (hinstDll)
+	{
+		GETMENUBARINFO func = (GETMENUBARINFO)GetProcAddress(hinstDll, "GetMenuBarInfo");
+
+		if (func)
+		{
+			MENUBARINFO info;
+			info.cbSize = sizeof(info);
+
+			func(AfxGetMainWnd()->GetSafeHwnd(), OBJID_MENU, 0, &info);
+
+			int menuHeight = GetSystemMetrics(SM_CYMENU);
+
+			if ((info.rcBar.bottom - info.rcBar.top) > menuHeight)
+			{
+				winSizeY += (info.rcBar.bottom - info.rcBar.top) - menuHeight + 1;
+				theApp.m_pMainWnd->SetWindowPos(
+				    0,                     //HWND_TOPMOST,
+				    theApp.windowPositionX,
+				    theApp.windowPositionY,
+				    winSizeX,
+				    winSizeY,
+				    SWP_NOMOVE | SWP_SHOWWINDOW);
+			}
+		}
+		/**/ ::FreeLibrary(hinstDll);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// VBA
+
+BEGIN_MESSAGE_MAP(VBA, CWinApp)
+//{{AFX_MSG_MAP(VBA)
+// NOTE - the ClassWizard will add and remove mapping macros here.
+//    DO NOT EDIT what you see in these blocks of generated code!
+//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// The one and only VBA object
+
+VBA theApp;
+
+/////////////////////////////////////////////////////////////////////////////
+// VBA construction
+
+VBA::VBA()
+{
+	mode320Available	 = false;
+	mode640Available	 = false;
+	mode800Available	 = false;
+	windowPositionX		 = 0;
+	windowPositionY		 = 0;
+	filterFunction		 = NULL;
+	ifbFunction			 = NULL;
+	ifbType				 = 0;
+	filterType			 = 0;
+	filterWidth			 = 0;
+	filterHeight		 = 0;
+	fsWidth				 = 0;
+	fsHeight			 = 0;
+	fsColorDepth		 = 0;
+	fsForceChange		 = false;
+	surfaceSizeX		 = 0;
+	surfaceSizeY		 = 0;
+	sizeX				 = 0;
+	sizeY				 = 0;
+	videoOption			 = 0;
+	fullScreenStretch	 = false;
+	disableStatusMessage = false;
+	showSpeed			 = 1;
+	showSpeedTransparent = true;
+	showRenderedFrames	 = 0;
+	for (int j = 0; j < SCREEN_MESSAGE_SLOTS; j++)
+	{
+		screenMessage[j]		 = false;
+		screenMessageTime[j]	 = 0;
+		screenMessageDuration[j] = 0;
+	}
+	menuToggle		 = true;
+	display			 = NULL;
+	menu			 = NULL;
+	popup			 = NULL;
+	cartridgeType	 = 0;
+	soundInitialized = false;
+	useBiosFile		 = false;
+	skipBiosFile	 = false;
+	active			 = true;
+	paused			 = false;
+	recentFreeze	 = false;
+	autoSaveLoadCheatList	  = false;
+	pauseDuringCheatSearch	  = false;
+	modelessCheatDialogIsOpen = false;
+//	winout						= NULL;
+//	removeIntros				= false;
+	autoIPS = true;
+	winGbBorderOn	  = 0;
+	hideMovieBorder	  = false;
+	winFlashSize	  = 0x10000;
+	winRtcEnable	  = false;
+	winSaveType		  = 0;
+	rewindMemory	  = NULL;
+	frameSearchMemory = NULL;
+	rewindPos		  = 0;
+	rewindTopPos	  = 0;
+	rewindCounter	  = 0;
+	rewindCount		  = 0;
+	rewindSaveNeeded  = false;
+	rewindTimer		  = 0;
+	captureFormat	  = 0;
+	tripleBuffering	  = true;
+	autoHideMenu	  = false;
+	throttle		  = 100;
+	throttleLastTime  = 0;
+///  autoFrameSkipLastTime		= 0;
+///  autoFrameSkip				= false;
+	vsync = false;
+	changingVideoSize = false;
+	pVideoDriverGUID  = NULL;
+	renderMethod	  = DIRECT_DRAW;
+	iconic = false;
+	ddrawEmulationOnly		= false;
+	ddrawUsingEmulationOnly = false;
+	ddrawDebug				= false;
+	ddrawUseVideoMemory		= false;
+	d3dFilter				= 0;
+	glFilter				= 0;
+	glType					= 0;
+	regEnabled				= false;
+	pauseWhenInactive		= true;
+	muteWhenInactive		= true;
+	enableBackgroundInput	= false;
+	alwaysOnTop				= false;
+	filenamePreference		= true;
+	frameCounter			= false;
+	lagCounter				= false;
+	inputDisplay			= false;
+	speedupToggle			= false;
+	useOldSync				= false;
+	useOldGBTiming			= false;
+	allowLeftRight			= false;
+	autofireAccountForLag	= false;
+	nextframeAccountForLag	= false;
+	muteFrameAdvance		= false;
+	muteWhenInactive		= false;
+	frameAdvanceMuteNow		= false;
+	winGbPrinterEnabled		= false;
+	threadPriority			= 2;
+	disableMMX				= false;
+	languageOption			= 0;
+	languageModule			= NULL;
+	languageName			= "";
+	renderedFrames			= 0;
+	input					= NULL;
+	joypadDefault			= 0;
+	autoFire				= 0;
+	autoFire2				= 0;
+	autoHold				= 0;
+	autoFireToggle			= false;
+	winPauseNextFrame		= false;
+	soundRecording			= false;
+	soundRecorder			= NULL;
+	sound					= NULL;
+	aviRecording			= false;
+	aviRecorder				= NULL;
+	painting				= false;
+	sensorX					= 2047;
+	sensorY					= 2047;
+	mouseCounter			= 0;
+	movieReadOnly			= true;
+	movieOnEndPause			= false;
+	movieOnEndBehavior		= 0;
+	wasPaused				= false;
+	fsMaxScale				= 0;
+	romSize					= 0;
+	autoLoadMostRecent		= false;
+	loadMakesRecent			= false;
+	loadMakesCurrent		= false;
+	saveMakesCurrent		= false;
+	currentSlot				= 0;
+	showSlotTime			= false;
+	frameSearchLoadValid	= false;
+	frameSearching			= false;
+	frameSearchSkipping		= false;
+	nvVideoLog				= false;
+	nvAudioLog				= false;
+	LoggingEnabled			= 0;
+///  FPS = 60;
+
+	updateCount = 0;
+
+	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
+
+	ZeroMemory(&emulator, sizeof(emulator));
+
+	hAccel = NULL;
+
+	for (int i = 0; i < 24; )
+	{
+		systemGbPalette[i++] = (0x1f) | (0x1f << 5) | (0x1f << 10);
+		systemGbPalette[i++] = (0x15) | (0x15 << 5) | (0x15 << 10);
+		systemGbPalette[i++] = (0x0c) | (0x0c << 5) | (0x0c << 10);
+		systemGbPalette[i++] = 0;
+	}
+
+	VBAMovieInit();
+
+	TIMECAPS tc;
+	if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) == TIMERR_NOERROR)
+	{
+		wmTimerRes = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
+		timeBeginPeriod(wmTimerRes);
+	}
+	else
+	{
+		wmTimerRes = 5;
+		timeBeginPeriod(wmTimerRes);
+	}
+}
+
+VBA::~VBA()
+{
+	InterframeCleanup();
+
+	saveSettings();
+/*
+   if(moviePlaying) {
+    if(movieFile != NULL) {
+      fclose(movieFile);
+      movieFile = NULL;
+    }
+    moviePlaying = false;
+    movieLastJoypad = 0;
+   }
+ */
+	if (VBAMovieActive())
+		VBAMovieStop(true);
+/*
+   if(movieRecording) {
+    if(movieFile != NULL) {
+      // record the last joypad change so that the correct time can be
+      // recorded
+      fwrite(&movieFrame, 1, sizeof(int32), movieFile);
+      fwrite(&movieLastJoypad, 1, sizeof(u32), movieFile);
+      fclose(movieFile);
+      movieFile = NULL;
+    }
+    movieRecording = false;
+    moviePlaying = false;
+    movieLastJoypad = 0;
+   }
+ */
+	if (aviRecorder)
+	{
+		delete aviRecorder;
+		aviRecorder	 = NULL;
+		aviRecording = false;
+	}
+
+	if (soundRecorder)
+	{
+		delete soundRecorder;
+		soundRecorder = NULL;
+	}
+	soundRecording = false;
+	soundPause();
+	soundShutdown();
+
+	if (gbRom != NULL || rom != NULL)
+	{
+		if (autoSaveLoadCheatList)
+			((MainWnd *)m_pMainWnd)->winSaveCheatListDefault();
+		((MainWnd *)m_pMainWnd)->writeBatteryFile();
+		cheatSearchCleanup(&cheatSearchData);
+		emulator.emuCleanUp();
+
+		if (VBAMovieActive())
+			VBAMovieStop(false);
+	}
+
+	if (input)
+		delete input;
+
+	shutdownDisplay();
+
+	if (rewindMemory)
+		free(rewindMemory);
+
+	if (frameSearchMemory)
+		free(frameSearchMemory);
+
+	timeEndPeriod(wmTimerRes);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// VBA initialization
+
+#include <afxdisp.h>
 
 BOOL VBA::InitInstance()
 {
@@ -725,7 +665,7 @@ BOOL VBA::InitInstance()
 
 	if (m_lpCmdLine[0])
 	{
-		int    argc = parseCommandLine(m_lpCmdLine, NULL);
+		int	   argc = parseCommandLine(m_lpCmdLine, NULL);
 		char **argv = (char * *)malloc((argc+1)*sizeof(char *));
 		parseCommandLine(m_lpCmdLine, argv);
 
@@ -742,7 +682,7 @@ BOOL VBA::InitInstance()
 					if (i+1 >= argc || argv[i+1][0] == '-')
 						goto invalidArgument;
 					szFile = argv[++i];
-					CorrectPath(szFile);
+					winCorrectPath(szFile);
 					filename = szFile;
 				}
 				else if (_stricmp(argv[i], "-bios") == 0)
@@ -750,7 +690,7 @@ BOOL VBA::InitInstance()
 					if (i+1 >= argc || argv[i+1][0] == '-')
 						goto invalidArgument;
 					biosFileName = argv[++i];
-					CorrectPath(biosFileName);
+					winCorrectPath(biosFileName);
 					extern void loadBIOS();
 					loadBIOS();
 				}
@@ -799,14 +739,14 @@ BOOL VBA::InitInstance()
 					if (i+1 >= argc || argv[i+1][0] == '-')
 						goto invalidArgument;
 					strcpy(movieFileToPlay, argv[++i]);
-					CorrectPath(movieFileToPlay);
-					if (i+1 >= argc || argv[i+1][0] == '-') {--i; goto invalidArgument;}
+					winCorrectPath(movieFileToPlay);
+					if (i+1 >= argc || argv[i+1][0] == '-') {--i; goto invalidArgument; }
 					playMovieFileReadOnly = atoi(argv[++i]) != 0;
 				}
 				else if (_stricmp(argv[i], "-videoLog") == 0)
 				{
-					nvVideoLog     = true;
-					nvAudioLog     = true;
+					nvVideoLog	   = true;
+					nvAudioLog	   = true;
 					LoggingEnabled = 2;
 					if (i+1 >= argc || argv[i+1][0] == '-') {}
 					else
@@ -872,7 +812,7 @@ BOOL VBA::InitInstance()
 				{
 					enoughArgs = true;
 invalidArgument:
-					char str [2048];	// the string is larger than 1024 bytes
+					char str [2048];    // the string is larger than 1024 bytes
 					strcpy(str, "");
 					if (_stricmp(argv[i], "-h") != 0)
 						if (enoughArgs)
@@ -908,18 +848,18 @@ invalidArgument:
 			else
 			{
 				// assume anything else is a ROM, for backward compatibility
-				szFile   = argv[i++];
+				szFile	 = argv[i++];
 				filename = szFile;
 				loadSettings();
 			}
 		}
 
 /*
-		int index = filename.ReverseFind('.');
+        int index = filename.ReverseFind('.');
 
-		if (index != -1)
-			filename = filename.Left(index);
-*/
+        if (index != -1)
+            filename = filename.Left(index);
+ */
 		if (szFile.GetLength() > 0)
 		{
 			if (((MainWnd *)m_pMainWnd)->FileRun())
@@ -949,35 +889,35 @@ void VBA::adjustDestRect()
 
 	m_pMainWnd->ClientToScreen(&point);
 	dest.bottom = point.y;
-	dest.right  = point.x;
+	dest.right	= point.x;
 
 	if (videoOption > VIDEO_4X)
 	{
 		// make sure that dest rect lies in the monitor
-		dest.top    -= windowPositionY;
-		dest.left   -= windowPositionX;
+		dest.top	-= windowPositionY;
+		dest.left	-= windowPositionX;
 		dest.bottom -= windowPositionY;
-		dest.right  -= windowPositionX;
+		dest.right	-= windowPositionX;
 
 		int menuSkip = 0;
 
 		if (menuToggle)
 		{
-			menuSkip     = GetSystemMetrics(SM_CYMENU);
+			menuSkip	 = GetSystemMetrics(SM_CYMENU);
 			dest.bottom -= menuSkip;
 		}
 
-		int top  = (fsHeight - surfaceSizeY) / 2;
+		int top	 = (fsHeight - surfaceSizeY) / 2;
 		int left = (fsWidth - surfaceSizeX) / 2;
-		dest.top    += top;
+		dest.top	+= top;
 		dest.bottom += top;
-		dest.left   += left;
-		dest.right  += left;
+		dest.left	+= left;
+		dest.right	+= left;
 		if (fullScreenStretch)
 		{
-			dest.top    = menuSkip;
-			dest.left   = 0;
-			dest.right  = fsWidth;
+			dest.top	= menuSkip;
+			dest.left	= 0;
+			dest.right	= fsWidth;
 			dest.bottom = fsHeight;
 		}
 	}
@@ -1023,7 +963,7 @@ void VBA::updateIFB()
 
 void VBA::updateFilter()
 {
-	filterWidth  = sizeX;
+	filterWidth	 = sizeX;
 	filterHeight = sizeY;
 
 	if (systemColorDepth == 16 && (videoOption > VIDEO_1X &&
@@ -1099,11 +1039,11 @@ void VBA::updateFilter()
 		switch (filterType)
 		{
 		case 0: // normal -> 1x texture
-			rect.right  = sizeX;
+			rect.right	= sizeX;
 			rect.bottom = sizeY;
 			break;
 		default: // other -> 2x texture
-			rect.right  = sizeX*2;
+			rect.right	= sizeX*2;
 			rect.bottom = sizeY*2;
 			memset(delta, 255, sizeof(delta));
 			break;
@@ -1111,13 +1051,13 @@ void VBA::updateFilter()
 		case 16:
 		case 17:
 		case 19:
-			rect.right  = sizeX*3;
+			rect.right	= sizeX*3;
 			rect.bottom = sizeY*3;
 			memset(delta, 255, sizeof(delta));
 			break;
 		case 18: // Simple4x -> 4x texture
 		case 20:
-			rect.right  = sizeX*4;
+			rect.right	= sizeX*4;
 			rect.bottom = sizeY*4;
 			memset(delta, 255, sizeof(delta));
 			break;
@@ -1198,11 +1138,11 @@ void VBA::updateFilter()
 			switch (filterType)
 			{
 			case 0: // normal -> 1x texture
-				rect.right  = sizeX;
+				rect.right	= sizeX;
 				rect.bottom = sizeY;
 				break;
 			default: // other -> 2x texture
-				rect.right  = sizeX*2;
+				rect.right	= sizeX*2;
 				rect.bottom = sizeY*2;
 				memset(delta, 255, sizeof(delta));
 				break;
@@ -1210,13 +1150,13 @@ void VBA::updateFilter()
 			case 16:
 			case 17:
 			case 19:
-				rect.right  = sizeX*3;
+				rect.right	= sizeX*3;
 				rect.bottom = sizeY*3;
 				memset(delta, 255, sizeof(delta));
 				break;
 			case 18: // Simple4x -> 4x texture
 			case 20:
-				rect.right  = sizeX*4;
+				rect.right	= sizeX*4;
 				rect.bottom = sizeY*4;
 				memset(delta, 255, sizeof(delta));
 				break;
@@ -1257,535 +1197,6 @@ void VBA::updateMenuBar()
 		m_pMainWnd->SetMenu(&m_menu);
 }
 
-void winlog(const char *msg, ...)
-{
-	CString buffer;
-	va_list valist;
-
-	va_start(valist, msg);
-	buffer.FormatV(msg, valist);
-
-	FILE *winout = fopen("vba-trace.log", "w");
-
-	fputs(buffer, winout);
-
-	fclose(winout);
-
-	va_end(valist);
-}
-
-void log(const char *msg, ...)
-{
-	CString buffer;
-	va_list valist;
-
-	va_start(valist, msg);
-	buffer.FormatV(msg, valist);
-
-	toolsLog(buffer);
-
-	va_end(valist);
-}
-
-bool systemReadJoypads()
-{
-	// this function is called at every frame, even if vba is fast-forwarded.
-	// so we try to limit the input frequency here just in case.
-	static u32 lastTime = systemGetClock();
-	if((u32)(systemGetClock() - lastTime) < 10)
-		return true; // must return true because it's related to movie timing
-	lastTime = systemGetClock();
-
-	if (theApp.input)
-		return theApp.input->readDevices();
-	return false;
-}
-
-u32 systemGetJoypad(int which, bool sensor)
-{
-	if (theApp.input /* || VBALuaUsingJoypad(which)*/)
-		return theApp.input->readDevice(which, sensor, false);
-	return 0;
-}
-
-void systemSetJoypad(int which, u32 buttons)
-{
-	if(which < 0 || which > 3)
-		which = theApp.joypadDefault;
-
-	// TODO
-}
-
-void systemRefreshScreen()
-{
-	theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL);
-}
-
-extern bool vbaShuttingDown;
-extern long linearSoundFrameCount;
-long        linearFrameCount = 0;
-
-void systemRenderFrame()
-{
-	if (vbaShuttingDown)
-		return;
-
-	++theApp.renderedFrames;
-
-	// "in-game" text rendering
-	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
-	{
-		DrawLuaGui();	// huh?
-
-		int copyX = 240, copyY = 160;
-		if (theApp.cartridgeType == 1)
-			if (gbBorderOn)
-				copyX = 256, copyY = 224;
-			else
-				copyX = 160, copyY = 144;
-		int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);	// FIXME: sure?
-
-		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
-	}
-
-	++linearFrameCount;
-	if (!theApp.sound)
-	{
-		if (linearFrameCount > 10000)
-			linearFrameCount -= 10000;
-		linearSoundFrameCount = linearFrameCount;
-	}
-
-	// record avi
-	int width  = 240;
-	int height = 160;
-	switch (theApp.cartridgeType)
-	{
-	case 0:
-		width  = 240;
-		height = 160;
-		break;
-	case 1:
-		if (gbBorderOn)
-		{
-			width  = 256;
-			height = 224;
-		}
-		else
-		{
-			width  = 160;
-			height = 144;
-		}
-		break;
-	}
-
-	bool firstFrameLogged = false;
-	--linearFrameCount;
-	do
-	{
-		++linearFrameCount;
-
-		if (theApp.aviRecording && (!theApp.altAviRecordMethod || (theApp.altAviRecordMethod && !firstFrameLogged)))
-		{
-			// usually aviRecorder is created when vba starts avi recording, though
-			if (theApp.aviRecorder == NULL)
-			{
-				theApp.aviRecorder = new AVIWrite();
-
-				theApp.aviRecorder->SetFPS(60);
-
-				BITMAPINFOHEADER bi;
-				memset(&bi, 0, sizeof(bi));
-				bi.biSize      = 0x28;
-				bi.biPlanes    = 1;
-				bi.biBitCount  = 24;
-				bi.biWidth     = width;
-				bi.biHeight    = height;
-				bi.biSizeImage = 3 * width * height;
-				theApp.aviRecorder->SetVideoFormat(&bi);
-				if (!theApp.aviRecorder->Open(theApp.aviRecordName))
-				{
-					delete theApp.aviRecorder;
-					theApp.aviRecorder  = NULL;
-					theApp.aviRecording = false;
-				}
-			}
-
-			if (theApp.aviRecorder != NULL && !theApp.aviRecorder->IsPaused())
-			{
-				assert(
-					width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && systemColorDepth <=
-					BMP_BUFFER_MAX_DEPTH * 8);
-				utilWriteBMP(bmpBuffer, width, height, systemColorDepth, pix);
-				theApp.aviRecorder->AddFrame(bmpBuffer);
-			}
-		}
-
-		if (theApp.nvVideoLog)
-		{
-			// convert from whatever bit depth to 16-bit, while stripping away extra pixels
-			assert(width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && 16 <= BMP_BUFFER_MAX_DEPTH * 8);
-			utilWriteBMP(bmpBuffer, width, -height, 16, pix);
-			NESVideoLoggingVideo((u8 *)bmpBuffer, width, height, 0x1000000 * 60);
-		}
-
-		firstFrameLogged = true;
-	}
-	while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
-	
-	// interframe blending
-	if (theApp.ifbFunction)
-	{
-		if (systemColorDepth == 16)
-			theApp.ifbFunction(pix + theApp.filterWidth * 2 + 4, theApp.filterWidth * 2 + 4,
-			                   theApp.filterWidth, theApp.filterHeight);
-		else
-			theApp.ifbFunction(pix + theApp.filterWidth * 4 + 4, theApp.filterWidth * 4 + 4,
-			                   theApp.filterWidth, theApp.filterHeight);
-	}
-
-	systemRedrawScreen();
-}
-
-void systemRedrawScreen()
-{
-	if (vbaShuttingDown)
-		return;
-
-	if (theApp.display)
-		theApp.display->render();
-	
-	// update viewers etc.
-	if (theApp.updateCount)
-	{
-		POSITION pos = theApp.updateList.GetHeadPosition();
-		while (pos)
-		{
-			IUpdateListener *up = theApp.updateList.GetNext(pos);
-			if (up)
-				up->update();
-		}
-	}
-}
-
-void systemScreenCapture(int captureNumber)
-{
-	if (theApp.m_pMainWnd)
-		((MainWnd *)theApp.m_pMainWnd)->screenCapture(captureNumber);
-
-	//if (theApp.m_pMainWnd)
-	//	theApp.m_pMainWnd->PostMessage(WM_COMMAND, (WPARAM)ID_FILE_QUICKSCREENCAPTURE, (LPARAM)NULL);
-}
-
-u32 systemGetClock()
-{
-	return timeGetTime();
-}
-
-void systemMessage(int number, const char *defaultMsg, ...)
-{
-	CString buffer;
-	va_list valist;
-	CString msg = defaultMsg;
-	if (number)
-		msg = winResLoadString(number);
-
-	va_start(valist, defaultMsg);
-	buffer.FormatV(msg, valist);
-
-	theApp.winCheckFullscreen();
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
-
-	AfxGetApp()->m_pMainWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK|MB_ICONERROR);
-
-	va_end(valist);
-}
-
-void systemSetTitle(const char *title)
-{
-	if (theApp.m_pMainWnd != NULL)
-	{
-		AfxGetApp()->m_pMainWnd->SetWindowText(title);
-	}
-}
-
-void systemShowSpeed(int speed)
-{
-	systemSpeed = speed;
-	theApp.showRenderedFrames = theApp.renderedFrames;
-	theApp.renderedFrames     = 0;
-	if (theApp.videoOption <= VIDEO_4X && theApp.showSpeed)
-	{
-		CString buffer;
-		if (theApp.showSpeed == 1)
-			buffer.Format(VBA_NAME_AND_VERSION "-%3d%%", systemSpeed);
-		else
-			buffer.Format(VBA_NAME_AND_VERSION "-%3d%% (%d fps | %d skipped)", 
-						  systemSpeed, 
-						  theApp.showRenderedFrames, 
-						  systemFrameSkip);
-
-		systemSetTitle(buffer);
-	}
-}
-
-void systemFrame(int rate)
-{
-	if (theApp.altAviRecordMethod && theApp.aviRecording)
-	{
-		if (theApp.aviRecorder)
-		{
-			if (!theApp.aviRecorder->IsSoundAdded())
-			{
-				WAVEFORMATEX wfx;
-				memset(&wfx, 0, sizeof(wfx));
-				wfx.wFormatTag      = WAVE_FORMAT_PCM;
-				wfx.nChannels       = 2;
-				wfx.nSamplesPerSec  = 44100 / soundQuality;
-				wfx.wBitsPerSample  = 16;
-				wfx.nBlockAlign     = (wfx.wBitsPerSample / 8) * wfx.nChannels;
-				wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-				wfx.cbSize = 0;
-				theApp.aviRecorder->SetSoundFormat(&wfx);
-			}
-			theApp.aviRecorder->AddSound((u8 *)soundFrameSound, soundFrameSoundWritten * 2);
-		}
-	}
-
-	// stupid updates :(
-	struct EmulatedSystem &emu = (theApp.cartridgeType == 0) ? GBASystem : GBSystem;
-	theApp.emulator.frameCount = emu.frameCount;
-	theApp.emulator.lagCount   = emu.lagCount;
-	theApp.emulator.lagged     = emu.lagged;
-	theApp.emulator.laggedLast = emu.laggedLast;
-
-	if (quitAfterTime >= 0 && theApp.emulator.frameCount == quitAfterTime)
-	{
-		VBAMovieStop(true);
-		AfxPostQuitMessage(0);
-	}
-
-	u32 time = systemGetClock();
-
-	// change the sound speed, or set it to normal - must always do this or it won't get reset after a change, but that's OK
-	// because it's inexpensive
-	if (theApp.sound)
-		theApp.sound->setSpeed(
-		    theApp.throttle != 100 && !speedup && !theApp.winPauseNextFrame && synchronize && !theApp.accuratePitchThrottle &&
-		    !theApp.useOldSync ? (float)theApp.throttle / 100.0f : 1.0f);
-
-//  bool deadSound = !theApp.sound->isPlaying();
-
-	// if a throttle speed is set and we're not allowed to change the sound frequency to achieve it,
-	// sleep for a certain amount each time we get here to approximate the necessary slowdown
-	if (((theApp.accuratePitchThrottle || !theApp.sound || !synchronize)
-	     && (theApp.throttle != 100 || !synchronize))
-	    || theApp.throttle < 6 && !theApp.winPauseNextFrame)
-	{
-		/// FIXME: this is still a horrible way of achieving a certain frame time
-		///        (look at what Snes9x does - it's complicated but much much better)
-
-		static float sleepAmt = 0.0f; // variable to smooth out the sleeping amount so it doesn't oscillate so fast
-//	  if(!theApp.wasPaused) {
-		if (!speedup)
-		{
-			u32 diff = time - theApp.throttleLastTime;
-			if (theApp.wasPaused)
-				diff = 0;
-
-			int target = (100000 / (rate * theApp.throttle));
-			int d      = (target - diff);
-
-			if (d > 1000) // added to avoid 500-day waits for vba to start emulating.
-				d = 1000; // I suspect most users aren't that patient, and would find 1 second to be a more reasonable delay.
-
-			sleepAmt = 0.8f * sleepAmt + 0.2f * (float)d;
-			if (d - sleepAmt <= 1.5f && d - sleepAmt >= -1.5f)
-				d = (int)(sleepAmt);
-
-			if (d > 0)
-			{
-				Sleep(d);
-			}
-		}
-		theApp.throttleLastTime = systemGetClock();
-		//}
-		//else
-		//{
-		// Sleep(100);
-		//}
-	}
-
-	if (theApp.emulator.frameCount % 10 == 0)
-	{
-		if (theApp.rewindMemory)
-		{
-			if (++theApp.rewindCounter >= (theApp.rewindTimer))
-			{
-				theApp.rewindSaveNeeded = true;
-				theApp.rewindCounter    = 0;
-			}
-		}
-		if (systemSaveUpdateCounter)
-		{
-			if (--systemSaveUpdateCounter <= SYSTEM_SAVE_NOT_UPDATED)
-			{
-				((MainWnd *)theApp.m_pMainWnd)->writeBatteryFile();
-				systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-			}
-		}
-	}
-
-	theApp.wasPaused = false;
-///  theApp.autoFrameSkipLastTime = time;
-}
-
-void systemScreenMessage(const char *msg, int slot, int duration, const char *colorList)
-{
-	if (slot < 0 || slot > SCREEN_MESSAGE_SLOTS)
-		return;
-
-	theApp.screenMessage[slot]			  = true;
-	theApp.screenMessageTime[slot]        = GetTickCount();
-	theApp.screenMessageDuration[slot]    = duration;
-	theApp.screenMessageBuffer[slot]      = msg;
-	theApp.screenMessageColorBuffer[slot] = colorList ? colorList : "";
-
-	if (theApp.screenMessageBuffer[slot].GetLength() > 40)
-		theApp.screenMessageBuffer[slot] = theApp.screenMessageBuffer[slot].Left(40);
-
-	// update the display when a main slot message appears while the game is paused
-	if (slot == 0 && (theApp.paused || (theApp.frameSearching)))
-		systemRefreshScreen();
-}
-
-int systemGetSensorX()
-{
-	return theApp.sensorX;
-}
-
-int systemGetSensorY()
-{
-	return theApp.sensorY;
-}
-
-bool systemSoundInit()
-{
-	if (theApp.sound)
-		delete theApp.sound;
-
-	theApp.sound = newDirectSound();
-	return theApp.sound->init();
-}
-
-void systemSoundShutdown()
-{
-	if (theApp.sound)
-		delete theApp.sound;
-	theApp.sound = NULL;
-}
-
-void systemSoundPause()
-{
-	if (theApp.sound)
-		theApp.sound->pause();
-}
-
-void systemSoundResume()
-{
-	if (theApp.sound)
-		theApp.sound->resume();
-}
-
-void systemSoundReset()
-{
-	if (theApp.sound)
-		theApp.sound->reset();
-}
-
-void systemWriteDataToSoundBuffer()
-{
-	if (theApp.sound)
-		theApp.sound->write();
-}
-
-bool systemCanChangeSoundQuality()
-{
-	return true;
-}
-
-bool systemSetSoundQuality(int quality)
-{
-	if (theApp.cartridgeType == 0)
-		soundSetQuality(quality);
-	else
-		gbSoundSetQuality(quality);
-
-	return true;
-}
-
-bool systemPauseOnFrame()
-{
-	if (theApp.winPauseNextFrame)
-	{
-		if (!theApp.nextframeAccountForLag || theApp.nextframeAccountForLag && !theApp.emulator.lagged)
-		{
-			theApp.winPauseNextFrame = false;
-			theApp.paused = true;
-		}
-		else
-		{
-			theApp.winPauseNextFrame = true;
-			return false;
-		}
-
-		return true;
-	}
-	return false;
-}
-
-void systemGbBorderOn()
-{
-	if (emulating && theApp.cartridgeType == 1 && gbBorderOn)
-	{
-		theApp.updateWindowSize(theApp.videoOption);
-	}
-}
-
-bool systemIsRunningGBA()
-{
-	return(theApp.cartridgeType == 0);
-}
-
-int systemGetDefaultJoypad()
-{
-	return theApp.joypadDefault;
-}
-
-bool systemIsPaused()
-{
-	return theApp.paused;
-}
-
-void systemSetPause(bool pause)
-{
-	if (pause)
-	{
-		theApp.wasPaused = true;
-		theApp.paused = true;
-		theApp.speedupToggle = false;
-		soundPause();
-	}
-	else
-	{
-		theApp.wasPaused = false;
-		theApp.paused = false;
-		soundResume();
-	}
-
-	systemRefreshScreen();;
-}
-
 void VBA::saveRewindStateIfNecessary()
 {
 	if (rewindSaveNeeded && rewindMemory && emulator.emuWriteMemState)
@@ -1809,7 +1220,7 @@ void VBA::saveRewindStateIfNecessary()
 		extern SMovie Movie;
 		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? theApp.emulator.frameCount : Movie.currentFrame;
 		int endFrame = theApp.frameSearchStart + theApp.frameSearchLength;
-		theApp.frameSearchSkipping  = (curFrame < endFrame);
+		theApp.frameSearchSkipping	= (curFrame < endFrame);
 		theApp.frameSearchFirstStep = false;
 
 		if (curFrame == endFrame)
@@ -1841,7 +1252,7 @@ BOOL VBA::OnIdle(LONG lCount)
 		MSG msg;
 		remoteStubMain();
 		if (debugger)
-			return TRUE; // continue loop
+			return TRUE;  // continue loop
 		return !::PeekMessage(&msg, NULL, NULL, NULL, PM_NOREMOVE);
 	}
 	else if (emulating && active && !paused)
@@ -1865,7 +1276,7 @@ BOOL VBA::OnIdle(LONG lCount)
 		}
 		return TRUE;
 	}
-	else if (emulating)	// this fixes reseting while paused
+	else if (emulating) // this fixes reseting while paused
 	{
 		VBAUpdateButtonPressDisplay();
 		VBAUpdateFrameCountDisplay();
@@ -1920,318 +1331,6 @@ void VBA::addRecentFile(CString file)
 	recentFiles[0] = file;
 }
 
-void VBA::loadSettings()
-{
-	CString buffer;
-
-	languageOption = regQueryDwordValue("language", 1);
-	if (languageOption < 0 || languageOption > 2)
-		languageOption = 1;
-
-	buffer = regQueryStringValue("languageName", "");
-	if (!buffer.IsEmpty())
-	{
-		languageName = buffer.Left(3);
-	}
-	else
-		languageName = "";
-
-	winSetLanguageOption(languageOption, true);
-
-	frameSkip = regQueryDwordValue("frameSkip", /*2*/ 0);
-	if (frameSkip < 0 || frameSkip > 9)
-		frameSkip = 1;
-
-	gbFrameSkip = regQueryDwordValue("gbFrameSkip", 0);
-	if (gbFrameSkip < 0 || gbFrameSkip > 9)
-		gbFrameSkip = 0;
-
-///  autoFrameSkip = regQueryDwordValue("autoFrameSkip", FALSE) ? TRUE : FALSE;
-	accuratePitchThrottle = regQueryDwordValue("accuratePitchThrottle", FALSE) ? TRUE : FALSE;
-
-	vsync = regQueryDwordValue("vsync", false) ? true : false ;
-	synchronize       = regQueryDwordValue("synchronize", 1) ? true : false;
-	fullScreenStretch = regQueryDwordValue("stretch", 0) ? true : false;
-
-	videoOption = regQueryDwordValue("video", 0);
-
-	if (videoOption < 0 || videoOption > VIDEO_OTHER)
-		videoOption = 0;
-
-	bool defaultVideoDriver = regQueryDwordValue("defaultVideoDriver", true) ?
-	                          true : false;
-
-	if (!regQueryBinaryValue("videoDriverGUID", (char *)&videoDriverGUID,
-	                         sizeof(GUID)))
-	{
-		defaultVideoDriver = TRUE;
-	}
-
-	if (defaultVideoDriver)
-		pVideoDriverGUID = NULL;
-	else
-		pVideoDriverGUID = &videoDriverGUID;
-
-	fsWidth      = regQueryDwordValue("fsWidth", 0);
-	fsHeight     = regQueryDwordValue("fsHeight", 0);
-	fsColorDepth = regQueryDwordValue("fsColorDepth", 0);
-
-	if (videoOption == VIDEO_OTHER)
-	{
-		if (fsWidth < 0 || fsWidth > 4095 || fsHeight < 0 || fsHeight > 4095)
-			videoOption = 0;
-		if (fsColorDepth != 16 && fsColorDepth != 24 && fsColorDepth != 32)
-			videoOption = 0;
-	}
-
-	renderMethod = (DISPLAY_TYPE)regQueryDwordValue("renderMethod", DIRECT_DRAW);
-
-	if (renderMethod < GDI || renderMethod > OPENGL)
-		renderMethod = DIRECT_DRAW;
-
-	windowPositionX = regQueryDwordValue("windowX", 0);
-	if (windowPositionX < 0)
-		windowPositionX = 0;
-	windowPositionY = regQueryDwordValue("windowY", 0);
-	if (windowPositionY < 0)
-		windowPositionY = 0;
-
-	useBiosFile = regQueryDwordValue("useBios", 0) ? true : false;
-	skipBiosFile = regQueryDwordValue("skipBios", 0) ? true : false;
-	buffer = regQueryStringValue("biosFile", "");
-	if (!buffer.IsEmpty())
-	{
-		biosFileName = buffer;
-	}
-
-	memLagEnabled     = regQueryDwordValue("memLagEnabled", false) ? true : false;
-	memLagTempEnabled = memLagEnabled;
-
-	useOldGBTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
-
-	allowLeftRight = regQueryDwordValue("allowLeftRight", false) ? true : false;
-	autofireAccountForLag = regQueryDwordValue("autofireAccountForLag", false) ? true : false;
-	nextframeAccountForLag = regQueryDwordValue("nextframeAccountForLag", false) ? true : false;
-
-	int res = regQueryDwordValue("soundEnable", 0x30f);
-
-	soundEnable(res);
-	soundDisable(~res);
-
-	soundOffFlag = (regQueryDwordValue("soundOff", 0)) ? true : false;
-	soundQuality = regQueryDwordValue("soundQuality", 2);
-	soundEcho = regQueryDwordValue("soundEcho", 0) ? true : false;
-	soundLowPass = regQueryDwordValue("soundLowPass", 0) ? true : false;
-	soundReverse = regQueryDwordValue("soundReverse", 0) ? true : false;
-	soundVolume = regQueryDwordValue("soundVolume", 0);
-	if (soundVolume < 0 || soundVolume > 5)
-		soundVolume = 0;
-
-	ddrawEmulationOnly  = regQueryDwordValue("ddrawEmulationOnly", false) ? true : false;
-	ddrawUseVideoMemory = regQueryDwordValue("ddrawUseVideoMemory", false) ? true : false;
-	tripleBuffering     = regQueryDwordValue("tripleBuffering", true) ? true : false;
-
-	d3dFilter = regQueryDwordValue("d3dFilter", 0);
-	if (d3dFilter < 0 || d3dFilter > 1)
-		d3dFilter = 0;
-	glFilter = regQueryDwordValue("glFilter", 0);
-	if (glFilter < 0 || glFilter > 1)
-		glFilter = 0;
-	glType = regQueryDwordValue("glType", 0);
-	if (glType < 0 || glType > 1)
-		glType = 0;
-
-	filterType = regQueryDwordValue("filter", 0);
-	if (filterType < 0 || filterType > 20)
-		filterType = 0;
-
-	disableMMX = regQueryDwordValue("disableMMX", 0) ? true : false;
-
-	disableStatusMessage = regQueryDwordValue("disableStatus", 0) ? true : false;
-
-	showSpeed = regQueryDwordValue("showSpeed", 1);
-	if (showSpeed < 0 || showSpeed > 2)
-		showSpeed = 1;
-
-	showSpeedTransparent = regQueryDwordValue("showSpeedTransparent", TRUE) ?
-	                       TRUE : FALSE;
-
-	winGbPrinterEnabled = regQueryDwordValue("gbPrinter", false) ? true : false;
-
-	if (winGbPrinterEnabled)
-		gbSerialFunction = gbPrinterSend;
-	else
-		gbSerialFunction = NULL;
-
-	alwaysOnTop = regQueryDwordValue("alwaysOnTop", false) ? true : false;
-	pauseWhenInactive = regQueryDwordValue("pauseWhenInactive", 1) ? true : false;
-	enableBackgroundInput = regQueryDwordValue("enableBackgroundInput", 0) ? true : false;
-
-	filenamePreference = regQueryDwordValue("filenamePreference", 0);
-
-	frameCounter  = regQueryDwordValue("frameCounter", false) ? true : false;
-	lagCounter    = regQueryDwordValue("lagCounter", false) ? true : false;
-	inputDisplay  = regQueryDwordValue("inputDisplay", false) ? true : false;
-	movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
-
-	altAviRecordMethod = regQueryDwordValue("altAviRecordMethod", false) ? true : false;
-
-	useOldSync = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
-
-	muteFrameAdvance = regQueryDwordValue("muteFrameAdvance", 0) ? TRUE : FALSE;
-	muteWhenInactive = regQueryDwordValue("muteWhenInactive", 0) ? TRUE : FALSE;
-
-	captureFormat = regQueryDwordValue("captureFormat", 0);
-
-//	removeIntros = regQueryDwordValue("removeIntros", false) ? true : false;
-
-	recentFreeze = regQueryDwordValue("recentFreeze", false) ? true : false;
-
-	agbPrintEnable(regQueryDwordValue("agbPrint", 0) ? true : false);
-
-	autoIPS = regQueryDwordValue("autoIPS", true) ? true : false;
-
-	winRtcEnable = regQueryDwordValue("rtcEnabled", 0) ? true : false;
-	rtcEnable(winRtcEnable);
-
-	winSaveType = regQueryDwordValue("saveType", 0);
-	if (winSaveType < 0 || winSaveType > 5)
-		winSaveType = 0;
-
-	cpuEnhancedDetection = regQueryDwordValue("enhancedDetection", 1) ? true : false;
-
-	winFlashSize = regQueryDwordValue("flashSize", 0x10000);
-	if (winFlashSize != 0x10000 && winFlashSize != 0x20000)
-		winFlashSize = 0x10000;
-
-	cpuDisableSfx = regQueryDwordValue("disableSfx", 0) ? true : false;
-
-	ifbType = regQueryDwordValue("ifbType", 0);
-	if (ifbType < 0 || ifbType > 2)
-		ifbType = 0;
-
-	autoHideMenu = regQueryDwordValue("autoHideMenu", 0) ? true : false;
-
-	switch (videoOption)
-	{
-	case VIDEO_320x240 :
-		fsWidth      = 320;
-		fsHeight     = 240;
-		fsColorDepth = 16;
-		break;
-	case VIDEO_640x480:
-		fsWidth      = 640;
-		fsHeight     = 480;
-		fsColorDepth = 16;
-		break;
-	case VIDEO_800x600:
-		fsWidth      = 800;
-		fsHeight     = 600;
-		fsColorDepth = 16;
-		break;
-	}
-
-	winGbBorderOn     = regQueryDwordValue("borderOn", 0);
-	gbBorderAutomatic = regQueryDwordValue("borderAutomatic", 0);
-	gbEmulatorType    = regQueryDwordValue("emulatorType", 0);
-	if (gbEmulatorType < 0 || gbEmulatorType > 5)
-		gbEmulatorType = 1;
-	gbColorOption = regQueryDwordValue("colorOption", 0);
-
-	outlinedText    = regQueryDwordValue("outlinedText", TRUE) != 0;
-	transparentText = regQueryDwordValue("transparentText", FALSE) != 0;
-	textColor       = regQueryDwordValue("textColor", 0);
-	textMethod      = regQueryDwordValue("textMethod", 1);
-
-	threadPriority = regQueryDwordValue("priority", 2);
-
-	if (threadPriority < 0 || threadPriority > 3)
-		threadPriority = 2;
-	updatePriority();
-
-	autoSaveLoadCheatList = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;
-
-	pauseDuringCheatSearch = regQueryDwordValue("pauseDuringCheatSearch2", 0) ? true : false;
-
-	gbPaletteOption = regQueryDwordValue("gbPaletteOption", 0);
-	if (gbPaletteOption < 0)
-		gbPaletteOption = 0;
-	if (gbPaletteOption > 2)
-		gbPaletteOption = 2;
-
-	regQueryBinaryValue("gbPalette", (char *)systemGbPalette, 24*sizeof(u16));
-
-	rewindTimer = regQueryDwordValue("rewindTimer", 0);
-	rewindSlots = regQueryDwordValue("rewindSlots", 64);
-
-	if (rewindTimer < 0 || rewindTimer > 600)
-		rewindTimer = 0;
-
-	if (rewindSlots <= 0)
-		rewindTimer = rewindSlots = 0;
-	if (rewindSlots > MAX_REWIND_SLOTS)
-		rewindSlots = MAX_REWIND_SLOTS;
-
-	if (rewindTimer != 0)
-	{
-		if (rewindMemory == NULL)
-			rewindMemory = (char *)malloc(rewindSlots*REWIND_SIZE);
-	}
-
-	if (frameSearchMemory == NULL)
-		frameSearchMemory = (char *)malloc(3*REWIND_SIZE);
-
-	for (int i = 0; i < 10; i++)
-	{
-		buffer.Format("recent%d", i);
-		const char *s = regQueryStringValue(buffer, NULL);
-		if (s == NULL)
-			break;
-		recentFiles[i] = s;
-	}
-
-	joypadDefault = regQueryDwordValue("joypadDefault", 0);
-	if (joypadDefault < 0 || joypadDefault > 3)
-		joypadDefault = 0;
-
-	autoLoadMostRecent = regQueryDwordValue("autoLoadMostRecent", false) ? true :
-	                     false;
-
-	loadMakesRecent = regQueryDwordValue("loadMakesRecent", false) ? true : false;
-
-	loadMakesCurrent = regQueryDwordValue("loadMakesCurrent", false) ? true : false;
-	saveMakesCurrent = regQueryDwordValue("saveMakesCurrent", false) ? true : false;
-	currentSlot      = regQueryDwordValue("currentSlot", 0);
-	showSlotTime     = regQueryDwordValue("showSlotTime", 0);
-
-	cheatsEnabled = regQueryDwordValue("cheatsEnabled", true) ? true : false;
-
-	fsMaxScale = regQueryDwordValue("fsMaxScale", 0);
-
-	throttle = regQueryDwordValue("throttle", 0);
-	if (throttle < 5 || throttle > 1000)
-		throttle = 100;
-
-	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
-	movieOnEndPause    = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
-
-	// RamWatch Settings
-	AutoRWLoad = regQueryDwordValue(AUTORWLOAD, false);
-	RWSaveWindowPos = regQueryDwordValue(RWSAVEPOS, false);
-	ramw_x = regQueryDwordValue(RAMWX, 0);
-	ramw_y = regQueryDwordValue(RAMWY, 0);
-
-	// this is FILO
-	for (int i = MAX_RECENT_WATCHES; i > 0; --i)
-	{
-		buffer.Format("recentWatch%d", i);
-		const char *s = regQueryStringValue(buffer, NULL);
-		if (s == NULL)
-			continue;
-		RWAddRecentFile(s);
-	}
-}
-
 void VBA::updateFrameSkip()
 {
 	switch (cartridgeType)
@@ -2247,91 +1346,53 @@ void VBA::updateFrameSkip()
 
 void VBA::updateVideoSize(UINT id)
 {
-	int  value       = 0;
+	int	 value		 = 0;
 	bool forceUpdate = false;
 
 	switch (id)
 	{
 	case ID_OPTIONS_VIDEO_X1:
-		value       = VIDEO_1X;
+		value		= VIDEO_1X;
 		forceUpdate = true;
 		break;
 	case ID_OPTIONS_VIDEO_X2:
-		value       = VIDEO_2X;
+		value		= VIDEO_2X;
 		forceUpdate = true;
 		break;
 	case ID_OPTIONS_VIDEO_X3:
-		value       = VIDEO_3X;
+		value		= VIDEO_3X;
 		forceUpdate = true;
 		break;
 	case ID_OPTIONS_VIDEO_X4:
-		value       = VIDEO_4X;
+		value		= VIDEO_4X;
 		forceUpdate = true;
 		break;
 	case ID_OPTIONS_VIDEO_FULLSCREEN320X240:
-		value        = VIDEO_320x240;
-		fsWidth      = 320;
-		fsHeight     = 240;
+		value		 = VIDEO_320x240;
+		fsWidth		 = 320;
+		fsHeight	 = 240;
 		fsColorDepth = 16;
 		break;
 	case ID_OPTIONS_VIDEO_FULLSCREEN640X480:
-		value        = VIDEO_640x480;
-		fsWidth      = 640;
-		fsHeight     = 480;
+		value		 = VIDEO_640x480;
+		fsWidth		 = 640;
+		fsHeight	 = 480;
 		fsColorDepth = 16;
 		break;
 	case ID_OPTIONS_VIDEO_FULLSCREEN800X600:
-		value        = VIDEO_800x600;
-		fsWidth      = 800;
-		fsHeight     = 600;
+		value		 = VIDEO_800x600;
+		fsWidth		 = 800;
+		fsHeight	 = 600;
 		fsColorDepth = 16;
 		break;
 	case ID_OPTIONS_VIDEO_FULLSCREEN:
-		value       = VIDEO_OTHER;
+		value		= VIDEO_OTHER;
 		forceUpdate = true;
 		break;
 	}
 
 	if (videoOption != value || forceUpdate)
 		updateWindowSize(value);
-}
-
-typedef BOOL (WINAPI *GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
-
-static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
-{
-	HINSTANCE hinstDll;
-	DWORD     dwVersion = 0;
-
-	hinstDll = /**/ ::LoadLibrary("USER32.DLL");
-
-	if (hinstDll)
-	{
-		GETMENUBARINFO func = (GETMENUBARINFO)GetProcAddress(hinstDll, "GetMenuBarInfo");
-
-		if (func)
-		{
-			MENUBARINFO info;
-			info.cbSize = sizeof(info);
-
-			func(AfxGetMainWnd()->GetSafeHwnd(), OBJID_MENU, 0, &info);
-
-			int menuHeight = GetSystemMetrics(SM_CYMENU);
-
-			if ((info.rcBar.bottom - info.rcBar.top) > menuHeight)
-			{
-				winSizeY += (info.rcBar.bottom - info.rcBar.top) - menuHeight + 1;
-				theApp.m_pMainWnd->SetWindowPos(
-				    0,                     //HWND_TOPMOST,
-				    theApp.windowPositionX,
-				    theApp.windowPositionY,
-				    winSizeX,
-				    winSizeY,
-				    SWP_NOMOVE | SWP_SHOWWINDOW);
-			}
-		}
-		/**/ ::FreeLibrary(hinstDll);
-	}
 }
 
 void VBA::updateWindowSize(int value)
@@ -2345,16 +1406,16 @@ void VBA::updateWindowSize(int value)
 		regSetDwordValue("fsColorDepth", fsColorDepth);
 	}
 
-	if (display && 
-		(((value >= VIDEO_320x240 || videoOption >= VIDEO_320x240) && videoOption != value) ||
-	    fsForceChange))
+	if (display &&
+	    (((value >= VIDEO_320x240 || videoOption >= VIDEO_320x240) && videoOption != value) ||
+	     fsForceChange))
 	{
 		fsForceChange = false;
-		videoOption   = value;
+		videoOption	  = value;
 		initDisplay();
 	}
 
-	videoOption   = value;
+	videoOption = value;
 
 	sizeX = 240;
 	sizeY = 160;
@@ -2367,7 +1428,7 @@ void VBA::updateWindowSize(int value)
 			sizeY = 224;
 			gbBorderLineSkip   = 256;
 			gbBorderColumnSkip = 48;
-			gbBorderRowSkip    = 40;
+			gbBorderRowSkip	   = 40;
 		}
 		else
 		{
@@ -2375,7 +1436,7 @@ void VBA::updateWindowSize(int value)
 			sizeY = 144;
 			gbBorderLineSkip   = 160;
 			gbBorderColumnSkip = 0;
-			gbBorderRowSkip    = 0;
+			gbBorderRowSkip	   = 0;
 		}
 	}
 
@@ -2409,8 +1470,8 @@ void VBA::updateWindowSize(int value)
 		}
 		else
 		{
-			double scaleX = (double)fsWidth / (double)sizeX;
-			double scaleY = (double)fsHeight / (double)sizeY;
+			double scaleX	= (double)fsWidth / (double)sizeX;
+			double scaleY	= (double)fsHeight / (double)sizeY;
 			double scaleMin = scaleX < scaleY ? scaleX : scaleY;
 			if (fsMaxScale)
 				scaleMin = scaleMin > fsMaxScale ? fsMaxScale : scaleMin;
@@ -2420,20 +1481,20 @@ void VBA::updateWindowSize(int value)
 		break;
 	}
 
-	rect.left   = 0;
-	rect.top    = 0;
-	rect.right  = sizeX;
+	rect.left	= 0;
+	rect.top	= 0;
+	rect.right	= sizeX;
 	rect.bottom = sizeY;
 
-	dest.left   = 0;
-	dest.top    = 0;
-	dest.right  = surfaceSizeX;
+	dest.left	= 0;
+	dest.top	= 0;
+	dest.right	= surfaceSizeX;
 	dest.bottom = surfaceSizeY;
 
 	int winSizeX = sizeX;
 	int winSizeY = sizeY;
 
-	DWORD style   = WS_POPUP | WS_VISIBLE;
+	DWORD style	  = WS_POPUP | WS_VISIBLE;
 	DWORD styleEx = alwaysOnTop ? WS_EX_TOPMOST : 0;
 
 	if (videoOption <= VIDEO_4X)
@@ -2466,7 +1527,7 @@ void VBA::updateWindowSize(int value)
 	{
 		// Create a window
 		MainWnd *pWnd = new MainWnd;
-		m_pMainWnd    = pWnd;
+		m_pMainWnd = pWnd;
 
 		pWnd->CreateEx(styleEx,
 		               theApp.wndClass,
@@ -2488,11 +1549,11 @@ void VBA::updateWindowSize(int value)
 	else
 	{
 		m_pMainWnd->SetWindowPos(0, //HWND_TOPMOST,
-	                         	x,
-	                         	y,
-	                         	winSizeX,
-	                         	winSizeY,
-	                         	SWP_NOMOVE | SWP_SHOWWINDOW);
+		                         x,
+		                         y,
+		                         winSizeX,
+		                         winSizeY,
+		                         SWP_NOMOVE | SWP_SHOWWINDOW);
 	}
 
 	winCheckMenuBarInfo(winSizeX, winSizeY);
@@ -2531,7 +1592,7 @@ bool VBA::initDisplay()
 	if (display == NULL)
 	{
 		updateWindowSize(videoOption);
-		
+
 		switch (renderMethod)
 		{
 		case GDI:
@@ -2632,14 +1693,6 @@ void VBA::shutdownDisplay()
 	}
 }
 
-void VBA::directXMessage(const char *msg)
-{
-	systemMessage(
-	    IDS_DIRECTX_7_REQUIRED,
-	    "DirectX 7.0 or greater is required to run.\nDownload at http://www.microsoft.com/directx.\n\nError found at: %s",
-	    msg);
-}
-
 void VBA::updatePriority()
 {
 	switch (threadPriority)
@@ -2694,7 +1747,7 @@ bool VBA::detectMMX()
 		mov eax, 1;
 		cpuid;
 		test edx, 00800000h;
-		jz   NotFound;
+		jz	 NotFound;
 		mov [support], 1;
 NotFound:
 	}
@@ -2862,52 +1915,333 @@ CString VBA::winLoadFilter(UINT id)
 	return res;
 }
 
+void VBA::loadSettings()
+{
+	CString buffer;
+
+	// video
+	bool defaultVideoDriver = regQueryDwordValue("defaultVideoDriver", true) ? true : false;
+	if (!regQueryBinaryValue("videoDriverGUID", (char *)&videoDriverGUID, sizeof(GUID)))
+	{
+		defaultVideoDriver = TRUE;
+	}
+	if (defaultVideoDriver)
+		pVideoDriverGUID = NULL;
+	else
+		pVideoDriverGUID = &videoDriverGUID;
+
+	videoOption = regQueryDwordValue("video", 0);
+	if (videoOption < 0 || videoOption > VIDEO_OTHER)
+		videoOption = 0;
+	switch (videoOption)
+	{
+	case VIDEO_320x240:
+		fsWidth		 = 320;
+		fsHeight	 = 240;
+		fsColorDepth = 16;
+		break;
+	case VIDEO_640x480:
+		fsWidth		 = 640;
+		fsHeight	 = 480;
+		fsColorDepth = 16;
+		break;
+	case VIDEO_800x600:
+		fsWidth		 = 800;
+		fsHeight	 = 600;
+		fsColorDepth = 16;
+		break;
+	}
+	if (videoOption == VIDEO_OTHER)
+	{
+		if (fsWidth < 0 || fsWidth > 4095 || fsHeight < 0 || fsHeight > 4095)
+			videoOption = 0;
+		if (fsColorDepth != 16 && fsColorDepth != 24 && fsColorDepth != 32)
+			videoOption = 0;
+	}
+
+	fsWidth		 = regQueryDwordValue("fsWidth", 0);
+	fsHeight	 = regQueryDwordValue("fsHeight", 0);
+	fsColorDepth = regQueryDwordValue("fsColorDepth", 0);
+	fsMaxScale = regQueryDwordValue("fsMaxScale", 0);
+	fullScreenStretch = regQueryDwordValue("stretch", 0) ? true : false;
+
+	renderMethod = (DISPLAY_TYPE)regQueryDwordValue("renderMethod", DIRECT_DRAW);
+	if (renderMethod < GDI || renderMethod > OPENGL)
+		renderMethod = DIRECT_DRAW;
+
+	ddrawEmulationOnly	= regQueryDwordValue("ddrawEmulationOnly", false) ? true : false;
+	ddrawUseVideoMemory = regQueryDwordValue("ddrawUseVideoMemory", false) ? true : false;
+	tripleBuffering		= regQueryDwordValue("tripleBuffering", true) ? true : false;
+	vsync = regQueryDwordValue("vsync", false) ? true : false;
+
+	d3dFilter = regQueryDwordValue("d3dFilter", 0);
+	if (d3dFilter < 0 || d3dFilter > 1)
+		d3dFilter = 0;
+	glFilter = regQueryDwordValue("glFilter", 0);
+	if (glFilter < 0 || glFilter > 1)
+		glFilter = 0;
+	glType = regQueryDwordValue("glType", 0);
+	if (glType < 0 || glType > 1)
+		glType = 0;
+
+	// pixel filter & ifb
+	filterType = regQueryDwordValue("filter", 0);
+	if (filterType < 0 || filterType > 20)
+		filterType = 0;
+	disableMMX = regQueryDwordValue("disableMMX", 0) ? true : false;
+	ifbType = regQueryDwordValue("ifbType", 0);
+	if (ifbType < 0 || ifbType > 2)
+		ifbType = 0;
+
+	// frame skipping
+	frameSkip = regQueryDwordValue("frameSkip", /*2*/ 0);
+	if (frameSkip < 0 || frameSkip > 9)
+		frameSkip = 1;
+	gbFrameSkip = regQueryDwordValue("gbFrameSkip", 0);
+	if (gbFrameSkip < 0 || gbFrameSkip > 9)
+		gbFrameSkip = 0;
+///  autoFrameSkip = regQueryDwordValue("autoFrameSkip", FALSE) ? TRUE : FALSE;
+
+	// input
+	joypadDefault = regQueryDwordValue("joypadDefault", 0);
+	if (joypadDefault < 0 || joypadDefault > 3)
+		joypadDefault = 0;
+	allowLeftRight		   = regQueryDwordValue("allowLeftRight", false) ? true : false;
+	autofireAccountForLag  = regQueryDwordValue("autofireAccountForLag", false) ? true : false;
+	nextframeAccountForLag = regQueryDwordValue("nextframeAccountForLag", false) ? true : false;
+
+	// speed
+	throttle = regQueryDwordValue("throttle", 0);
+	if (throttle < 5 || throttle > 1000)
+		throttle = 100;
+
+	synchronize		  = regQueryDwordValue("synchronize", 1) ? true : false;
+	accuratePitchThrottle = regQueryDwordValue("accuratePitchThrottle", FALSE) ? TRUE : FALSE;
+
+	// sound
+	int res = regQueryDwordValue("soundEnable", 0x30f);
+	soundEnable(res);
+	soundDisable(~res);
+	soundOffFlag = (regQueryDwordValue("soundOff", 0)) ? true : false;
+	soundQuality = regQueryDwordValue("soundQuality", 2);
+	soundEcho	 = regQueryDwordValue("soundEcho", 0) ? true : false;
+	soundLowPass = regQueryDwordValue("soundLowPass", 0) ? true : false;
+	soundReverse = regQueryDwordValue("soundReverse", 0) ? true : false;
+	soundVolume	 = regQueryDwordValue("soundVolume", 0);
+	if (soundVolume < 0 || soundVolume > 5)
+		soundVolume = 0;
+	muteFrameAdvance = regQueryDwordValue("muteFrameAdvance", 0) ? TRUE : FALSE;
+	muteWhenInactive = regQueryDwordValue("muteWhenInactive", 0) ? TRUE : FALSE;
+
+	// emulation
+	memLagEnabled	  = regQueryDwordValue("memLagEnabled", false) ? true : false;
+	memLagTempEnabled = memLagEnabled;
+	useOldSync		  = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
+	useOldGBTiming	  = regQueryDwordValue("useOldGBTiming", false) ? true : false;
+
+	useBiosFile	 = regQueryDwordValue("useBios", 0) ? true : false;
+	skipBiosFile = regQueryDwordValue("skipBios", 0) ? true : false;
+	buffer		 = regQueryStringValue("biosFile", "");
+	if (!buffer.IsEmpty())
+	{
+		biosFileName = buffer;
+	}
+//	removeIntros = regQueryDwordValue("removeIntros", false) ? true : false;
+
+	autoIPS = regQueryDwordValue("autoIPS", true) ? true : false;
+
+	agbPrintEnable(regQueryDwordValue("agbPrint", 0) ? true : false);
+	winRtcEnable = regQueryDwordValue("rtcEnabled", 0) ? true : false;
+	rtcEnable(winRtcEnable);
+
+	winSaveType = regQueryDwordValue("saveType", 0);
+	if (winSaveType < 0 || winSaveType > 5)
+		winSaveType = 0;
+	cpuEnhancedDetection = regQueryDwordValue("enhancedDetection", 1) ? true : false;
+	winFlashSize = regQueryDwordValue("flashSize", 0x10000);
+	if (winFlashSize != 0x10000 && winFlashSize != 0x20000)
+		winFlashSize = 0x10000;
+
+	cpuDisableSfx = regQueryDwordValue("disableSfx", 0) ? true : false;
+
+	// GBx
+	winGbPrinterEnabled = regQueryDwordValue("gbPrinter", false) ? true : false;
+	if (winGbPrinterEnabled)
+		gbSerialFunction = gbPrinterSend;
+	else
+		gbSerialFunction = NULL;
+	gbEmulatorType	  = regQueryDwordValue("emulatorType", 0);
+	if (gbEmulatorType < 0 || gbEmulatorType > 5)
+		gbEmulatorType = 1;
+	winGbBorderOn	  = regQueryDwordValue("borderOn", 0);
+	gbBorderAutomatic = regQueryDwordValue("borderAutomatic", 0);
+
+	gbColorOption = regQueryDwordValue("colorOption", 0);
+	gbPaletteOption = regQueryDwordValue("gbPaletteOption", 0);
+	if (gbPaletteOption < 0)
+		gbPaletteOption = 0;
+	if (gbPaletteOption > 2)
+		gbPaletteOption = 2;
+	regQueryBinaryValue("gbPalette", (char *)systemGbPalette, 24*sizeof(u16));
+
+	// head-up display
+	showSpeed = regQueryDwordValue("showSpeed", 1);
+	if (showSpeed < 0 || showSpeed > 2)
+		showSpeed = 1;
+	showSpeedTransparent = regQueryDwordValue("showSpeedTransparent", TRUE) ? TRUE : FALSE;
+	outlinedText	= regQueryDwordValue("outlinedText", TRUE) != 0;
+	transparentText = regQueryDwordValue("transparentText", FALSE) != 0;
+	textColor		= regQueryDwordValue("textColor", 0);
+	textMethod		= regQueryDwordValue("textMethod", 1);
+	frameCounter  = regQueryDwordValue("frameCounter", false) ? true : false;
+	lagCounter	  = regQueryDwordValue("lagCounter", false) ? true : false;
+	inputDisplay  = regQueryDwordValue("inputDisplay", false) ? true : false;
+	disableStatusMessage = regQueryDwordValue("disableStatus", 0) ? true : false;
+
+	// UI
+	windowPositionX = regQueryDwordValue("windowX", 0);
+	if (windowPositionX < 0)
+		windowPositionX = 0;
+	windowPositionY = regQueryDwordValue("windowY", 0);
+	if (windowPositionY < 0)
+		windowPositionY = 0;
+
+	autoHideMenu = regQueryDwordValue("autoHideMenu", 0) ? true : false;
+
+	languageOption = regQueryDwordValue("language", 1);
+	if (languageOption < 0 || languageOption > 2)
+		languageOption = 1;
+	buffer = regQueryStringValue("languageName", "");
+	if (!buffer.IsEmpty())
+	{
+		languageName = buffer.Left(3);
+	}
+	else
+		languageName = "";
+	winSetLanguageOption(languageOption, true);
+
+	// preferences
+	alwaysOnTop = regQueryDwordValue("alwaysOnTop", false) ? true : false;
+	pauseWhenInactive	  = regQueryDwordValue("pauseWhenInactive", 1) ? true : false;
+	enableBackgroundInput = regQueryDwordValue("enableBackgroundInput", 0) ? true : false;
+	threadPriority = regQueryDwordValue("priority", 2);
+	if (threadPriority < 0 || threadPriority > 3)
+		threadPriority = 2;
+	updatePriority();
+
+	filenamePreference = regQueryDwordValue("filenamePreference", 0);
+	altAviRecordMethod = regQueryDwordValue("altAviRecordMethod", false) ? true : false;
+	captureFormat = regQueryDwordValue("captureFormat", 0);
+
+	rewindTimer = regQueryDwordValue("rewindTimer", 0);
+	rewindSlots = regQueryDwordValue("rewindSlots", 64);
+	if (rewindTimer < 0 || rewindTimer > 600)
+		rewindTimer = 0;
+	if (rewindSlots <= 0)
+		rewindTimer = rewindSlots = 0;
+	if (rewindSlots > MAX_REWIND_SLOTS)
+		rewindSlots = MAX_REWIND_SLOTS;
+	if (rewindTimer != 0)
+	{
+		if (rewindMemory == NULL)
+			rewindMemory = (char *)malloc(rewindSlots*REWIND_SIZE);
+	}
+
+	if (frameSearchMemory == NULL)
+		frameSearchMemory = (char *)malloc(3*REWIND_SIZE);
+
+	recentFreeze = regQueryDwordValue("recentFreeze", false) ? true : false;
+	for (int i = 0; i < 10; i++)
+	{
+		buffer.Format("recent%d", i);
+		const char *s = regQueryStringValue(buffer, NULL);
+		if (s == NULL)
+			break;
+		recentFiles[i] = s;
+	}
+
+	autoLoadMostRecent = regQueryDwordValue("autoLoadMostRecent", false) ? true : false;
+	loadMakesRecent = regQueryDwordValue("loadMakesRecent", false) ? true : false;
+	loadMakesCurrent = regQueryDwordValue("loadMakesCurrent", false) ? true : false;
+	saveMakesCurrent = regQueryDwordValue("saveMakesCurrent", false) ? true : false;
+	currentSlot		 = regQueryDwordValue("currentSlot", 0);
+	showSlotTime	 = regQueryDwordValue("showSlotTime", 0);
+
+	cheatsEnabled = regQueryDwordValue("cheatsEnabled", true) ? true : false;
+	autoSaveLoadCheatList = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;
+	pauseDuringCheatSearch = regQueryDwordValue("pauseDuringCheatSearch2", 0) ? true : false;
+
+	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
+	movieOnEndPause	   = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
+//	movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
+
+	// RamWatch Settings
+	AutoRWLoad		= regQueryDwordValue(AUTORWLOAD, false);
+	RWSaveWindowPos = regQueryDwordValue(RWSAVEPOS, false);
+	ramw_x = regQueryDwordValue(RAMWX, 0);
+	ramw_y = regQueryDwordValue(RAMWY, 0);
+
+	// this is FILO
+	for (int i = MAX_RECENT_WATCHES; i > 0; --i)
+	{
+		buffer.Format("recentWatch%d", i);
+		const char *s = regQueryStringValue(buffer, NULL);
+		if (s == NULL)
+			continue;
+		RWAddRecentFile(s);
+	}
+}
+
 void VBA::saveSettings()
 {
-	regSetDwordValue("language", languageOption);
-	regSetStringValue("languageName", languageName);
-
-	regSetDwordValue("frameSkip", frameSkip);
-	regSetDwordValue("gbFrameSkip", gbFrameSkip);
-
-///  regSetDwordValue("autoFrameSkip", autoFrameSkip);
-	regSetDwordValue("accuratePitchThrottle", accuratePitchThrottle);
-
-	regSetDwordValue("vsync", vsync);
-	regSetDwordValue("synchronize", synchronize);
-	regSetDwordValue("stretch", fullScreenStretch);
-
-	regSetDwordValue("video", videoOption);
-
 	regSetDwordValue("defaultVideoDriver", pVideoDriverGUID == NULL);
-
 	if (pVideoDriverGUID)
 	{
 		regSetBinaryValue("videoDriverGUID", (char *)&videoDriverGUID,
 		                  sizeof(GUID));
 	}
+	regSetDwordValue("video", videoOption);
 
 	regSetDwordValue("fsWidth", fsWidth);
 	regSetDwordValue("fsHeight", fsHeight);
 	regSetDwordValue("fsColorDepth", fsColorDepth);
+	regSetDwordValue("fsMaxScale", fsMaxScale);
+
+	regSetDwordValue("stretch", fullScreenStretch);
 
 	regSetDwordValue("renderMethod", renderMethod);
 
-	regSetDwordValue("windowX", windowPositionX);
-	regSetDwordValue("windowY", windowPositionY);
+	regSetDwordValue("ddrawEmulationOnly", ddrawEmulationOnly);
+	regSetDwordValue("ddrawUseVideoMemory", ddrawUseVideoMemory);
+	regSetDwordValue("tripleBuffering", tripleBuffering);
+	regSetDwordValue("vsync", vsync);
 
-	regSetDwordValue("useBios", useBiosFile);
-	regSetDwordValue("skipBios", skipBiosFile);
-	if (!biosFileName.IsEmpty())
-		regSetStringValue("biosFile", biosFileName);
+	regSetDwordValue("d3dFilter", d3dFilter);
+	regSetDwordValue("glFilter", glFilter);
+	regSetDwordValue("glType", glType);
 
-	regSetDwordValue("memLagEnabled", memLagEnabled);
-	regSetDwordValue("useOldGBTiming", useOldGBTiming);
+	// pixel filter & ifb
+	regSetDwordValue("filter", filterType);
+	regSetDwordValue("ifbType", ifbType);
+	regSetDwordValue("disableMMX", disableMMX);
 
+	// frame skipping
+	regSetDwordValue("frameSkip", frameSkip);
+	regSetDwordValue("gbFrameSkip", gbFrameSkip);
+///  regSetDwordValue("autoFrameSkip", autoFrameSkip);
+
+	// input
+	regSetDwordValue("joypadDefault", joypadDefault);
 	regSetDwordValue("allowLeftRight", allowLeftRight);
 	regSetDwordValue("autofireAccountforLag", autofireAccountForLag);
 	regSetDwordValue("nextframeAccountforLag", nextframeAccountForLag);
 
+	// speed
+	regSetDwordValue("throttle", throttle);
+	regSetDwordValue("synchronize", synchronize);
+	regSetDwordValue("accuratePitchThrottle", accuratePitchThrottle);
+
+	// sound
 	regSetDwordValue("soundEnable", (soundGetMuted() | soundGetEnable()) & 0x30f);
 	regSetDwordValue("soundOff", soundOffFlag);
 	regSetDwordValue("soundQuality", soundQuality);
@@ -2915,53 +2249,23 @@ void VBA::saveSettings()
 	regSetDwordValue("soundLowPass", soundLowPass);
 	regSetDwordValue("soundReverse", soundReverse);
 	regSetDwordValue("soundVolume", soundVolume);
-
-	regSetDwordValue("ddrawEmulationOnly", ddrawEmulationOnly);
-	regSetDwordValue("ddrawUseVideoMemory", ddrawUseVideoMemory);
-	regSetDwordValue("tripleBuffering", tripleBuffering);
-
-	regSetDwordValue("d3dFilter", d3dFilter);
-	regSetDwordValue("glFilter", glFilter);
-	regSetDwordValue("glType", glType);
-
-	regSetDwordValue("filter", filterType);
-	regSetDwordValue("disableMMX", disableMMX);
-
-	regSetDwordValue("disableStatus", disableStatusMessage);
-
-	regSetDwordValue("showSpeed", showSpeed);
-	regSetDwordValue("showSpeedTransparent", showSpeedTransparent);
-
-	regSetDwordValue("gbPrinter", winGbPrinterEnabled);
-
-	regSetDwordValue("alwaysOnTop", alwaysOnTop);
-	regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
-	regSetDwordValue("enableBackgroundInput", enableBackgroundInput);
-
-	regSetDwordValue("filenamePreference", filenamePreference);
-
-	regSetDwordValue("frameCounter", frameCounter);
-	regSetDwordValue("lagCounter", lagCounter);
-	regSetDwordValue("inputDisplay", inputDisplay);
-	regSetDwordValue("movieReadOnly", movieReadOnly);
-
-	regSetDwordValue("altAviRecordMethod", altAviRecordMethod);
-
-	regSetDwordValue("useOldSync", useOldSync);
-
 	regSetDwordValue("muteFrameAdvance", muteFrameAdvance);
 	regSetDwordValue("muteWhenInactive", muteWhenInactive);
 
-	regSetDwordValue("captureFormat", captureFormat);
-
+	// emulation
+	regSetDwordValue("useBios", useBiosFile);
+	regSetDwordValue("skipBios", skipBiosFile);
+	if (!biosFileName.IsEmpty())
+		regSetStringValue("biosFile", biosFileName);
 //	regSetDwordValue("removeIntros", removeIntros);
-
-	regSetDwordValue("recentFreeze", recentFreeze);
-
-	regSetDwordValue("agbPrint", agbPrintIsEnabled());
 
 	regSetDwordValue("autoIPS", autoIPS);
 
+	regSetDwordValue("memLagEnabled", memLagEnabled);
+	regSetDwordValue("useOldGBTiming", useOldGBTiming);
+	regSetDwordValue("useOldSync", useOldSync);
+
+	regSetDwordValue("agbPrint", agbPrintIsEnabled());
 	regSetDwordValue("rtcEnabled", winRtcEnable);
 
 	regSetDwordValue("saveType", winSaveType);
@@ -2970,33 +2274,56 @@ void VBA::saveSettings()
 
 	regSetDwordValue("disableSfx", cpuDisableSfx);
 
-	regSetDwordValue("ifbType", ifbType);
-
-	regSetDwordValue("autoHideMenu", autoHideMenu);
-
+	// GBx
+	regSetDwordValue("emulatorType", gbEmulatorType);
+	regSetDwordValue("gbPrinter", winGbPrinterEnabled);
 	regSetDwordValue("borderOn", winGbBorderOn);
 	regSetDwordValue("borderAutomatic", gbBorderAutomatic);
-	regSetDwordValue("emulatorType", gbEmulatorType);
+
 	regSetDwordValue("colorOption", gbColorOption);
+	regSetDwordValue("gbPaletteOption", gbPaletteOption);
+	regSetBinaryValue("gbPalette", (char *)systemGbPalette, 24*sizeof(u16));
+
+	// head-up display
+	regSetDwordValue("showSpeed", showSpeed);
+	regSetDwordValue("showSpeedTransparent", showSpeedTransparent);
 
 	regSetDwordValue("outlinedText", outlinedText);
 	regSetDwordValue("transparentText", transparentText);
 	regSetDwordValue("textColor", textColor);
 	regSetDwordValue("textMethod", textMethod);
+	regSetDwordValue("frameCounter", frameCounter);
+	regSetDwordValue("lagCounter", lagCounter);
+	regSetDwordValue("inputDisplay", inputDisplay);
+	regSetDwordValue("disableStatus", disableStatusMessage);
 
+	// UI
+	regSetDwordValue("windowX", windowPositionX);
+	regSetDwordValue("windowY", windowPositionY);
+	
+	regSetDwordValue("autoHideMenu", autoHideMenu);
+
+	regSetDwordValue("language", languageOption);
+	regSetStringValue("languageName", languageName);
+
+	// preferences
+	regSetDwordValue("alwaysOnTop", alwaysOnTop);
+	regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
+	regSetDwordValue("enableBackgroundInput", enableBackgroundInput);
 	regSetDwordValue("priority", threadPriority);
+	
+	regSetDwordValue("filenamePreference", filenamePreference);
+	regSetDwordValue("altAviRecordMethod", altAviRecordMethod);
+	regSetDwordValue("captureFormat", captureFormat);
 
+	regSetDwordValue("cheatsEnabled", cheatsEnabled);
 	regSetDwordValue("autoSaveCheatList", autoSaveLoadCheatList);
-
 	regSetDwordValue("pauseDuringCheatSearch2", pauseDuringCheatSearch);
-
-	regSetDwordValue("gbPaletteOption", gbPaletteOption);
-
-	regSetBinaryValue("gbPalette", (char *)systemGbPalette, 24*sizeof(u16));
 
 	regSetDwordValue("rewindTimer", rewindTimer);
 	regSetDwordValue("rewindSlots", rewindSlots);
 
+	regSetDwordValue("recentFreeze", recentFreeze);
 	CString buffer;
 	for (int i = 0; i < 10; i++)
 	{
@@ -3004,7 +2331,6 @@ void VBA::saveSettings()
 		regSetStringValue(buffer, recentFiles[i]);
 	}
 
-	regSetDwordValue("joypadDefault", joypadDefault);
 	regSetDwordValue("autoLoadMostRecent", autoLoadMostRecent);
 	regSetDwordValue("loadMakesRecent", loadMakesRecent);
 	regSetDwordValue("loadMakesCurrent", loadMakesCurrent);
@@ -3012,39 +2338,8 @@ void VBA::saveSettings()
 	regSetDwordValue("currentSlot", currentSlot);
 	regSetDwordValue("showSlotTime", showSlotTime);
 
-	regSetDwordValue("cheatsEnabled", cheatsEnabled);
-	regSetDwordValue("fsMaxScale", fsMaxScale);
-	regSetDwordValue("throttle", throttle);
 	regSetDwordValue("movieOnEndBehavior", movieOnEndBehavior);
 	regSetDwordValue("movieOnEndPause", movieOnEndPause);
-}
-
-void winSignal(int, int)
-{}
-
-#define CPUReadByteQuick(addr) \
-    map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
-
-void winOutput(char *s, u32 addr)
-{
-	if (s)
-	{
-		toolsLog(s);
-	}
-	else
-	{
-		CString str;
-		char    c;
-
-		c = CPUReadByteQuick(addr);
-		addr++;
-		while (c)
-		{
-			str += c;
-			c    = CPUReadByteQuick(addr);
-			addr++;
-		}
-		toolsLog(str);
-	}
+//	regSetDwordValue("movieReadOnly", movieReadOnly);
 }
 

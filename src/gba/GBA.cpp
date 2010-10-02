@@ -22,11 +22,11 @@
 #   include "../win32/ram_search.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
 #include <memory.h>
-#include <stdarg.h>
-#include <string.h>
 
 #include "../Port.h"
 #include "../NLS.h"
@@ -65,8 +65,6 @@
     cpuSavedTicks    = cpuSavedTicks - *extCpuLoopTicks; \
     *extCpuLoopTicks = *extClockTicks; \
     *extTicks        = *extClockTicks;
-
-extern int emulating;
 
 int32 cpuDmaTicksToUpdate = 0;
 int32 cpuDmaCount         = 0;

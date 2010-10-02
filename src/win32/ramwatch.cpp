@@ -2,13 +2,13 @@
 #include "stdafx.h"
 #include "VBA.h"
 #include "resource.h"
-#include "GBACheats.h"
+#include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
 #include "ram_search.h"
 #include "ramwatch.h"
 #include "reg.h"
 #include "Sound.h"
-#include <assert.h>
+#include <cassert>
 #include <windows.h>
 #include <string>
 

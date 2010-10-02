@@ -25,7 +25,7 @@
 #include "WinResUtil.h"
 #include "VBA.h" // for theApp
 
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

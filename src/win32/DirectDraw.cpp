@@ -26,8 +26,8 @@
 #include "Reg.h"
 #include "VBA.h"
 
-//#include "../common/System.h"
-#include "../gba/Globals.h"
+#include "../common/System.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
@@ -38,10 +38,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern int Init_2xSaI(u32);
 extern int RGB_LOW_BITS_MASK;
-extern void winlog(const char *, ...);
 extern int systemSpeed;
+extern int Init_2xSaI(u32);
+extern void directXMessage(const char *);
+extern void winlog(const char *, ...);
 extern int winVideoModeSelect(CWnd *, GUID * *);
 
 class DirectDrawDisplay : public IDisplay
@@ -190,13 +191,13 @@ bool DirectDrawDisplay::initialize()
 
 		if (DDrawCreateEx == NULL)
 		{
-			theApp.directXMessage("DirectDrawCreateEx");
+			directXMessage("DirectDrawCreateEx");
 			return FALSE;
 		}
 	}
 	else
 	{
-		theApp.directXMessage("DDRAW.DLL");
+		directXMessage("DDRAW.DLL");
 		return FALSE;
 	}
 

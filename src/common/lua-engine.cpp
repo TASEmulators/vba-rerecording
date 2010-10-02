@@ -2,16 +2,15 @@
 #include <cstdlib>
 #include <malloc.h>
 #include <string>
-#include <assert.h>
+#include <cassert>
+#include <cctype>
+#include <cmath>
+#include <ctime>
+
 #include <vector>
 #include <map>
 #include <string>
 #include <algorithm>
-
-#include <cctype>
-#include <cassert>
-#include <cmath>
-#include <ctime>
 
 using namespace std;
 
@@ -36,13 +35,15 @@ using namespace std;
 #include "System.h"
 #include "movie.h"
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 
 #ifdef _WIN32
 #include "../win32/Sound.h"
+//#include "../win32/WinMiscUtil.h"
+extern CString winGetSavestateFilename(const CString &LogicalRomName, int nID);
 static void Clear_Sound_Buffer() { if(theApp.sound) theApp.sound->clearAudioBuffer(); }
 #else
 static void Clear_Sound_Buffer() {}
@@ -1722,7 +1723,7 @@ static int savestate_create(lua_State *L)
 	{
 		// Find an appropriate filename. This is OS specific, unfortunately.
 #if (defined(WIN32) && !defined(SDL))
-		CString stateName = MainWnd::getSavestateFilename(theApp.filename, which);
+		CString stateName = winGetSavestateFilename(theApp.filename, which);
 #else
 		extern char saveDir[2048];
 		extern char filename[2048];

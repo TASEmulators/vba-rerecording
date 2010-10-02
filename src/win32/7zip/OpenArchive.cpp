@@ -1,10 +1,10 @@
 #include "../stdafx.h"
 #include "../MainWnd.h"
 #include <windows.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdio>
+#include <cerrno>
+#include <cassert>
+#include <cstring>
 #include <map>
 #include <vector>
 #include <algorithm>

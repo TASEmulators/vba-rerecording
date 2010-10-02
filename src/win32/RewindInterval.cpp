@@ -20,7 +20,7 @@
 //
 
 #include "stdafx.h"
-#include <math.h>
+#include <cmath>
 #include "resource.h"
 #include "RewindInterval.h"
 #include "VBA.h"

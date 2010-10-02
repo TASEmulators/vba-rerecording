@@ -24,7 +24,7 @@ static FILE* (*openFunc)  (const char*, const char*) = NULL;
 static int (*closeFunc) (FILE*) = NULL;
 
 #if (defined(WIN32) || defined(win32)) // capital is standard, but check for either
- #include <stdlib.h>
+ #include <cstdlib>
  #define popen _popen;
  #define pclose _pclose;
 #endif

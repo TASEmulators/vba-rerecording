@@ -21,16 +21,16 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "GBACheats.h"
+#include "GBACheatsDlg.h"
 #include "Reg.h"
 #include "StringTokenizer.h"
 #include "WinResUtil.h"
 #include "Sound.h"
 #include "VBA.h"
 
-#include "../gba/Cheats.h"
+#include "../gba/GBACheats.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/CheatSearch.h"
-#include "../gba/Globals.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

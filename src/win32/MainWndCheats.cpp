@@ -21,17 +21,16 @@
 #include "resource.h"
 #include "MainWnd.h"
 #include "FileDlg.h"
-#include "GBACheats.h"
+#include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
 #include "Reg.h"
 #include "WinResUtil.h"
+#include "WinMiscUtil.h"
 #include "VBA.h"
 
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbCheats.h"
-
-extern int emulating;
 
 GBACheatSearch gbaDlg;
 GBCheatSearch  gbDlg;
@@ -132,8 +131,8 @@ void MainWnd::OnCheatsLoadcheatlist()
 	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
-	CString cheatDir = getRelatedDir(IDS_CHEAT_DIR);
+	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
+	CString cheatDir = winGetDestDir(IDS_CHEAT_DIR);
 
 	FileDlg dlg(this, cheatName, filter, 0, "CLT", exts, cheatDir, title, false);
 
@@ -156,8 +155,8 @@ void MainWnd::OnCheatsSavecheatlist()
 	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
-	CString cheatDir = getRelatedDir(IDS_CHEAT_DIR);
+	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
+	CString cheatDir = winGetDestDir(IDS_CHEAT_DIR);
 
 	FileDlg dlg(this, cheatName, filter, 0, "CLT", exts, cheatDir, title, true);
 
