@@ -24,6 +24,7 @@
 #include "LuaOpenDialog.h"
 #include "MainWnd.h"
 #include "WinResUtil.h"
+#include "WinMiscUtil.h"
 #include "VBA.h"
 #include "Sound.h"
 
@@ -285,8 +286,8 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 				CString filter = theApp.winLoadFilter(IDS_FILTER_LUA);
 				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
 
-				CString luaName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_LUA_DIR, ".lua");
-				CString luaDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_LUA_DIR);
+				CString luaName = winGetDestFilename(theApp.filename, IDS_LUA_DIR, ".lua");
+				CString luaDir = winGetDestDir(IDS_LUA_DIR);
 
 				char *p = filter.GetBuffer(0);
 				while ((p = strchr(p, '|')) != NULL)

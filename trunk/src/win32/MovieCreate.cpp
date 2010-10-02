@@ -7,12 +7,13 @@
 #include "MainWnd.h"
 #include "FileDlg.h"
 #include "WinResUtil.h"
+#include "WinMiscUtil.h"
 #include "VBA.h"
 
 #include "../NLS.h"
 #include "../common/Util.h"
 #include "../common/movie.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 
 extern u32 myROM[];
@@ -57,7 +58,7 @@ BOOL MovieCreate::OnInitDialog()
 	m_editDescription.LimitText(MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 
 	// convert the ROM filename into a default movie name
-	CString movieName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_MOVIE_DIR, ".vbm");
+	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, ".vbm");
 
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
@@ -109,8 +110,8 @@ void MovieCreate::OnBnClickedBrowse()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	CString movieName = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
-	CString movieDir = ((MainWnd *)theApp.m_pMainWnd)->getRelatedDir(IDS_MOVIE_DIR);
+	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
+	CString movieDir = winGetDestDir(IDS_MOVIE_DIR);
 
 	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, true);
 

@@ -29,7 +29,8 @@
 #include "FileDlg.h"
 #include "Reg.h"
 #include "WinResUtil.h"
-#include "GBACheats.h"
+#include "WinMiscUtil.h"
+#include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
 #include "Input.h"
 #include "7zip/7zip.h"
@@ -41,14 +42,14 @@
 #include "VBA.h"
 
 #include "../AutoBuild.h"
-#include "../gba/Cheats.h"
+#include "../gba/GBACheats.h"
 #include "../gba/CheatSearch.h"
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/Flash.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/RTC.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
@@ -625,9 +626,9 @@ bool MainWnd::FileRun()
 	const char* PhysicalName = theApp.szFile;
 #endif
 
-	theApp.dir		= getDirFromFile(LogicalName);
+	theApp.dir		= winGetDirFromFilename(LogicalName);
 
-	CString ipsname = getRelatedFilename(LogicalName, IDS_IPS_DIR, ".ips");
+	CString ipsname = winGetDestFilename(LogicalName, IDS_IPS_DIR, ".ips");
 
 	IMAGE_TYPE type = utilFindType(PhysicalName);
 
@@ -753,7 +754,7 @@ bool MainWnd::FileRun()
 		winLoadCheatListDefault();
 
 	if (theApp.filenamePreference == 0)
-		theApp.addRecentFile(getDiskFilename(LogicalName));
+		theApp.addRecentFile(winGetOriginalFilename(LogicalName));
 	else
 		theApp.addRecentFile(LogicalName);
 
@@ -917,7 +918,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 
 void MainWnd::winSaveCheatListDefault()
 {
-	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
+	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
 
 	winSaveCheatList(cheatName);
 }
@@ -932,7 +933,7 @@ void MainWnd::winSaveCheatList(const char *name)
 
 void MainWnd::winLoadCheatListDefault()
 {
-	CString cheatName = getRelatedFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
+	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
 
 	winLoadCheatList(cheatName);
 }
@@ -952,7 +953,7 @@ void MainWnd::winLoadCheatList(const char *name)
 
 void MainWnd::writeBatteryFile()
 {
-	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 
 	if (theApp.emulator.emuWriteBattery)
 		theApp.emulator.emuWriteBattery(batteryName);
@@ -960,7 +961,7 @@ void MainWnd::writeBatteryFile()
 
 void MainWnd::readBatteryFile()
 {
-	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 
 	bool res = false;
 
@@ -1031,7 +1032,7 @@ bool MainWnd::fileOpenSelect(int cartridgeType)
 	{
 		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
 		theApp.szFile = dlg.GetPathName();
-		initialDir = getDirFromFile(theApp.szFile);
+		initialDir = winGetDirFromFilename(theApp.szFile);
 
 		// we have directory override for that purpose
 		// but this can be...desirable
@@ -1157,7 +1158,7 @@ void MainWnd::screenCapture(int captureNumber)
 	else
 		ext.Format("_%02d.png", captureNumber);
 
-	CString captureName = getRelatedFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+	CString captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
 
 	if (theApp.captureFormat == 0)
 		theApp.emulator.emuWritePNG(captureName);

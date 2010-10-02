@@ -409,11 +409,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\win32\System.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\win32\VBA.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\src\win32\WavWriter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\win32\WinMiscUtil.cpp"
 				>
 			</File>
 			<File
@@ -448,7 +456,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\gba\Cheats.cpp"
+					RelativePath="..\src\gba\GBACheats.cpp"
 					>
 				</File>
 				<File
@@ -476,7 +484,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\gba\Globals.cpp"
+					RelativePath="..\src\gba\GBAGlobals.cpp"
 					>
 				</File>
 				<File
@@ -556,7 +564,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\gba\Sound.cpp"
+					RelativePath="..\src\gba\GBASound.cpp"
 					>
 				</File>
 				<File
@@ -656,7 +664,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBACheats.cpp"
+					RelativePath="..\src\win32\GBACheatsDlg.cpp"
 					>
 				</File>
 				<File
@@ -1950,7 +1958,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gba\Cheats.h"
+				RelativePath="..\src\gba\GBACheats.h"
 				>
 			</File>
 			<File
@@ -2006,7 +2014,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBACheats.h"
+				RelativePath="..\src\win32\GBACheatsDlg.h"
 				>
 			</File>
 			<File
@@ -2094,7 +2102,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gba\Globals.h"
+				RelativePath="..\src\gba\GBAGlobals.h"
 				>
 			</File>
 			<File
@@ -2107,6 +2115,10 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\Input.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\filters\filters.h"
 				>
 			</File>
 			<File
@@ -2242,7 +2254,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gba\Sound.h"
+				RelativePath="..\src\gba\GBASound.h"
 				>
 			</File>
 			<File
@@ -2307,6 +2319,10 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\WavWriter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\win32\WinMiscUtil.h"
 				>
 			</File>
 			<File

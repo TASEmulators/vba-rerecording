@@ -22,13 +22,13 @@
 #endif
 
 #include <memory.h>
-#include <assert.h>
+#include <cassert>
 
-#include "Sound.h"
+#include "GBASound.h"
 #include "../common/System.h" // SDL build needs this
 #include "../common/Util.h"
 #include "GBA.h"
-#include "Globals.h"
+#include "GBAGlobals.h"
 
 #ifndef countof
 #define countof(a)  (sizeof(a) / sizeof(a[0]))

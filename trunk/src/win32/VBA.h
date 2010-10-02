@@ -274,7 +274,6 @@ public:
 #ifdef MMX
 #endif
 	void updatePriority();
-	void directXMessage(const char *msg);
 	void shutdownDisplay();
 	void winCheckFullscreen();
 	bool updateRenderMethod0(bool force);

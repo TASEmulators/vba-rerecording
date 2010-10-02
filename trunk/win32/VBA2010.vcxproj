@@ -184,14 +184,14 @@
     <ClCompile Include="..\src\gba\agbprint.cpp" />
     <ClCompile Include="..\src\gba\armdis.cpp" />
     <ClCompile Include="..\src\gba\bios.cpp" />
-    <ClCompile Include="..\src\gba\Cheats.cpp" />
+    <ClCompile Include="..\src\gba\GBACheats.cpp" />
     <ClCompile Include="..\src\gba\CheatSearch.cpp" />
     <ClCompile Include="..\src\gba\EEprom.cpp" />
     <ClCompile Include="..\src\gba\elf.cpp" />
     <ClCompile Include="..\src\gba\Flash.cpp" />
     <ClCompile Include="..\src\gba\GBA.cpp" />
     <ClCompile Include="..\src\gba\GBAGfx.cpp" />
-    <ClCompile Include="..\src\gba\Globals.cpp" />
+    <ClCompile Include="..\src\gba\GBAGlobals.cpp" />
     <ClCompile Include="..\src\gba\Mode0.cpp" />
     <ClCompile Include="..\src\gba\Mode1.cpp" />
     <ClCompile Include="..\src\gba\Mode2.cpp" />
@@ -200,7 +200,7 @@
     <ClCompile Include="..\src\gba\Mode5.cpp" />
     <ClCompile Include="..\src\gba\remote.cpp" />
     <ClCompile Include="..\src\gba\RTC.cpp" />
-    <ClCompile Include="..\src\gba\Sound.cpp" />
+    <ClCompile Include="..\src\gba\GBASound.cpp" />
     <ClCompile Include="..\src\gba\Sram.cpp" />
     <ClCompile Include="..\src\gb\GB.cpp" />
     <ClCompile Include="..\src\gb\gbCheats.cpp" />
@@ -241,6 +241,8 @@
     <ClCompile Include="..\src\lua\src\lvm.c" />
     <ClCompile Include="..\src\lua\src\lzio.c" />
     <ClCompile Include="..\src\lua\src\print.c" />
+    <ClCompile Include="..\src\win32\System.cpp" />
+    <ClCompile Include="..\src\win32\WinMiscUtil.cpp" />
     <ClCompile Include="lib\libpng\png.c">
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
     </ClCompile>
@@ -516,7 +518,7 @@
     <ClCompile Include="..\src\win32\Disassemble.cpp" />
     <ClCompile Include="..\src\win32\ExportGSASnapshot.cpp" />
     <ClCompile Include="..\src\win32\FileDlg.cpp" />
-    <ClCompile Include="..\src\win32\GBACheats.cpp" />
+    <ClCompile Include="..\src\win32\GBACheatsDlg.cpp" />
     <ClCompile Include="..\src\win32\GBCheatsDlg.cpp" />
     <ClCompile Include="..\src\win32\GBColorDlg.cpp" />
     <ClCompile Include="..\src\win32\GBDisassemble.cpp" />
@@ -586,6 +588,7 @@
     <ClInclude Include="..\src\common\memgzio.h" />
     <ClInclude Include="..\src\common\movie.h" />
     <ClInclude Include="..\src\common\nesvideos-piece.h" />
+    <ClInclude Include="..\src\filters\filters.h" />
     <ClInclude Include="..\src\NLS.h" />
     <ClInclude Include="..\src\Port.h" />
     <ClInclude Include="..\src\common\System.h" />
@@ -604,7 +607,7 @@
     <ClInclude Include="..\src\gba\arm-new.h" />
     <ClInclude Include="..\src\gba\armdis.h" />
     <ClInclude Include="..\src\gba\bios.h" />
-    <ClInclude Include="..\src\gba\Cheats.h" />
+    <ClInclude Include="..\src\gba\GBACheats.h" />
     <ClInclude Include="..\src\gba\CheatSearch.h" />
     <ClInclude Include="..\src\gba\EEprom.h" />
     <ClInclude Include="..\src\gba\elf.h" />
@@ -612,9 +615,9 @@
     <ClInclude Include="..\src\gba\GBA.h" />
     <ClInclude Include="..\src\gba\GBAGfx.h" />
     <ClInclude Include="..\src\gba\GBAinline.h" />
-    <ClInclude Include="..\src\gba\Globals.h" />
+    <ClInclude Include="..\src\gba\GBAGlobals.h" />
     <ClInclude Include="..\src\gba\RTC.h" />
-    <ClInclude Include="..\src\gba\Sound.h" />
+    <ClInclude Include="..\src\gba\GBASound.h" />
     <ClInclude Include="..\src\gba\Sram.h" />
     <ClInclude Include="..\src\gba\thumb.h" />
     <ClInclude Include="..\src\gb\GB.h" />
@@ -641,6 +644,7 @@
     <ClInclude Include="..\src\win32\VBA.h" />
     <ClInclude Include="..\src\win32\WavWriter.h" />
     <ClInclude Include="..\src\win32\WinHelper.h" />
+    <ClInclude Include="..\src\win32\WinMiscUtil.h" />
     <ClInclude Include="..\src\win32\WinResUtil.h" />
     <ClInclude Include="..\src\win32\AboutDialog.h" />
     <ClInclude Include="..\src\win32\AccelEditor.h" />
@@ -650,7 +654,7 @@
     <ClInclude Include="..\src\win32\Disassemble.h" />
     <ClInclude Include="..\src\win32\ExportGSASnapshot.h" />
     <ClInclude Include="..\src\win32\FileDlg.h" />
-    <ClInclude Include="..\src\win32\GBACheats.h" />
+    <ClInclude Include="..\src\win32\GBACheatsDlg.h" />
     <ClInclude Include="..\src\win32\GBCheatsDlg.h" />
     <ClInclude Include="..\src\win32\GBColorDlg.h" />
     <ClInclude Include="..\src\win32\GBDisassemble.h" />

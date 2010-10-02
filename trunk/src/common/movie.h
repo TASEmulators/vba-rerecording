@@ -5,8 +5,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <stdio.h>
-#include <time.h>
+#include <cstdio>
+#include <ctime>
 #include <stdlib.h>
 #include <string>
 
@@ -114,7 +114,7 @@ struct SMovie
 	int   pauseFrame;
 
 	SMovieFileHeader header;
-	char authorInfo [MOVIE_METADATA_SIZE];
+	char authorInfo[MOVIE_METADATA_SIZE];
 
 	uint32 currentFrame;    // should = length_frames when recording, and be < length_frames when playing
 	uint32 bytesPerFrame;
@@ -126,9 +126,9 @@ struct SMovie
 };
 
 // methods used by the user-interface code
-int VBAMovieOpen(const char*filename, bool8 read_only);
-int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags);
-int VBAMovieGetInfo(const char*filename, SMovie*info);
+int VBAMovieOpen(const char *filename, bool8 read_only);
+int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags);
+int VBAMovieGetInfo(const char *filename, SMovie*info);
 void VBAMovieStop(bool8 suppress_message);
 const char *VBAChooseMovieFilename(bool8 read_only);
 
@@ -138,8 +138,8 @@ void VBAMovieUpdate(int controllerNum = 0);
 void VBAUpdateButtonPressDisplay();
 void VBAUpdateFrameCountDisplay();
 //bool8 VBAMovieRewind (uint32 at_frame);
-void VBAMovieFreeze(uint8**buf, uint32*size);
-int VBAMovieUnfreeze(const uint8*buf, uint32 size);
+void VBAMovieFreeze(uint8 **buf, uint32 *size);
+int VBAMovieUnfreeze(const uint8 *buf, uint32 size);
 void VBAMovieRestart();
 
 // accessor functions

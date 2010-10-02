@@ -24,7 +24,7 @@
 #include "Reg.h"
 #include "VBA.h"
 
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
@@ -41,9 +41,9 @@ extern "C" bool cpu_mmx;
 extern bool detectMMX();
 #endif
 
+extern int systemSpeed;
 extern int Init_2xSaI(u32);
 extern void winlog(const char *, ...);
-extern int systemSpeed;
 
 class OpenGLDisplay : public IDisplay
 {

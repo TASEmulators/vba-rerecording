@@ -19,7 +19,7 @@
 /************************************************************************/
 /* Arm/Thumb command set disassembler                                   */
 /************************************************************************/
-#include <stdio.h>
+#include <cstdio>
 
 #include "Globals.h"
 #include "armdis.h"

@@ -16,9 +16,9 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 
 #ifndef WIN32
 # include <unistd.h>
@@ -604,8 +604,6 @@ void remoteWriteRegister(char *p)
 	remotePutPacket("OK");
 }
 
-extern int emulating;
-
 void remoteStubMain()
 {
 	if (!debugger)
@@ -617,7 +615,7 @@ void remoteStubMain()
 		remoteResumed = false;
 	}
 
-	while (1)
+	while (true)
 	{
 		char buffer[1024];
 		int  res = remoteRecvFnc(buffer, 1024);

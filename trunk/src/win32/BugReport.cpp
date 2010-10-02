@@ -27,12 +27,12 @@
 #include "../AutoBuild.h"
 #include "../gba/agbprint.h"
 #include "../gba/Flash.h"
-#include "../gba/Cheats.h"
-#include "../gba/Globals.h"
+#include "../gba/GBACheats.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
 #include "../gba/RTC.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 #include "../common/vbalua.h"
 
 #ifdef _DEBUG

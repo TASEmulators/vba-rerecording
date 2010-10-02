@@ -28,7 +28,7 @@
 #include "VBA.h"
 
 //#include "../common/System.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
@@ -46,8 +46,8 @@ extern bool detectMMX();
 #endif
 
 extern int Init_2xSaI(u32);
+extern void directXMessage(const char *);
 extern void winlog(const char *, ...);
-extern int systemSpeed;
 
 typedef struct _D3DTLVERTEX
 {
@@ -179,13 +179,13 @@ bool Direct3DDisplay::initialize()
 
 		if (D3DCreate == NULL)
 		{
-			theApp.directXMessage("Direct3DCreate8");
+			directXMessage("Direct3DCreate8");
 			return FALSE;
 		}
 	}
 	else
 	{
-		theApp.directXMessage("D3D8.DLL");
+		directXMessage("D3D8.DLL");
 		return FALSE;
 	}
 

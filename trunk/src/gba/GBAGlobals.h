@@ -111,6 +111,8 @@ extern int32    cpuSaveType;
 extern bool8    cpuEnhancedDetection;
 extern bool8    cheatsEnabled;
 
+extern int emulating;
+
 extern u8 *bios;
 extern u8 *rom;
 extern u8 *internalRAM;

@@ -22,7 +22,7 @@
 #endif
 
 #include <memory.h>
-#include <assert.h>
+#include <cassert>
 
 #include "../common/System.h"
 #include "../common/Util.h"

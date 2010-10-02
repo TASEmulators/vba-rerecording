@@ -17,14 +17,14 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
-#include <stdio.h>
+#include <cstdio>
 
 #include "resource.h"
 #include "MainWnd.h"
 #include "Reg.h"
 #include "VBA.h"
 
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
@@ -35,10 +35,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern void winlog(const char *, ...);
 extern int RGB_LOW_BITS_MASK;
-extern int Init_2xSaI(u32);
 extern int systemSpeed;
+extern void winlog(const char *, ...);
+extern int Init_2xSaI(u32);
 
 class GDIDisplay : public IDisplay
 {

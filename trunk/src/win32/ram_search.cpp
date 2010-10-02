@@ -32,7 +32,7 @@
 	//#include <windows.h>
 	#include <commctrl.h>
 	#include "BaseTsd.h"
-	#include "GBACheats.h"
+	#include "GBACheatsDlg.h"
 	#include "GBCheatsDlg.h"
 	typedef INT_PTR intptr_t;
 #else
@@ -44,7 +44,7 @@
 
 #include "ram_search.h"
 #include "ramwatch.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 #include "../common/vbalua.h"
 
@@ -57,7 +57,6 @@ static void Clear_Sound_Buffer() {}
 
 static inline u8* HardwareToSoftwareAddress(HWAddressType address)
 {
-	extern int emulating;
 	if(!emulating)
 		return NULL;
 

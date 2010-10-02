@@ -121,6 +121,7 @@ extern int  systemGetDefaultJoypad();
 extern bool systemIsPaused();
 extern void systemSetPause(bool pause);
 
+extern int systemSpeed;
 extern bool systemSoundOn;
 extern u16  systemColorMap16[0x10000];
 extern u32  systemColorMap32[0x10000];

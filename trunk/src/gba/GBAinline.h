@@ -27,9 +27,9 @@
 #include "../Port.h"
 #include "../common/System.h"
 #include "../common/vbalua.h"
+#include "GBAGlobals.h"
 #include "EEprom.h"
 #include "Flash.h"
-#include "Globals.h"
 #include "RTC.h"
 
 extern bool8 cpuSramEnabled;

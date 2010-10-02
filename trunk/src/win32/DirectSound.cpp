@@ -27,9 +27,11 @@
 #include "VBA.h"
 
 //#include "../common/System.h"
-#include "../gba/Globals.h"
-#include "../gba/Sound.h"
+#include "../gba/GBAGlobals.h"
+#include "../gba/GBASound.h"
 #include "../common/nesvideos-piece.h"
+
+extern void directXMessage(const char *);
 
 class DirectSound : public ISound
 {
@@ -135,13 +137,13 @@ bool DirectSound::init()
 
 		if (DSoundCreate == NULL)
 		{
-			theApp.directXMessage("DirectSoundCreate");
+			directXMessage("DirectSoundCreate");
 			return false;
 		}
 	}
 	else
 	{
-		theApp.directXMessage("DSOUND.DLL");
+		directXMessage("DSOUND.DLL");
 		return false;
 	}
 
@@ -535,4 +537,3 @@ ISound *newDirectSound()
 {
 	return new DirectSound();
 }
-

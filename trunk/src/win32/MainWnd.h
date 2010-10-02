@@ -53,29 +53,22 @@ public:
 	afx_msg void OnOptionsEmulatorSelectbiosfile();
 
 	HCURSOR arrow;
-	void winMouseOn();
-	void screenCapture(int captureNumber);
 	HACCEL m_hAccelTable;
 	bool fileOpenSelect(int cartridgeType);
 	void updateSoundChannels(UINT nID);
-	void winConfirmMode();
+	void screenCapture(int captureNumber);
 	bool fileImportGSACodeFile(CString& fileName);
+	void readBatteryFile();
+	void writeBatteryFile();
 	bool writeSaveGame(const char *name);
 	bool loadSaveGame(const char *name);
 	CString winLoadFilter(UINT id);
 	void winLoadCheatList(const char *name);
-	void winLoadCheatListDefault();
-	void readBatteryFile();
-	void writeBatteryFile();
-	static bool isDriveRoot(const CString& file);
-	static CString getDiskFilename(const CString& file);
-	static CString getDirFromFile(const CString& file);
-	static CString getSavestateFilename(const CString& LogicalRomName, int nID);
-	static CString getSavestateMenuString(const CString& LogicalRomName, int nID);
-	static CString getRelatedDir(const CString& TargetDirReg);
-	static CString getRelatedFilename(const CString& LogicalRomName, const CString& TargetDirReg, const CString& ext);
 	void winSaveCheatList(const char *name);
+	void winLoadCheatListDefault();
 	void winSaveCheatListDefault();
+	void winMouseOn();
+	void winConfirmMode();
 	virtual ~MainWnd();
 
 	// Generated message map functions

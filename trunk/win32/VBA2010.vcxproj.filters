@@ -138,7 +138,7 @@
     <ClCompile Include="..\src\gba\bios.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\gba\Cheats.cpp">
+    <ClCompile Include="..\src\gba\GBACheats.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
     <ClCompile Include="..\src\gba\CheatSearch.cpp">
@@ -159,7 +159,7 @@
     <ClCompile Include="..\src\gba\GBAGfx.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\gba\Globals.cpp">
+    <ClCompile Include="..\src\gba\GBAGlobals.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
     <ClCompile Include="..\src\gba\Mode0.cpp">
@@ -186,7 +186,7 @@
     <ClCompile Include="..\src\gba\RTC.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\gba\Sound.cpp">
+    <ClCompile Include="..\src\gba\GBASound.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
     <ClCompile Include="..\src\gba\Sram.cpp">
@@ -372,7 +372,7 @@
     <ClCompile Include="..\src\win32\FileDlg.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\GBACheats.cpp">
+    <ClCompile Include="..\src\win32\GBACheatsDlg.cpp">
       <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\GBCheatsDlg.cpp">
@@ -768,6 +768,12 @@
     <ClCompile Include="lib\zlib\zutil.c">
       <Filter>Source Files\zlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\win32\System.cpp">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\WinMiscUtil.cpp">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ChangeLog">
@@ -851,7 +857,7 @@
     <ClInclude Include="..\src\gba\bios.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\gba\Cheats.h">
+    <ClInclude Include="..\src\gba\GBACheats.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
     <ClInclude Include="..\src\gba\CheatSearch.h">
@@ -875,13 +881,13 @@
     <ClInclude Include="..\src\gba\GBAinline.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\gba\Globals.h">
+    <ClInclude Include="..\src\gba\GBAGlobals.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
     <ClInclude Include="..\src\gba\RTC.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\gba\Sound.h">
+    <ClInclude Include="..\src\gba\GBASound.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
     <ClInclude Include="..\src\gba\Sram.h">
@@ -1049,7 +1055,7 @@
     <ClInclude Include="..\src\win32\FileDlg.h">
       <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\GBACheats.h">
+    <ClInclude Include="..\src\win32\GBACheatsDlg.h">
       <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\GBCheatsDlg.h">
@@ -1210,6 +1216,12 @@
     </ClInclude>
     <ClInclude Include="..\src\win32\ZoomControl.h">
       <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\filters\filters.h">
+      <Filter>Header Files\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\WinMiscUtil.h">
+      <Filter>Header Files\Win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

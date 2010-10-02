@@ -35,9 +35,9 @@
 #include "VBA.h"
 
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/Flash.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 #include "../gba/agbprint.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"

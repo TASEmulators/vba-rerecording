@@ -16,18 +16,18 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <cstdio>
+#include <cctype>
+#include <cstring>
 #include <memory.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
 
 #include "../common/System.h"
 #include "../common/Util.h"
 #include "../NLS.h"
-#include "Cheats.h"
+#include "GBACheats.h"
 #include "GBA.h"
 #include "GBAinline.h"
-#include "Globals.h"
+#include "GBAGlobals.h"
 
 /**
  * Gameshark code types:

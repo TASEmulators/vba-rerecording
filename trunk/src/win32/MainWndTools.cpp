@@ -42,10 +42,11 @@
 #include "TileView.h"
 #include "WavWriter.h"
 #include "WinResUtil.h"
+#include "WinMiscUtil.h"
 #include "VBA.h"
 
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/GB.h"
 
 #ifdef _DEBUG
@@ -515,8 +516,8 @@ void MainWnd::OnToolsSoundStartrecording()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_WAV);
 	CString title  = winResLoadString(IDS_SELECT_WAV_NAME);
 
-	wavName = getRelatedFilename(wavName, IDS_WAV_DIR, exts[0]);
-	CString wavDir = getRelatedDir(IDS_WAV_DIR);
+	wavName = winGetDestFilename(wavName, IDS_WAV_DIR, exts[0]);
+	CString wavDir = winGetDestDir(IDS_WAV_DIR);
 
 	FileDlg dlg(this, wavName, filter, 1, "WAV", exts, wavDir, title, true);
 
@@ -582,8 +583,8 @@ void MainWnd::OnToolsStartAVIRecording()
 	CString filter = theApp.winLoadFilter(IDS_FILTER_AVI);
 	CString title  = winResLoadString(IDS_SELECT_AVI_NAME);
 
-	aviName = getRelatedFilename(aviName, IDS_AVI_DIR, exts[0]);
-	CString aviDir = getRelatedDir(IDS_AVI_DIR);
+	aviName = winGetDestFilename(aviName, IDS_AVI_DIR, exts[0]);
+	CString aviDir = winGetDestDir(IDS_AVI_DIR);
 
 	FileDlg dlg(this, aviName, filter, 1, "AVI", exts, aviDir, title, true);
 

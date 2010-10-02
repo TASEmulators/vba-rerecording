@@ -26,6 +26,7 @@
 #include "RomInfo.h"
 #include "Reg.h"
 #include "WinResUtil.h"
+#include "WinMiscUtil.h"
 #include "LuaOpenDialog.h"
 #include "ram_search.h"
 #include "ramwatch.h"
@@ -35,17 +36,15 @@
 #include "../NLS.h"
 #include "../version.h"
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
-#include "../gba/Cheats.h"
+#include "../gba/GBAGlobals.h"
+#include "../gba/GBACheats.h"
 #include "../gba/EEprom.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
-
-extern int emulating;
 
 extern void remoteCleanUp();
 
@@ -180,8 +179,8 @@ void MainWnd::OnFileLoad()
 	CString filter = winLoadFilter(IDS_FILTER_SGM);
 	CString title  = winResLoadString(IDS_SELECT_SAVE_GAME_NAME);
 
-	CString saveName = getRelatedFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
-	CString saveDir = getRelatedDir(IDS_SAVE_DIR);
+	CString saveName = winGetDestFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
+	CString saveDir = winGetDestDir(IDS_SAVE_DIR);
 
 	FileDlg dlg(this, saveName, filter, 0, "SGM", exts, saveDir, title, false, true);
 
@@ -203,149 +202,11 @@ void MainWnd::OnUpdateFileLoad(CCmdUI*pCmdUI)
 	pCmdUI->Enable(emulating);
 }
 
-// maybe these should go to util.cpp
-static bool FileExists(const char* filename)
-{
-	FILE* f = fopen(filename, "rb");
-	if (f)
-	{
-		fclose(f);
-		return true;
-	}
-	return false;
-}
-
-bool MainWnd::isDriveRoot(const CString& file)
-{
-	if (file.GetLength() == 3)
-	{
-		if (file[1] == ':' && file[2] == '\\')
-			return true;
-	}
-	return false;
-}
-
-CString MainWnd::getDiskFilename(const CString& file)
-{
-	int index = file.Find('|');
-
-	if (index != -1)
-		return file.Left(index);
-	else
-		return file;
-}
-
-CString MainWnd::getDirFromFile(const CString& file)
-{
-	CString temp  = getDiskFilename(file);
-	int index = max(temp.ReverseFind('/'), temp.ReverseFind('\\'));
-	if (index != -1)
-	{
-		temp = temp.Left(index);
-		if (temp.GetLength() == 2 && temp[1] == ':')
-			temp += "\\";
-	}
-
-	return temp;
-}
-
-CString MainWnd::getRelatedDir(const CString& TargetDirReg)
-{
-	CString targetDir = regQueryStringValue(TargetDirReg, NULL);
-
-	if (targetDir.IsEmpty())
-		targetDir = getDirFromFile(theApp.filename);
-
-	return targetDir;
-}
-
-CString MainWnd::getRelatedFilename(const CString& LogicalRomName, const CString& TargetDirReg, const CString& ext)
-{
-	if (LogicalRomName.GetLength() == 0)
-		 return CString();
-
-	CString targetDir = getRelatedDir(TargetDirReg);
-	if (!isDriveRoot(targetDir))
-		targetDir += '\\';
-
-	CString buffer = LogicalRomName;
-
-	int index = max(buffer.ReverseFind('/'), max(buffer.ReverseFind('\\'), buffer.ReverseFind('|')));
-	if (index != -1)
-		buffer = buffer.Right(buffer.GetLength()-index-1);
-
-	index = buffer.ReverseFind('.');
-	if (index != -1)
-		buffer = buffer.Left(index);
-
-	CString filename;
-	filename.Format("%s%s%s", targetDir, buffer, ext);
-	bool fileExists = FileExists(filename);
-
-	// check for old style of naming, for better backward compatibility
-	if (!fileExists || theApp.filenamePreference == 0)
-	{
-		index = LogicalRomName.Find('|');
-		if (index != -1)
-		{
-			buffer = LogicalRomName.Left(index);
-			index = max(buffer.ReverseFind('/'), buffer.ReverseFind('\\'));
-			
-			int dotIndex = buffer.ReverseFind('.');
-			if (dotIndex > index)
-				buffer = buffer.Left(dotIndex);
-
-			if (index != -1)
-				buffer = buffer.Right(buffer.GetLength()-index-1);
-
-			CString filename2;
-			filename2.Format("%s%s%s", targetDir, buffer, ext);
-			bool file2Exists = FileExists(filename2);
-
-			if ((file2Exists && !fileExists) || (theApp.filenamePreference == 0 && (file2Exists || !fileExists)))
-				return filename2;
-		}
-	}
-
-	return filename;
-}
-
-CString MainWnd::getSavestateFilename(const CString& LogicalRomName, int nID)
-{
-	CString ext;
-	ext.Format("%d.sgm", nID);
-
-	return getRelatedFilename(LogicalRomName, IDS_SAVE_DIR, ext);
-}
-
-CString MainWnd::getSavestateMenuString(const CString& LogicalRomName, int nID)
-{
-	CString str;
-	if (theApp.showSlotTime)
-	{
-		CFileStatus status;
-		if (emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, nID), status))
-		{
-			str.Format("#&%d %s", nID, status.m_mtime.Format("%Y/%m/%d %H:%M:%S"));
-		}
-		else
-		{
-			str.Format("#&%d ----/--/-- --:--:--", nID);
-		}
-	}
-	else
-	{
-		str.Format("Slot #&%d", nID);
-	}
-
-	return str;
-}
-
 BOOL MainWnd::OnFileLoadSlot(UINT nID)
 {
 	nID = nID + 1 - ID_FILE_LOADGAME_SLOT1;
 
-	CString filename = getSavestateFilename(theApp.filename, nID);
+	CString filename = winGetSavestateFilename(theApp.filename, nID);
 
 	bool res = loadSaveGame(filename);
 
@@ -395,8 +256,8 @@ void MainWnd::OnFileSave()
 	CString filter = winLoadFilter(IDS_FILTER_SGM);
 	CString title  = winResLoadString(IDS_SELECT_SAVE_GAME_NAME);
 
-	CString saveName = getRelatedFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
-	CString saveDir = getRelatedDir(IDS_SAVE_DIR);
+	CString saveName = winGetDestFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
+	CString saveDir = winGetDestDir(IDS_SAVE_DIR);
 
 	FileDlg dlg(this, saveName, filter, 0, "SGM", exts, saveDir, title, true);
 
@@ -420,7 +281,7 @@ BOOL MainWnd::OnFileSaveSlot(UINT nID)
 	if (theApp.saveMakesCurrent)
 		theApp.currentSlot = nID - 1;
 
-	CString filename = getSavestateFilename(theApp.filename, nID);
+	CString filename = winGetSavestateFilename(theApp.filename, nID);
 
 	bool res = writeSaveGame(filename);
 
@@ -453,8 +314,8 @@ void MainWnd::OnFileImportBatteryfile()
 	CString filter = winLoadFilter(IDS_FILTER_SAV);
 	CString title  = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
-	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
-	CString batteryDir = getRelatedDir(IDS_BATTERY_DIR);
+	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
+	CString batteryDir = winGetDestDir(IDS_BATTERY_DIR);
 
 	FileDlg dlg(this, batteryName, filter, 0, "SAV", exts, batteryDir, title, false, true);
 
@@ -565,8 +426,8 @@ void MainWnd::OnFileExportBatteryfile()
 	CString filter = winLoadFilter(IDS_FILTER_SAV);
 	CString title  = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
-	CString batteryName = getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
-	CString batteryDir = getRelatedDir(IDS_BATTERY_DIR);
+	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
+	CString batteryDir = winGetDestDir(IDS_BATTERY_DIR);
 
 	FileDlg dlg(this, batteryName, filter, 1, "SAV", exts, batteryDir, title, true);
 
@@ -608,7 +469,7 @@ void MainWnd::OnFileExportGamesharksnapshot()
 	CString filter = winLoadFilter(IDS_FILTER_SPS);
 	CString title  = winResLoadString(IDS_SELECT_SNAPSHOT_FILE);
 
-	CString name = getRelatedFilename(theApp.filename, CString(), exts[0]);
+	CString name = winGetDestFilename(theApp.filename, CString(), exts[0]);
 
 	FileDlg dlg(this, name, filter, 1, "SPS", exts, "", title, true);
 
@@ -653,8 +514,8 @@ void MainWnd::OnFileScreencapture()
 	else
 		ext.Format(".png");
 
-	CString captureName = getRelatedFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
-	CString captureDir = getRelatedDir(IDS_CAPTURE_DIR);
+	CString captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+	CString captureDir = winGetDestDir(IDS_CAPTURE_DIR);
 
 	FileDlg dlg(this,
 	            captureName,
@@ -800,7 +661,7 @@ void MainWnd::OnFileSavegameOldestslot()
 
 	for (int i = 0; i < 10; i++)
 	{
-		if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
+		if (CFile::GetStatus(winGetSavestateFilename(theApp.filename, i+1), status))
 		{
 			if (time - status.m_mtime.GetTime() > 0 || time == -1)
 			{
@@ -831,7 +692,7 @@ void MainWnd::OnUpdateFileSavegameOldestslot(CCmdUI*pCmdUI)
 		{
 			for (int i = 0; i < 10; i++)
 			{
-				if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
+				if (CFile::GetStatus(winGetSavestateFilename(theApp.filename, i+1), status))
 				{
 					if (time - status.m_mtime.GetTime() > 0 || time == -1)
 					{
@@ -874,7 +735,7 @@ void MainWnd::OnFileLoadgameMostrecent()
 
 	for (int i = 0; i < 10; i++)
 	{
-		if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
+		if (CFile::GetStatus(winGetSavestateFilename(theApp.filename, i+1), status))
 		{
 			if (status.m_mtime.GetTime() > time)
 			{
@@ -903,7 +764,7 @@ void MainWnd::OnUpdateFileLoadgameMostrecent(CCmdUI*pCmdUI)
 		{
 			for (int i = 0; i < 10; i++)
 			{
-				if (CFile::GetStatus(getSavestateFilename(theApp.filename, i+1), status))
+				if (CFile::GetStatus(winGetSavestateFilename(theApp.filename, i+1), status))
 				{
 					if (status.m_mtime.GetTime() > time)
 					{
@@ -966,13 +827,13 @@ void MainWnd::OnUpdateFileLoadSlot(CCmdUI *pCmdUI)
 
 	if (pCmdUI->m_pMenu != NULL)
 	{
-		pCmdUI->SetText(getSavestateMenuString(theApp.filename, slotID));
+		pCmdUI->SetText(winGetSavestateMenuString(theApp.filename, slotID));
 
 		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
 
 	CFileStatus status;
-	pCmdUI->Enable(emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, slotID), status));
+	pCmdUI->Enable(emulating && CFile::GetStatus(winGetSavestateFilename(theApp.filename, slotID), status));
 }
 
 void MainWnd::OnUpdateFileSaveSlot(CCmdUI *pCmdUI)
@@ -981,7 +842,7 @@ void MainWnd::OnUpdateFileSaveSlot(CCmdUI *pCmdUI)
 	{
 		int slotID = pCmdUI->m_nID - ID_FILE_SAVEGAME_SLOT1 + 1;
 
-		pCmdUI->SetText(getSavestateMenuString(theApp.filename, slotID));
+		pCmdUI->SetText(winGetSavestateMenuString(theApp.filename, slotID));
 
 		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 	}
@@ -995,7 +856,7 @@ void MainWnd::OnUpdateSelectSlot(CCmdUI *pCmdUI)
 	{
 		int slot = pCmdUI->m_nID - ID_SELECT_SLOT1;
 
-		pCmdUI->SetText(getSavestateMenuString(theApp.filename, slot + 1));
+		pCmdUI->SetText(winGetSavestateMenuString(theApp.filename, slot + 1));
 
 		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
 
@@ -1065,7 +926,7 @@ void MainWnd::OnUpdateFileLoadgameCurrent(CCmdUI*pCmdUI)
 	}
 
 	CFileStatus status;
-	pCmdUI->Enable(emulating && CFile::GetStatus(getSavestateFilename(theApp.filename, slotID), status));
+	pCmdUI->Enable(emulating && CFile::GetStatus(winGetSavestateFilename(theApp.filename, slotID), status));
 }
 
 void MainWnd::OnFileLoadgameMakeCurrent()

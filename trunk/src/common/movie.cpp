@@ -1,16 +1,18 @@
 #include "../Port.h"
-#include <string.h>
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
+
 #ifdef HAVE_STRINGS_H
 #   include <strings.h>
 #endif
-#include <ctype.h>
-#include <stdlib.h>
 
 #if defined(__unix) || defined(__linux) || defined(__sun) || defined(__DJGPP)
 #   include <unistd.h>
 #   include <sys/types.h>
 #   include <sys/stat.h>
-#   include <limits.h>
+#   include <climits>
 #   define stricmp strcasecmp
 // FIXME: this is wrong, but we don't want buffer overflow
 #   if defined _MAX_PATH
@@ -20,8 +22,6 @@
 #   endif
 #endif
 
-#include <time.h>
-
 #ifdef WIN32
 #   include <io.h>
 #   ifndef W_OK
@@ -30,19 +30,18 @@
 #   define ftruncate chsize
 #endif
 
-#include <assert.h>
-
 #include "movie.h"
 
 #if (defined(WIN32) && !defined(SDL))
 #   include "../win32/stdafx.h"
 #   include "../win32/MainWnd.h"
 #   include "../win32/VBA.h"
+#   include "../win32/WinMiscUtil.h"
 #endif
 
 #include "System.h"
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/RTC.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
@@ -471,7 +470,7 @@ void VBAMovieInit()
 
 static void GetBatterySaveName(CString & filename)
 {
-	filename = ((MainWnd *)theApp.m_pMainWnd)->getRelatedFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+	filename = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 }
 
 #else
