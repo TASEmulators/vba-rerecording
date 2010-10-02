@@ -23,7 +23,7 @@
 #include "../common/System.h" // systemMessage
 #include "../common/Util.h"
 #include "../common/movie.h"
-#include "Globals.h"
+#include "GBAGlobals.h"
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 

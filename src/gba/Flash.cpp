@@ -21,7 +21,7 @@
 
 #include "Flash.h"
 #include "GBA.h"
-#include "Globals.h"
+#include "GBAGlobals.h"
 #include "Sram.h"
 #include "../common/System.h"
 #include "../common/Util.h"

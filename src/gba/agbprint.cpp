@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "Globals.h"
+#include "GBAGlobals.h"
 
 extern int systemVerbose;
 

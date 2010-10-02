@@ -21,7 +21,7 @@
 /************************************************************************/
 #include <cstdio>
 
-#include "Globals.h"
+#include "GBAGlobals.h"
 #include "armdis.h"
 #include "elf.h"
 

@@ -23,7 +23,7 @@
 #include "../Port.h"
 #include "../NLS.h"
 #include "../common/System.h" // systemMessage
-#include "Globals.h"
+#include "GBAGlobals.h"
 #include "elf.h"
 
 #define elfReadMemory(addr) \
