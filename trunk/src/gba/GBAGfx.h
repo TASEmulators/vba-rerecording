@@ -26,7 +26,7 @@
 
 #include "../Port.h"
 #include "GBA.h"
-#include "Globals.h"
+#include "GBAGlobals.h"
 
 //#define SPRITE_DEBUG
 

@@ -43,7 +43,7 @@
 #endif // WIN32
 
 #include "GBA.h"
-#include "Globals.h"
+#include "GBAGlobals.h"
 
 extern bool debugger;
 extern void CPUUpdateCPSR();
