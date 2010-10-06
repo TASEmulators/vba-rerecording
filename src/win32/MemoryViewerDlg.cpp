@@ -295,10 +295,11 @@ void MemoryViewerDlg::OnGo()
 
 	u32 address;
 	sscanf(buffer, "%x", &address);
-	if (m_viewer.getSize() == 1)
-		address &= ~1;
-	else if (m_viewer.getSize() == 2)
-		address &= ~3;
+	//if (m_viewer.getSize() == 1)
+	//	address &= ~1;
+	//else if (m_viewer.getSize() == 2)
+	//	address &= ~3;
+	address &= ~0xf;
 	m_viewer.setAddress(address);
 }
 
