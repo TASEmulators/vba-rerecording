@@ -569,19 +569,16 @@ void MainWnd::OnFileTogglemenu()
 
 	if (theApp.menuToggle)
 	{
-		theApp.updateMenuBar();
+		SetMenu(&theApp.m_menu);
 		if (theApp.tripleBuffering)
 		{
 			if (theApp.display)
-				theApp.display->checkFullScreen();
-			DrawMenuBar();
+				theApp.display->renderMenu();
 		}
-		theApp.winAccelMgr.UpdateMenu(theApp.menu);
 	}
 	else
 	{
 		SetMenu(NULL);
-		DestroyMenu(theApp.menu);
 	}
 
 	theApp.adjustDestRect();

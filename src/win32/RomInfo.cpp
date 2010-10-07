@@ -564,10 +564,10 @@ BOOL RomInfoGBA::OnInitDialog()
 	u8 crc = 0x19;
 	for (int i = 0xa0; i < 0xbd; i++)
 	{
-		crc += rom[i];
+		crc = (crc + rom[i]) & 0xff;
 	}
 
-	crc = (-crc) & 255;
+	crc = (-crc) & 0xff;
 
 	sprintf(buffer, "%02x (%02x)", crc, rom[0xbd]);
 	GetDlgItem(IDC_ROM_CRC)->SetWindowText(buffer);

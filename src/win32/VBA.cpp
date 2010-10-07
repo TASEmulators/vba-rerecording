@@ -282,12 +282,9 @@ static void winOutput(char *s, u32 addr)
 
 typedef BOOL (WINAPI *GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
 
-static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
+static int winGetMenuBarHeight()
 {
-	HINSTANCE hinstDll;
-	DWORD	  dwVersion = 0;
-
-	hinstDll = /**/ ::LoadLibrary("USER32.DLL");
+	HINSTANCE hinstDll = /**/ ::LoadLibrary("USER32.DLL");
 
 	if (hinstDll)
 	{
@@ -300,22 +297,13 @@ static void winCheckMenuBarInfo(int& winSizeX, int& winSizeY)
 
 			func(AfxGetMainWnd()->GetSafeHwnd(), OBJID_MENU, 0, &info);
 
-			int menuHeight = GetSystemMetrics(SM_CYMENU);
+			/**/ ::FreeLibrary(hinstDll);
 
-			if ((info.rcBar.bottom - info.rcBar.top) > menuHeight)
-			{
-				winSizeY += (info.rcBar.bottom - info.rcBar.top) - menuHeight + 1;
-				theApp.m_pMainWnd->SetWindowPos(
-				    0,                     //HWND_TOPMOST,
-				    theApp.windowPositionX,
-				    theApp.windowPositionY,
-				    winSizeX,
-				    winSizeY,
-				    SWP_NOMOVE | SWP_SHOWWINDOW);
-			}
+			return info.rcBar.bottom - info.rcBar.top + 1;
 		}
-		/**/ ::FreeLibrary(hinstDll);
 	}
+
+	return GetSystemMetrics(SM_CYMENU);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -893,32 +881,27 @@ void VBA::adjustDestRect()
 
 	if (videoOption > VIDEO_4X)
 	{
-		// make sure that dest rect lies in the monitor
-		dest.top	-= windowPositionY;
-		dest.left	-= windowPositionX;
-		dest.bottom -= windowPositionY;
-		dest.right	-= windowPositionX;
-
 		int menuSkip = 0;
-
 		if (menuToggle)
 		{
-			menuSkip	 = GetSystemMetrics(SM_CYMENU);
-			dest.bottom -= menuSkip;
+			menuSkip = winGetMenuBarHeight();
 		}
 
-		int top	 = (fsHeight - surfaceSizeY) / 2;
-		int left = (fsWidth - surfaceSizeX) / 2;
-		dest.top	+= top;
-		dest.bottom += top;
-		dest.left	+= left;
-		dest.right	+= left;
 		if (fullScreenStretch)
 		{
 			dest.top	= menuSkip;
 			dest.left	= 0;
 			dest.right	= fsWidth;
 			dest.bottom = fsHeight;
+		}
+		else
+		{
+			int top	 = (fsHeight - surfaceSizeY) / 2;
+			int left = (fsWidth - surfaceSizeX) / 2;
+			dest.top	+= top - menuSkip * 2;
+			dest.bottom += top;
+			dest.left	+= left;
+			dest.right	+= left;
 		}
 	}
 }
@@ -1170,18 +1153,30 @@ void VBA::updateFilter()
 		display->changeRenderSize(rect.right, rect.bottom);
 }
 
+void VBA::recreateMenuBar()
+{
+	m_menu.Detach();
+	m_menu.Attach(winResLoadMenu(MAKEINTRESOURCE(IDR_MENU)));
+
+	if (m_pMainWnd && menuToggle)	// assuming that whether the menu has been set is always kept tracked
+	{
+		m_pMainWnd->SetMenu(&m_menu);
+	}
+
+	if (menu != NULL)
+	{
+		DestroyMenu(menu);
+	}
+
+	menu = m_menu.GetSafeHmenu();
+}
+
 void VBA::updateMenuBar()
 {
 	if (flagHideMenu)
 		return;
-
-	if (menu != NULL)
-	{
-		if (m_pMainWnd)
-			m_pMainWnd->SetMenu(NULL);
-		m_menu.Detach();
-		DestroyMenu(menu);
-	}
+	
+	recreateMenuBar();
 
 	if (popup != NULL)
 	{
@@ -1189,12 +1184,6 @@ void VBA::updateMenuBar()
 		DestroyMenu(popup);
 		popup = NULL;
 	}
-
-	m_menu.Attach(winResLoadMenu(MAKEINTRESOURCE(IDR_MENU)));
-	menu = (HMENU)m_menu;
-
-	if (m_pMainWnd)
-		m_pMainWnd->SetMenu(&m_menu);
 }
 
 void VBA::saveRewindStateIfNecessary()
@@ -1417,9 +1406,6 @@ void VBA::updateWindowSize(int value)
 
 	videoOption = value;
 
-	sizeX = 240;
-	sizeY = 160;
-
 	if (cartridgeType == 1)
 	{
 		if (gbBorderOn)
@@ -1438,6 +1424,11 @@ void VBA::updateWindowSize(int value)
 			gbBorderColumnSkip = 0;
 			gbBorderRowSkip	   = 0;
 		}
+	}
+	else
+	{
+		sizeX = 240;
+		sizeY = 160;
 	}
 
 	switch (videoOption)
@@ -1486,13 +1477,10 @@ void VBA::updateWindowSize(int value)
 	rect.right	= sizeX;
 	rect.bottom = sizeY;
 
-	dest.left	= 0;
-	dest.top	= 0;
-	dest.right	= surfaceSizeX;
-	dest.bottom = surfaceSizeY;
-
-	int winSizeX = sizeX;
-	int winSizeY = sizeY;
+	int winSizeX = 0;
+	int winSizeY = 0;
+	int x = 0;
+	int y = 0;
 
 	DWORD style	  = WS_POPUP | WS_VISIBLE;
 	DWORD styleEx = alwaysOnTop ? WS_EX_TOPMOST : 0;
@@ -1501,35 +1489,31 @@ void VBA::updateWindowSize(int value)
 	{
 		style |= WS_OVERLAPPEDWINDOW;
 
-		AdjustWindowRectEx(&dest, style, TRUE, styleEx);
+		dest.left	= 0;
+		dest.top	= 0;
+		dest.right	= surfaceSizeX;
+		dest.bottom = surfaceSizeY;
 
-		winSizeX = dest.right  - dest.left;
-		winSizeY = dest.bottom - dest.top;
-	}
-	else
-	{
-		AdjustWindowRectEx(&dest, style, flagHideMenu ? FALSE : TRUE, styleEx);
-
-		winSizeX = fsWidth;
-		winSizeY = fsHeight;
-	}
-
-	int x = 0;
-	int y = 0;
-
-	if (theApp.videoOption <= VIDEO_4X)
-	{
 		x = windowPositionX;
 		y = windowPositionY;
 	}
+	else
+	{
+		dest.left	= 0;
+		dest.top	= 0;
+		dest.right	= fsWidth;
+		dest.bottom = fsHeight;
+	}
+
+	AdjustWindowRectEx(&dest, style, flagHideMenu ? FALSE : TRUE, styleEx);
+	winSizeX = dest.right  - dest.left;
+	winSizeY = dest.bottom - dest.top;
 
 	if (m_pMainWnd == NULL)
 	{
-		// Create a window
-		MainWnd *pWnd = new MainWnd;
-		m_pMainWnd = pWnd;
-
-		pWnd->CreateEx(styleEx,
+		// Create a new window
+		m_pMainWnd = new MainWnd;
+		m_pMainWnd->CreateEx(styleEx,
 		               theApp.wndClass,
 		               VBA_NAME_AND_VERSION,
 		               style,
@@ -1537,14 +1521,12 @@ void VBA::updateWindowSize(int value)
 		               NULL,
 		               0);
 
-		if (!(HWND)*pWnd)
+		if (!(HWND)*m_pMainWnd)
 		{
 			winlog("Error creating Window %08x\n", GetLastError());
 			AfxPostQuitMessage(0);
 			return;
 		}
-
-		updateMenuBar(); // add menubar first of all, or winCheckMenuBarInfo() will change window height randomly.
 	}
 	else
 	{
@@ -1556,12 +1538,10 @@ void VBA::updateWindowSize(int value)
 		                         SWP_NOMOVE | SWP_SHOWWINDOW);
 	}
 
-	winCheckMenuBarInfo(winSizeX, winSizeY);
-
+	updateMenuBar(); // add menubar first of all, or winGetMenuBarHeight() will get random height.
+	winAccelMgr.UpdateMenu(menu);
 	adjustDestRect();
 
-	updateMenuBar();
-	winAccelMgr.UpdateMenu(menu);
 	updateIFB();
 	updateFilter();
 
@@ -1848,6 +1828,7 @@ void VBA::winSetLanguageOption(int option, bool force)
 	}
 	languageOption = option;
 	updateMenuBar();
+	theApp.winAccelMgr.UpdateMenu(theApp.menu);
 }
 
 HINSTANCE VBA::winLoadLanguage(const char *name)

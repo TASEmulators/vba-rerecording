@@ -58,7 +58,6 @@ public:
 	// Operations
 public:
 	void UpdateMenu(HMENU menu);
-	void UpdateMenu();
 	// Connection to the main application wnd
 	void Connect(CWnd *pWnd, bool bAutoSave = true);
 	// In/Out

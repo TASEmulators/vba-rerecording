@@ -181,7 +181,7 @@ void AccelEditor::InitCommands()
 	m_hItems.RemoveAll();
 	m_alreadyAffected.SetWindowText("");
 	
-	theApp.updateMenuBar();
+	theApp.recreateMenuBar();
 	AddCommandsFromMenu(&theApp.m_menu, TVI_ROOT);
 	AddCommandsFromTable();
 }
