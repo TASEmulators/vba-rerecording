@@ -662,19 +662,6 @@ void DirectDrawDisplay::render()
 
 	if (hret == DD_OK)
 	{
-		// moved to VBA.cpp
-		/*
-		   if(textMethod == 0)
-		   {
-		        int copyX = 240, copyY = 160;
-		        if(theApp.cartridgeType == 1)
-		            if(gbBorderOn) copyX = 256, copyY = 224;
-		            else           copyX = 160, copyY = 144;
-
-		        DrawTextMessages((u8*)pix, copyX*(systemColorDepth/8)+(systemColorDepth==24?0:4), 0, copyY);
-		   }
-		 */
-
 		if (theApp.filterFunction)
 		{
 			if (systemColorDepth == 16)

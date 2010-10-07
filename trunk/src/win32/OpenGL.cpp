@@ -309,18 +309,6 @@ void OpenGLDisplay::render()
 		    "The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
 	}
 */
-	// moved to VBA.cpp
-	/*
-	   if(textMethod == 0)
-	   {
-	    int copyX = 240, copyY = 160;
-	    if(theApp.cartridgeType == 1)
-	        if(gbBorderOn) copyX = 256, copyY = 224;
-	        else           copyX = 160, copyY = 144;
-
-	    DrawTextMessages((u8*)pix, (copyX+1)*(systemColorDepth/8), 0, copyY);
-	   }
-	 */
 
 	if (filterFunction)
 	{

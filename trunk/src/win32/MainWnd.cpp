@@ -838,7 +838,7 @@ void MainWnd::OnMove(int x, int y)
 	{
 		if (this)
 		{
-			if (!IsIconic())
+			if (!IsIconic() && !IsZoomed())
 			{
 				RECT r;
 
@@ -895,7 +895,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 					theApp.surfaceSizeY = cy;
 					theApp.adjustDestRect();
 					if (theApp.display)
-						theApp.display->resize(theApp.dest.right-theApp.dest.left, theApp.dest.bottom-theApp.dest.top);
+						theApp.display->resize(theApp.dest.right - theApp.dest.left, theApp.dest.bottom - theApp.dest.top);
 					systemRefreshScreen();	// useful when shrinking
 				}
 			}

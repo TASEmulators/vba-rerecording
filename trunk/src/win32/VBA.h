@@ -149,7 +149,7 @@ public:
 	int       captureFormat;
 	bool      tripleBuffering;
 	bool      autoHideMenu;
-	bool       speedupToggle;
+	bool      speedupToggle;
 	int       throttle;
 	u32       throttleLastTime;
 ///  u32 autoFrameSkipLastTime;
@@ -249,6 +249,7 @@ public:
 	~VBA();
 
 	void adjustDestRect();
+	void recreateMenuBar();
 	void updateIFB();
 	void updateFilter();
 	void updateMenuBar();

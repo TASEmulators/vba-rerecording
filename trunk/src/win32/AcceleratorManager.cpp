@@ -423,15 +423,13 @@ void CAcceleratorManager::UpdateMenu(HMENU menu)
 {
 	int count = GetMenuItemCount(menu);
 
-	OSVERSIONINFO info;
+	OSVERSIONINFO info = {0};
 	info.dwOSVersionInfoSize = sizeof(info);
 	GetVersionEx(&info);
 
 	if (info.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
 	{
-		MENUITEMINFO info;
-		char         ss[128];
-		ZeroMemory(&info, sizeof(info));
+		MENUITEMINFO info = {0};
 		info.cbSize = sizeof(info) - sizeof(HBITMAP);
 		info.fMask  = MIIM_ID | MIIM_SUBMENU;
 		for (int i = 0; i < count; i++)
@@ -446,14 +444,15 @@ void CAcceleratorManager::UpdateMenu(HMENU menu)
 			{
 				if (info.wID != (UINT)-1)
 				{
-					MENUITEMINFO info2;
-					ZeroMemory(&info2, sizeof(info2));
-					info2.cbSize     = sizeof(info2) - sizeof(HBITMAP);
+					char         ss[128];
+					MENUITEMINFO info2 = {0};
+					info2.cbSize     = sizeof(info2) - sizeof(HBITMAP);	// FIXME: why?
 					info2.fMask      = MIIM_STRING;
 					info2.dwTypeData = ss;
 					info2.cch        = 128;
 					GetMenuItemInfo(menu, i, MF_BYPOSITION, &info2);
-					CString str   = ss;
+
+					CString str(ss);
 					int     index = str.Find('\t');
 					if (index != -1)
 						str = str.Left(index);
@@ -482,11 +481,7 @@ void CAcceleratorManager::UpdateMenu(HMENU menu)
 	}
 	else
 	{
-		MENUITEMINFO info;
-		wchar_t      ss[128];
-		wchar_t      str[512];
-
-		ZeroMemory(&info, sizeof(info));
+		MENUITEMINFO info = {0};
 		info.cbSize = sizeof(info);
 		info.fMask  = MIIM_ID | MIIM_SUBMENU;
 		for (int i = 0; i < count; i++)
@@ -501,8 +496,9 @@ void CAcceleratorManager::UpdateMenu(HMENU menu)
 			{
 				if (info.wID != (WORD)-1)
 				{
-					MENUITEMINFOW info2;
-					ZeroMemory(&info2, sizeof(info2));
+					wchar_t ss[128];
+					wchar_t str[512];
+					MENUITEMINFOW info2 = {0};
 					info2.cbSize     = sizeof(info2);
 					info2.fMask      = MIIM_STRING;
 					info2.dwTypeData = ss;
