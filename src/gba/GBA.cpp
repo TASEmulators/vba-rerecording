@@ -58,23 +58,23 @@
 #endif
 
 #define CPU_BREAK_LOOP \
-    cpuSavedTicks    = cpuSavedTicks - *extCpuLoopTicks; \
+    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
     *extCpuLoopTicks = *extClockTicks;
 
 #define CPU_BREAK_LOOP_2 \
-    cpuSavedTicks    = cpuSavedTicks - *extCpuLoopTicks; \
+    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
     *extCpuLoopTicks = *extClockTicks; \
-    *extTicks        = *extClockTicks;
+    *extTicks		 = *extClockTicks;
 
 int32 cpuDmaTicksToUpdate = 0;
-int32 cpuDmaCount         = 0;
-bool8 cpuDmaHack   = 0;
-u32   cpuDmaLast   = 0;
-int32 dummyAddress = 0;
+int32 cpuDmaCount		  = 0;
+bool8 cpuDmaHack		  = 0;
+u32	  cpuDmaLast		  = 0;
+int32 dummyAddress		  = 0;
 
 int32 *extCpuLoopTicks = NULL;
 int32 *extClockTicks   = NULL;
-int32 *extTicks        = NULL;
+int32 *extTicks		   = NULL;
 
 #if (defined(WIN32) && !defined(SDL))
 HANDLE mapROM;        // shared memory handles
@@ -89,66 +89,66 @@ HANDLE mapIOMEM;
 #endif
 
 int32 gbaSaveType = 0; // used to remember the save type on reset
-bool8 intState = false;
-bool8 stopState = false;
-bool8 holdState = false;
-int32 holdType = 0;
-bool8 cpuSramEnabled         = true;
-bool8 cpuFlashEnabled        = true;
-bool8 cpuEEPROMEnabled       = true;
+bool8 intState	  = false;
+bool8 stopState	  = false;
+bool8 holdState	  = false;
+int32 holdType	  = 0;
+bool8 cpuSramEnabled		 = true;
+bool8 cpuFlashEnabled		 = true;
+bool8 cpuEEPROMEnabled		 = true;
 bool8 cpuEEPROMSensorEnabled = false;
 
 #ifdef PROFILING
-int profilingTicks        = 0;
+int profilingTicks		  = 0;
 int profilingTicksReload  = 0;
 static char *profilBuffer = NULL;
-static int   profilSize   = 0;
-static u32   profilLowPC  = 0;
-static int   profilScale  = 0;
+static int	 profilSize	  = 0;
+static u32	 profilLowPC  = 0;
+static int	 profilScale  = 0;
 #endif
 bool8 freezeWorkRAM[0x40000];
 bool8 freezeInternalRAM[0x8000];
 int32 lcdTicks = 960;
 bool8 timer0On = false;
-int32 timer0Ticks       = 0;
-int32 timer0Reload      = 0;
+int32 timer0Ticks		= 0;
+int32 timer0Reload		= 0;
 int32 timer0ClockReload = 0;
-bool8 timer1On          = false;
-int32 timer1Ticks       = 0;
-int32 timer1Reload      = 0;
+bool8 timer1On			= false;
+int32 timer1Ticks		= 0;
+int32 timer1Reload		= 0;
 int32 timer1ClockReload = 0;
-bool8 timer2On          = false;
-int32 timer2Ticks       = 0;
-int32 timer2Reload      = 0;
+bool8 timer2On			= false;
+int32 timer2Ticks		= 0;
+int32 timer2Reload		= 0;
 int32 timer2ClockReload = 0;
-bool8 timer3On          = false;
-int32 timer3Ticks       = 0;
-int32 timer3Reload      = 0;
+bool8 timer3On			= false;
+int32 timer3Ticks		= 0;
+int32 timer3Reload		= 0;
 int32 timer3ClockReload = 0;
-u32   dma0Source        = 0;
-u32   dma0Dest          = 0;
-u32   dma1Source        = 0;
-u32   dma1Dest          = 0;
-u32   dma2Source        = 0;
-u32   dma2Dest          = 0;
-u32   dma3Source        = 0;
-u32   dma3Dest          = 0;
+u32	  dma0Source		= 0;
+u32	  dma0Dest			= 0;
+u32	  dma1Source		= 0;
+u32	  dma1Dest			= 0;
+u32	  dma2Source		= 0;
+u32	  dma2Dest			= 0;
+u32	  dma3Source		= 0;
+u32	  dma3Dest			= 0;
 void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
-bool8 fxOn       = false;
-bool8 windowOn   = false;
+bool8 fxOn		 = false;
+bool8 windowOn	 = false;
 int32 frameCount = 0;
 char  buffer[1024];
 FILE *out = NULL;
-u32   lastTime       = 0;
-int32 count          = 0;
+u32	  lastTime		 = 0;
+int32 count			 = 0;
 bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
 
 static bool8 pauseAfterFrameAdvance = false;
 
-bool  capture         = false;
+bool  capture		  = false;
 bool  capturePrevious = false;
-int32 captureNumber   = 0;
+int32 captureNumber	  = 0;
 
 const int32 TIMER_TICKS[4] = {
 	1,
@@ -391,122 +391,122 @@ u32 myROM[] = {
 };
 
 variable_desc saveGameStruct[] = {
-	{ &DISPCNT,           sizeof(u16)                  },
-	{ &DISPSTAT,          sizeof(u16)                  },
-	{ &VCOUNT,            sizeof(u16)                  },
-	{ &BG0CNT,            sizeof(u16)                  },
-	{ &BG1CNT,            sizeof(u16)                  },
-	{ &BG2CNT,            sizeof(u16)                  },
-	{ &BG3CNT,            sizeof(u16)                  },
-	{ &BG0HOFS,           sizeof(u16)                  },
-	{ &BG0VOFS,           sizeof(u16)                  },
-	{ &BG1HOFS,           sizeof(u16)                  },
-	{ &BG1VOFS,           sizeof(u16)                  },
-	{ &BG2HOFS,           sizeof(u16)                  },
-	{ &BG2VOFS,           sizeof(u16)                  },
-	{ &BG3HOFS,           sizeof(u16)                  },
-	{ &BG3VOFS,           sizeof(u16)                  },
-	{ &BG2PA,             sizeof(u16)                  },
-	{ &BG2PB,             sizeof(u16)                  },
-	{ &BG2PC,             sizeof(u16)                  },
-	{ &BG2PD,             sizeof(u16)                  },
-	{ &BG2X_L,            sizeof(u16)                  },
-	{ &BG2X_H,            sizeof(u16)                  },
-	{ &BG2Y_L,            sizeof(u16)                  },
-	{ &BG2Y_H,            sizeof(u16)                  },
-	{ &BG3PA,             sizeof(u16)                  },
-	{ &BG3PB,             sizeof(u16)                  },
-	{ &BG3PC,             sizeof(u16)                  },
-	{ &BG3PD,             sizeof(u16)                  },
-	{ &BG3X_L,            sizeof(u16)                  },
-	{ &BG3X_H,            sizeof(u16)                  },
-	{ &BG3Y_L,            sizeof(u16)                  },
-	{ &BG3Y_H,            sizeof(u16)                  },
-	{ &WIN0H,             sizeof(u16)                  },
-	{ &WIN1H,             sizeof(u16)                  },
-	{ &WIN0V,             sizeof(u16)                  },
-	{ &WIN1V,             sizeof(u16)                  },
-	{ &WININ,             sizeof(u16)                  },
-	{ &WINOUT,            sizeof(u16)                  },
-	{ &MOSAIC,            sizeof(u16)                  },
-	{ &BLDMOD,            sizeof(u16)                  },
-	{ &COLEV,             sizeof(u16)                  },
-	{ &COLY,              sizeof(u16)                  },
-	{ &DM0SAD_L,          sizeof(u16)                  },
-	{ &DM0SAD_H,          sizeof(u16)                  },
-	{ &DM0DAD_L,          sizeof(u16)                  },
-	{ &DM0DAD_H,          sizeof(u16)                  },
-	{ &DM0CNT_L,          sizeof(u16)                  },
-	{ &DM0CNT_H,          sizeof(u16)                  },
-	{ &DM1SAD_L,          sizeof(u16)                  },
-	{ &DM1SAD_H,          sizeof(u16)                  },
-	{ &DM1DAD_L,          sizeof(u16)                  },
-	{ &DM1DAD_H,          sizeof(u16)                  },
-	{ &DM1CNT_L,          sizeof(u16)                  },
-	{ &DM1CNT_H,          sizeof(u16)                  },
-	{ &DM2SAD_L,          sizeof(u16)                  },
-	{ &DM2SAD_H,          sizeof(u16)                  },
-	{ &DM2DAD_L,          sizeof(u16)                  },
-	{ &DM2DAD_H,          sizeof(u16)                  },
-	{ &DM2CNT_L,          sizeof(u16)                  },
-	{ &DM2CNT_H,          sizeof(u16)                  },
-	{ &DM3SAD_L,          sizeof(u16)                  },
-	{ &DM3SAD_H,          sizeof(u16)                  },
-	{ &DM3DAD_L,          sizeof(u16)                  },
-	{ &DM3DAD_H,          sizeof(u16)                  },
-	{ &DM3CNT_L,          sizeof(u16)                  },
-	{ &DM3CNT_H,          sizeof(u16)                  },
-	{ &TM0D,              sizeof(u16)                  },
-	{ &TM0CNT,            sizeof(u16)                  },
-	{ &TM1D,              sizeof(u16)                  },
-	{ &TM1CNT,            sizeof(u16)                  },
-	{ &TM2D,              sizeof(u16)                  },
-	{ &TM2CNT,            sizeof(u16)                  },
-	{ &TM3D,              sizeof(u16)                  },
-	{ &TM3CNT,            sizeof(u16)                  },
-	{ &P1,                sizeof(u16)                  },
-	{ &IE,                sizeof(u16)                  },
-	{ &IF,                sizeof(u16)                  },
-	{ &IME,               sizeof(u16)                  },
-	{ &holdState,         sizeof(bool8)                },
-	{ &holdType,          sizeof(int32)                },
-	{ &lcdTicks,          sizeof(int32)                },
-	{ &timer0On,          sizeof(bool8)                },
-	{ &timer0Ticks,       sizeof(int32)                },
-	{ &timer0Reload,      sizeof(int32)                },
-	{ &timer0ClockReload, sizeof(int32)                },
-	{ &timer1On,          sizeof(bool8)                },
-	{ &timer1Ticks,       sizeof(int32)                },
-	{ &timer1Reload,      sizeof(int32)                },
-	{ &timer1ClockReload, sizeof(int32)                },
-	{ &timer2On,          sizeof(bool8)                },
-	{ &timer2Ticks,       sizeof(int32)                },
-	{ &timer2Reload,      sizeof(int32)                },
-	{ &timer2ClockReload, sizeof(int32)                },
-	{ &timer3On,          sizeof(bool8)                },
-	{ &timer3Ticks,       sizeof(int32)                },
-	{ &timer3Reload,      sizeof(int32)                },
-	{ &timer3ClockReload, sizeof(int32)                },
-	{ &dma0Source,        sizeof(u32)                  },
-	{ &dma0Dest,          sizeof(u32)                  },
-	{ &dma1Source,        sizeof(u32)                  },
-	{ &dma1Dest,          sizeof(u32)                  },
-	{ &dma2Source,        sizeof(u32)                  },
-	{ &dma2Dest,          sizeof(u32)                  },
-	{ &dma3Source,        sizeof(u32)                  },
-	{ &dma3Dest,          sizeof(u32)                  },
-	{ &fxOn,              sizeof(bool8)                },
-	{ &windowOn,          sizeof(bool8)                },
-	{ &N_FLAG,            sizeof(bool8)                },
-	{ &C_FLAG,            sizeof(bool8)                },
-	{ &Z_FLAG,            sizeof(bool8)                },
-	{ &V_FLAG,            sizeof(bool8)                },
-	{ &armState,          sizeof(bool8)                },
-	{ &armIrqEnable,      sizeof(bool8)                },
-	{ &armNextPC,         sizeof(u32)                  },
-	{ &armMode,           sizeof(int32)                },
-	{ &saveType,          sizeof(int32)                },
-	{ NULL,                                          0 }
+	{ &DISPCNT,			  sizeof(u16)								  },
+	{ &DISPSTAT,		  sizeof(u16)								  },
+	{ &VCOUNT,			  sizeof(u16)								  },
+	{ &BG0CNT,			  sizeof(u16)								  },
+	{ &BG1CNT,			  sizeof(u16)								  },
+	{ &BG2CNT,			  sizeof(u16)								  },
+	{ &BG3CNT,			  sizeof(u16)								  },
+	{ &BG0HOFS,			  sizeof(u16)								  },
+	{ &BG0VOFS,			  sizeof(u16)								  },
+	{ &BG1HOFS,			  sizeof(u16)								  },
+	{ &BG1VOFS,			  sizeof(u16)								  },
+	{ &BG2HOFS,			  sizeof(u16)								  },
+	{ &BG2VOFS,			  sizeof(u16)								  },
+	{ &BG3HOFS,			  sizeof(u16)								  },
+	{ &BG3VOFS,			  sizeof(u16)								  },
+	{ &BG2PA,			  sizeof(u16)								  },
+	{ &BG2PB,			  sizeof(u16)								  },
+	{ &BG2PC,			  sizeof(u16)								  },
+	{ &BG2PD,			  sizeof(u16)								  },
+	{ &BG2X_L,			  sizeof(u16)								  },
+	{ &BG2X_H,			  sizeof(u16)								  },
+	{ &BG2Y_L,			  sizeof(u16)								  },
+	{ &BG2Y_H,			  sizeof(u16)								  },
+	{ &BG3PA,			  sizeof(u16)								  },
+	{ &BG3PB,			  sizeof(u16)								  },
+	{ &BG3PC,			  sizeof(u16)								  },
+	{ &BG3PD,			  sizeof(u16)								  },
+	{ &BG3X_L,			  sizeof(u16)								  },
+	{ &BG3X_H,			  sizeof(u16)								  },
+	{ &BG3Y_L,			  sizeof(u16)								  },
+	{ &BG3Y_H,			  sizeof(u16)								  },
+	{ &WIN0H,			  sizeof(u16)								  },
+	{ &WIN1H,			  sizeof(u16)								  },
+	{ &WIN0V,			  sizeof(u16)								  },
+	{ &WIN1V,			  sizeof(u16)								  },
+	{ &WININ,			  sizeof(u16)								  },
+	{ &WINOUT,			  sizeof(u16)								  },
+	{ &MOSAIC,			  sizeof(u16)								  },
+	{ &BLDMOD,			  sizeof(u16)								  },
+	{ &COLEV,			  sizeof(u16)								  },
+	{ &COLY,			  sizeof(u16)								  },
+	{ &DM0SAD_L,		  sizeof(u16)								  },
+	{ &DM0SAD_H,		  sizeof(u16)								  },
+	{ &DM0DAD_L,		  sizeof(u16)								  },
+	{ &DM0DAD_H,		  sizeof(u16)								  },
+	{ &DM0CNT_L,		  sizeof(u16)								  },
+	{ &DM0CNT_H,		  sizeof(u16)								  },
+	{ &DM1SAD_L,		  sizeof(u16)								  },
+	{ &DM1SAD_H,		  sizeof(u16)								  },
+	{ &DM1DAD_L,		  sizeof(u16)								  },
+	{ &DM1DAD_H,		  sizeof(u16)								  },
+	{ &DM1CNT_L,		  sizeof(u16)								  },
+	{ &DM1CNT_H,		  sizeof(u16)								  },
+	{ &DM2SAD_L,		  sizeof(u16)								  },
+	{ &DM2SAD_H,		  sizeof(u16)								  },
+	{ &DM2DAD_L,		  sizeof(u16)								  },
+	{ &DM2DAD_H,		  sizeof(u16)								  },
+	{ &DM2CNT_L,		  sizeof(u16)								  },
+	{ &DM2CNT_H,		  sizeof(u16)								  },
+	{ &DM3SAD_L,		  sizeof(u16)								  },
+	{ &DM3SAD_H,		  sizeof(u16)								  },
+	{ &DM3DAD_L,		  sizeof(u16)								  },
+	{ &DM3DAD_H,		  sizeof(u16)								  },
+	{ &DM3CNT_L,		  sizeof(u16)								  },
+	{ &DM3CNT_H,		  sizeof(u16)								  },
+	{ &TM0D,			  sizeof(u16)								  },
+	{ &TM0CNT,			  sizeof(u16)								  },
+	{ &TM1D,			  sizeof(u16)								  },
+	{ &TM1CNT,			  sizeof(u16)								  },
+	{ &TM2D,			  sizeof(u16)								  },
+	{ &TM2CNT,			  sizeof(u16)								  },
+	{ &TM3D,			  sizeof(u16)								  },
+	{ &TM3CNT,			  sizeof(u16)								  },
+	{ &P1,				  sizeof(u16)								  },
+	{ &IE,				  sizeof(u16)								  },
+	{ &IF,				  sizeof(u16)								  },
+	{ &IME,				  sizeof(u16)								  },
+	{ &holdState,		  sizeof(bool8)								  },
+	{ &holdType,		  sizeof(int32)								  },
+	{ &lcdTicks,		  sizeof(int32)								  },
+	{ &timer0On,		  sizeof(bool8)								  },
+	{ &timer0Ticks,		  sizeof(int32)								  },
+	{ &timer0Reload,	  sizeof(int32)								  },
+	{ &timer0ClockReload, sizeof(int32)								  },
+	{ &timer1On,		  sizeof(bool8)								  },
+	{ &timer1Ticks,		  sizeof(int32)								  },
+	{ &timer1Reload,	  sizeof(int32)								  },
+	{ &timer1ClockReload, sizeof(int32)								  },
+	{ &timer2On,		  sizeof(bool8)								  },
+	{ &timer2Ticks,		  sizeof(int32)								  },
+	{ &timer2Reload,	  sizeof(int32)								  },
+	{ &timer2ClockReload, sizeof(int32)								  },
+	{ &timer3On,		  sizeof(bool8)								  },
+	{ &timer3Ticks,		  sizeof(int32)								  },
+	{ &timer3Reload,	  sizeof(int32)								  },
+	{ &timer3ClockReload, sizeof(int32)								  },
+	{ &dma0Source,		  sizeof(u32)								  },
+	{ &dma0Dest,		  sizeof(u32)								  },
+	{ &dma1Source,		  sizeof(u32)								  },
+	{ &dma1Dest,		  sizeof(u32)								  },
+	{ &dma2Source,		  sizeof(u32)								  },
+	{ &dma2Dest,		  sizeof(u32)								  },
+	{ &dma3Source,		  sizeof(u32)								  },
+	{ &dma3Dest,		  sizeof(u32)								  },
+	{ &fxOn,			  sizeof(bool8)								  },
+	{ &windowOn,		  sizeof(bool8)								  },
+	{ &N_FLAG,			  sizeof(bool8)								  },
+	{ &C_FLAG,			  sizeof(bool8)								  },
+	{ &Z_FLAG,			  sizeof(bool8)								  },
+	{ &V_FLAG,			  sizeof(bool8)								  },
+	{ &armState,		  sizeof(bool8)								  },
+	{ &armIrqEnable,	  sizeof(bool8)								  },
+	{ &armNextPC,		  sizeof(u32)								  },
+	{ &armMode,			  sizeof(int32)								  },
+	{ &saveType,		  sizeof(int32)								  },
+	{ NULL,															0 }
 };
 
 //int cpuLoopTicks = 0;
@@ -516,9 +516,9 @@ int cpuSavedTicks = 0;
 void cpuProfil(char *buf, int size, u32 lowPC, int scale)
 {
 	profilBuffer = buf;
-	profilSize   = size;
-	profilLowPC  = lowPC;
-	profilScale  = scale;
+	profilSize	 = size;
+	profilLowPC	 = lowPC;
+	profilScale	 = scale;
 }
 
 void cpuEnableProfiling(int hz)
@@ -705,7 +705,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 		utilGzWrite(gzFile, &movieActive, sizeof(movieActive));
 		if (movieActive)
 		{
-			uint8* movie_freeze_buf  = NULL;
+			uint8* movie_freeze_buf	 = NULL;
 			uint32 movie_freeze_size = 0;
 
 			VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
@@ -795,9 +795,9 @@ bool CPUWriteMemState(char *memory, int available)
 	return res;
 }
 
-static int  tempStateID   = 0;
-static int  tempFailCount = 0;
-static bool backupSafe    = true;
+static int	tempStateID	  = 0;
+static int	tempFailCount = 0;
+static bool backupSafe	  = true;
 
 bool CPUReadStateFromStream(gzFile gzFile)
 {
@@ -889,9 +889,9 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		u32 temp;
 #define SWAP(a, b, c) \
 	temp = (a); \
-	(a)  = (b)<<16|(c); \
-	(b)  = (temp) >> 16; \
-	(c)  = (temp) & 0xFFFF;
+	(a)	 = (b)<<16|(c); \
+	(b)	 = (temp) >> 16; \
+	(c)	 = (temp) & 0xFFFF;
 
 		SWAP(dma0Source, DM0SAD_H, DM0SAD_L);
 		SWAP(dma0Dest,   DM0DAD_H, DM0DAD_L);
@@ -918,11 +918,11 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		break;
 	case 1:
 		cpuSaveGameFunc = sramWrite;
-		gbaSaveType     = 1;
+		gbaSaveType		= 1;
 		break;
 	case 2:
 		cpuSaveGameFunc = flashWrite;
-		gbaSaveType     = 2;
+		gbaSaveType		= 2;
 		break;
 	default:
 		systemMessage(MSG_UNSUPPORTED_SAVE_TYPE,
@@ -951,12 +951,12 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		loadedMovieSnapshot = movieSnapshot;
 
 		if (movieSnapshot) // even if a movie isn't active we still want to parse through this in case other stuff is added
-                           // later on in the save format
+		                   // later on in the save format
 		{
 			uint32 movieInputDataSize = 0;
 			utilGzRead(gzFile, &movieInputDataSize, sizeof(movieInputDataSize));
-			uint8*local_movie_data = new uint8 [movieInputDataSize];
-			int   readBytes        = utilGzRead(gzFile, local_movie_data, movieInputDataSize);
+			uint8 *local_movie_data = new uint8[movieInputDataSize];
+			int	   readBytes		= utilGzRead(gzFile, local_movie_data, movieInputDataSize);
 			if (readBytes != movieInputDataSize)
 			{
 				systemMessage(0, N_("Corrupt movie snapshot."));
@@ -1025,7 +1025,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	}
 	VBAUpdateFrameCountDisplay();
 	#ifdef WIN32
-		Update_RAM_Search(); // Update_RAM_Watch() is also called.
+	Update_RAM_Search();     // Update_RAM_Watch() is also called.
 	#endif
 	return true;
 
@@ -1080,7 +1080,7 @@ bool CPUExportEepromFile(const char *fileName)
 			return false;
 		}
 
-		for (int i = 0; i < eepromSize;)
+		for (int i = 0; i < eepromSize; )
 		{
 			for (int j = 0; j < 8; j++)
 			{
@@ -1176,7 +1176,7 @@ bool CPUWriteBatteryFile(const char *fileName)
 
 bool CPUReadGSASnapshot(const char *fileName)
 {
-	int   i;
+	int	  i;
 	FILE *file = fopen(fileName, "rb");
 
 	if (!file)
@@ -1325,22 +1325,22 @@ bool CPUImportEepromFile(const char *fileName)
 			fclose(file);
 			return false;
 		}
-		for (int i = 0; i < size;)
+		for (int i = 0; i < size; )
 		{
 			u8 tmp = eepromData[i];
-			eepromData[i]   = eepromData[7-i];
+			eepromData[i]	= eepromData[7-i];
 			eepromData[7-i] = tmp;
 			i++;
 			tmp = eepromData[i];
-			eepromData[i]   = eepromData[7-i];
+			eepromData[i]	= eepromData[7-i];
 			eepromData[7-i] = tmp;
 			i++;
 			tmp = eepromData[i];
-			eepromData[i]   = eepromData[7-i];
+			eepromData[i]	= eepromData[7-i];
 			eepromData[7-i] = tmp;
 			i++;
 			tmp = eepromData[i];
-			eepromData[i]   = eepromData[7-i];
+			eepromData[i]	= eepromData[7-i];
 			eepromData[7-i] = tmp;
 			i++;
 			i += 4;
@@ -1424,16 +1424,16 @@ bool CPUWriteBMPFile(const char *fileName)
 }
 
 static bool frameBoundary = false;
-static bool newFrame = true;
+static bool newFrame	  = true;
 
 void CPUCleanUp()
 {
 	frameBoundary = false;
-	newFrame = true;
+	newFrame	  = true;
 
 	GBASystemCounters.frameCount = 0;
-	GBASystemCounters.lagCount   = 0;
-	GBASystemCounters.lagged     = true;
+	GBASystemCounters.lagCount	 = 0;
+	GBASystemCounters.lagged	 = true;
 	GBASystemCounters.laggedLast = true;
 
 #ifdef PROFILING
@@ -1554,7 +1554,7 @@ int CPULoadRom(const char *szFile)
 	}
 
 	u16 *temp = (u16 *)(rom+((size+1)&~1));
-	int  i;
+	int	 i;
 	for (i = (size+1)&~1; i < 0x2000000; i += 2)
 	{
 		WRITE16LE(temp, (i >> 1) & 0xFFFF);
@@ -1658,7 +1658,7 @@ void CPUUpdateCPSR()
 		CPSR |= 0x00000020;
 	if (!armIrqEnable)
 		CPSR |= 0x80;
-	CPSR     |= (armMode & 0x1F);
+	CPSR	 |= (armMode & 0x1F);
 	reg[16].I = CPSR;
 }
 
@@ -1666,11 +1666,11 @@ void CPUUpdateFlags(bool breakLoop)
 {
 	u32 CPSR = reg[16].I;
 
-	N_FLAG       = (CPSR & 0x80000000) ? true : false;
-	Z_FLAG       = (CPSR & 0x40000000) ? true : false;
-	C_FLAG       = (CPSR & 0x20000000) ? true : false;
-	V_FLAG       = (CPSR & 0x10000000) ? true : false;
-	armState     = (CPSR & 0x20) ? false : true;
+	N_FLAG		 = (CPSR & 0x80000000) ? true : false;
+	Z_FLAG		 = (CPSR & 0x40000000) ? true : false;
+	C_FLAG		 = (CPSR & 0x20000000) ? true : false;
+	V_FLAG		 = (CPSR & 0x10000000) ? true : false;
+	armState	 = (CPSR & 0x20) ? false : true;
 	armIrqEnable = (CPSR & 0x80) ? false : true;
 	if (breakLoop)
 	{
@@ -1717,7 +1717,7 @@ void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
 	case 0x1F:
 		reg[R13_USR].I = reg[13].I;
 		reg[R14_USR].I = reg[14].I;
-		reg[17].I      = reg[16].I;
+		reg[17].I	   = reg[16].I;
 		break;
 	case 0x11:
 		CPUSwap(&reg[R8_FIQ].I, &reg[8].I);
@@ -1725,28 +1725,28 @@ void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
 		CPUSwap(&reg[R10_FIQ].I, &reg[10].I);
 		CPUSwap(&reg[R11_FIQ].I, &reg[11].I);
 		CPUSwap(&reg[R12_FIQ].I, &reg[12].I);
-		reg[R13_FIQ].I  = reg[13].I;
-		reg[R14_FIQ].I  = reg[14].I;
+		reg[R13_FIQ].I	= reg[13].I;
+		reg[R14_FIQ].I	= reg[14].I;
 		reg[SPSR_FIQ].I = reg[17].I;
 		break;
 	case 0x12:
-		reg[R13_IRQ].I  = reg[13].I;
-		reg[R14_IRQ].I  = reg[14].I;
+		reg[R13_IRQ].I	= reg[13].I;
+		reg[R14_IRQ].I	= reg[14].I;
 		reg[SPSR_IRQ].I =  reg[17].I;
 		break;
 	case 0x13:
-		reg[R13_SVC].I  = reg[13].I;
-		reg[R14_SVC].I  = reg[14].I;
+		reg[R13_SVC].I	= reg[13].I;
+		reg[R14_SVC].I	= reg[14].I;
 		reg[SPSR_SVC].I =  reg[17].I;
 		break;
 	case 0x17:
-		reg[R13_ABT].I  = reg[13].I;
-		reg[R14_ABT].I  = reg[14].I;
+		reg[R13_ABT].I	= reg[13].I;
+		reg[R14_ABT].I	= reg[14].I;
 		reg[SPSR_ABT].I =  reg[17].I;
 		break;
 	case 0x1b:
-		reg[R13_UND].I  = reg[13].I;
-		reg[R14_UND].I  = reg[14].I;
+		reg[R13_UND].I	= reg[13].I;
+		reg[R14_UND].I	= reg[14].I;
 		reg[SPSR_UND].I =  reg[17].I;
 		break;
 	}
@@ -1827,28 +1827,28 @@ void CPUSwitchMode(int mode, bool saveState)
 
 void CPUUndefinedException()
 {
-	u32  PC = reg[15].I;
+	u32	 PC = reg[15].I;
 	bool savedArmState = armState;
 	CPUSwitchMode(0x1b, true, false);
-	reg[14].I    = PC - (savedArmState ? 4 : 2);
-	reg[15].I    = 0x04;
-	armState     = true;
+	reg[14].I	 = PC - (savedArmState ? 4 : 2);
+	reg[15].I	 = 0x04;
+	armState	 = true;
 	armIrqEnable = false;
-	armNextPC    = 0x04;
-	reg[15].I   += 4;
+	armNextPC	 = 0x04;
+	reg[15].I	+= 4;
 }
 
 void CPUSoftwareInterrupt()
 {
-	u32  PC = reg[15].I;
+	u32	 PC = reg[15].I;
 	bool savedArmState = armState;
 	CPUSwitchMode(0x13, true, false);
-	reg[14].I    = PC - (savedArmState ? 4 : 2);
-	reg[15].I    = 0x08;
-	armState     = true;
+	reg[14].I	 = PC - (savedArmState ? 4 : 2);
+	reg[15].I	 = 0x08;
+	armState	 = true;
 	armIrqEnable = false;
-	armNextPC    = 0x08;
-	reg[15].I   += 4;
+	armNextPC	 = 0x08;
+	reg[15].I	+= 4;
 }
 
 void CPUSoftwareInterrupt(int comment)
@@ -2191,7 +2191,7 @@ void CPUCheckDMA(int reason, int dmamask)
 		if (((DM0CNT_H >> 12) & 3) == reason)
 		{
 			u32 sourceIncrement = 4;
-			u32 destIncrement   = 4;
+			u32 destIncrement	= 4;
 			switch ((DM0CNT_H >> 7) & 3)
 			{
 			case 0:
@@ -2254,7 +2254,7 @@ void CPUCheckDMA(int reason, int dmamask)
 		if (((DM1CNT_H >> 12) & 3) == reason)
 		{
 			u32 sourceIncrement = 4;
-			u32 destIncrement   = 4;
+			u32 destIncrement	= 4;
 			switch ((DM1CNT_H >> 7) & 3)
 			{
 			case 0:
@@ -2334,7 +2334,7 @@ void CPUCheckDMA(int reason, int dmamask)
 		if (((DM2CNT_H >> 12) & 3) == reason)
 		{
 			u32 sourceIncrement = 4;
-			u32 destIncrement   = 4;
+			u32 destIncrement	= 4;
 			switch ((DM2CNT_H >> 7) & 3)
 			{
 			case 0:
@@ -2414,7 +2414,7 @@ void CPUCheckDMA(int reason, int dmamask)
 		if (((DM3CNT_H >> 12) & 3) == reason)
 		{
 			u32 sourceIncrement = 4;
-			u32 destIncrement   = 4;
+			u32 destIncrement	= 4;
 			switch ((DM3CNT_H >> 7) & 3)
 			{
 			case 0:
@@ -2478,12 +2478,12 @@ void CPUUpdateRegister(u32 address, u16 value)
 	{
 	case 0x00:
 	{
-		bool change   = ((DISPCNT ^ value) & 0x80) ? true : false;
+		bool change	  = ((DISPCNT ^ value) & 0x80) ? true : false;
 		bool changeBG = ((DISPCNT ^ value) & 0x0F00) ? true : false;
 		DISPCNT = (value & 0xFFF7);
 		UPDATE_REG(0x00, DISPCNT);
 		layerEnable = layerSettings & value;
-		windowOn    = (layerEnable & 0x6000) ? true : false;
+		windowOn	= (layerEnable & 0x6000) ? true : false;
 		if (change && !((value & 0x80)))
 		{
 			if (!(DISPSTAT & 1))
@@ -2867,7 +2867,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 			UPDATE_REG(0x100, TM0D);
 		}
 		timer0On = value & 0x80 ? true : false;
-		TM0CNT   = value & 0xC7;
+		TM0CNT	 = value & 0xC7;
 		UPDATE_REG(0x102, TM0CNT);
 		//    CPUUpdateTicks();
 		break;
@@ -2885,7 +2885,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 			UPDATE_REG(0x104, TM1D);
 		}
 		timer1On = value & 0x80 ? true : false;
-		TM1CNT   = value & 0xC7;
+		TM1CNT	 = value & 0xC7;
 		UPDATE_REG(0x106, TM1CNT);
 		break;
 	case 0x108:
@@ -2902,7 +2902,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 			UPDATE_REG(0x108, TM2D);
 		}
 		timer2On = value & 0x80 ? true : false;
-		TM2CNT   = value & 0xC7;
+		TM2CNT	 = value & 0xC7;
 		UPDATE_REG(0x10A, TM2CNT);
 		break;
 	case 0x10C:
@@ -2919,7 +2919,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 			UPDATE_REG(0x10C, TM3D);
 		}
 		timer3On = value & 0x80 ? true : false;
-		TM3CNT   = value & 0xC7;
+		TM3CNT	 = value & 0xC7;
 		UPDATE_REG(0x10E, TM3CNT);
 		break;
 	case 0x128:
@@ -2962,27 +2962,27 @@ void CPUUpdateRegister(u32 address, u16 value)
 
 		if (!speedHack)
 		{
-			memoryWait[0x08]    = memoryWait[0x09] = gamepakWaitState[(value >> 2) & 7];
+			memoryWait[0x08]	= memoryWait[0x09] = gamepakWaitState[(value >> 2) & 7];
 			memoryWaitSeq[0x08] = memoryWaitSeq[0x09] =
 			                          gamepakWaitState0[(value >> 2) & 7];
 
-			memoryWait[0x0a]    = memoryWait[0x0b] = gamepakWaitState[(value >> 5) & 7];
+			memoryWait[0x0a]	= memoryWait[0x0b] = gamepakWaitState[(value >> 5) & 7];
 			memoryWaitSeq[0x0a] = memoryWaitSeq[0x0b] =
 			                          gamepakWaitState1[(value >> 5) & 7];
 
-			memoryWait[0x0c]    = memoryWait[0x0d] = gamepakWaitState[(value >> 8) & 7];
+			memoryWait[0x0c]	= memoryWait[0x0d] = gamepakWaitState[(value >> 8) & 7];
 			memoryWaitSeq[0x0c] = memoryWaitSeq[0x0d] =
 			                          gamepakWaitState2[(value >> 8) & 7];
 		}
 		else
 		{
-			memoryWait[0x08]    = memoryWait[0x09] = 4;
+			memoryWait[0x08]	= memoryWait[0x09] = 4;
 			memoryWaitSeq[0x08] = memoryWaitSeq[0x09] = 2;
 
-			memoryWait[0x0a]    = memoryWait[0x0b] = 4;
+			memoryWait[0x0a]	= memoryWait[0x0b] = 4;
 			memoryWaitSeq[0x0a] = memoryWaitSeq[0x0b] = 4;
 
-			memoryWait[0x0c]    = memoryWait[0x0d] = 4;
+			memoryWait[0x0c]	= memoryWait[0x0d] = 4;
 			memoryWaitSeq[0x0c] = memoryWaitSeq[0x0d] = 8;
 		}
 		for (i = 0; i < 16; i++)
@@ -2994,21 +2994,21 @@ void CPUUpdateRegister(u32 address, u16 value)
 		memoryWaitFetch32[3] += 1;
 		memoryWaitFetch32[2] += 3;
 
-		prefetchActive  = false;
+		prefetchActive	= false;
 		prefetchApplies = false;
 		if (value & 0x4000)
 		{
 			for (i = 8; i < 16; i++)
 			{
 				memoryWaitFetch32[i] = 2*cpuMemoryWait[i];
-				memoryWaitFetch[i]   = cpuMemoryWait[i];
+				memoryWaitFetch[i]	 = cpuMemoryWait[i];
 			}
 			if (((value & 3) == 3))
 			{
 				if (!memLagTempEnabled)
 				{
 					memoryWaitFetch[8]--; // hack to prevent inaccurately extreme lag at some points of many games (possibly
-                                          // from no pre-fetch emulation)
+					                      // from no pre-fetch emulation)
 					                      /// FIXME: how correct is this? Should it set the fetch to 0 or change fetch32 or
 					                      // anything else?
 
@@ -3292,8 +3292,8 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 #endif
 	gbaSaveType = 0;
 	eepromInUse = 0;
-	saveType    = 0;
-	useBios     = false;
+	saveType	= 0;
+	useBios		= false;
 
 	if (useBiosFile)
 	{
@@ -3376,7 +3376,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 	*((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
 
 	{
-		int32 origMemoryWaitFetch[16]   = { 3, 0, 3, 0, 0, 1, 1, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
+		int32 origMemoryWaitFetch[16]	= { 3, 0, 3, 0, 0, 1, 1, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
 		int32 origMemoryWaitFetch32[16] = { 6, 0, 6, 0, 0, 2, 2, 0, 8, 8, 8, 8, 8, 8, 8, 0 };
 		memcpy(memoryWaitFetch, origMemoryWaitFetch, 16*sizeof(int32));
 		memcpy(memoryWaitFetch32, origMemoryWaitFetch32, 16*sizeof(int32));
@@ -3385,13 +3385,15 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 
 void CPUReset(bool userReset)
 {
-	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
+	if (!VBAMovieActive())   // movie must be closed while opening/creating a movie
+	{
 		GBASystemCounters.frameCount = 0;
-		GBASystemCounters.lagCount   = 0;
-		GBASystemCounters.lagged     = true;
+		GBASystemCounters.lagCount	 = 0;
+		GBASystemCounters.lagged	 = true;
 		GBASystemCounters.laggedLast = true;
 	}
-	else if (userReset) {
+	else if (userReset)
+	{
 		VBAMovieSignalReset();
 		return;
 	}
@@ -3429,47 +3431,47 @@ void CPUReset(bool userReset)
 	memset(internalRAM, 0, 0x8000); /// FIXME: is it unsafe to erase ALL of this? Even the init code doesn't.
 	memset(workRAM, 0, 0x40000); /// ditto
 
-	DISPCNT  = 0x0080;
+	DISPCNT	 = 0x0080;
 	DISPSTAT = 0x0000;
-	VCOUNT   = 0x0000;
-	BG0CNT   = 0x0000;
-	BG1CNT   = 0x0000;
-	BG2CNT   = 0x0000;
-	BG3CNT   = 0x0000;
-	BG0HOFS  = 0x0000;
-	BG0VOFS  = 0x0000;
-	BG1HOFS  = 0x0000;
-	BG1VOFS  = 0x0000;
-	BG2HOFS  = 0x0000;
-	BG2VOFS  = 0x0000;
-	BG3HOFS  = 0x0000;
-	BG3VOFS  = 0x0000;
-	BG2PA    = 0x0100;
-	BG2PB    = 0x0000;
-	BG2PC    = 0x0000;
-	BG2PD    = 0x0100;
-	BG2X_L   = 0x0000;
-	BG2X_H   = 0x0000;
-	BG2Y_L   = 0x0000;
-	BG2Y_H   = 0x0000;
-	BG3PA    = 0x0100;
-	BG3PB    = 0x0000;
-	BG3PC    = 0x0000;
-	BG3PD    = 0x0100;
-	BG3X_L   = 0x0000;
-	BG3X_H   = 0x0000;
-	BG3Y_L   = 0x0000;
-	BG3Y_H   = 0x0000;
-	WIN0H    = 0x0000;
-	WIN1H    = 0x0000;
-	WIN0V    = 0x0000;
-	WIN1V    = 0x0000;
-	WININ    = 0x0000;
-	WINOUT   = 0x0000;
-	MOSAIC   = 0x0000;
-	BLDMOD   = 0x0000;
-	COLEV    = 0x0000;
-	COLY     = 0x0000;
+	VCOUNT	 = 0x0000;
+	BG0CNT	 = 0x0000;
+	BG1CNT	 = 0x0000;
+	BG2CNT	 = 0x0000;
+	BG3CNT	 = 0x0000;
+	BG0HOFS	 = 0x0000;
+	BG0VOFS	 = 0x0000;
+	BG1HOFS	 = 0x0000;
+	BG1VOFS	 = 0x0000;
+	BG2HOFS	 = 0x0000;
+	BG2VOFS	 = 0x0000;
+	BG3HOFS	 = 0x0000;
+	BG3VOFS	 = 0x0000;
+	BG2PA	 = 0x0100;
+	BG2PB	 = 0x0000;
+	BG2PC	 = 0x0000;
+	BG2PD	 = 0x0100;
+	BG2X_L	 = 0x0000;
+	BG2X_H	 = 0x0000;
+	BG2Y_L	 = 0x0000;
+	BG2Y_H	 = 0x0000;
+	BG3PA	 = 0x0100;
+	BG3PB	 = 0x0000;
+	BG3PC	 = 0x0000;
+	BG3PD	 = 0x0100;
+	BG3X_L	 = 0x0000;
+	BG3X_H	 = 0x0000;
+	BG3Y_L	 = 0x0000;
+	BG3Y_H	 = 0x0000;
+	WIN0H	 = 0x0000;
+	WIN1H	 = 0x0000;
+	WIN0V	 = 0x0000;
+	WIN1V	 = 0x0000;
+	WININ	 = 0x0000;
+	WINOUT	 = 0x0000;
+	MOSAIC	 = 0x0000;
+	BLDMOD	 = 0x0000;
+	COLEV	 = 0x0000;
+	COLY	 = 0x0000;
 	DM0SAD_L = 0x0000;
 	DM0SAD_H = 0x0000;
 	DM0DAD_L = 0x0000;
@@ -3494,26 +3496,26 @@ void CPUReset(bool userReset)
 	DM3DAD_H = 0x0000;
 	DM3CNT_L = 0x0000;
 	DM3CNT_H = 0x0000;
-	TM0D     = 0x0000;
-	TM0CNT   = 0x0000;
-	TM1D     = 0x0000;
-	TM1CNT   = 0x0000;
-	TM2D     = 0x0000;
-	TM2CNT   = 0x0000;
-	TM3D     = 0x0000;
-	TM3CNT   = 0x0000;
-	P1       = 0x03FF;
-	IE       = 0x0000;
-	IF       = 0x0000;
-	IME      = 0x0000;
+	TM0D	 = 0x0000;
+	TM0CNT	 = 0x0000;
+	TM1D	 = 0x0000;
+	TM1CNT	 = 0x0000;
+	TM2D	 = 0x0000;
+	TM2CNT	 = 0x0000;
+	TM3D	 = 0x0000;
+	TM3CNT	 = 0x0000;
+	P1		 = 0x03FF;
+	IE		 = 0x0000;
+	IF		 = 0x0000;
+	IME		 = 0x0000;
 
 	armMode = 0x1F;
 
 	if (cpuIsMultiBoot)
 	{
-		reg[13].I      = 0x03007F00;
-		reg[15].I      = 0x02000000;
-		reg[16].I      = 0x00000000;
+		reg[13].I	   = 0x03007F00;
+		reg[15].I	   = 0x02000000;
+		reg[16].I	   = 0x00000000;
 		reg[R13_IRQ].I = 0x03007FA0;
 		reg[R13_SVC].I = 0x03007FE0;
 		armIrqEnable   = true;
@@ -3522,22 +3524,22 @@ void CPUReset(bool userReset)
 	{
 		if (useBios && !skipBios)
 		{
-			reg[15].I    = 0x00000000;
-			armMode      = 0x13;
+			reg[15].I	 = 0x00000000;
+			armMode		 = 0x13;
 			armIrqEnable = false;
 		}
 		else
 		{
-			reg[13].I      = 0x03007F00;
-			reg[15].I      = 0x08000000;
-			reg[16].I      = 0x00000000;
+			reg[13].I	   = 0x03007F00;
+			reg[15].I	   = 0x08000000;
+			reg[16].I	   = 0x00000000;
 			reg[R13_IRQ].I = 0x03007FA0;
 			reg[R13_SVC].I = 0x03007FE0;
 			armIrqEnable   = true;
 		}
 	}
 	armState = true;
-	C_FLAG   = V_FLAG = N_FLAG = Z_FLAG = false;
+	C_FLAG	 = V_FLAG = N_FLAG = Z_FLAG = false;
 	UPDATE_REG(0x00, DISPCNT);
 	UPDATE_REG(0x20, BG2PA);
 	UPDATE_REG(0x26, BG2PD);
@@ -3567,69 +3569,69 @@ void CPUReset(bool userReset)
 
 	lcdTicks = 960;
 	timer0On = false;
-	timer0Ticks       = 0;
-	timer0Reload      = 0;
+	timer0Ticks		  = 0;
+	timer0Reload	  = 0;
 	timer0ClockReload = 0;
-	timer1On          = false;
-	timer1Ticks       = 0;
-	timer1Reload      = 0;
+	timer1On		  = false;
+	timer1Ticks		  = 0;
+	timer1Reload	  = 0;
 	timer1ClockReload = 0;
-	timer2On          = false;
-	timer2Ticks       = 0;
-	timer2Reload      = 0;
+	timer2On		  = false;
+	timer2Ticks		  = 0;
+	timer2Reload	  = 0;
 	timer2ClockReload = 0;
-	timer3On          = false;
-	timer3Ticks       = 0;
-	timer3Reload      = 0;
+	timer3On		  = false;
+	timer3Ticks		  = 0;
+	timer3Reload	  = 0;
 	timer3ClockReload = 0;
-	dma0Source        = 0;
-	dma0Dest          = 0;
-	dma1Source        = 0;
-	dma1Dest          = 0;
-	dma2Source        = 0;
-	dma2Dest          = 0;
-	dma3Source        = 0;
-	dma3Dest          = 0;
-	cpuSaveGameFunc   = flashSaveDecide;
-	renderLine        = mode0RenderLine;
-	fxOn        = false;
-	windowOn    = false;
-	frameCount  = 0;
-	saveType    = 0;
-	layerEnable = DISPCNT & layerSettings;
+	dma0Source		  = 0;
+	dma0Dest		  = 0;
+	dma1Source		  = 0;
+	dma1Dest		  = 0;
+	dma2Source		  = 0;
+	dma2Dest		  = 0;
+	dma3Source		  = 0;
+	dma3Dest		  = 0;
+	cpuSaveGameFunc	  = flashSaveDecide;
+	renderLine		  = mode0RenderLine;
+	fxOn			  = false;
+	windowOn		  = false;
+	frameCount		  = 0;
+	saveType		  = 0;
+	layerEnable		  = DISPCNT & layerSettings;
 
 	CPUUpdateRenderBuffers(true);
 
 	for (int i = 0; i < 256; i++)
 	{
 		map[i].address = (u8 *)&dummyAddress;
-		map[i].mask    = 0;
+		map[i].mask	   = 0;
 	}
 
-	map[0].address  = bios;
-	map[0].mask     = 0x3FFF;
-	map[2].address  = workRAM;
-	map[2].mask     = 0x3FFFF;
-	map[3].address  = internalRAM;
-	map[3].mask     = 0x7FFF;
-	map[4].address  = ioMem;
-	map[4].mask     = 0x3FF;
-	map[5].address  = paletteRAM;
-	map[5].mask     = 0x3FF;
-	map[6].address  = vram;
-	map[6].mask     = 0x1FFFF;
-	map[7].address  = oam;
-	map[7].mask     = 0x3FF;
-	map[8].address  = rom;
-	map[8].mask     = 0x1FFFFFF;
-	map[9].address  = rom;
-	map[9].mask     = 0x1FFFFFF;
+	map[0].address	= bios;
+	map[0].mask		= 0x3FFF;
+	map[2].address	= workRAM;
+	map[2].mask		= 0x3FFFF;
+	map[3].address	= internalRAM;
+	map[3].mask		= 0x7FFF;
+	map[4].address	= ioMem;
+	map[4].mask		= 0x3FF;
+	map[5].address	= paletteRAM;
+	map[5].mask		= 0x3FF;
+	map[6].address	= vram;
+	map[6].mask		= 0x1FFFF;
+	map[7].address	= oam;
+	map[7].mask		= 0x3FF;
+	map[8].address	= rom;
+	map[8].mask		= 0x1FFFFFF;
+	map[9].address	= rom;
+	map[9].mask		= 0x1FFFFFF;
 	map[10].address = rom;
-	map[10].mask    = 0x1FFFFFF;
+	map[10].mask	= 0x1FFFFFF;
 	map[12].address = rom;
-	map[12].mask    = 0x1FFFFFF;
+	map[12].mask	= 0x1FFFFFF;
 	map[14].address = flashSaveMemory;
-	map[14].mask    = 0xFFFF;
+	map[14].mask	= 0xFFFF;
 
 	eepromReset();
 	flashReset();
@@ -3656,41 +3658,41 @@ void CPUReset(bool userReset)
 	switch (cpuSaveType)
 	{
 	case 0: // automatic
-		cpuSramEnabled         = true;
-		cpuFlashEnabled        = true;
-		cpuEEPROMEnabled       = true;
+		cpuSramEnabled		   = true;
+		cpuFlashEnabled		   = true;
+		cpuEEPROMEnabled	   = true;
 		cpuEEPROMSensorEnabled = false;
 		break;
 	case 1: // EEPROM
-		cpuSramEnabled         = false;
-		cpuFlashEnabled        = false;
-		cpuEEPROMEnabled       = true;
+		cpuSramEnabled		   = false;
+		cpuFlashEnabled		   = false;
+		cpuEEPROMEnabled	   = true;
 		cpuEEPROMSensorEnabled = false;
 		break;
 	case 2: // SRAM
-		cpuSramEnabled         = true;
-		cpuFlashEnabled        = false;
-		cpuEEPROMEnabled       = false;
+		cpuSramEnabled		   = true;
+		cpuFlashEnabled		   = false;
+		cpuEEPROMEnabled	   = false;
 		cpuEEPROMSensorEnabled = false;
-		cpuSaveGameFunc        = sramWrite;
+		cpuSaveGameFunc		   = sramWrite;
 		break;
 	case 3: // FLASH
-		cpuSramEnabled         = false;
-		cpuFlashEnabled        = true;
-		cpuEEPROMEnabled       = false;
+		cpuSramEnabled		   = false;
+		cpuFlashEnabled		   = true;
+		cpuEEPROMEnabled	   = false;
 		cpuEEPROMSensorEnabled = false;
-		cpuSaveGameFunc        = flashWrite;
+		cpuSaveGameFunc		   = flashWrite;
 		break;
 	case 4: // EEPROM+Sensor
-		cpuSramEnabled         = false;
-		cpuFlashEnabled        = false;
-		cpuEEPROMEnabled       = true;
+		cpuSramEnabled		   = false;
+		cpuFlashEnabled		   = false;
+		cpuEEPROMEnabled	   = true;
 		cpuEEPROMSensorEnabled = true;
 		break;
 	case 5: // NONE
-		cpuSramEnabled         = false;
-		cpuFlashEnabled        = false;
-		cpuEEPROMEnabled       = false;
+		cpuSramEnabled		   = false;
+		cpuFlashEnabled		   = false;
+		cpuEEPROMEnabled	   = false;
 		cpuEEPROMSensorEnabled = false;
 		break;
 	}
@@ -3706,14 +3708,14 @@ void CPUReset(bool userReset)
 
 void CPUInterrupt()
 {
-	u32  PC         = reg[15].I;
+	u32	 PC			= reg[15].I;
 	bool savedState = armState;
 	CPUSwitchMode(0x12, true, false);
 	reg[14].I = PC;
 	if (!savedState)
 		reg[14].I += 2;
-	reg[15].I    = 0x18;
-	armState     = true;
+	reg[15].I	 = 0x18;
+	armState	 = true;
 	armIrqEnable = false;
 
 	armNextPC  = reg[15].I;
@@ -3757,7 +3759,7 @@ void SetPrefetchHack(bool set)
 #ifdef SDL
 void log(const char *defaultMsg, ...)
 {
-	char    buffer[2048];
+	char	buffer[2048];
 	va_list valist;
 
 	va_start(valist, defaultMsg);
@@ -3781,13 +3783,13 @@ void CPULoop(int _ticks)
 {
 	int32 ticks = _ticks;
 	int32 clockTicks;
-	int32 cpuLoopTicks  = 0;
+	int32 cpuLoopTicks	= 0;
 	int32 timerOverflow = 0;
 	// variables used by the CPU core
 
 	extCpuLoopTicks = &cpuLoopTicks;
-	extClockTicks   = &clockTicks;
-	extTicks        = &ticks;
+	extClockTicks	= &clockTicks;
+	extTicks		= &ticks;
 
 	cpuLoopTicks = CPUUpdateTicks();
 	if (cpuLoopTicks > ticks)
@@ -3850,7 +3852,7 @@ void CPULoop(int _ticks)
 		newFrame = false;
 	}
 
-	for (;;)
+	for (;; )
 	{
 #ifndef FINAL_VERSION
 		if (systemDebug)
@@ -3993,7 +3995,7 @@ updateLoop:
 				else
 				{
 					bool fastForward  = speedup;
-					int  framesToSkip = systemFrameSkip;
+					int	 framesToSkip = systemFrameSkip;
 		#if (defined(WIN32) && !defined(SDL))
 					int throttle = theApp.throttle;
 					if (theApp.frameSearching && throttle < 100)
@@ -4004,11 +4006,11 @@ updateLoop:
 		#endif
 
 					if (fastForward)
-						framesToSkip = 9; // try 6 FPS during speedup
+						framesToSkip = 9;  // try 6 FPS during speedup
 					else if (throttle != 100)
-						framesToSkip = (framesToSkip * throttle) / 100; // change frame skip to match up with the throttle's
-                                                                        // adjusted speed (so 6 frame skip becomes 3 frames at
-                                                                        // 50% speed)
+						framesToSkip = (framesToSkip * throttle) / 100;  // change frame skip to match up with the throttle's
+					                                                    // adjusted speed (so 6 frame skip becomes 3 frames at
+					                                                    // 50% speed)
 
 #if (defined(WIN32) && !defined(SDL))
 					if (theApp.aviRecording || theApp.nvVideoLog)
@@ -4050,7 +4052,7 @@ updateLoop:
 								else
 									systemShowSpeed(0);
 								lastTime = time;
-								count    = 0;
+								count	 = 0;
 							}
 
 							if (VBALuaRunning())
@@ -4061,13 +4063,13 @@ updateLoop:
 							frameBoundary = true;
 
 							// HACK: some special "buttons"
-							u32 ext        = (joy >> 18);
+							u32 ext = (joy >> 18);
 //							int32 cheatTicks = 0;
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1^0x3FF, ext);
 //							cpuDmaTicksToUpdate += cheatTicks;
 
-							speedup  = (ext & 1) ? true : false;
+							speedup	 = (ext & 1) ? true : false;
 							capture |= (ext & 2) ? true : false;
 
 							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
@@ -4096,7 +4098,7 @@ updateLoop:
 									systemScreenCapture(captureNumber);
 								}
 								capturePrevious = capture;
-								capture = false;
+								capture			= false;
 							}
 							else
 							{
@@ -4136,7 +4138,7 @@ updateLoop:
 							case 16:
 							{
 								u16 *dest = (u16 *)pix + 242 * (VCOUNT+1);
-								for (int x = 0; x < 240;)
+								for (int x = 0; x < 240; )
 								{
 									*dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
 									*dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
@@ -4165,7 +4167,7 @@ updateLoop:
 							case 24:
 							{
 								u8 *dest = (u8 *)pix + 240 * VCOUNT * 3;
-								for (int x = 0; x < 240;)
+								for (int x = 0; x < 240; )
 								{
 									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
 									dest += 3;
@@ -4208,7 +4210,7 @@ updateLoop:
 							case 32:
 							{
 								u32 *dest = (u32 *)pix + 241 * (VCOUNT+1);
-								for (int x = 0; x < 240;)
+								for (int x = 0; x < 240; )
 								{
 									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
 									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
@@ -4266,7 +4268,7 @@ updateLoop:
 								UPDATE_REG(0x202, IF);
 							}
 						}
-						TM0D        = tm0d & 0xFFFF;
+						TM0D		= tm0d & 0xFFFF;
 						timer0Ticks = 0x10000 - TM0D;
 						UPDATE_REG(0x100, TM0D);
 					}
@@ -4330,7 +4332,7 @@ updateLoop:
 									UPDATE_REG(0x202, IF);
 								}
 							}
-							TM1D        = tm1d & 0xFFFF;
+							TM1D		= tm1d & 0xFFFF;
 							timer1Ticks = 0x10000 - TM1D;
 							UPDATE_REG(0x104, TM1D);
 						}
@@ -4394,7 +4396,7 @@ updateLoop:
 									UPDATE_REG(0x202, IF);
 								}
 							}
-							TM2D        = tm2d & 0xFFFF;
+							TM2D		= tm2d & 0xFFFF;
 							timer2Ticks = 0x10000 - TM2D;
 							UPDATE_REG(0x108, TM2D);
 						}
@@ -4455,7 +4457,7 @@ updateLoop:
 									UPDATE_REG(0x202, IF);
 								}
 							}
-							TM3D        = tm3d & 0xFFFF;
+							TM3D		= tm3d & 0xFFFF;
 							timer3Ticks = 0x10000 - TM3D;
 							UPDATE_REG(0x10C, TM3D);
 						}
@@ -4500,8 +4502,8 @@ updateLoop:
 				profilingTicks += profilingTicksReload;
 				if (profilBuffer && profilSize)
 				{
-					u16 *b  = (u16 *)profilBuffer;
-					int  pc = ((reg[15].I - profilLowPC) * profilScale)/0x10000;
+					u16 *b	= (u16 *)profilBuffer;
+					int	 pc = ((reg[15].I - profilLowPC) * profilScale)/0x10000;
 					if (pc >= 0 && pc < profilSize)
 					{
 						b[pc]++;
@@ -4524,7 +4526,7 @@ updateLoop:
 				cpuDmaTicksToUpdate -= clockTicks;
 				if (cpuDmaTicksToUpdate < 0)
 					cpuDmaTicksToUpdate = 0;
-				goto updateLoop;	// this is evil
+				goto updateLoop;    // this is evil
 			}
 
 			if (IF && (IME & 1) && armIrqEnable)
@@ -4548,7 +4550,7 @@ updateLoop:
 					{
 						if (!holdState)
 						{
-							intState      = true;
+							intState	  = true;
 							cpuLoopTicks  = 5;
 							cpuSavedTicks = 5;
 						}
@@ -4587,7 +4589,7 @@ updateLoop:
 					// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
 					// but is there still any GBA .vbm that uses the old timing?
 					frameBoundary = false;
-					newFrame = true;
+					newFrame	  = true;
 					return;
 				}
 			}
@@ -4639,7 +4641,7 @@ struct EmulatedSystem GBASystem =
 #endif
 };
 
-EmulatedSystemCounters GBASystemCounters = 
+EmulatedSystemCounters GBASystemCounters =
 {
 	// frameCount
 	0,
