@@ -54,7 +54,7 @@
 extern int emulating; // from VBA.cpp
 
 SMovie Movie;
-bool   loadingMovie = false;
+bool   loadingMovie		   = false;
 bool8  loadedMovieSnapshot = 0;
 
 #if (defined(WIN32) && !defined(SDL))
@@ -62,7 +62,7 @@ extern u32 currentButtons [4];     // from System.cpp
 #else
 u32 currentButtons [4];
 #endif
-static bool resetSignaled   = false;
+static bool resetSignaled = false;
 
 static int controllersLeftThisFrame = 0;
 static int prevBorder, prevWinBorder, prevBorderAuto;
@@ -108,14 +108,14 @@ static void Write32(uint32 v, uint8 *& ptr)
 	ptr[1] = (uint8)((v>>8)&0xff);
 	ptr[2] = (uint8)((v>>16)&0xff);
 	ptr[3] = (uint8)((v>>24)&0xff);
-	ptr   += 4;
+	ptr	  += 4;
 }
 
 static void Write16(uint16 v, uint8 *& ptr)
 {
 	ptr[0] = (uint8)(v&0xff);
 	ptr[1] = (uint8)((v>>8)&0xff);
-	ptr   += 2;
+	ptr	  += 2;
 }
 
 #define Write8(v, ptr) (*ptr++ = v)
@@ -128,9 +128,9 @@ static int read_movie_header(FILE *file, SMovie & movie)
     uint8 headerData [VBM_HEADER_SIZE];
 
     if (fread(headerData, 1, VBM_HEADER_SIZE, file) != VBM_HEADER_SIZE)
-		return WRONG_FORMAT; // if we failed to read in all VBM_HEADER_SIZE bytes of the header
+		return WRONG_FORMAT;  // if we failed to read in all VBM_HEADER_SIZE bytes of the header
 
-    const uint8*       ptr    = headerData;
+    const uint8*	   ptr	  = headerData;
     SMovieFileHeader & header = movie.header;
 
     header.magic = Read32(ptr);
@@ -145,13 +145,13 @@ static int read_movie_header(FILE *file, SMovie & movie)
     header.length_frames  = Read32(ptr);
     header.rerecord_count = Read32(ptr);
 
-    header.startFlags      = Read8(ptr);
+    header.startFlags	   = Read8(ptr);
     header.controllerFlags = Read8(ptr);
-    header.typeFlags       = Read8(ptr);
-    header.optionFlags     = Read8(ptr);
+    header.typeFlags	   = Read8(ptr);
+    header.optionFlags	   = Read8(ptr);
 
-    header.saveType       = Read32(ptr);
-    header.flashSize      = Read32(ptr);
+    header.saveType		  = Read32(ptr);
+    header.flashSize	  = Read32(ptr);
     header.gbEmulatorType = Read32(ptr);
 
     for (int i = 0; i < 12; i++)
@@ -161,9 +161,9 @@ static int read_movie_header(FILE *file, SMovie & movie)
 
     header.romCRC = Read8(ptr);
     header.romOrBiosChecksum = Read16(ptr);
-    header.romGameCode       = Read32(ptr);
+    header.romGameCode		 = Read32(ptr);
 
-    header.offset_to_savestate       = Read32(ptr);
+    header.offset_to_savestate		 = Read32(ptr);
     header.offset_to_controller_data = Read32(ptr);
 
     return SUCCESS;
@@ -219,7 +219,7 @@ static void flush_movie()
 
     // (over-)write the controller data
     fseek(Movie.file, Movie.header.offset_to_controller_data, SEEK_SET);
-    fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame*(Movie.header.length_frames+1), Movie.file);
+    fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame*(Movie.header.length_frames + 1), Movie.file);
 
     fflush(Movie.file);
 }
@@ -237,7 +237,7 @@ static void truncateMovie()
     if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
 		return;
 
-    const unsigned long truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame*(Movie.header.length_frames+1);
+    const unsigned long truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame*(Movie.header.length_frames + 1);
     ftruncate(fileno(Movie.file), truncLen);
 
 //#	if defined(__unix) || defined(__linux) || defined(__sun) || defined(__DJGPP)
@@ -266,7 +266,7 @@ static void change_state(MovieState new_state)
 	}
 
 #if (defined(WIN32) && !defined(SDL))
-    theApp.frameSearching      = false;
+    theApp.frameSearching	   = false;
     theApp.frameSearchSkipping = false;
 #endif
 
@@ -275,14 +275,14 @@ static void change_state(MovieState new_state)
         truncateMovie();
 
         fclose(Movie.file);
-        Movie.file         = NULL;
+        Movie.file		   = NULL;
         Movie.currentFrame = 0;
 
 #if (defined(WIN32) && !defined(SDL))
         // undo changes to border settings
         {
             theApp.winGbBorderOn = prevWinBorder;
-            gbBorderAutomatic    = prevBorderAuto;
+            gbBorderAutomatic	 = prevBorderAuto;
 		}
 #endif
         extern int32 gbDMASpeedVersion;
@@ -305,10 +305,10 @@ static void reserve_buffer_space(uint32 space_needed)
 {
     if (space_needed > Movie.inputBufferSize)
     {
-        uint32 ptr_offset   = Movie.inputBufferPtr - Movie.inputBuffer;
+        uint32 ptr_offset	= Movie.inputBufferPtr - Movie.inputBuffer;
         uint32 alloc_chunks = space_needed / BUFFER_GROWTH_SIZE;
-        Movie.inputBufferSize = BUFFER_GROWTH_SIZE * (alloc_chunks+1);
-        Movie.inputBuffer     = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
+        Movie.inputBufferSize = BUFFER_GROWTH_SIZE * (alloc_chunks + 1);
+        Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
         Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
 	}
 }
@@ -348,14 +348,14 @@ static void read_frame_controller_data(int i)
         currentButtons[i] = 0;        // pretend the controller is disconnected
 	}
 
-	if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
+    if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
 		resetSignaled = true;
 
 /* // apparently implemented from the other end, in systemGetJoypad
- #if (!(defined(WIN32) && !defined(SDL)))
+   #if (!(defined(WIN32) && !defined(SDL)))
     // convert from currentButtons input format
     systemSetJoypad(i, currentButtons[i]);
- #endif
+   #endif
  */
 }
 
@@ -393,10 +393,10 @@ static void write_frame_controller_data(int i)
     if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
     {
 /* // apparently implemented from the other end, in systemGetJoypad
- #if (!(defined(WIN32) && !defined(SDL)))
+   #if (!(defined(WIN32) && !defined(SDL)))
         // convert to currentButtons input format
         currentButtons[i] = systemGetJoypad(i,false);
- #endif
+   #endif
  */
         // get the current controller data
         uint16 buttonData = (uint16)currentButtons[i];
@@ -406,7 +406,7 @@ static void write_frame_controller_data(int i)
 
 #       if (defined(WIN32) && !defined(SDL))
         // add in the motion sensor bits
-        extern BOOL   checkKey(LONG_PTR key);   // from Input.cpp
+        extern BOOL	  checkKey(LONG_PTR key);   // from Input.cpp
         extern USHORT motion[4];     // from DirectInput.cpp
         if (checkKey(motion[KEY_LEFT]))
 			buttonData |= BUTTON_MASK_LEFT_MOTION;
@@ -419,7 +419,7 @@ static void write_frame_controller_data(int i)
 #       else
 #           ifdef SDL
         extern bool sdlCheckJoyKey(int key);         // from SDL.cpp
-        extern u16  motion[4];        // from SDL.cpp
+        extern u16	motion[4];        // from SDL.cpp
         if (sdlCheckJoyKey(motion[KEY_LEFT]))
 			buttonData |= BUTTON_MASK_LEFT_MOTION;
         if (sdlCheckJoyKey(motion[KEY_RIGHT]))
@@ -431,8 +431,8 @@ static void write_frame_controller_data(int i)
 #           endif
 #       endif
 
-		// soft-reset "button" for 1 frame if the game is reset while recording
-		if (resetSignaled)
+        // soft-reset "button" for 1 frame if the game is reset while recording
+        if (resetSignaled)
 			buttonData |= BUTTON_MASK_RESET;
 
         // write it to file
@@ -452,7 +452,7 @@ static void write_frame_controller_data(int i)
 void VBAMovieInit()
 {
     memset(&Movie, 0, sizeof(Movie));
-    Movie.state      = MOVIE_STATE_NONE;
+    Movie.state		 = MOVIE_STATE_NONE;
     Movie.pauseFrame = -1;
     for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
 		currentButtons[i] = 0;
@@ -462,7 +462,7 @@ void VBAMovieInit()
 
 static void GetBatterySaveName(CString & filename)
 {
-	filename = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+    filename = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
 }
 
 #else
@@ -488,15 +488,15 @@ static void SetPlayEmuSettings()
     if (theApp.cartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 
-	// some GB/GBC games depend on the sound rate, so just use the highest one
-	systemSetSoundQuality(1);
+    // some GB/GBC games depend on the sound rate, so just use the highest one
+    systemSetSoundQuality(1);
 
     theApp.useOldGBTiming = false;
 //    theApp.removeIntros   = false;
-    theApp.skipBiosFile   = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
-    theApp.useBiosFile    = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+    theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+    theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
     rtcEnable((Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0);
-    theApp.winSaveType  = Movie.header.saveType;
+    theApp.winSaveType	= Movie.header.saveType;
     theApp.winFlashSize = Movie.header.flashSize;
 
     extern int32 gbDMASpeedVersion;
@@ -511,7 +511,7 @@ static void SetPlayEmuSettings()
     else
 		gbEchoRAMFixOn = 0;
 
-    prevBorder     = gbBorderOn;
+    prevBorder	   = gbBorderOn;
     prevWinBorder  = theApp.winGbBorderOn;
     prevBorderAuto = gbBorderAutomatic;
     if ((gbEmulatorType == 2 || gbEmulatorType == 5)
@@ -519,14 +519,14 @@ static void SetPlayEmuSettings()
     {
         gbBorderOn = true;
         theApp.winGbBorderOn = true;
-        gbBorderAutomatic    = false;
+        gbBorderAutomatic	 = false;
         theApp.updateWindowSize(theApp.videoOption);
 	}
     else
     {
         gbBorderOn = false;
         theApp.winGbBorderOn = false;
-        gbBorderAutomatic    = false;
+        gbBorderAutomatic	 = false;
         theApp.updateWindowSize(theApp.videoOption);
         if (theApp.hideMovieBorder)
         {
@@ -536,13 +536,13 @@ static void SetPlayEmuSettings()
 	}
 
 #   else
-    extern int  saveType, sdlRtcEnable, sdlFlashSize;    // from SDL.cpp
+    extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
     extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
-    useBios      = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-    skipBios     = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+    useBios		 = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+    skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
     removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
     sdlRtcEnable = (Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0;
-    saveType     = Movie.header.saveType;
+    saveType	 = Movie.header.saveType;
     sdlFlashSize = Movie.header.flashSize;
 
     extern int cartridgeType;     // from SDL.cpp
@@ -575,27 +575,27 @@ static void HardResetAndSRAMClear()
 int VBAMovieOpen(const char*filename, bool8 read_only)
 {
     loadingMovie = true;
-	uint8 movieReadOnly = read_only ? 1 : 0;
+    uint8 movieReadOnly = read_only ? 1 : 0;
 
     FILE*  file;
     STREAM stream;
-    int    result;
-    int    fn;
+    int	   result;
+    int	   fn;
 
-	char movie_filename [_MAX_PATH];
+    char movie_filename [_MAX_PATH];
 #ifdef WIN32
-	_fullpath(movie_filename, filename, _MAX_PATH);
+    _fullpath(movie_filename, filename, _MAX_PATH);
 #else
-	// FIXME: convert to fullpath
-	strncpy(movie_filename, filename, _MAX_PATH);
-	movie_filename[_MAX_PATH-1] = '\0';
+    // FIXME: convert to fullpath
+    strncpy(movie_filename, filename, _MAX_PATH);
+    movie_filename[_MAX_PATH-1] = '\0';
 #endif
 
-	if (movie_filename[0] == '\0')
-		{loadingMovie = false; return FILE_NOT_FOUND;}
+    if (movie_filename[0] == '\0')
+    {loadingMovie = false; return FILE_NOT_FOUND; }
 
-	if (!emulating)
-		{loadingMovie = false; return UNKNOWN_ERROR;}
+    if (!emulating)
+    {loadingMovie = false; return UNKNOWN_ERROR; }
 
 //	bool alreadyOpen = (Movie.file != NULL && _stricmp(movie_filename, Movie.filename) == 0);
 
@@ -604,9 +604,9 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 
     if (!(file = fopen(movie_filename, "rb+")))
 		if (!(file = fopen(movie_filename, "rb")))
-			{loadingMovie = false; return FILE_NOT_FOUND;}
-		//else
-		//	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
+		{loadingMovie = false; return FILE_NOT_FOUND; }
+    //else
+    //	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
 
 //	if (!alreadyOpen)
 //		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
@@ -624,7 +624,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     if ((result = read_movie_header(file, Movie)) != SUCCESS)
     {
         fclose(file);
-		{loadingMovie = false; return result;}
+        {loadingMovie = false; return result; }
 	}
 
     // set emulator settings that make the movie more likely to stay synchronized
@@ -639,9 +639,10 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     lseek(fn, Movie.header.offset_to_savestate, SEEK_SET);
     if (!(stream = utilGzReopen(fn, "rb")))
 		if (!(stream = utilGzOpen(movie_filename, "rb")))
-			{loadingMovie = false; return FILE_NOT_FOUND;}
+		{loadingMovie = false; return FILE_NOT_FOUND; }
 		else
-			fn = dup(fileno(file)); // in case the above dup failed but opening the file normally doesn't fail
+			fn = dup(fileno(file));
+    // in case the above dup failed but opening the file normally doesn't fail
 
     if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
     {
@@ -667,7 +668,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     utilGzClose(stream);
 
     if (result != SUCCESS)
-		{loadingMovie = false; return result;}
+    {loadingMovie = false; return result; }
 
 //	if (!(file = fopen(movie_filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
 //	{
@@ -676,7 +677,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 //	}
     if (!(file = fopen(movie_filename, "rb+")))
 		if (!(file = fopen(movie_filename, "rb")))
-			{loadingMovie = false; return FILE_NOT_FOUND;}
+		{loadingMovie = false; return FILE_NOT_FOUND; }
 		else
 			movieReadOnly = 2;
 
@@ -687,7 +688,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame - 1;
 
     if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
-	    {loadingMovie = false; return WRONG_FORMAT;}
+    {loadingMovie = false; return WRONG_FORMAT; }
 
     // read controller data
     Movie.file = file;
@@ -697,9 +698,9 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     fread(Movie.inputBufferPtr, 1, to_read, file);
 
     // read "baseline" controller data
-	read_frame_controller_data(0); // FIXME
+//	read_frame_controller_data(0); // FIXME
 
-	Movie.currentFrame = 0;
+    Movie.currentFrame = 0;
 
     strcpy(Movie.filename, movie_filename);
     Movie.readOnly = movieReadOnly;
@@ -712,7 +713,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     else
 		systemScreenMessage("Movie replay (edit)");
 
-    {loadingMovie = false; return SUCCESS;}
+    {loadingMovie = false; return SUCCESS; }
 }
 
 static void CalcROMInfo()
@@ -756,7 +757,7 @@ static void SetRecordEmuSettings()
     Movie.header.saveType  = theApp.winSaveType;
     Movie.header.flashSize = theApp.winFlashSize;
 #   else
-    extern int  saveType, sdlRtcEnable, sdlFlashSize;    // from SDL.cpp
+    extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
     extern bool8 useBios, skipBios;     // from SDL.cpp
     if (useBios)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
@@ -768,9 +769,9 @@ static void SetRecordEmuSettings()
     Movie.header.flashSize = sdlFlashSize;
 #   endif
 /* // This piece caused THE mysterious desync in GBA movie recording
- #if (defined(WIN32) && !defined(SDL))
+   #if (defined(WIN32) && !defined(SDL))
         if(GetAsyncKeyState(VK_CONTROL) == 0)
- #endif
+   #endif
  */
     if (!memLagTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
@@ -785,27 +786,27 @@ static void SetRecordEmuSettings()
     gbEchoRAMFixOn = 1;
 
 #   if (defined(WIN32) && !defined(SDL))
-	// some GB/GBC games depend on the sound rate, so just use the highest one
-	systemSetSoundQuality(1);
+    // some GB/GBC games depend on the sound rate, so just use the highest one
+    systemSetSoundQuality(1);
 
     theApp.useOldGBTiming = false;
 //    theApp.removeIntros   = false;
 
-    prevBorder     = gbBorderOn;
+    prevBorder	   = gbBorderOn;
     prevWinBorder  = theApp.winGbBorderOn;
     prevBorderAuto = gbBorderAutomatic;
     if (gbEmulatorType == 2 || gbEmulatorType == 5)     // only games played in SGB mode will have a border
     {
         gbBorderOn = true;
         theApp.winGbBorderOn = true;
-        gbBorderAutomatic    = false;
+        gbBorderAutomatic	 = false;
         theApp.updateWindowSize(theApp.videoOption);
 	}
     else
     {
         gbBorderOn = false;
         theApp.winGbBorderOn = false;
-        gbBorderAutomatic    = false;
+        gbBorderAutomatic	 = false;
         theApp.updateWindowSize(theApp.videoOption);
 	}
 
@@ -814,7 +815,7 @@ static void SetRecordEmuSettings()
 #   endif
 }
 
-int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags)
+int VBAMovieCreate(const char *filename, const char*authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags)
 {
     // make sure at least one controller is enabled
     if ((controllerFlags & MOVIE_CONTROLLERS_ANY_MASK) == 0)
@@ -827,43 +828,43 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 
     FILE*  file;
     STREAM stream;
-    int    fn;
+    int	   fn;
 
-	char movie_filename [_MAX_PATH];
+    char movie_filename [_MAX_PATH];
 #ifdef WIN32
-	_fullpath(movie_filename, filename, _MAX_PATH);
+    _fullpath(movie_filename, filename, _MAX_PATH);
 #else
-	// FIXME: convert to fullpath
-	strncpy(movie_filename, filename, _MAX_PATH);
-	movie_filename[_MAX_PATH-1] = '\0';
+    // FIXME: convert to fullpath
+    strncpy(movie_filename, filename, _MAX_PATH);
+    movie_filename[_MAX_PATH-1] = '\0';
 #endif
 
     bool alreadyOpen = (Movie.file != NULL && stricmp(movie_filename, Movie.filename) == 0);
 
     if (alreadyOpen)
-		change_state(MOVIE_STATE_NONE); // have to stop current movie before trying to re-open it
+		change_state(MOVIE_STATE_NONE);  // have to stop current movie before trying to re-open it
 
     if (movie_filename[0] == '\0')
-		{loadingMovie = false; return FILE_NOT_FOUND;}
+    {loadingMovie = false; return FILE_NOT_FOUND; }
 
     if (!(file = fopen(movie_filename, "wb")))
-		{loadingMovie = false; return FILE_NOT_FOUND;}
+    {loadingMovie = false; return FILE_NOT_FOUND; }
 
     if (!alreadyOpen)
-		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
+		change_state(MOVIE_STATE_NONE);  // stop current movie when we're able to open the other one
 
     // clear out the current movie
     VBAMovieInit();
 
     // fill in the movie's header
-    Movie.header.uid = (uint32)time(NULL);
+    Movie.header.uid   = (uint32)time(NULL);
     Movie.header.magic = VBM_MAGIC;
-    Movie.header.version         = VBM_VERSION;
-    Movie.header.rerecord_count  = 0;
-    Movie.header.length_frames   = 0;
-    Movie.header.startFlags      = startFlags;
+    Movie.header.version		 = VBM_VERSION;
+    Movie.header.rerecord_count	 = 0;
+    Movie.header.length_frames	 = 0;
+    Movie.header.startFlags		 = startFlags;
     Movie.header.controllerFlags = controllerFlags;
-    Movie.header.typeFlags       = typeFlags;
+    Movie.header.typeFlags		 = typeFlags;
 
     Movie.header.reservedByte = 0;
 
@@ -894,7 +895,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
         fclose(file);
 
         if (!(stream = utilGzReopen(fn, "ab"))) // append mode to start at end, no seek necessary
-			{loadingMovie = false; return FILE_NOT_FOUND;}
+        {loadingMovie = false; return FILE_NOT_FOUND; }
 
         // write the save data:
         if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
@@ -903,7 +904,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
             if (!theEmulator.emuWriteStateToStream(stream))
             {
                 utilGzClose(stream);
-                {loadingMovie = false; return UNKNOWN_ERROR;}
+                {loadingMovie = false; return UNKNOWN_ERROR; }
 			}
 		}
         else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
@@ -912,7 +913,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
             if (!theEmulator.emuWriteBatteryToStream(stream))
             {
                 utilGzClose(stream);
-                {loadingMovie = false; return UNKNOWN_ERROR;}
+                {loadingMovie = false; return UNKNOWN_ERROR; }
 			}
 
             // 'soft' reset:
@@ -924,7 +925,7 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
         // reopen the file and seek back to the end
 
         if (!(file = fopen(movie_filename, "rb+")))
-			{loadingMovie = false; return FILE_NOT_FOUND;}
+        {loadingMovie = false; return FILE_NOT_FOUND; }
 
         fseek(file, 0, SEEK_END);
 	}
@@ -940,12 +941,14 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
 
     // write controller data
     Movie.file = file;
-    Movie.bytesPerFrame  = bytes_per_frame(Movie);
+    Movie.bytesPerFrame	 = bytes_per_frame(Movie);
     Movie.inputBufferPtr = Movie.inputBuffer;
 
-    // write "baseline" controller data
-    write_frame_controller_data(0); // correct if we can assume the first controller is active, which we can on all GBx/xGB
-                                    // systems
+//    reserve_buffer_space(Movie.bytesPerFrame);
+
+	// write "baseline" controller data
+//    write_frame_controller_data(0); // correct if we can assume the first controller is active, which we can on all GBx/xGB
+//                                    // systems
     Movie.currentFrame = 0;
 
     strcpy(Movie.filename, movie_filename);
@@ -955,14 +958,14 @@ int VBAMovieCreate(const char*filename, const char*authorInfo, uint8 startFlags,
     Movie.RecordedThisSession = true;
 
     systemScreenMessage("Recording movie...");
-    {loadingMovie = false; return SUCCESS;}
+    {loadingMovie = false; return SUCCESS; }
 }
 
 void VBAUpdateButtonPressDisplay()
 {
     uint32 keys = currentButtons[theApp.joypadDefault] & BUTTON_REGULAR_RECORDING_MASK;
 
-    const static char KeyMap[]   =  {'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^'};
+    const static char KeyMap[]	 =  {'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^'};
     const static int  KeyOrder[] = {5, 6, 4, 7,  0, 1, 9, 8, 3, 2,  12, 15, 13, 14,  10}; // < ^ > v   A B  L R  S s  { = } _  !
     char buffer[256];
     sprintf(buffer, "                       ");
@@ -972,17 +975,17 @@ void VBAUpdateButtonPressDisplay()
     int i;
     for (i = 0; i < 15; i++)
     {
-        int j    = KeyOrder[i];
+        int j	 = KeyOrder[i];
         int mask = (1 << (j));
         buffer[strlen("    ") + i] = ((keys & mask) != 0) ? KeyMap[j] : ' ';
 	}
 
     systemScreenMessage(buffer, 2, -1);
 #else
-    const bool eraseAll = !theApp.inputDisplay;
-    uint32 autoHeldKeys = eraseAll ? 0 : theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
-    uint32 autoFireKeys = eraseAll ? 0 : (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
-    uint32 pressedKeys  = eraseAll ? 0 : keys;
+    const bool eraseAll		= !theApp.inputDisplay;
+    uint32	   autoHeldKeys = eraseAll ? 0 : theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
+    uint32	   autoFireKeys = eraseAll ? 0 : (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
+    uint32	   pressedKeys	= eraseAll ? 0 : keys;
 
     char colorList[64];
     memset(colorList, 1, strlen(buffer));
@@ -990,30 +993,30 @@ void VBAUpdateButtonPressDisplay()
     static int lastKeys = 0;
 
     if (!eraseAll)
-	{
-		for (int i = 0; i < 15; i++)
-		{
-			const int  j         = KeyOrder[i];
-			const int  mask      = (1 << (j));
-			bool       pressed   = (pressedKeys  & mask) != 0;
-			const bool autoHeld  = (autoHeldKeys & mask) != 0;
-			const bool autoFired = (autoFireKeys & mask) != 0;
-			const bool erased    = (lastKeys & mask) != 0 && (!pressed && !autoHeld && !autoFired);
-			extern int textMethod;
-			if (textMethod != 2 && (autoHeld || (autoFired && !pressed) || erased))
-			{
-				int colorNum = 1;     // default is white
-				if (autoHeld)
+    {
+        for (int i = 0; i < 15; i++)
+        {
+            const int  j		 = KeyOrder[i];
+            const int  mask		 = (1 << (j));
+            bool	   pressed	 = (pressedKeys  & mask) != 0;
+            const bool autoHeld	 = (autoHeldKeys & mask) != 0;
+            const bool autoFired = (autoFireKeys & mask) != 0;
+            const bool erased	 = (lastKeys & mask) != 0 && (!pressed && !autoHeld && !autoFired);
+            extern int textMethod;
+            if (textMethod != 2 && (autoHeld || (autoFired && !pressed) || erased))
+            {
+                int colorNum = 1;     // default is white
+                if (autoHeld)
 					colorNum += (pressed ? 2 : 1);     // yellow if pressed, red if not
-				else if (autoFired)
+                else if (autoFired)
 					colorNum += 5;     // blue if autofired and not currently pressed
-				else if (erased)
+                else if (erased)
 					colorNum += 8;     // black on black
 
-				colorList[strlen("    ")+i] = colorNum;
-				pressed = true;
+                colorList[strlen("    ")+i] = colorNum;
+                pressed = true;
 			}
-			buffer[strlen("    ") + i] = pressed ? KeyMap[j] : ' ';
+            buffer[strlen("    ") + i] = pressed ? KeyMap[j] : ' ';
 		}
 	}
 
@@ -1030,9 +1033,9 @@ void VBAUpdateFrameCountDisplay()
 #if (!(defined(WIN32) && !defined(SDL)))
     extern int cartridgeType; // from SDL.cpp
 #endif
-	const int MAGICAL_NUMBER = 64;	// FIXME: this won't do any better, but only to remind you of sz issues
-    char frameDisplayString[MAGICAL_NUMBER];
-    char lagFrameDisplayString[MAGICAL_NUMBER];
+    const int MAGICAL_NUMBER = 64;  // FIXME: this won't do any better, but only to remind you of sz issues
+    char	  frameDisplayString[MAGICAL_NUMBER];
+    char	  lagFrameDisplayString[MAGICAL_NUMBER];
     struct EmulatedSystemCounters &emuCounters =
 #if (defined(WIN32) && !defined(SDL))
         (theApp.cartridgeType == 0) // GBA
@@ -1046,47 +1049,47 @@ void VBAUpdateFrameCountDisplay()
 	case MOVIE_STATE_PLAY :
 		{
 #           if (defined(WIN32) && !defined(SDL))
-			if (theApp.frameCounter)
-			{
+		    if (theApp.frameCounter)
+		    {
 		        sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
 		        if (theApp.lagCounter)
-				{
-					sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
-					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+		        {
+		            sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
+		            strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 				}
 			}
-			else
-			{
-				frameDisplayString[0] = '\0';
+		    else
+		    {
+		        frameDisplayString[0] = '\0';
 			}
 		    systemScreenMessage(frameDisplayString, 1, -1);
 #           else
-			/// SDL FIXME
+		    /// SDL FIXME
 #           endif
-			break;
+		    break;
 		}
 
 	case MOVIE_STATE_RECORD:
 		{
 #       if (defined(WIN32) && !defined(SDL))
-			if (theApp.frameCounter)
-			{
+		    if (theApp.frameCounter)
+		    {
 		        sprintf(frameDisplayString, "%d (movie)", Movie.currentFrame);
 		        if (theApp.lagCounter)
-				{
-					sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
-					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+		        {
+		            sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
+		            strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 				}
 			}
-			else
-			{
-				frameDisplayString[0] = '\0';
+		    else
+		    {
+		        frameDisplayString[0] = '\0';
 			}
 		    systemScreenMessage(frameDisplayString, 1, -1);
 #       else
-			/// SDL FIXME
+		    /// SDL FIXME
 #       endif
-			break;
+		    break;
 		}
 
 	default:
@@ -1096,14 +1099,14 @@ void VBAUpdateFrameCountDisplay()
 		    {
 		        sprintf(frameDisplayString, "%d (no movie)", emuCounters.frameCount);
 		        if (theApp.lagCounter)
-				{
-					sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
-					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+		        {
+		            sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
+		            strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 				}
 			}
-			else
-			{
-				frameDisplayString[0] = '\0';
+		    else
+		    {
+		        frameDisplayString[0] = '\0';
 			}
 		    systemScreenMessage(frameDisplayString, 1, -1);
 #       else
@@ -1116,24 +1119,24 @@ void VBAUpdateFrameCountDisplay()
 
 void VBAMovieUpdate(int controllerNum, bool sensor)
 {
-	bool willRestart = false;
-    bool willPause = false;
+    bool willRestart = false;
+    bool willPause	 = false;
 
     switch (Movie.state)
     {
 	case MOVIE_STATE_PLAY:
 		{
 		    if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
-				break; // not a controller we're recognizing
+				break;  // not a controller we're recognizing
 
 		    if (Movie.currentFrame >= Movie.header.length_frames)
 		    {
 #if (defined(WIN32) && !defined(SDL))
-				if (theApp.movieOnEndBehavior == 1)
-				{
-					willRestart = true;
-					willPause = theApp.movieOnEndPause;
-					break;
+		        if (theApp.movieOnEndBehavior == 1)
+		        {
+		            willRestart = true;
+		            willPause	= theApp.movieOnEndPause;
+		            break;
 				}
 		        else if (theApp.movieOnEndBehavior == 2 && Movie.RecordedThisSession)
 #else
@@ -1149,7 +1152,7 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 		                VBAMovieToggleReadOnly();
 					}
 
-					VBAMovieSwitchToRecording();
+		            VBAMovieSwitchToRecording();
 		            willPause = true;
 		            break;
 //					goto movieUpdateStart;
@@ -1160,11 +1163,11 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 		            change_state(MOVIE_STATE_NONE);
 		            systemScreenMessage("Movie end");
 #if (defined(WIN32) && !defined(SDL))
- 		            willPause = theApp.movieOnEndPause;
+		            willPause = theApp.movieOnEndPause;
 #else
-                    willPause = false; // SDL FIXME
+		            willPause = false; // SDL FIXME
 #endif
- 		            break;
+		            break;
 				}
 			}
 		    else
@@ -1178,7 +1181,7 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 	case MOVIE_STATE_RECORD:
 		{
 		    if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
-				break; // not a controller we're recognizing
+				break;  // not a controller we're recognizing
 
 		    write_frame_controller_data(controllerNum);
 		    ++Movie.currentFrame;
@@ -1194,21 +1197,21 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 	}
 
     // if the movie's been set to pause at a certain frame
-	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
-	{
+    if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
+    {
         Movie.pauseFrame = -1;
-		willPause = true;
+        willPause		 = true;
 	}
 
-	if (willRestart)
-	{
-		VBAMovieRestart();
+    if (willRestart)
+    {
+        VBAMovieRestart();
 	}
 
     if (willPause)
     {
-		extern void systemPauseEmulator(bool = true);
-		systemPauseEmulator(true);
+        extern void systemPauseEmulator(bool = true);
+        systemPauseEmulator(true);
 	}
 }
 
@@ -1230,8 +1233,8 @@ int VBAMovieGetInfo(const char*filename, SMovie*info)
     if (info == NULL)
 		return -1;
 
-    FILE*    file;
-    int      result;
+    FILE*	 file;
+    int		 result;
     SMovie & local_movie = *info;
 
     memset(info, 0, sizeof(*info));
@@ -1252,7 +1255,7 @@ int VBAMovieGetInfo(const char*filename, SMovie*info)
 
     if (Movie.file != NULL && stricmp(local_movie.filename, Movie.filename) == 0) // alreadyOpen
     {
-        local_movie.bytesPerFrame        = Movie.bytesPerFrame;
+        local_movie.bytesPerFrame		 = Movie.bytesPerFrame;
         local_movie.header.length_frames = Movie.header.length_frames;
 	}
     else
@@ -1306,15 +1309,15 @@ void VBAMovieToggleReadOnly()
     if (!VBAMovieActive())
 		return;
 
-	if(Movie.readOnly != 2)
-	{
-		Movie.readOnly = !Movie.readOnly;
+    if (Movie.readOnly != 2)
+    {
+        Movie.readOnly = !Movie.readOnly;
 
-		systemScreenMessage(Movie.readOnly ? "Movie now read-only" : "Movie now editable");
+        systemScreenMessage(Movie.readOnly ? "Movie now read-only" : "Movie now editable");
 	}
-	else
-	{
-		systemScreenMessage("Can't toggle read-only movie");
+    else
+    {
+        systemScreenMessage("Can't toggle read-only movie");
 	}
 }
 
@@ -1342,23 +1345,23 @@ uint32 VBAMovieGetFrameCounter()
     return Movie.currentFrame;
 }
 
-uint32 VBAMovieGetRerecordCount ()
+uint32 VBAMovieGetRerecordCount()
 {
-	if(!VBAMovieActive())
+    if (!VBAMovieActive())
 		return 0;
 
-	return Movie.header.rerecord_count;
+    return Movie.header.rerecord_count;
 }
 
-uint32 VBAMovieSetRerecordCount (uint32 newRerecordCount)
+uint32 VBAMovieSetRerecordCount(uint32 newRerecordCount)
 {
-	uint32 oldRerecordCount = 0;
-	if(!VBAMovieActive())
+    uint32 oldRerecordCount = 0;
+    if (!VBAMovieActive())
 		return 0;
 
-	oldRerecordCount = Movie.header.rerecord_count;
-	Movie.header.rerecord_count = newRerecordCount;
-	return oldRerecordCount;
+    oldRerecordCount = Movie.header.rerecord_count;
+    Movie.header.rerecord_count = newRerecordCount;
+    return oldRerecordCount;
 }
 
 std::string VBAMovieGetAuthorInfo()
@@ -1377,7 +1380,7 @@ std::string VBAMovieGetFilename()
     return Movie.filename;
 }
 
-void VBAMovieFreeze(uint8**buf, uint32*size)
+void VBAMovieFreeze(uint8 **buf, uint32 *size)
 {
     // sanity check
     if (!VBAMovieActive())
@@ -1389,18 +1392,13 @@ void VBAMovieFreeze(uint8**buf, uint32*size)
     *size = 0;
 
     // compute size needed for the buffer
-    uint32 size_needed = sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames);            //
-                                                                                                                                // room
-                                                                                                                                // for
-                                                                                                                                // header.uid,
-                                                                                                                                // currentFrame,
-                                                                                                                                // and
-                                                                                                                                // header.length_frames
-    size_needed += (uint32)(Movie.bytesPerFrame * (Movie.header.length_frames+1));
-    *buf         = new uint8[size_needed];
-    *size        = size_needed;
+    // room for header.uid, currentFrame, and header.length_frames
+    uint32 size_needed = sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames);
+    size_needed += (uint32)(Movie.bytesPerFrame * (Movie.header.length_frames + 1));
+    *buf		 = new uint8[size_needed];
+    *size		 = size_needed;
 
-    uint8*ptr = *buf;
+    uint8 *ptr = *buf;
     if (!ptr)
     {
         return;
@@ -1410,7 +1408,7 @@ void VBAMovieFreeze(uint8**buf, uint32*size)
     Write32(Movie.currentFrame, ptr);
     Write32(Movie.header.length_frames, ptr);
 
-    memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * (Movie.header.length_frames+1));
+    memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * (Movie.header.length_frames + 1));
 }
 
 bool8 VBAMovieSwitchToRecording()
@@ -1438,16 +1436,16 @@ int VBAMovieUnfreeze(const uint8*buf, uint32 size)
         return NOT_FROM_A_MOVIE;
 	}
 
-    const uint8*ptr = buf;
+    const uint8 *ptr = buf;
     if (size < sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames))
     {
         return WRONG_FORMAT;
 	}
 
-    uint32 movie_id      = Read32(ptr);
+    uint32 movie_id		 = Read32(ptr);
     uint32 current_frame = Read32(ptr);
-    uint32 max_frame     = Read32(ptr);
-    uint32 space_needed  = (Movie.bytesPerFrame * (max_frame+1));
+    uint32 max_frame	 = Read32(ptr);
+    uint32 space_needed	 = (Movie.bytesPerFrame * (max_frame + 1));
 
     if (movie_id != Movie.header.uid)
 		return NOT_FROM_THIS_MOVIE;
@@ -1466,7 +1464,7 @@ int VBAMovieUnfreeze(const uint8*buf, uint32 size)
         change_state(MOVIE_STATE_RECORD);
 ///		systemScreenMessage("Movie re-record");
 
-        Movie.currentFrame         = current_frame;
+        Movie.currentFrame		   = current_frame;
         Movie.header.length_frames = max_frame;
         if (!VBALuaRerecordCountSkip())
 			++Movie.header.rerecord_count;
@@ -1485,7 +1483,7 @@ int VBAMovieUnfreeze(const uint8*buf, uint32 size)
         // by loading another savestate or playing the movie from the beginning
 
         // don't allow loading a state inconsistent with the current movie
-        uint32 space_shared = (Movie.bytesPerFrame * (current_frame+1));
+        uint32 space_shared = (Movie.bytesPerFrame * (current_frame + 1));
         if (current_frame > Movie.header.length_frames ||
             memcmp(Movie.inputBuffer, ptr, space_shared))
 			return SNAPSHOT_INCONSISTENT;
@@ -1524,15 +1522,16 @@ uint32 VBAMovieGetState()
 
 void VBAMovieSignalReset()
 {
-	if (VBAMovieActive())
+    if (VBAMovieActive())
 		resetSignaled = true;
 }
 
 void VBAMovieResetIfRequested()
 {
-	if (VBAMovieActive() && resetSignaled) {
-		theEmulator.emuReset(false);
-		resetSignaled = false;
+    if (VBAMovieActive() && resetSignaled)
+    {
+        theEmulator.emuReset(false);
+        resetSignaled = false;
 	}
 }
 
@@ -1570,7 +1569,7 @@ void VBAMovieRestart()
         Movie.RecordedThisSession = modified;
 
 //		systemScreenMessage("movie replay (restart)");
-		systemRefreshScreen();
+        systemRefreshScreen();
 	}
 }
 
