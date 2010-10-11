@@ -697,7 +697,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     fread(Movie.inputBufferPtr, 1, to_read, file);
 
     // read "baseline" controller data
-	read_frame_controller_data(theApp.joypadDefault); // FIXME
+	read_frame_controller_data(0); // FIXME
 
 	Movie.currentFrame = 0;
 
@@ -1498,7 +1498,7 @@ int VBAMovieUnfreeze(const uint8*buf, uint32 size)
 
     Movie.inputBufferPtr = Movie.inputBuffer + (Movie.bytesPerFrame * Movie.currentFrame);
 
-	read_frame_controller_data(theApp.joypadDefault); // FIXME
+//	read_frame_controller_data(0); // FIXME
 ///	for (int controller = 0; controller < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++controller)
 ///		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controller)) != 0)
 ///			read_frame_controller_data(controller);

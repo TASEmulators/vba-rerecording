@@ -1423,8 +1423,14 @@ bool CPUWriteBMPFile(const char *fileName)
 	return utilWriteBMPFile(fileName, 240, 160, pix);
 }
 
+static bool frameBoundary = false;
+static bool newFrame = true;
+
 void CPUCleanUp()
 {
+	frameBoundary = false;
+	newFrame = true;
+
 	GBASystemCounters.frameCount = 0;
 	GBASystemCounters.lagCount   = 0;
 	GBASystemCounters.lagged     = true;
@@ -3771,8 +3777,6 @@ void log(const char *defaultMsg, ...)
 extern void winlog(const char *, ...);
 #endif
 
-static bool frameBoundary = false;
-
 void CPULoop(int _ticks)
 {
 	int32 ticks = _ticks;
@@ -3796,6 +3800,54 @@ void CPULoop(int _ticks)
 	{
 		cpuLoopTicks  = 5;
 		cpuSavedTicks = 5;
+	}
+
+	u32 joy = 0;
+	if (newFrame)
+	{
+		extern void VBAOnExitingFrameBoundary();
+		VBAOnExitingFrameBoundary();
+
+		// update joystick information
+		if (systemReadJoypads())
+		{
+			// read default joystick
+			joy = systemGetJoypad(-1, cpuEEPROMSensorEnabled);
+
+			VBAMovieResetIfRequested();
+		}
+
+		P1 = 0x03FF ^ (joy & 0x3FF);
+
+		UPDATE_REG(0x130, P1);
+		u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
+		// this seems wrong, but there are cases where the game
+		// can enter the stop state without requesting an IRQ from
+		// the joypad.
+		if ((P1CNT & 0x4000) || stopState)
+		{
+			u16 p1 = (0x3FF ^ P1) & 0x3FF;
+			if (P1CNT & 0x8000)
+			{
+				if (p1 == (P1CNT & 0x3FF))
+				{
+					IF |= 0x1000;
+					UPDATE_REG(0x202, IF);
+				}
+			}
+			else
+			{
+				if (p1 & P1CNT)
+				{
+					IF |= 0x1000;
+					UPDATE_REG(0x202, IF);
+				}
+			}
+		}
+
+		GBASystemCounters.lagged = true;
+
+		newFrame = false;
 	}
 
 	for (;;)
@@ -3986,32 +4038,19 @@ updateLoop:
 							}
 							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
 							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-							OnFrameBoundary();
-							GBASystemCounters.lagged = true;
 
 							if (count == 60)
 							{
 								u32 time = systemGetClock();
 								if (time != lastTime)
 								{
-									u32 t = 100000/(time - lastTime);
+									u32 t = (1000000/(time - lastTime) + 5) / 10;
 									systemShowSpeed(t);
 								}
 								else
 									systemShowSpeed(0);
 								lastTime = time;
 								count    = 0;
-							}
-
-							// update joystick information
-							u32 joy = 0;
-
-							if (systemReadJoypads())
-							{
-								// read default joystick
-								joy = systemGetJoypad(-1, cpuEEPROMSensorEnabled);
-
-								VBAMovieResetIfRequested();
 							}
 
 							if (VBALuaRunning())
@@ -4021,43 +4060,17 @@ updateLoop:
 
 							frameBoundary = true;
 
-							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-
-							P1 = 0x03FF ^ (joy & 0x3FF);
-
-							UPDATE_REG(0x130, P1);
-							u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
-							// this seems wrong, but there are cases where the game
-							// can enter the stop state without requesting an IRQ from
-							// the joypad.
-							if ((P1CNT & 0x4000) || stopState)
-							{
-								u16 p1 = (0x3FF ^ P1) & 0x3FF;
-								if (P1CNT & 0x8000)
-								{
-									if (p1 == (P1CNT & 0x3FF))
-									{
-										IF |= 0x1000;
-										UPDATE_REG(0x202, IF);
-									}
-								}
-								else
-								{
-									if (p1 & P1CNT)
-									{
-										IF |= 0x1000;
-										UPDATE_REG(0x202, IF);
-									}
-								}
-							}
-
+							// HACK: some special "buttons"
 							u32 ext        = (joy >> 18);
-							int cheatTicks = 0;
+//							int32 cheatTicks = 0;
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1^0x3FF, ext);
-							cpuDmaTicksToUpdate += cheatTicks;
+//							cpuDmaTicksToUpdate += cheatTicks;
+
 							speedup  = (ext & 1) ? true : false;
 							capture |= (ext & 2) ? true : false;
+
+							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 							DISPSTAT |= 1;
 							DISPSTAT &= 0xFFFD;
@@ -4501,6 +4514,8 @@ updateLoop:
 
 			cpuLoopTicks = CPUUpdateTicks();
 
+			// FIXME: it is too bad that it is still not determined whether the loop can be exited at this point
+
 			if (cpuDmaTicksToUpdate > 0)
 			{
 				clockTicks = cpuSavedTicks;
@@ -4509,7 +4524,7 @@ updateLoop:
 				cpuDmaTicksToUpdate -= clockTicks;
 				if (cpuDmaTicksToUpdate < 0)
 					cpuDmaTicksToUpdate = 0;
-				goto updateLoop;
+				goto updateLoop;	// this is evil
 			}
 
 			if (IF && (IME & 1) && armIrqEnable)
@@ -4557,13 +4572,22 @@ updateLoop:
 	#endif
 			{
 				if (ticks <= 0)
+				{
+					newFrame = true;
 					break;
+				}
 			}
 			else
 			{
 				if (frameBoundary)
 				{
+					extern void VBAOnEnteringFrameBoundary();
+					VBAOnEnteringFrameBoundary();
+
+					// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
+					// but is there still any GBA .vbm that uses the old timing?
 					frameBoundary = false;
+					newFrame = true;
 					return;
 				}
 			}

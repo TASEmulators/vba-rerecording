@@ -2839,10 +2839,12 @@ bool gbWriteBMPFile(const char *fileName)
 }
 
 static bool frameBoundary = false;
+static bool newFrame = true;
 
 void gbCleanUp()
 {
 	frameBoundary = false;
+	newFrame = true;
 
 	GBSystemCounters.frameCount = 0;
 	GBSystemCounters.lagCount   = 0;
@@ -3104,7 +3106,45 @@ void gbEmulate(int ticksToStop)
 
 	register int opcode = 0;
 
-	while (1)
+	if (newFrame)
+	{
+		extern void VBAOnExitingFrameBoundary();
+		VBAOnExitingFrameBoundary();
+
+		if (systemReadJoypads())
+		{
+			bool sensor = (gbRom[0x147] == 0x22);
+
+			// read joystick
+			if (gbSgbMode && gbSgbMultiplayer)
+			{
+				if (gbSgbFourPlayers)
+				{
+					gbJoymask[0] = systemGetJoypad(0, sensor);
+					gbJoymask[1] = systemGetJoypad(1, false);
+					gbJoymask[2] = systemGetJoypad(2, false);
+					gbJoymask[3] = systemGetJoypad(3, false);
+				}
+				else
+				{
+					gbJoymask[0] = systemGetJoypad(0, sensor);
+					gbJoymask[1] = systemGetJoypad(1, false);
+				}
+			}
+			else
+			{
+				gbJoymask[0] = systemGetJoypad(-1, sensor);
+			}
+
+			VBAMovieResetIfRequested();
+		}
+
+		GBSystemCounters.lagged = true;
+
+		newFrame = false;
+	}
+
+	for (;;)
 	{
 #ifndef FINAL_VERSION
 		if (systemDebug)
@@ -3300,46 +3340,16 @@ void gbEmulate(int ticksToStop)
 						}
 						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
 						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-						OnFrameBoundary();
-						GBSystemCounters.lagged = true;
 
 						if (gbFrameCount >= 60)
 						{
 							u32 currentTime = systemGetClock();
 							if (currentTime != gbLastTime)
-								systemShowSpeed(100000/(currentTime - gbLastTime));
+								systemShowSpeed((1000000 / (currentTime - gbLastTime) + 5) / 10);
 							else
 								systemShowSpeed(0);
 							gbLastTime   = currentTime;
 							gbFrameCount = 0;
-						}
-
-						if (systemReadJoypads())
-						{
-							bool sensor = (gbRom[0x147] == 0x22);
-
-							// read joystick
-							if (gbSgbMode && gbSgbMultiplayer)
-							{
-								if (gbSgbFourPlayers)
-								{
-									gbJoymask[0] = systemGetJoypad(0, sensor);
-									gbJoymask[1] = systemGetJoypad(1, false);
-									gbJoymask[2] = systemGetJoypad(2, false);
-									gbJoymask[3] = systemGetJoypad(3, false);
-								}
-								else
-								{
-									gbJoymask[0] = systemGetJoypad(0, sensor);
-									gbJoymask[1] = systemGetJoypad(1, false);
-								}
-							}
-							else
-							{
-								gbJoymask[0] = systemGetJoypad(-1, sensor);
-							}
-
-							VBAMovieResetIfRequested();
 						}
 
 						if (VBALuaRunning())
@@ -3783,7 +3793,7 @@ void gbEmulate(int ticksToStop)
 		if (!(register_LCDC & 0x80))
 		{
 			// Apparently it IS necessary to do something on this condition or games like
-			// Megaman will freeze upon low-level restart interrupt sequence (Start+Select+A+B).
+			// Megaman will <s>freeze upon</s> now ignore low-level restart interrupt sequence (Start+Select+A+B).
 			if (USE_OLD_GB_TIMING)
 			{
 				if (systemReadJoypads())
@@ -3811,23 +3821,35 @@ void gbEmulate(int ticksToStop)
 			}
 			else
 			{
+/*
 				// For the benefit of (movies) having a constant rate of input, just reset this to 0 (same as user letting go of
 				// the button) immediately,
 				// otherwise an internal timer variables will change independently of how many frames of input pass by.
 				// (This fake-input is merely used to make the system wait at a certain frame until you let go of the buttons,
 				//  if it is used at all, sometimes it is sampled at the same frame as other input and completely ignored.)
-
 				gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
-			}
+*/
 
-			if (!USE_OLD_GB_TIMING)
-				frameBoundary = true;
+/*
+				// FIXME: since register_LY can be reset to 0 by some games, frame length lacks consistency
+				// and this weird thing happens
+				// for now, it is commented out to make movies of such games replay
+				if (!frameBoundary)
+				{
+					frameBoundary = true;
+				}
+*/
+			}
 		}
 
 		// makes sure frames are really divided across input sampling boundaries which occur at a constant rate
 		if (frameBoundary || USE_OLD_GB_TIMING)
 		{
+			extern void VBAOnEnteringFrameBoundary();
+			VBAOnEnteringFrameBoundary();
+
 			frameBoundary = false;
+			newFrame = true;
 			return;
 		}
 	}
