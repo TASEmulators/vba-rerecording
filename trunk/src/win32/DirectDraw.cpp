@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern int RGB_LOW_BITS_MASK;
+extern u32 RGB_LOW_BITS_MASK;
 extern int systemSpeed;
 extern int Init_2xSaI(u32);
 extern void directXMessage(const char *);

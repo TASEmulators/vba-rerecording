@@ -87,19 +87,25 @@ struct EmulatedSystem
 
 extern void log(const char *, ...);
 
-extern bool systemPauseOnFrame();
 extern void systemGbPrint(u8 *, int, int, int, int);
 extern void systemScreenCapture(int);
 extern void systemRefreshScreen();
 extern void systemRenderFrame();
 extern void systemRedrawScreen();
 // updates the joystick data
+extern void systemSetSensorX(int32);
+extern void systemSetSensorY(int32);
+extern void systemResetSensor();
+extern int32 systemGetSensorX();
+extern int32 systemGetSensorY();
+extern int  systemGetDefaultJoypad();
+extern void systemSetDefaultJoypad(int);
 extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick... the bool is for if motion sensor should be handled
 // too
-extern u32 systemGetJoypad(int, bool);
+extern u32  systemGetOriginalJoypad(int, bool);
+extern u32  systemGetJoypad(int, bool);
 extern void systemSetJoypad(int, u32);
-extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
 extern void systemSetTitle(const char *);
 extern void systemWriteDataToSoundBuffer();
@@ -109,19 +115,20 @@ extern void systemSoundResume();
 extern void systemSoundReset();
 extern bool systemSoundInit();
 extern void systemScreenMessage(const char *msg, int slot = 0, int duration = 3000, const char *colorList = NULL);
-extern int  systemGetSensorX();
-extern int  systemGetSensorY();
 extern bool systemCanChangeSoundQuality();
 extern bool systemSetSoundQuality(int quality);
 extern void systemShowSpeed(int);
+extern u32  systemGetClock();
 extern void systemFrame(int rate);
+extern bool systemIsEmulating();
 extern void systemGbBorderOn();
 extern bool systemIsRunningGBA();
-extern int  systemGetDefaultJoypad();
+extern bool systemIsSpedUp();
 extern bool systemIsPaused();
 extern void systemSetPause(bool pause);
+extern bool systemPauseOnFrame();
 
-extern int systemSpeed;
+extern int  systemSpeed;
 extern bool systemSoundOn;
 extern u16  systemColorMap16[0x10000];
 extern u32  systemColorMap32[0x10000];

@@ -56,8 +56,8 @@ extern int systemBlueShift;
 extern u16 systemColorMap16[0x10000];
 extern u32 systemColorMap32[0x10000];
 
-static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
-static int (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int)        = NULL;
+static int (ZEXPORT *utilGzWriteFunc)(gzFile, voidp, unsigned int) = NULL;
+static int (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int)  = NULL;
 static int (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
 
 void utilPutDword(u8 *p, u32 value)
@@ -1163,7 +1163,7 @@ gzFile utilMemGzOpen(char *memory, int available, char *mode)
 	return memgzopen(memory, available, mode);
 }
 
-int utilGzWrite(gzFile file, const voidp buffer, unsigned int len)
+int utilGzWrite(gzFile file, voidp buffer, unsigned int len)
 {
 	return utilGzWriteFunc(file, buffer, len);
 }

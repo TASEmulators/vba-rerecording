@@ -1317,8 +1317,7 @@ static int vba_lagged(lua_State *L)
 
 // boolean vba.emulating()
 int vba_emulating(lua_State *L) {
-	extern int emulating; // from VBA.cpp
-	lua_pushboolean(L, emulating);
+	lua_pushboolean(L, systemIsEmulating());
 	return 1;
 }
 
@@ -1571,13 +1570,8 @@ static int joy_get_internal(lua_State *L, bool reportUp, bool reportDown)
 		luaL_error(L, "Invalid input port (valid range 0-4, specified %d)", which);
 	}
 
-	uint32	buttons = 0;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.input /* || VBALuaUsingJoypad(which-1)*/ )
-		buttons = theApp.input->readDevice(which - 1, false, true);
-#else
-	buttons = systemReadJoypad(which - 1, false);
-#endif
+	uint32	buttons = systemGetOriginalJoypad(which - 1, false);
+
 	lua_newtable(L);
 
 	int i;

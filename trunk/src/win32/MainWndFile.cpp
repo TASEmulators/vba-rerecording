@@ -83,7 +83,7 @@ void MainWnd::OnFileReset()
 	{
 		if (VBAMovieGetState() == MOVIE_STATE_PLAY)
 		{
-			VBAMovieRestart();
+			OnToolsPlayRestart();	// HACK: shortcut
 		}
 		else
 		{

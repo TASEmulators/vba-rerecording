@@ -34,7 +34,7 @@ static u8 *frm1 = NULL;
 static u8 *frm2 = NULL;
 static u8 *frm3 = NULL;
 
-extern int RGB_LOW_BITS_MASK;
+extern u32 RGB_LOW_BITS_MASK;
 extern u32 qRGB_COLOR_MASK[2];
 
 static void Init()

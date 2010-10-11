@@ -18,7 +18,7 @@
 
 #include "../Port.h"
 
-extern int RGB_LOW_BITS_MASK;
+extern u32 RGB_LOW_BITS_MASK;
 
 void MotionBlur(u8 *srcPtr, u32 srcPitch, u8 *deltaPtr,
                 u8 *dstPtr, u32 dstPitch, int width, int height)

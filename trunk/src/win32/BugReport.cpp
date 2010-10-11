@@ -152,7 +152,7 @@ CString BugReport::createReport()
 #endif
 	             );
 
-	if (emulating)
+	if (systemIsEmulating())
 	{
 		AppendFormat(report, "File         : %s\r\n", theApp.szFile);
 

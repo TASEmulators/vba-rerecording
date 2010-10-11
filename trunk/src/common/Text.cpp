@@ -25,7 +25,7 @@
 bool outlinedText = true, transparentText = false;
 int  textColor    = 0, textMethod = 1;
 
-extern int RGB_LOW_BITS_MASK;
+extern u32 RGB_LOW_BITS_MASK;
 
 static const u8 fontdata2[2048] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7e, 0x81, 0xa5, 0x81, 0xbd, 0x99, 0x81, 0x7e, 0x7e, 0xff,  0xdb, 0xff,
@@ -300,7 +300,7 @@ static void drawTextInternal(u8 *screen, int pitch, int x, int y,
 			if (colorList)
 				progressColorList(colorList, loCol, hiCol, outCol);
 
-			u16  mask = ~RGB_LOW_BITS_MASK;
+			u16  mask = u16(~RGB_LOW_BITS_MASK);
 			int  h, w;
 			u16 *s = (u16 *)scr;
 			for (h = 0-1; h < 8+1; h++)

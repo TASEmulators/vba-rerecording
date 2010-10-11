@@ -698,14 +698,9 @@ bool CPUWriteStateToStream(gzFile gzFile)
 
 	// SAVE_GAME_VERSION_9 (new to re-recording version which is based on 1.72)
 	{
-#if (defined(WIN32) && !defined(SDL))
-		utilGzWrite(gzFile, &theApp.sensorX, sizeof(theApp.sensorX));
-		utilGzWrite(gzFile, &theApp.sensorY, sizeof(theApp.sensorY));
-#else
-		extern int sensorX, sensorY; // from SDL.cpp
+		extern int32 sensorX, sensorY; // from SDL.cpp
 		utilGzWrite(gzFile, &sensorX, sizeof(sensorX));
 		utilGzWrite(gzFile, &sensorY, sizeof(sensorY));
-#endif
 		bool8 movieActive = VBAMovieActive();
 		utilGzWrite(gzFile, &movieActive, sizeof(movieActive));
 		if (movieActive)
@@ -941,14 +936,10 @@ bool CPUReadStateFromStream(gzFile gzFile)
 
 	if (version >= SAVE_GAME_VERSION_9) // new to re-recording version:
 	{
-#if (defined(WIN32) && !defined(SDL))
-		utilGzRead(gzFile, &theApp.sensorX, sizeof(theApp.sensorX));
-		utilGzRead(gzFile, &theApp.sensorY, sizeof(theApp.sensorY));
-#else
-		extern int sensorX, sensorY; // from SDL.cpp
+		extern int32 sensorX, sensorY; // from SDL.cpp
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
 		utilGzRead(gzFile, &sensorY, sizeof(sensorY));
-#endif
+
 		bool8 movieSnapshot;
 		utilGzRead(gzFile, &movieSnapshot, sizeof(movieSnapshot));
 		if (VBAMovieActive() && !movieSnapshot)
@@ -3698,12 +3689,7 @@ void CPUReset(bool userReset)
 		break;
 	}
 
-#if (defined(WIN32) && !defined(SDL))
-	theApp.sensorX = theApp.sensorY = 2047;
-#else
-	extern int sensorX, sensorY; // from SDL.cpp
-	sensorX = sensorY = 2047;
-#endif
+	systemResetSensor();
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
@@ -4063,7 +4049,7 @@ updateLoop:
 								}
 							}
 
-							u32 ext        = (joy >> 10);
+							u32 ext        = (joy >> 18);
 							int cheatTicks = 0;
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1^0x3FF, ext);
@@ -4090,7 +4076,7 @@ updateLoop:
 
 								if (capture && !capturePrevious)
 								{
-									captureNumber++;
+									++captureNumber;
 									//systemScreenMessage("");
 									systemScreenCapture(captureNumber);
 								}
@@ -4099,7 +4085,7 @@ updateLoop:
 							}
 							else
 							{
-								frameCount++;
+								++frameCount;
 							}
 
 ///              if(systemPauseOnFrame())

@@ -1799,12 +1799,7 @@ void gbReset(bool userReset)
 
 	gbSoundReset();
 
-#if (defined(WIN32) && !defined(SDL))
-	theApp.sensorX = theApp.sensorY = 2047;
-#else
-	extern int sensorX, sensorY; // from SDL.cpp
-	sensorX = sensorY = 2047;
-#endif
+	systemResetSensor();
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
@@ -2439,16 +2434,11 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 
 	// new to re-recording version:
 	{
-#if (defined(WIN32) && !defined(SDL))
-		utilGzWrite(gzFile, &theApp.sensorX, sizeof(theApp.sensorX));
-		utilGzWrite(gzFile, &theApp.sensorY, sizeof(theApp.sensorY));
-#else
-		extern int sensorX, sensorY; // from SDL.cpp
+		extern int32 sensorX, sensorY;
 		utilGzWrite(gzFile, &sensorX, sizeof(sensorX));
 		utilGzWrite(gzFile, &sensorY, sizeof(sensorY));
-#endif
-		utilGzWrite(gzFile, gbJoymask, 4*sizeof(*gbJoymask)); // this has to be saved or old input will incorrectly get carried
-                                                              // back on loading a snapshot!
+		utilGzWrite(gzFile, gbJoymask, 4 * sizeof(*gbJoymask)); // this has to be saved or old input will incorrectly get carried
+																// back on loading a snapshot!
 
 		bool8 movieActive = VBAMovieActive();
 		utilGzWrite(gzFile, &movieActive, sizeof(movieActive));
@@ -2720,14 +2710,9 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 
 	if (version >= GBSAVE_GAME_VERSION_11) // new to re-recording version:
 	{
-#if (defined(WIN32) && !defined(SDL))
-		utilGzRead(gzFile, &theApp.sensorX, sizeof(theApp.sensorX));
-		utilGzRead(gzFile, &theApp.sensorY, sizeof(theApp.sensorY));
-#else
-		extern int sensorX, sensorY; // from SDL.cpp
+		extern int32 sensorX, sensorY; // from SDL.cpp
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
 		utilGzRead(gzFile, &sensorY, sizeof(sensorY));
-#endif
 		utilGzRead(gzFile, gbJoymask, 4*sizeof(*gbJoymask)); // this has to be saved or old input will incorrectly get carried
                                                              // back on loading a snapshot!
 
@@ -3373,7 +3358,7 @@ void gbEmulate(int ticksToStop)
 							gbInterrupt |= 16;
 						}
 
-						newmask = (gbJoymask[0] >> 10);
+						newmask = (gbJoymask[0] >> 18);
 
 						speedup    = (newmask & 1) ? true : false;
 						gbCapture |= (newmask & 2) ? true : false;
