@@ -140,8 +140,8 @@ bool8 windowOn	 = false;
 int32 frameCount = 0;
 char  buffer[1024];
 FILE *out = NULL;
-u32	  lastTime		 = 0;
-int32 count			 = 0;
+u32	  lastTime		= 0;
+int32 gbaFrameCount	= 0;
 bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
 
 static bool8 pauseAfterFrameAdvance = false;
@@ -4035,7 +4035,7 @@ updateLoop:
 						DISPSTAT &= 0xFFFD;
 						if (VCOUNT == 160)
 						{
-							count++;
+							gbaFrameCount++;
 							systemFrame(60);
 							soundFrameSoundWritten = 0;
 
@@ -4047,18 +4047,12 @@ updateLoop:
 							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
 							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 
-							if (count == 60)
+							u32 currentTime = systemGetClock();
+							if (currentTime - lastTime >= 1000)
 							{
-								u32 time = systemGetClock();
-								if (time != lastTime)
-								{
-									u32 t = (1000000/(time - lastTime) + 5) / 10;
-									systemShowSpeed(t);
-								}
-								else
-									systemShowSpeed(0);
-								lastTime = time;
-								count	 = 0;
+								systemShowSpeed(int(float(gbaFrameCount) * 100000 / (float(currentTime - lastTime) * 60) + .5f));
+								lastTime = currentTime;
+								gbaFrameCount = 0;
 							}
 
 							if (VBALuaRunning())
