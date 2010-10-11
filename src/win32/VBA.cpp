@@ -1265,7 +1265,7 @@ BOOL VBA::OnIdle(LONG lCount)
 	}
 	else if (emulating) // this fixes display if resetting while paused
 	{
-		VBAUpdateButtonPressDisplay();
+//		VBAUpdateButtonPressDisplay();
 		VBAUpdateFrameCountDisplay();
 		systemRefreshScreen();
 //		Update_RAM_Search(); // updates RAM search and RAM watch

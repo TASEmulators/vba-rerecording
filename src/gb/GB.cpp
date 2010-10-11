@@ -2778,6 +2778,9 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
+	extern void systemClearJoypads();
+	systemClearJoypads();
+	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	#ifdef WIN32
 		Update_RAM_Search(); // Update_RAM_Watch() is also called.
@@ -2895,6 +2898,9 @@ void gbCleanUp()
 		free(gbWram);
 		gbWram = NULL;
 	}
+
+	extern void systemClearJoypads();
+	systemClearJoypads();
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 }

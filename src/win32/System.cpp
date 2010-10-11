@@ -270,6 +270,13 @@ void systemSetJoypad(int which, u32 buttons)
 	// TODO
 }
 
+// not in system.h yet
+void systemClearJoypads()
+{
+	for (int i = 0; i < 3; ++i)
+		currentButtons[i] = 0;
+}
+
 // screen
 
 // delayed repaint

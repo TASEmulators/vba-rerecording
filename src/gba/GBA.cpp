@@ -1023,6 +1023,9 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
+	extern void systemClearJoypads();
+	systemClearJoypads();
+	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	#ifdef WIN32
 	Update_RAM_Search();     // Update_RAM_Watch() is also called.
@@ -1472,6 +1475,9 @@ void CPUCleanUp()
 	flashErase();
 
 	elfCleanUp();
+
+	extern void systemClearJoypads();
+	systemClearJoypads();
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
@@ -3324,12 +3330,12 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 
 	for (i = 0; i < 256; i++)
 	{
-		int count = 0;
+		int cpuBitSetCount = 0;
 		int j;
 		for (j = 0; j < 8; j++)
 			if (i & (1 << j))
-				count++;
-		cpuBitsSet[i] = count;
+				cpuBitSetCount++;
+		cpuBitsSet[i] = cpuBitSetCount;
 
 		for (j = 0; j < 8; j++)
 			if (i & (1 << j))
@@ -4008,7 +4014,7 @@ updateLoop:
 					if (fastForward)
 						framesToSkip = 9;  // try 6 FPS during speedup
 					else if (throttle != 100)
-						framesToSkip = (framesToSkip * throttle) / 100;  // change frame skip to match up with the throttle's
+						framesToSkip = (framesToSkip * throttle) / 100; // change frame skip to match up with the throttle's
 					                                                    // adjusted speed (so 6 frame skip becomes 3 frames at
 					                                                    // 50% speed)
 
