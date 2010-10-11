@@ -111,6 +111,7 @@ extern void cpuEnableProfiling(int hz);
 #endif
 
 extern struct EmulatedSystem GBASystem;
+extern struct EmulatedSystemCounters GBASystemCounters;
 
 #define R13_IRQ  18
 #define R14_IRQ  19

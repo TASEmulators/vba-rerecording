@@ -721,7 +721,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 				return false;
 			}
 		}
-		utilGzWrite(gzFile, &GBASystem.frameCount, sizeof(GBASystem.frameCount));
+		utilGzWrite(gzFile, &GBASystemCounters.frameCount, sizeof(GBASystemCounters.frameCount));
 	}
 
 	// SAVE_GAME_VERSION_10
@@ -749,9 +749,9 @@ bool CPUWriteStateToStream(gzFile gzFile)
 
 	// SAVE_GAME_VERSION_13
 	{
-		utilGzWrite(gzFile, &GBASystem.lagCount, sizeof(GBASystem.lagCount));
-		utilGzWrite(gzFile, &GBASystem.lagged, sizeof(GBASystem.lagged));
-		utilGzWrite(gzFile, &GBASystem.laggedLast, sizeof(GBASystem.laggedLast));
+		utilGzWrite(gzFile, &GBASystemCounters.lagCount, sizeof(GBASystemCounters.lagCount));
+		utilGzWrite(gzFile, &GBASystemCounters.lagged, sizeof(GBASystemCounters.lagged));
+		utilGzWrite(gzFile, &GBASystemCounters.laggedLast, sizeof(GBASystemCounters.laggedLast));
 	}
 
 	return true;
@@ -987,7 +987,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 				goto failedLoad;
 			}
 		}
-		utilGzRead(gzFile, &GBASystem.frameCount, sizeof(GBASystem.frameCount));
+		utilGzRead(gzFile, &GBASystemCounters.frameCount, sizeof(GBASystemCounters.frameCount));
 	}
 	if (version >= SAVE_GAME_VERSION_10)
 	{
@@ -1013,9 +1013,9 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	}
 	if (version >= SAVE_GAME_VERSION_13)
 	{
-		utilGzRead(gzFile, &GBASystem.lagCount, sizeof(GBASystem.lagCount));
-		utilGzRead(gzFile, &GBASystem.lagged, sizeof(GBASystem.lagged));
-		utilGzRead(gzFile, &GBASystem.laggedLast, sizeof(GBASystem.laggedLast));
+		utilGzRead(gzFile, &GBASystemCounters.lagCount, sizeof(GBASystemCounters.lagCount));
+		utilGzRead(gzFile, &GBASystemCounters.lagged, sizeof(GBASystemCounters.lagged));
+		utilGzRead(gzFile, &GBASystemCounters.laggedLast, sizeof(GBASystemCounters.laggedLast));
 	}
 
 	if (backupSafe)
@@ -1425,10 +1425,10 @@ bool CPUWriteBMPFile(const char *fileName)
 
 void CPUCleanUp()
 {
-	GBASystem.frameCount = 0;
-	GBASystem.lagCount   = 0;
-	GBASystem.lagged     = true;
-	GBASystem.laggedLast = true;
+	GBASystemCounters.frameCount = 0;
+	GBASystemCounters.lagCount   = 0;
+	GBASystemCounters.lagged     = true;
+	GBASystemCounters.laggedLast = true;
 
 #ifdef PROFILING
 	if (profilingTicksReload)
@@ -3380,10 +3380,10 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 void CPUReset(bool userReset)
 {
 	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
-		GBASystem.frameCount = 0;
-		GBASystem.lagCount   = 0;
-		GBASystem.lagged     = true;
-		GBASystem.laggedLast = true;
+		GBASystemCounters.frameCount = 0;
+		GBASystemCounters.lagCount   = 0;
+		GBASystemCounters.lagged     = true;
+		GBASystemCounters.laggedLast = true;
 	}
 	else if (userReset) {
 		VBAMovieSignalReset();
@@ -3979,15 +3979,15 @@ updateLoop:
 							systemFrame(60);
 							soundFrameSoundWritten = 0;
 
-							GBASystem.frameCount++;
-							if (GBASystem.lagged)
+							GBASystemCounters.frameCount++;
+							if (GBASystemCounters.lagged)
 							{
-								GBASystem.lagCount++;
+								GBASystemCounters.lagCount++;
 							}
-							GBASystem.laggedLast = GBASystem.lagged;
+							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
 							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 							OnFrameBoundary();
-							GBASystem.lagged = true;
+							GBASystemCounters.lagged = true;
 
 							if (count == 60)
 							{
@@ -4002,10 +4002,12 @@ updateLoop:
 								lastTime = time;
 								count    = 0;
 							}
-							u32 joy = 0;
 
 							// update joystick information
-							if (systemReadJoypads()) {
+							u32 joy = 0;
+
+							if (systemReadJoypads())
+							{
 								// read default joystick
 								joy = systemGetJoypad(-1, cpuEEPROMSensorEnabled);
 
@@ -4088,7 +4090,7 @@ updateLoop:
 								++frameCount;
 							}
 
-///              if(systemPauseOnFrame())
+///              if (pauseAfterFrameAdvance)
 ///                ticks = 0;
 							if (pauseAfterFrameAdvance)
 							{
@@ -4611,6 +4613,10 @@ struct EmulatedSystem GBASystem =
 #else
 	5000,
 #endif
+};
+
+EmulatedSystemCounters GBASystemCounters = 
+{
 	// frameCount
 	0,
 	// lagCount

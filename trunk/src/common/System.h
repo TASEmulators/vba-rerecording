@@ -27,6 +27,8 @@
 #include "zlib.h"
 #include "../Port.h"
 
+// c++ lacks a way to implement Smart Referrences or Delphi-Style Properties
+// in order to maintain consistency, value-copied things should not be modified too often
 struct EmulatedSystem
 {
 	// main emulation function
@@ -65,13 +67,14 @@ struct EmulatedSystem
 	bool emuHasDebugger;
 	// clock ticks to emulate
 	int emuCount;
-	// number of frames emulated since last reset
+};
+
+// why not convert the value type only when doing I/O?
+struct EmulatedSystemCounters
+{
 	int32 frameCount;
-	// number of frames which don't read joypad, counted since last reset
 	int32 lagCount;
-	// flag which tells us whether the joypad was read at the last (or current) frame
 	bool8 lagged;
-	// stores the value of "lagged" at previous frame
 	bool8 laggedLast;
 };
 

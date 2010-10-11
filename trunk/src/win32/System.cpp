@@ -179,7 +179,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 	if (theApp.autoFire || theApp.autoFire2)
 	{
 		res ^= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
-		if (!theApp.autofireAccountForLag || !theApp.emulator.lagged)
+		if (!theApp.autofireAccountForLag || !GBASystemCounters.laggedLast)
 		{
 			theApp.autoFireToggle = !theApp.autoFireToggle;
 		}
@@ -534,16 +534,11 @@ void systemFrame(int rate)
 		}
 	}
 
-	// stupid updates :(
-	struct EmulatedSystem &emu = (theApp.cartridgeType == 0) ? GBASystem : GBSystem;
-	theApp.emulator.frameCount = emu.frameCount;
-	theApp.emulator.lagCount   = emu.lagCount;
-	theApp.emulator.lagged	   = emu.lagged;
-	theApp.emulator.laggedLast = emu.laggedLast;
+	// no more stupid updates :)
 
 	extern int quitAfterTime;					// from VBA.cpp
 	void VBAMovieStop(bool8 suppress_message);	// from ../movie.cpp
-	if (quitAfterTime >= 0 && theApp.emulator.frameCount == quitAfterTime)
+	if (quitAfterTime >= 0 && GBASystemCounters.frameCount == quitAfterTime)
 	{
 		VBAMovieStop(true);
 		AfxPostQuitMessage(0);
@@ -600,7 +595,7 @@ void systemFrame(int rate)
 		//}
 	}
 
-	if (theApp.emulator.frameCount % 10 == 0)
+	if (GBASystemCounters.frameCount % 10 == 0)
 	{
 		if (theApp.rewindMemory)
 		{
@@ -740,7 +735,7 @@ bool systemPauseOnFrame()
 {
 	if (theApp.winPauseNextFrame)
 	{
-		if (!theApp.nextframeAccountForLag || !theApp.emulator.lagged)
+		if (!theApp.nextframeAccountForLag || !GBASystemCounters.laggedLast)
 		{
 			theApp.winPauseNextFrame = false;
 			systemSetPause(true);

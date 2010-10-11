@@ -1205,7 +1205,7 @@ void VBA::saveRewindStateIfNecessary()
 	if (theApp.frameSearching)
 	{
 		extern SMovie Movie;
-		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? theApp.emulator.frameCount : Movie.currentFrame;
+		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? GBASystemCounters.frameCount : Movie.currentFrame;
 		int endFrame = theApp.frameSearchStart + theApp.frameSearchLength;
 		theApp.frameSearchSkipping	= (curFrame < endFrame);
 		theApp.frameSearchFirstStep = false;
@@ -1268,6 +1268,7 @@ BOOL VBA::OnIdle(LONG lCount)
 		VBAUpdateButtonPressDisplay();
 		VBAUpdateFrameCountDisplay();
 		systemRefreshScreen();
+//		Update_RAM_Search(); // updates RAM search and RAM watch
 //		return TRUE;			// FIXME: unworthy
 	}
 

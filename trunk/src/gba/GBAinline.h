@@ -102,13 +102,13 @@ inline u32 CPUReadMemory(u32 address)
 			if (ioReadable[(address & 0x3fc) + 2])
 			{
 				if (address >= 0x400012d && address <= 0x4000131)
-					GBASystem.lagged = false;
+					GBASystemCounters.lagged = false;
 				value = READ32LE(((u32 *)&ioMem[address & 0x3fC]));
 			}
 			else
 			{
 				if (address >= 0x400012f && address <= 0x4000131)
-					GBASystem.lagged = false;
+					GBASystemCounters.lagged = false;
 				value = READ16LE(((u16 *)&ioMem[address & 0x3fc]));
 			}
 		}
@@ -241,7 +241,7 @@ inline u32 CPUReadHalfWord(u32 address)
 		if ((address < 0x4000400) && ioReadable[address & 0x3fe])
 		{
 			if (address >= 0x400012f && address <= 0x4000131)
-				GBASystem.lagged = false;
+				GBASystemCounters.lagged = false;
 			value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
 		}
 		else
@@ -356,7 +356,7 @@ inline u8 CPUReadByte(u32 address)
 		if ((address < 0x4000400) && ioReadable[address & 0x3ff])
 		{
 			if (address == 0x4000130 || address == 0x4000131)
-				GBASystem.lagged = false;
+				GBASystemCounters.lagged = false;
 			return ioMem[address & 0x3ff];
 		}
 		else

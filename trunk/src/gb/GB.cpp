@@ -1424,7 +1424,7 @@ u8 gbReadMemory(register u16 address)
 				}
 			}
 		}
-			GBSystem.lagged = false;
+			GBSystemCounters.lagged = false;
 			return gbMemory[0xff00];
 			break;
 		case 0x01:
@@ -1621,10 +1621,10 @@ void gbSpeedSwitch()
 void gbReset(bool userReset)
 {
 	if (!VBAMovieActive()) { // movie must be closed while opening/creating a movie
-		GBSystem.frameCount = 0;
-		GBSystem.lagCount   = 0;
-		GBSystem.lagged     = true;
-		GBSystem.laggedLast = true;
+		GBSystemCounters.frameCount = 0;
+		GBSystemCounters.lagCount   = 0;
+		GBSystemCounters.lagged     = true;
+		GBSystemCounters.laggedLast = true;
 	}
 	else if (userReset) {
 		VBAMovieSignalReset();
@@ -2460,14 +2460,14 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 				return false;
 			}
 		}
-		utilGzWrite(gzFile, &GBSystem.frameCount, sizeof(GBSystem.frameCount));
+		utilGzWrite(gzFile, &GBSystemCounters.frameCount, sizeof(GBSystemCounters.frameCount));
 	}
 
 	// new to rerecording 19.4 wip (svn r22+):
 	{
-		utilGzWrite(gzFile, &GBSystem.lagCount, sizeof(GBSystem.lagCount));
-		utilGzWrite(gzFile, &GBSystem.lagged, sizeof(GBSystem.lagged));
-		utilGzWrite(gzFile, &GBSystem.laggedLast, sizeof(GBSystem.laggedLast));
+		utilGzWrite(gzFile, &GBSystemCounters.lagCount, sizeof(GBSystemCounters.lagCount));
+		utilGzWrite(gzFile, &GBSystemCounters.lagged, sizeof(GBSystemCounters.lagged));
+		utilGzWrite(gzFile, &GBSystemCounters.laggedLast, sizeof(GBSystemCounters.laggedLast));
 	}
 
 	return true;
@@ -2763,14 +2763,14 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 				goto failedLoadGB;
 			}
 		}
-		utilGzRead(gzFile, &GBSystem.frameCount, sizeof(GBSystem.frameCount));
+		utilGzRead(gzFile, &GBSystemCounters.frameCount, sizeof(GBSystemCounters.frameCount));
 	}
 
 	if (version >= GBSAVE_GAME_VERSION_13)   // new to rerecording 19.4 wip (svn r22+):
 	{
-		utilGzRead(gzFile, &GBSystem.lagCount, sizeof(GBSystem.lagCount));
-		utilGzRead(gzFile, &GBSystem.lagged, sizeof(GBSystem.lagged));
-		utilGzRead(gzFile, &GBSystem.laggedLast, sizeof(GBSystem.laggedLast));
+		utilGzRead(gzFile, &GBSystemCounters.lagCount, sizeof(GBSystemCounters.lagCount));
+		utilGzRead(gzFile, &GBSystemCounters.lagged, sizeof(GBSystemCounters.lagged));
+		utilGzRead(gzFile, &GBSystemCounters.laggedLast, sizeof(GBSystemCounters.laggedLast));
 	}
 
 	if (backupSafe)
@@ -2844,10 +2844,10 @@ void gbCleanUp()
 {
 	frameBoundary = false;
 
-	GBSystem.frameCount = 0;
-	GBSystem.lagCount   = 0;
-	GBSystem.lagged     = true;
-	GBSystem.laggedLast = true;
+	GBSystemCounters.frameCount = 0;
+	GBSystemCounters.lagCount   = 0;
+	GBSystemCounters.lagged     = true;
+	GBSystemCounters.laggedLast = true;
 
 	if (gbRam != NULL)
 	{
@@ -3293,15 +3293,15 @@ void gbEmulate(int ticksToStop)
 						systemFrame(60);
 						soundFrameSoundWritten = 0;
 
-						GBSystem.frameCount++;
-						if (GBSystem.lagged)
+						GBSystemCounters.frameCount++;
+						if (GBSystemCounters.lagged)
 						{
-							GBSystem.lagCount++;
+							GBSystemCounters.lagCount++;
 						}
-						GBSystem.laggedLast = GBSystem.lagged;
+						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
 						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 						OnFrameBoundary();
-						GBSystem.lagged = true;
+						GBSystemCounters.lagged = true;
 
 						if (gbFrameCount >= 60)
 						{
@@ -3875,6 +3875,15 @@ struct EmulatedSystem GBSystem =
 #else
 	1000,
 #endif
+};
+
+// is there a reason to use more than one set of counters?
+extern EmulatedSystemCounters GBASystemCounters;
+EmulatedSystemCounters &GBSystemCounters = GBASystemCounters;
+
+/*
+EmulatedSystemCounters GBSystemCounters = 
+{
 	// frameCount
 	0,
 	// lagCount
@@ -3884,3 +3893,4 @@ struct EmulatedSystem GBSystem =
 	// laggedLast
 	true,
 };
+*/
