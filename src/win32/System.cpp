@@ -750,6 +750,21 @@ bool systemPauseOnFrame()
 	return false;
 }
 
+// it should be admitted that the naming schema/code organization is a whole mess
+#include "ram_search.h"
+
+void VBAOnEnteringFrameBoundary()
+{
+    VBAUpdateFrameCountDisplay();
+	VBAUpdateButtonPressDisplay();
+	Update_RAM_Search(); // updates RAM search and RAM watch
+}
+
+void VBAOnExitingFrameBoundary()
+{
+	;
+}
+
 //////////////////////////////////////////////
 // ultility
 

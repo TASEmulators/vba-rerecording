@@ -35,8 +35,8 @@
 #include "Input.h"
 #include "7zip/7zip.h"
 #include "7zip/OpenArchive.h"
-#include "ram_search.h"
 #include "LuaOpenDialog.h"
+#include "ram_search.h"
 #include "ramwatch.h"
 #include "Sound.h"
 #include "VBA.h"
@@ -1621,12 +1621,5 @@ LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
 			return 0;
 	}
 	return Default();
-}
-
-void OnFrameBoundary()
-{
-    VBAUpdateFrameCountDisplay();
-	VBAUpdateButtonPressDisplay();
-	Update_RAM_Search(); // updates RAM search and RAM watch
 }
 
