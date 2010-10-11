@@ -1033,13 +1033,13 @@ void VBAUpdateFrameCountDisplay()
 	const int MAGICAL_NUMBER = 64;	// FIXME: this won't do any better, but only to remind you of sz issues
     char frameDisplayString[MAGICAL_NUMBER];
     char lagFrameDisplayString[MAGICAL_NUMBER];
-    struct EmulatedSystem &emu =
+    struct EmulatedSystemCounters &emuCounters =
 #if (defined(WIN32) && !defined(SDL))
         (theApp.cartridgeType == 0) // GBA
 #else
         (cartridgeType == 0) // GBA
 #endif
-        ? GBASystem : GBSystem;
+        ? GBASystemCounters : GBSystemCounters;
 
     switch (Movie.state)
     {
@@ -1051,7 +1051,7 @@ void VBAUpdateFrameCountDisplay()
 		        sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
 		        if (theApp.lagCounter)
 				{
-					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
+					sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
 					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 				}
 			}
@@ -1074,7 +1074,7 @@ void VBAUpdateFrameCountDisplay()
 		        sprintf(frameDisplayString, "%d (movie)", Movie.currentFrame);
 		        if (theApp.lagCounter)
 				{
-					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
+					sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
 					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 				}
 			}
@@ -1094,10 +1094,10 @@ void VBAUpdateFrameCountDisplay()
 #       if (defined(WIN32) && !defined(SDL))
 		    if (theApp.frameCounter)
 		    {
-		        sprintf(frameDisplayString, "%d (no movie)", emu.frameCount);
+		        sprintf(frameDisplayString, "%d (no movie)", emuCounters.frameCount);
 		        if (theApp.lagCounter)
 				{
-					sprintf(lagFrameDisplayString, " | %d%s", emu.lagCount, emu.laggedLast ? " *" : "");
+					sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
 					strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 				}
 			}

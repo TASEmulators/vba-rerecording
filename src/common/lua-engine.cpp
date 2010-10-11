@@ -1300,8 +1300,8 @@ static int memory_registerexec(lua_State *L)
 //Returns the lagcounter variable
 static int vba_getlagcount(lua_State *L)
 {
-	struct EmulatedSystem	&emu = systemIsRunningGBA() ? GBASystem : GBSystem;
-	lua_pushinteger(L, emu.lagCount);
+	struct EmulatedSystemCounters	&emuCounters = systemIsRunningGBA() ? GBASystemCounters : GBSystemCounters;
+	lua_pushinteger(L, emuCounters.lagCount);
 	return 1;
 }
 
@@ -1310,8 +1310,8 @@ static int vba_getlagcount(lua_State *L)
 //Returns true if the current frame is a lag frame
 static int vba_lagged(lua_State *L)
 {
-	struct EmulatedSystem	&emu = systemIsRunningGBA() ? GBASystem : GBSystem;
-	lua_pushboolean(L, emu.laggedLast);
+	struct EmulatedSystemCounters	&emuCounters = systemIsRunningGBA() ? GBASystemCounters : GBSystemCounters;
+	lua_pushboolean(L, emuCounters.laggedLast);
 	return 1;
 }
 
@@ -1814,10 +1814,10 @@ static int savestate_load(lua_State *L)
 //   Gets the frame counter for the movie, or the number of frames since last reset.
 int vba_framecount(lua_State *L)
 {
-	struct EmulatedSystem	&emu = systemIsRunningGBA() ? GBASystem : GBSystem;
+	struct EmulatedSystemCounters	&emuCounters = systemIsRunningGBA() ? GBASystemCounters : GBSystemCounters;
 	if (!VBAMovieActive())
 	{
-		lua_pushinteger(L, emu.frameCount);
+		lua_pushinteger(L, emuCounters.frameCount);
 	}
 	else
 	{

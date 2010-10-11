@@ -70,5 +70,6 @@ extern bool gbWriteBMPFile(const char *);
 extern bool gbReadGSASnapshot(const char *);
 
 extern struct EmulatedSystem GBSystem;
+extern struct EmulatedSystemCounters &GBSystemCounters;
 
 #endif // VBA_GB_H
