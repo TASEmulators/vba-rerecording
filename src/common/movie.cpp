@@ -147,18 +147,18 @@ static int read_movie_header(FILE *file, SMovie &movie)
     if (header.version != VBM_VERSION)
 		return WRONG_VERSION;
 
-    header.uid = Read32(ptr);
-    header.length_frames  = Read32(ptr);
-    header.rerecord_count = Read32(ptr);
+    header.uid			   = Read32(ptr);
+    header.length_frames   = Read32(ptr) + 1; 	// HACK: add 1 to the length for compatibility
+    header.rerecord_count  = Read32(ptr);
 
     header.startFlags	   = Read8(ptr);
     header.controllerFlags = Read8(ptr);
     header.typeFlags	   = Read8(ptr);
     header.optionFlags	   = Read8(ptr);
 
-    header.saveType		  = Read32(ptr);
-    header.flashSize	  = Read32(ptr);
-    header.gbEmulatorType = Read32(ptr);
+    header.saveType		   = Read32(ptr);
+    header.flashSize	   = Read32(ptr);
+    header.gbEmulatorType  = Read32(ptr);
 
     for (int i = 0; i < 12; i++)
 		header.romTitle[i] = Read8(ptr);
@@ -187,7 +187,7 @@ static void write_movie_header(FILE *file, const SMovie &movie)
     Write32(header.version, ptr);
 
     Write32(header.uid, ptr);
-    Write32(header.length_frames, ptr);
+    Write32(header.length_frames - 1, ptr); 	// HACK: reduce the length by 1 for compatibility with certain faulty old tools like TME
     Write32(header.rerecord_count, ptr);
 
     Write8(header.startFlags, ptr);
@@ -225,14 +225,14 @@ static void flush_movie()
 
     // (over-)write the controller data
     fseek(Movie.file, Movie.header.offset_to_controller_data, SEEK_SET);
-    fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame * (Movie.header.length_frames + 1), Movie.file);	// +1 dummy
+    fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame * Movie.header.length_frames, Movie.file);
 
     fflush(Movie.file);
 }
 
 static void truncateMovie()
 {
-    // truncate movie to header.length_frames + 1 length
+    // truncate movie to header.length_frames length
     // NOTE: it's certain that the savestate block is never after the
     //       controller data block, because the VBM format decrees it.
 
@@ -243,7 +243,7 @@ static void truncateMovie()
     if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
 		return;
 
-    const u32 truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame * (Movie.header.length_frames + 1);	// +1 dummy
+    const u32 truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.header.length_frames;
     ftruncate(fileno(Movie.file), truncLen);
 }
 
@@ -302,10 +302,6 @@ static void reserve_buffer_space(uint32 space_needed)
         Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
         Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
         Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
-		for (uint32 i = 0; i < Movie.bytesPerFrame; ++i)
-		{
-			Movie.inputBuffer[i] = 0;	// clear the dummy frame
-		}
 	}
 }
 
@@ -376,7 +372,7 @@ static void write_frame_controller_data(int i)
 
     if (i == 0)
     {
-        reserve_buffer_space((uint32)((Movie.inputBufferPtr + Movie.bytesPerFrame) - Movie.inputBuffer));
+        reserve_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
 	}
 
     if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
@@ -668,20 +664,19 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
     Movie.bytesPerFrame = bytes_per_frame(Movie);
     fseek(file, 0, SEEK_END);
     int fileSize = ftell(file);
-    Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame - 1;	// -1 dummy frame
+    Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame;
 
     if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
     {loadingMovie = false; return WRONG_FORMAT; }
 
     // read controller data
-	uint32 to_read = Movie.bytesPerFrame * (Movie.header.length_frames + 1);	// +1 dummy
+	uint32 to_read = Movie.bytesPerFrame * Movie.header.length_frames;
     reserve_buffer_space(to_read);
     fread(Movie.inputBuffer, 1, to_read, file);
 
-
     strcpy(Movie.filename, movie_filename);
     Movie.file = file;
-    Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame;	// skipping 1 dummy frame
+    Movie.inputBufferPtr = Movie.inputBuffer;
     Movie.currentFrame = 0;
     Movie.readOnly = movieReadOnly;
 
@@ -920,20 +915,16 @@ int VBAMovieCreate(const char *filename, const char*authorInfo, uint8 startFlags
     controllersLeftThisFrame = Movie.header.controllerFlags;
 
     // write controller data
-    Movie.file = file;
-    Movie.bytesPerFrame	 = bytes_per_frame(Movie);
-    Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame;	// + 1 dummy frame
-
     reserve_buffer_space(Movie.bytesPerFrame);
 
-	// write "baseline" controller data
-//    write_frame_controller_data(0); // correct if we can assume the first controller is active, which we can on all GBx/xGB
-//                                    // systems
-    Movie.currentFrame = 0;
-
     strcpy(Movie.filename, movie_filename);
+    Movie.file = file;
+    Movie.bytesPerFrame	 = bytes_per_frame(Movie);
+    Movie.inputBufferPtr = Movie.inputBuffer;
+    Movie.currentFrame = 0;
     Movie.readOnly = false;
-    change_state(MOVIE_STATE_RECORD);
+
+	change_state(MOVIE_STATE_RECORD);
 
     Movie.RecordedThisSession = true;
 
@@ -1245,7 +1236,7 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
         fseek(file, 0, SEEK_END);
         int fileSize = ftell(file);
         local_movie.header.length_frames =
-            (fileSize - local_movie.header.offset_to_controller_data) / local_movie.bytesPerFrame - 1;	// -1 dummy
+            (fileSize - local_movie.header.offset_to_controller_data) / local_movie.bytesPerFrame;
 	}
 
     fclose(file);
@@ -1374,7 +1365,7 @@ void VBAMovieFreeze(uint8 **buf, uint32 *size)
     // compute size needed for the buffer
     // room for header.uid, currentFrame, and header.length_frames
     uint32 size_needed = sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames);
-    size_needed += (uint32)(Movie.bytesPerFrame * (Movie.header.length_frames + 1));	// + 1 dummy frame
+	size_needed += (uint32)(Movie.bytesPerFrame * Movie.header.length_frames);
     *buf		 = new uint8[size_needed];
     *size		 = size_needed;
 
@@ -1386,9 +1377,9 @@ void VBAMovieFreeze(uint8 **buf, uint32 *size)
 
     Write32(Movie.header.uid, ptr);
     Write32(Movie.currentFrame, ptr);
-    Write32(Movie.header.length_frames, ptr);
+    Write32(Movie.header.length_frames - 1, ptr); 	// HACK: shorten the length by 1 for backward compatibility
 
-    memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * (Movie.header.length_frames + 1));	// + 1 dummy frame
+    memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * Movie.header.length_frames);
 }
 
 int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
@@ -1407,8 +1398,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
     uint32 movie_id		 = Read32(ptr);
     uint32 current_frame = Read32(ptr);
-    uint32 end_frame	 = Read32(ptr);
-    uint32 space_needed	 = Movie.bytesPerFrame * (end_frame + 1);	// + 1 dummy
+	uint32 end_frame	 = Read32(ptr) + 1; 	// HACK: restore the length for backward compatibility
+	uint32 space_needed	 = Movie.bytesPerFrame * end_frame;
 
     if (movie_id != Movie.header.uid)
 		return NOT_FROM_THIS_MOVIE;
@@ -1428,7 +1419,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
         // by loading another savestate or playing the movie from the beginning
 
         // don't allow loading a state inconsistent with the current movie
-        uint32 space_shared = (Movie.bytesPerFrame * (current_frame + 1));	// + 1 dummy frame
+        uint32 space_shared = Movie.bytesPerFrame * current_frame;
         if (current_frame > Movie.header.length_frames ||
             memcmp(Movie.inputBuffer, ptr, space_shared))
 			return SNAPSHOT_INCONSISTENT;
@@ -1454,10 +1445,10 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
         reserve_buffer_space(space_needed);
         memcpy(Movie.inputBuffer, ptr, space_needed);
         flush_movie();
-        fseek(Movie.file, Movie.header.offset_to_controller_data + (Movie.bytesPerFrame * (Movie.currentFrame + 1)), SEEK_SET);	// +1
+        fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
 	}
 
-    Movie.inputBufferPtr = Movie.inputBuffer + (Movie.bytesPerFrame * (Movie.currentFrame + 1));	// +1
+    Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
     return SUCCESS;
 }
