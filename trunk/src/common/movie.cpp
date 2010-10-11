@@ -599,7 +599,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 
 //	bool alreadyOpen = (Movie.file != NULL && _stricmp(movie_filename, Movie.filename) == 0);
 
-//	if(alreadyOpen)
+//	if (alreadyOpen)
     change_state(MOVIE_STATE_NONE);     // have to stop current movie before trying to re-open it
 
     if (!(file = fopen(movie_filename, "rb+")))
@@ -608,10 +608,10 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
 		//else
 		//	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
 
-//	if(!alreadyOpen)
+//	if (!alreadyOpen)
 //		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
 //
-//	if(!(file = fopen(movie_filename, "rb+")))
+//	if (!(file = fopen(movie_filename, "rb+")))
 //		if(!(file = fopen(movie_filename, "rb")))
 //			{loadingMovie = false; return FILE_NOT_FOUND;}
 //		else
@@ -669,7 +669,7 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     if (result != SUCCESS)
 		{loadingMovie = false; return result;}
 
-//	if(!(file = fopen(movie_filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
+//	if (!(file = fopen(movie_filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
 //	{
 //		if(!Movie.readOnly || !(file = fopen(movie_filename, "rb"))) // try read-only if failed
 //			return FILE_NOT_FOUND;
@@ -1192,9 +1192,6 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 	default:
 		break;
 	}
-
-    VBAUpdateFrameCountDisplay();
-	VBAUpdateButtonPressDisplay();
 
     // if the movie's been set to pause at a certain frame
 	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)

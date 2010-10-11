@@ -1625,6 +1625,8 @@ LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
 
 void OnFrameBoundary()
 {
+    VBAUpdateFrameCountDisplay();
+	VBAUpdateButtonPressDisplay();
 	Update_RAM_Search(); // updates RAM search and RAM watch
 }
 

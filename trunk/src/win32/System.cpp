@@ -189,44 +189,17 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 		res ^= theApp.autoHold;
 	}
 
-	currentButtons[i] = res & ~BUTTON_NONRECORDINGONLY_MASK;
-
-	return res;
-}
-
-u32 systemGetJoypad(int i, bool sensor)
-{
-	if (i < 0 || i > 3)
-		i = systemGetDefaultJoypad();
-
-	// input priority: original+auto < movie < Lua < frame search, correct this if wrong
-	u32 res = 0;
-
-	// get original+auto input
-	res = systemGetOriginalJoypad(i, sensor);
-
-	u32 hackedButtons = res & BUTTON_NONRECORDINGONLY_MASK;
-
-	// movie input
-	// VBAMovieUpdate() might overwrite currentButtons[i]
-	u32 currentButtonsBackup = currentButtons[i];
-
-	VBAMovieUpdate(i);
-
-	res = currentButtons[i];
-
-	// we can later deal with it again, but let's just restore it for now for sake of simplicity
-	currentButtons[i] = currentButtonsBackup;
-
-	// Lua input
-	if (VBALuaUsingJoypad(i))
-		res = VBALuaReadJoypad(i);
-
-	// last input override here
-	if (theApp.frameSearchSkipping)
-		res = theApp.frameSearchOldInput[i];
-
 	// filter buttons
+	// maybe better elsewhere?
+	if (!theApp.allowLeftRight)
+	{
+		// disallow L+R or U+D to being pressed at the same time
+		if ((res & (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT)) == (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT))
+			res &= ~BUTTON_MASK_RIGHT; // leave only LEFT on
+		if ((res & (BUTTON_MASK_DOWN | BUTTON_MASK_UP)) == (BUTTON_MASK_DOWN | BUTTON_MASK_UP))
+			res &= ~BUTTON_MASK_DOWN; // leave only UP on
+	}
+
 	if (!sensor)
 	{
 		if (res & BUTTON_MASK_LEFT_MOTION)
@@ -248,14 +221,40 @@ u32 systemGetJoypad(int i, bool sensor)
 			res ^= BUTTON_MASK_R;
 	}
 
-	if (!theApp.allowLeftRight)
-	{
-		// disallow L+R or U+D to being pressed at the same time
-		if ((res & (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT)) == (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT))
-			res &= ~BUTTON_MASK_RIGHT; // leave only LEFT on
-		if ((res & (BUTTON_MASK_DOWN | BUTTON_MASK_UP)) == (BUTTON_MASK_DOWN | BUTTON_MASK_UP))
-			res &= ~BUTTON_MASK_DOWN; // leave only UP on
-	}
+	currentButtons[i] = res & ~BUTTON_NONRECORDINGONLY_MASK;
+
+	return res;
+}
+
+u32 systemGetJoypad(int i, bool sensor)
+{
+	if (i < 0 || i > 3)
+		i = systemGetDefaultJoypad();
+
+	// input priority: original+auto < movie < Lua < frame search, correct this if wrong
+	// get original+auto input
+	u32 res = systemGetOriginalJoypad(i, sensor);
+
+	u32 hackedButtons = res & BUTTON_NONRECORDINGONLY_MASK;
+
+	// movie input
+	// VBAMovieUpdate() might overwrite currentButtons[i]
+	u32 currentButtonsBackup = currentButtons[i];
+
+	VBAMovieUpdate(i);
+
+	res = currentButtons[i];
+
+	// we can later deal with it again, but let's just restore it for now for sake of simplicity
+	currentButtons[i] = currentButtonsBackup;
+
+	// Lua input
+	if (VBALuaUsingJoypad(i))
+		res = VBALuaReadJoypad(i);
+
+	// last input override here
+	if (theApp.frameSearchSkipping)
+		res = theApp.frameSearchOldInput[i];
 
 	// done
 	currentButtons[i] = res;
