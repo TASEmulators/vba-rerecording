@@ -297,12 +297,12 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			GetDlgItem(IDC_LABEL_DATE)->SetWindowText(buffer);
 
 			uint32 div     = 60;
-			uint32 l       = (movieInfo.header.length_frames+(div>>1))/div;
-			uint32 seconds = l%60;
+			uint32 l       = (movieInfo.header.length_frames + (div >> 1)) / div;
+			uint32 seconds = l % 60;
 			l /= 60;
-			uint32 minutes = l%60;
+			uint32 minutes = l % 60;
 			l /= 60;
-			uint32 hours = l%60;
+			uint32 hours = l % 60;
 			sprintf(buffer, "%02d:%02d:%02d", hours, minutes, seconds);
 			GetDlgItem(IDC_LABEL_LENGTH)->SetWindowText(buffer);
 			sprintf(buffer, "%ld", movieInfo.header.length_frames);
@@ -326,7 +326,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 
 			// rather than treat these as warnings, might as well always show the info in the dialog (it's probably more
 			// informative and reassuring)
-///			if(strncmp(movieInfo.header.romTitle,romTitle,12) != 0)
+///			if (strncmp(movieInfo.header.romTitle,romTitle,12) != 0)
 			{
 				char str [13];
 				strncpy(str, movieInfo.header.romTitle, 12);
@@ -339,7 +339,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				sprintf(buffer, "title=%s  ", str);
 				strcat(warning2, buffer);
 			}
-///			if(((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (theApp.cartridgeType == 0))
+///			if (((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (theApp.cartridgeType == 0))
 			{
 				sprintf(buffer, "type=%s  ",
 				        (movieInfo.header.typeFlags&MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags&
@@ -352,7 +352,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
 				strcat(warning2, buffer);
 			}
-///			if(movieInfo.header.romCRC != crc)
+///			if (movieInfo.header.romCRC != crc)
 			{
 				sprintf(buffer, "crc=%02d  ", movieInfo.header.romCRC);
 				strcat(warning1, buffer);
@@ -360,7 +360,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				sprintf(buffer, "crc=%02d  ", crc);
 				strcat(warning2, buffer);
 			}
-///			if(movieInfo.header.romGameCode != romGameCode)
+///			if (movieInfo.header.romGameCode != romGameCode)
 			{
 				char code [5];
 				if (movieInfo.header.typeFlags&MOVIE_TYPE_GBA)
@@ -379,7 +379,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 					strcat(warning2, buffer);
 				}
 			}
-///			if(movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0
+///			if (movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0
 // && checksum==0))
 			{
 				sprintf(buffer,
