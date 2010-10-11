@@ -75,7 +75,7 @@ static int bytes_per_frame(SMovie & mov)
 		if (mov.header.controllerFlags & MOVIE_CONTROLLER(i))
 			num_controllers++;
 
-	return CONTROLLER_DATA_SIZE*num_controllers;
+	return CONTROLLER_DATA_SIZE * num_controllers;
 }
 
 // little-endian integer read/write functions:
@@ -120,7 +120,7 @@ static void Write16(uint16 v, uint8 *& ptr)
 
 #define Write8(v, ptr) (*ptr++ = v)
 
-static int read_movie_header(FILE *file, SMovie & movie)
+static int read_movie_header(FILE *file, SMovie &movie)
 {
     assert(file != NULL);
     assert(VBM_HEADER_SIZE == sizeof(SMovieFileHeader)); // sanity check on the header type definition
@@ -130,8 +130,8 @@ static int read_movie_header(FILE *file, SMovie & movie)
     if (fread(headerData, 1, VBM_HEADER_SIZE, file) != VBM_HEADER_SIZE)
 		return WRONG_FORMAT;  // if we failed to read in all VBM_HEADER_SIZE bytes of the header
 
-    const uint8*	   ptr	  = headerData;
-    SMovieFileHeader & header = movie.header;
+    const uint8		 *ptr	 = headerData;
+    SMovieFileHeader &header = movie.header;
 
     header.magic = Read32(ptr);
     if (header.magic != VBM_MAGIC)
@@ -219,14 +219,14 @@ static void flush_movie()
 
     // (over-)write the controller data
     fseek(Movie.file, Movie.header.offset_to_controller_data, SEEK_SET);
-    fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame*(Movie.header.length_frames + 1), Movie.file);
+    fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame * (Movie.header.length_frames + 1), Movie.file);	// +1 dummy
 
     fflush(Movie.file);
 }
 
 static void truncateMovie()
 {
-    // truncate movie to header.length_frames length
+    // truncate movie to header.length_frames + 1 length
     // NOTE: it's certain that the savestate block is never after the
     //       controller data block, because the VBM format decrees it.
 
@@ -237,22 +237,8 @@ static void truncateMovie()
     if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
 		return;
 
-    const unsigned long truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame*(Movie.header.length_frames + 1);
+    const u32 truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame * (Movie.header.length_frames + 1);	// +1 dummy
     ftruncate(fileno(Movie.file), truncLen);
-
-//#	if defined(__unix) || defined(__linux) || defined(__sun) || defined(__DJGPP)
-//		truncate(Movie.filename, truncLen);
-//#	else
-//#		if (defined(WIN32) && !defined(SDL))
-//			HANDLE fileHandle = CreateFile(Movie.filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, 0);
-//			if(fileHandle != NULL)
-//			{
-//				SetFilePointer(fileHandle, truncLen, 0, FILE_BEGIN);
-//				SetEndOfFile(fileHandle);
-//				CloseHandle(fileHandle);
-//			}
-//#		endif
-//#	endif
 }
 
 static void change_state(MovieState new_state)
@@ -306,10 +292,14 @@ static void reserve_buffer_space(uint32 space_needed)
     if (space_needed > Movie.inputBufferSize)
     {
         uint32 ptr_offset	= Movie.inputBufferPtr - Movie.inputBuffer;
-        uint32 alloc_chunks = space_needed / BUFFER_GROWTH_SIZE;
-        Movie.inputBufferSize = BUFFER_GROWTH_SIZE * (alloc_chunks + 1);
+        uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
+        Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
         Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
         Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
+		for (int i = 0; i < Movie.bytesPerFrame; ++i)
+		{
+			Movie.inputBuffer[i] = 0;	// clear the dummy frame
+		}
 	}
 }
 
@@ -350,13 +340,6 @@ static void read_frame_controller_data(int i)
 
     if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
 		resetSignaled = true;
-
-/* // apparently implemented from the other end, in systemGetJoypad
-   #if (!(defined(WIN32) && !defined(SDL)))
-    // convert from currentButtons input format
-    systemSetJoypad(i, currentButtons[i]);
-   #endif
- */
 }
 
 static void write_frame_controller_data(int i)
@@ -392,12 +375,6 @@ static void write_frame_controller_data(int i)
 
     if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
     {
-/* // apparently implemented from the other end, in systemGetJoypad
-   #if (!(defined(WIN32) && !defined(SDL)))
-        // convert to currentButtons input format
-        currentButtons[i] = systemGetJoypad(i,false);
-   #endif
- */
         // get the current controller data
         uint16 buttonData = (uint16)currentButtons[i];
 
@@ -572,7 +549,7 @@ static void HardResetAndSRAMClear()
 #   endif
 }
 
-int VBAMovieOpen(const char*filename, bool8 read_only)
+int VBAMovieOpen(const char *filename, bool8 read_only)
 {
     loadingMovie = true;
     uint8 movieReadOnly = read_only ? 1 : 0;
@@ -685,26 +662,24 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     Movie.bytesPerFrame = bytes_per_frame(Movie);
     fseek(file, 0, SEEK_END);
     int fileSize = ftell(file);
-    Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame - 1;
+    Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame - 1;	// -1 dummy frame
 
     if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
     {loadingMovie = false; return WRONG_FORMAT; }
 
     // read controller data
-    Movie.file = file;
-    Movie.inputBufferPtr = Movie.inputBuffer;
-    uint32 to_read = Movie.bytesPerFrame * (Movie.header.length_frames+1);
+	uint32 to_read = Movie.bytesPerFrame * (Movie.header.length_frames + 1);	// +1 dummy
     reserve_buffer_space(to_read);
-    fread(Movie.inputBufferPtr, 1, to_read, file);
+    fread(Movie.inputBuffer, 1, to_read, file);
 
-    // read "baseline" controller data
-//	read_frame_controller_data(0); // FIXME
-
-    Movie.currentFrame = 0;
 
     strcpy(Movie.filename, movie_filename);
+    Movie.file = file;
+    Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame;	// skipping 1 dummy frame
+    Movie.currentFrame = 0;
     Movie.readOnly = movieReadOnly;
-    change_state(MOVIE_STATE_PLAY);
+
+	change_state(MOVIE_STATE_PLAY);
 
     Movie.RecordedThisSession = false;
 
@@ -857,16 +832,15 @@ int VBAMovieCreate(const char *filename, const char*authorInfo, uint8 startFlags
     VBAMovieInit();
 
     // fill in the movie's header
-    Movie.header.uid   = (uint32)time(NULL);
-    Movie.header.magic = VBM_MAGIC;
+    Movie.header.uid			 = (uint32)time(NULL);
+    Movie.header.magic			 = VBM_MAGIC;
     Movie.header.version		 = VBM_VERSION;
     Movie.header.rerecord_count	 = 0;
     Movie.header.length_frames	 = 0;
     Movie.header.startFlags		 = startFlags;
     Movie.header.controllerFlags = controllerFlags;
     Movie.header.typeFlags		 = typeFlags;
-
-    Movie.header.reservedByte = 0;
+    Movie.header.reservedByte	 = 0;
 
     // set emulator settings that make the movie more likely to stay synchronized when it's later played back
     SetRecordEmuSettings();
@@ -942,9 +916,9 @@ int VBAMovieCreate(const char *filename, const char*authorInfo, uint8 startFlags
     // write controller data
     Movie.file = file;
     Movie.bytesPerFrame	 = bytes_per_frame(Movie);
-    Movie.inputBufferPtr = Movie.inputBuffer;
+    Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame;	// + 1 dummy frame
 
-//    reserve_buffer_space(Movie.bytesPerFrame);
+    reserve_buffer_space(Movie.bytesPerFrame);
 
 	// write "baseline" controller data
 //    write_frame_controller_data(0); // correct if we can assume the first controller is active, which we can on all GBx/xGB
@@ -1225,7 +1199,7 @@ void VBAMovieStop(bool8 suppress_message)
 	}
 }
 
-int VBAMovieGetInfo(const char*filename, SMovie*info)
+int VBAMovieGetInfo(const char *filename, SMovie *info)
 {
     flush_movie();
 
@@ -1251,7 +1225,7 @@ int VBAMovieGetInfo(const char*filename, SMovie*info)
     fread(local_movie.authorInfo, 1, sizeof(char) * MOVIE_METADATA_SIZE, file);
 
     strncpy(local_movie.filename, filename, _MAX_PATH);
-    local_movie.filename[_MAX_PATH-1] = '\0';
+    local_movie.filename[_MAX_PATH - 1] = '\0';
 
     if (Movie.file != NULL && stricmp(local_movie.filename, Movie.filename) == 0) // alreadyOpen
     {
@@ -1265,7 +1239,7 @@ int VBAMovieGetInfo(const char*filename, SMovie*info)
         fseek(file, 0, SEEK_END);
         int fileSize = ftell(file);
         local_movie.header.length_frames =
-            (fileSize - local_movie.header.offset_to_controller_data) / local_movie.bytesPerFrame - 1;
+            (fileSize - local_movie.header.offset_to_controller_data) / local_movie.bytesPerFrame - 1;	// -1 dummy
 	}
 
     fclose(file);
@@ -1394,7 +1368,7 @@ void VBAMovieFreeze(uint8 **buf, uint32 *size)
     // compute size needed for the buffer
     // room for header.uid, currentFrame, and header.length_frames
     uint32 size_needed = sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames);
-    size_needed += (uint32)(Movie.bytesPerFrame * (Movie.header.length_frames + 1));
+    size_needed += (uint32)(Movie.bytesPerFrame * (Movie.header.length_frames + 1));	// + 1 dummy frame
     *buf		 = new uint8[size_needed];
     *size		 = size_needed;
 
@@ -1408,7 +1382,78 @@ void VBAMovieFreeze(uint8 **buf, uint32 *size)
     Write32(Movie.currentFrame, ptr);
     Write32(Movie.header.length_frames, ptr);
 
-    memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * (Movie.header.length_frames + 1));
+    memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * (Movie.header.length_frames + 1));	// + 1 dummy frame
+}
+
+int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
+{
+    // sanity check
+    if (!VBAMovieActive())
+    {
+        return NOT_FROM_A_MOVIE;
+	}
+
+    const uint8 *ptr = buf;
+    if (size < sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames))
+    {
+        return WRONG_FORMAT;
+	}
+
+    uint32 movie_id		 = Read32(ptr);
+    uint32 current_frame = Read32(ptr);
+    uint32 end_frame	 = Read32(ptr);
+    uint32 space_needed	 = Movie.bytesPerFrame * (end_frame + 1);	// + 1 dummy
+
+    if (movie_id != Movie.header.uid)
+		return NOT_FROM_THIS_MOVIE;
+
+    if (current_frame > end_frame)
+		return SNAPSHOT_INCONSISTENT;
+
+    if (space_needed > size)
+		return WRONG_FORMAT;
+
+    if (Movie.readOnly)
+    {
+        // here, we are going to keep the input data from the movie file
+        // and simply rewind to the currentFrame pointer
+        // this will cause a desync if the savestate is not in sync // <-- NOT ANYMORE
+        // with the on-disk recording data, but it's easily solved
+        // by loading another savestate or playing the movie from the beginning
+
+        // don't allow loading a state inconsistent with the current movie
+        uint32 space_shared = (Movie.bytesPerFrame * (current_frame + 1));	// + 1 dummy frame
+        if (current_frame > Movie.header.length_frames ||
+            memcmp(Movie.inputBuffer, ptr, space_shared))
+			return SNAPSHOT_INCONSISTENT;
+
+        change_state(MOVIE_STATE_PLAY);
+///		systemScreenMessage("Movie rewind");
+
+        Movie.currentFrame = current_frame;
+	}
+    else
+    {
+        // here, we are going to take the input data from the savestate
+        // and make it the input data for the current movie, then continue
+        // writing new input data at the currentFrame pointer
+        change_state(MOVIE_STATE_RECORD);
+///		systemScreenMessage("Movie re-record");
+
+        Movie.currentFrame		   = current_frame;
+        Movie.header.length_frames = end_frame;
+        if (!VBALuaRerecordCountSkip())
+			++Movie.header.rerecord_count;
+
+        reserve_buffer_space(space_needed);
+        memcpy(Movie.inputBuffer, ptr, space_needed);
+        flush_movie();
+        fseek(Movie.file, Movie.header.offset_to_controller_data + (Movie.bytesPerFrame * (Movie.currentFrame + 1)), SEEK_SET);	// +1
+	}
+
+    Movie.inputBufferPtr = Movie.inputBuffer + (Movie.bytesPerFrame * (Movie.currentFrame + 1));	// +1
+
+    return SUCCESS;
 }
 
 bool8 VBAMovieSwitchToRecording()
@@ -1426,82 +1471,6 @@ bool8 VBAMovieSwitchToRecording()
     flush_movie();
 
     return true;
-}
-
-int VBAMovieUnfreeze(const uint8*buf, uint32 size)
-{
-    // sanity check
-    if (!VBAMovieActive())
-    {
-        return NOT_FROM_A_MOVIE;
-	}
-
-    const uint8 *ptr = buf;
-    if (size < sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames))
-    {
-        return WRONG_FORMAT;
-	}
-
-    uint32 movie_id		 = Read32(ptr);
-    uint32 current_frame = Read32(ptr);
-    uint32 max_frame	 = Read32(ptr);
-    uint32 space_needed	 = (Movie.bytesPerFrame * (max_frame + 1));
-
-    if (movie_id != Movie.header.uid)
-		return NOT_FROM_THIS_MOVIE;
-
-    if (current_frame > max_frame)
-		return SNAPSHOT_INCONSISTENT;
-
-    if (space_needed > size)
-		return WRONG_FORMAT;
-
-    if (!Movie.readOnly)
-    {
-        // here, we are going to take the input data from the savestate
-        // and make it the input data for the current movie, then continue
-        // writing new input data at the currentFrame pointer
-        change_state(MOVIE_STATE_RECORD);
-///		systemScreenMessage("Movie re-record");
-
-        Movie.currentFrame		   = current_frame;
-        Movie.header.length_frames = max_frame;
-        if (!VBALuaRerecordCountSkip())
-			++Movie.header.rerecord_count;
-
-        reserve_buffer_space(space_needed);
-        memcpy(Movie.inputBuffer, ptr, space_needed);
-        flush_movie();
-        fseek(Movie.file, Movie.header.offset_to_controller_data+(Movie.bytesPerFrame * (Movie.currentFrame+1)), SEEK_SET);
-	}
-    else
-    {
-        // here, we are going to keep the input data from the movie file
-        // and simply rewind to the currentFrame pointer
-        // this will cause a desync if the savestate is not in sync // <-- NOT ANYMORE
-        // with the on-disk recording data, but it's easily solved
-        // by loading another savestate or playing the movie from the beginning
-
-        // don't allow loading a state inconsistent with the current movie
-        uint32 space_shared = (Movie.bytesPerFrame * (current_frame + 1));
-        if (current_frame > Movie.header.length_frames ||
-            memcmp(Movie.inputBuffer, ptr, space_shared))
-			return SNAPSHOT_INCONSISTENT;
-
-        change_state(MOVIE_STATE_PLAY);
-///		systemScreenMessage("Movie rewind");
-
-        Movie.currentFrame = current_frame;
-	}
-
-    Movie.inputBufferPtr = Movie.inputBuffer + (Movie.bytesPerFrame * Movie.currentFrame);
-
-//	read_frame_controller_data(0); // FIXME
-///	for (int controller = 0; controller < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++controller)
-///		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controller)) != 0)
-///			read_frame_controller_data(controller);
-
-    return SUCCESS;
 }
 
 uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly)

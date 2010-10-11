@@ -116,7 +116,7 @@ struct SMovie
 	SMovieFileHeader header;
 	char authorInfo[MOVIE_METADATA_SIZE];
 
-	uint32 currentFrame;    // should = length_frames when recording, and be < length_frames when playing
+	uint32 currentFrame;    // should == length_frame when recording, and be < length_frames when playing
 	uint32 bytesPerFrame;
 	uint8* inputBuffer;
 	uint32 inputBufferSize;
