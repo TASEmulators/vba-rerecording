@@ -27,10 +27,7 @@
 #include "Input.h"
 #include "Reg.h"
 #include "WinResUtil.h"
-#include "VBA.h"
-
-#include "../common/movie.h"
-#include "../common/vbalua.h"
+//#include "VBA.h"
 
 // master keyboard translation table
 static const struct {
@@ -195,7 +192,7 @@ public:
 
 	virtual bool initialize();
 	virtual bool readDevices();
-	virtual u32 readDevice(int which, bool sensor, bool free);
+	virtual u32 readDevice(int which, bool sensor);
 	virtual CString getKeyName(LONG_PTR key);
 	virtual void checkKeys();
 	virtual void activate();
@@ -1088,179 +1085,64 @@ bool DirectInput::readDevices()
 	return ok;
 }
 
-u32  currentButtons [4] = {0, 0, 0, 0};
 bool inputActive = true; // used to disable all input when the window is inactive
-bool sensorOn    = false;
 
-u32 DirectInput::readDevice(int which, bool sensor, bool free)
+u32 DirectInput::readDevice(int i, bool sensor)
 {
-	int i = theApp.joypadDefault;
-	if (which >= 0 && which <= 3)
-		i = which;
+	u32 res = 0;
 
-	if (!free)
-		sensorOn = sensor;
-
-	u32 currentButtonsBackup = currentButtons[i];
-	currentButtons[i] = 0;
-
+	// manual input
 	if (inputActive)
 	{
 		if (checkKey(joypad[i][KEY_BUTTON_A]))
-			currentButtons[i] |= BUTTON_MASK_A;
+			res |= BUTTON_MASK_A;
 		if (checkKey(joypad[i][KEY_BUTTON_B]))
-			currentButtons[i] |= BUTTON_MASK_B;
+			res |= BUTTON_MASK_B;
 		if (checkKey(joypad[i][KEY_BUTTON_SELECT]))
-			currentButtons[i] |= BUTTON_MASK_SELECT;
+			res |= BUTTON_MASK_SELECT;
 		if (checkKey(joypad[i][KEY_BUTTON_START]))
-			currentButtons[i] |= BUTTON_MASK_START;
+			res |= BUTTON_MASK_START;
 		if (checkKey(joypad[i][KEY_RIGHT]))
-			currentButtons[i] |= BUTTON_MASK_RIGHT;
+			res |= BUTTON_MASK_RIGHT;
 		if (checkKey(joypad[i][KEY_LEFT]))
-			currentButtons[i] |= BUTTON_MASK_LEFT;
+			res |= BUTTON_MASK_LEFT;
 		if (checkKey(joypad[i][KEY_UP]))
-			currentButtons[i] |= BUTTON_MASK_UP;
+			res |= BUTTON_MASK_UP;
 		if (checkKey(joypad[i][KEY_DOWN]))
-			currentButtons[i] |= BUTTON_MASK_DOWN;
+			res |= BUTTON_MASK_DOWN;
 		if (checkKey(joypad[i][KEY_BUTTON_R]))
-			currentButtons[i] |= BUTTON_MASK_R;
+			res |= BUTTON_MASK_R;
 		if (checkKey(joypad[i][KEY_BUTTON_L]))
-			currentButtons[i] |= BUTTON_MASK_L;
+			res |= BUTTON_MASK_L;
 
-		if (sensor)
-		{
-			if (checkKey(motion[KEY_LEFT]))
-				currentButtons[i] |= BUTTON_MASK_LEFT_MOTION;
-			else if (checkKey(motion[KEY_RIGHT]))
-				currentButtons[i] |= BUTTON_MASK_RIGHT_MOTION;
-			if (checkKey(motion[KEY_UP]))
-				currentButtons[i] |= BUTTON_MASK_UP_MOTION;
-			else if (checkKey(motion[KEY_DOWN]))
-				currentButtons[i] |= BUTTON_MASK_DOWN_MOTION;
-		}
+		// unused
+		if (checkKey(motion[KEY_LEFT]))
+			res |= BUTTON_MASK_LEFT_MOTION;
+		else if (checkKey(motion[KEY_RIGHT]))
+			res |= BUTTON_MASK_RIGHT_MOTION;
+		if (checkKey(motion[KEY_UP]))
+			res |= BUTTON_MASK_UP_MOTION;
+		else if (checkKey(motion[KEY_DOWN]))
+			res |= BUTTON_MASK_DOWN_MOTION;
 	}
 
-	if (theApp.autoFire || theApp.autoFire2)
-	{
-		currentButtons[i] |= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
-		if (!free)
-		{
-			if (!theApp.autofireAccountForLag || theApp.autofireAccountForLag && !theApp.emulator.lagged)
-			{
-				theApp.autoFireToggle = !theApp.autoFireToggle;
-			}
-		}
-	}
-	if (theApp.autoHold)
-		currentButtons[i] ^= theApp.autoHold;
-
-	if (VBALuaUsingJoypad(i))
-		currentButtons[i] = VBALuaReadJoypad(i);
-
-	extern int32 gbSgbMode; // from gbSGB.cpp
-	if (theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
-	{
-		if (currentButtons[i] & BUTTON_MASK_L)
-			currentButtons[i] ^= BUTTON_MASK_L;
-		if (currentButtons[i] & BUTTON_MASK_R)
-			currentButtons[i] ^= BUTTON_MASK_R;
-	}
-
-	if (!theApp.allowLeftRight)
-	{
-		// disallow L+R or U+D to being pressed at the same time
-		if ((currentButtons[i] & (BUTTON_MASK_RIGHT|BUTTON_MASK_LEFT)) == (BUTTON_MASK_RIGHT|BUTTON_MASK_LEFT))
-			currentButtons[i] &= ~BUTTON_MASK_RIGHT; // leave only LEFT on
-		if ((currentButtons[i] & (BUTTON_MASK_DOWN|BUTTON_MASK_UP)) == (BUTTON_MASK_DOWN|BUTTON_MASK_UP))
-			currentButtons[i] &= ~BUTTON_MASK_DOWN; // leave only UP on
-	}
-
-	if (theApp.frameSearchSkipping)
-		currentButtons[i] = theApp.frameSearchOldInput[i];
-
-	if (!free)
-		VBAMovieUpdate(i);
-
-	if (sensorOn && !free)
-	{
-		// handle motion sensor input
-		if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
-		{
-			theApp.sensorX += 3;
-			if (theApp.sensorX > 2197)
-				theApp.sensorX = 2197;
-			if (theApp.sensorX < 2047)
-				theApp.sensorX = 2057;
-		}
-		else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
-		{
-			theApp.sensorX -= 3;
-			if (theApp.sensorX < 1897)
-				theApp.sensorX = 1897;
-			if (theApp.sensorX > 2047)
-				theApp.sensorX = 2037;
-		}
-		else if (theApp.sensorX > 2047)
-		{
-			theApp.sensorX -= 2;
-			if (theApp.sensorX < 2047)
-				theApp.sensorX = 2047;
-		}
-		else
-		{
-			theApp.sensorX += 2;
-			if (theApp.sensorX > 2047)
-				theApp.sensorX = 2047;
-		}
-
-		if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
-		{
-			theApp.sensorY += 3;
-			if (theApp.sensorY > 2197)
-				theApp.sensorY = 2197;
-			if (theApp.sensorY < 2047)
-				theApp.sensorY = 2057;
-		}
-		else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
-		{
-			theApp.sensorY -= 3;
-			if (theApp.sensorY < 1897)
-				theApp.sensorY = 1897;
-			if (theApp.sensorY > 2047)
-				theApp.sensorY = 2037;
-		}
-		else if (theApp.sensorY > 2047)
-		{
-			theApp.sensorY -= 2;
-			if (theApp.sensorY < 2047)
-				theApp.sensorY = 2047;
-		}
-		else
-		{
-			theApp.sensorY += 2;
-			if (theApp.sensorY > 2047)
-				theApp.sensorY = 2047;
-		}
-	}
-
-	uint32 res = currentButtons[i] & BUTTON_REGULAR_MASK;
-	if (free)
-		currentButtons[i] = currentButtonsBackup;
-
-	if (theApp.speedupToggle)
-		res |= BUTTON_MASK_SPEED;
-	if (inputActive && !free)
+	u32 hackedButtons = 0;
+	if (inputActive)
 	{
 		// the "non-button" buttons (what a hack!)
 		if (checkKey(joypad[i][KEY_BUTTON_SPEED]))
-			res |= BUTTON_MASK_SPEED;
+			hackedButtons |= BUTTON_MASK_SPEED;
 		if (checkKey(joypad[i][KEY_BUTTON_CAPTURE]))
-			res |= BUTTON_MASK_CAPTURE;
+			hackedButtons |= BUTTON_MASK_CAPTURE;
 		if (checkKey(joypad[i][KEY_BUTTON_GS]))
-			res |= BUTTON_MASK_GAMESHARK;
+			hackedButtons |= BUTTON_MASK_GAMESHARK;
 	}
 
-	return res;
+	extern bool systemIsSpedUp();
+	if (systemIsSpedUp())
+		hackedButtons |= BUTTON_MASK_SPEED;
+
+	return res | hackedButtons;
 }
 
 CString DirectInput::getKeyName(LONG_PTR key)

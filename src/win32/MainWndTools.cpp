@@ -235,7 +235,7 @@ void MainWnd::OnUpdateDebugNextframeAccountForLag(CCmdUI*pCmdUI)
 }
 
 #if (defined(WIN32) && !defined(SDL))
-extern u32 currentButtons [4];     // from DirectInput.cpp
+extern u32 currentButtons [4];     // from System.cpp
 #else
 u32 currentButtons [4];     /// SDL FIXME movie support NYI (the input format is quite different)
 #endif

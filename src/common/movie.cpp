@@ -58,7 +58,7 @@ bool   loadingMovie = false;
 bool8  loadedMovieSnapshot = 0;
 
 #if (defined(WIN32) && !defined(SDL))
-extern u32 currentButtons [4];     // from DirectInput.cpp
+extern u32 currentButtons [4];     // from System.cpp
 #else
 u32 currentButtons [4];
 #endif
@@ -348,14 +348,6 @@ static void read_frame_controller_data(int i)
         currentButtons[i] = 0;        // pretend the controller is disconnected
 	}
 
-    extern bool sensorOn;
-    if (!sensorOn)
-    {
-        // ignore motion sensor input if the current game doesn't support it
-        if ((currentButtons[i] & BUTTON_MOTION_MASK) != 0)
-			currentButtons[i] &= ~BUTTON_MOTION_MASK;
-	}
-
 	if ((currentButtons[i] & BUTTON_MASK_RESET) != 0)
 		resetSignaled = true;
 
@@ -395,7 +387,7 @@ static void write_frame_controller_data(int i)
 
     if (i == 0)
     {
-        reserve_buffer_space((uint32)((Movie.inputBufferPtr+Movie.bytesPerFrame)-Movie.inputBuffer));
+        reserve_buffer_space((uint32)((Movie.inputBufferPtr + Movie.bytesPerFrame) - Movie.inputBuffer));
 	}
 
     if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
@@ -705,9 +697,9 @@ int VBAMovieOpen(const char*filename, bool8 read_only)
     fread(Movie.inputBufferPtr, 1, to_read, file);
 
     // read "baseline" controller data
-    read_frame_controller_data(0); // correct if we can assume the first controller is active, which we can on all GBx/xGB
-                                   // systems
-    Movie.currentFrame = 0;
+	read_frame_controller_data(theApp.joypadDefault); // FIXME
+
+	Movie.currentFrame = 0;
 
     strcpy(Movie.filename, movie_filename);
     Movie.readOnly = movieReadOnly;
@@ -1122,10 +1114,11 @@ void VBAUpdateFrameCountDisplay()
 	}
 }
 
-void VBAMovieUpdate(int controllerNum)
+void VBAMovieUpdate(int controllerNum, bool sensor)
 {
-    bool8 willPause = false;
-//movieUpdateStart:
+	bool willRestart = false;
+    bool willPause = false;
+
     switch (Movie.state)
     {
 	case MOVIE_STATE_PLAY:
@@ -1138,14 +1131,10 @@ void VBAMovieUpdate(int controllerNum)
 #if (defined(WIN32) && !defined(SDL))
 				if (theApp.movieOnEndBehavior == 1)
 				{
-					VBAMovieRestart();
+					willRestart = true;
 					willPause = theApp.movieOnEndPause;
 					break;
 				}
-#else
-		        // SDL FIXME
-#endif
-#if (defined(WIN32) && !defined(SDL))
 		        else if (theApp.movieOnEndBehavior == 2 && Movie.RecordedThisSession)
 #else
 		        // SDL FIXME
@@ -1159,14 +1148,8 @@ void VBAMovieUpdate(int controllerNum)
 		            {
 		                VBAMovieToggleReadOnly();
 					}
-/*
-                    change_state(MOVIE_STATE_RECORD);
 
-                    systemScreenMessage("Movie re-record");
-                    fseek(Movie.file, Movie.header.offset_to_controller_data+(Movie.bytesPerFrame * (Movie.currentFrame+1)), SEEK_SET);
-					systemSetPause(true);
-*/
-		            VBAMovieSwitchToRecording();
+					VBAMovieSwitchToRecording();
 		            willPause = true;
 		            break;
 //					goto movieUpdateStart;
@@ -1214,10 +1197,21 @@ void VBAMovieUpdate(int controllerNum)
 	VBAUpdateButtonPressDisplay();
 
     // if the movie's been set to pause at a certain frame
-    if (willPause || VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
-    {
-		systemSetPause(true);
+	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
+	{
         Movie.pauseFrame = -1;
+		willPause = true;
+	}
+
+	if (willRestart)
+	{
+		VBAMovieRestart();
+	}
+
+    if (willPause)
+    {
+		extern void systemPauseEmulator(bool = true);
+		systemPauseEmulator(true);
 	}
 }
 
@@ -1507,11 +1501,10 @@ int VBAMovieUnfreeze(const uint8*buf, uint32 size)
 
     Movie.inputBufferPtr = Movie.inputBuffer + (Movie.bytesPerFrame * Movie.currentFrame);
 
-///	for(int controller = 0 ; controller < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS ; controller++)
-///		if((Movie.header.controllerFlags & MOVIE_CONTROLLER(controller)) != 0)
+	read_frame_controller_data(theApp.joypadDefault); // FIXME
+///	for (int controller = 0; controller < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++controller)
+///		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controller)) != 0)
 ///			read_frame_controller_data(controller);
-    read_frame_controller_data(0); // correct if we can assume the first controller is active, which we can on all GBx/xGB
-                                   // systems
 
     return SUCCESS;
 }

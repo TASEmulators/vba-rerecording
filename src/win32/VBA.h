@@ -203,8 +203,6 @@ public:
 	bool       nvVideoLog;
 	bool       nvAudioLog;
 	bool       painting;	// for systemDrawScreen()
-	int32      sensorX;
-	int32      sensorY;
 	int        mouseCounter;
 	bool       frameAdvanceMuteNow;
 	bool       winPauseNextFrame;

@@ -68,7 +68,7 @@ extern void  utilWriteInt(gzFile, int32);
 extern gzFile utilGzOpen(const char *file, const char *mode);
 extern gzFile utilGzReopen(int id, const char *mode);
 extern gzFile utilMemGzOpen(char *memory, int available, char *mode);
-extern int utilGzWrite(gzFile file, const voidp buffer, unsigned int len);
+extern int utilGzWrite(gzFile file,  voidp buffer, unsigned int len);
 extern int utilGzRead(gzFile file, voidp buffer, unsigned int len);
 extern int utilGzClose(gzFile file);
 extern long utilGzMemTell(gzFile file);

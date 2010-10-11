@@ -444,8 +444,6 @@ VBA::VBA()
 	aviRecording			= false;
 	aviRecorder				= NULL;
 	painting				= false;
-	sensorX					= 2047;
-	sensorY					= 2047;
 	mouseCounter			= 0;
 	movieReadOnly			= true;
 	movieOnEndPause			= false;

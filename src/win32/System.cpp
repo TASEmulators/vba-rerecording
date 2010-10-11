@@ -13,16 +13,16 @@
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 //#include "../common/System.h"
+#include "../common/movie.h"
+#include "../common/vbalua.h"
 #include "../common/Text.h"
 #include "../common/Util.h"
 #include "../common/nesvideos-piece.h"
 #include "../version.h"
 #include <cassert>
 
-int  RGB_LOW_BITS_MASK = 0;
-
+u32  RGB_LOW_BITS_MASK = 0;
 int  emulating       = 0;
-
 int  systemSpeed     = 0;
 bool systemSoundOn   = false;
 u32  systemColorMap32[0x10000];
@@ -37,16 +37,118 @@ int  systemVerbose           = 0;
 int  systemFrameSkip = 0;
 int  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+const int32 INITIAL_SENSOR_VALUE = 2047;
+
+int32 sensorX = INITIAL_SENSOR_VALUE;
+int32 sensorY = INITIAL_SENSOR_VALUE;
+u32   currentButtons [4] = {0, 0, 0, 0};
+
 #define BMP_BUFFER_MAX_WIDTH (256)
 #define BMP_BUFFER_MAX_HEIGHT (224)
 #define BMP_BUFFER_MAX_DEPTH (4)
 static u8 bmpBuffer[BMP_BUFFER_MAX_WIDTH * BMP_BUFFER_MAX_HEIGHT * BMP_BUFFER_MAX_DEPTH];
 
-// joypad
+// input
+
+void systemSetSensorX(int32 x)
+{
+	sensorX = x;
+}
+
+void systemSetSensorY(int32 y)
+{
+	sensorY = y;
+}
+
+void systemResetSensor()
+{
+	sensorX = sensorY = INITIAL_SENSOR_VALUE;
+}
+
+int32 systemGetSensorX()
+{
+	return sensorX;
+}
+
+int32 systemGetSensorY()
+{
+	return sensorY;
+}
+
+// unused
+// FIXME: This should be moved to the right place
+void systemDoMotionSensor(int i)
+{
+//	extern bool8 cpuEEPROMSensorEnabled;
+
+	// handle motion sensor input
+	if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
+	{
+		sensorX += 3;
+		if (sensorX > 2197)
+			sensorX = 2197;
+		if (sensorX < 2047)
+			sensorX = 2057;
+	}
+	else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
+	{
+		sensorX -= 3;
+		if (sensorX < 1897)
+			sensorX = 1897;
+		if (sensorX > 2047)
+			sensorX = 2037;
+	}
+	else if (sensorX > 2047)
+	{
+		sensorX -= 2;
+		if (sensorX < 2047)
+			sensorX = 2047;
+	}
+	else
+	{
+		sensorX += 2;
+		if (sensorX > 2047)
+			sensorX = 2047;
+	}
+
+	if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
+	{
+		sensorY += 3;
+		if (sensorY > 2197)
+			sensorY = 2197;
+		if (sensorY < 2047)
+			sensorY = 2057;
+	}
+	else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
+	{
+		sensorY -= 3;
+		if (sensorY < 1897)
+			sensorY = 1897;
+		if (sensorY > 2047)
+			sensorY = 2037;
+	}
+	else if (sensorY > 2047)
+	{
+		sensorY -= 2;
+		if (sensorY < 2047)
+			sensorY = 2047;
+	}
+	else
+	{
+		sensorY += 2;
+		if (sensorY > 2047)
+			sensorY = 2047;
+	}
+}
 
 int systemGetDefaultJoypad()
 {
 	return theApp.joypadDefault;
+}
+
+void systemSetDefaultJoypad(int which)
+{
+	theApp.joypadDefault = which;
 }
 
 bool systemReadJoypads()
@@ -63,11 +165,102 @@ bool systemReadJoypads()
 	return false;
 }
 
-u32 systemGetJoypad(int which, bool sensor)
+u32 systemGetOriginalJoypad(int i, bool sensor)
 {
-	if (theApp.input /* || VBALuaUsingJoypad(which)*/)
-		return theApp.input->readDevice(which, sensor, false);
-	return 0;
+	if (i < 0 || i > 3)
+		i = systemGetDefaultJoypad();
+
+	u32 res = 0;
+	if (theApp.input)
+		res = theApp.input->readDevice(i, sensor);
+	
+	// +auto input, XOR
+	// maybe these should be moved into DirectInput.cpp
+	if (theApp.autoFire || theApp.autoFire2)
+	{
+		res ^= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
+		if (!theApp.autofireAccountForLag || !theApp.emulator.lagged)
+		{
+			theApp.autoFireToggle = !theApp.autoFireToggle;
+		}
+	}
+	if (theApp.autoHold)
+	{
+		res ^= theApp.autoHold;
+	}
+
+	currentButtons[i] = res & ~BUTTON_NONRECORDINGONLY_MASK;
+
+	return res;
+}
+
+u32 systemGetJoypad(int i, bool sensor)
+{
+	if (i < 0 || i > 3)
+		i = systemGetDefaultJoypad();
+
+	// input priority: original+auto < movie < Lua < frame search, correct this if wrong
+	u32 res = 0;
+
+	// get original+auto input
+	res = systemGetOriginalJoypad(i, sensor);
+
+	u32 hackedButtons = res & BUTTON_NONRECORDINGONLY_MASK;
+
+	// movie input
+	// VBAMovieUpdate() might overwrite currentButtons[i]
+	u32 currentButtonsBackup = currentButtons[i];
+
+	VBAMovieUpdate(i);
+
+	res = currentButtons[i];
+
+	// we can later deal with it again, but let's just restore it for now for sake of simplicity
+	currentButtons[i] = currentButtonsBackup;
+
+	// Lua input
+	if (VBALuaUsingJoypad(i))
+		res = VBALuaReadJoypad(i);
+
+	// last input override here
+	if (theApp.frameSearchSkipping)
+		res = theApp.frameSearchOldInput[i];
+
+	// filter buttons
+	if (!sensor)
+	{
+		if (res & BUTTON_MASK_LEFT_MOTION)
+			res ^= BUTTON_MASK_LEFT_MOTION;
+		if (res & BUTTON_MASK_RIGHT_MOTION)
+			res ^= BUTTON_MASK_RIGHT_MOTION;
+		if (res & BUTTON_MASK_UP_MOTION)
+			res ^= BUTTON_MASK_UP_MOTION;
+		if (res & BUTTON_MASK_DOWN_MOTION)
+			res ^= BUTTON_MASK_DOWN_MOTION;
+	}
+
+	extern int32 gbSgbMode; // from gbSGB.cpp
+	if (theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
+	{
+		if (res & BUTTON_MASK_L)
+			res ^= BUTTON_MASK_L;
+		if (res & BUTTON_MASK_R)
+			res ^= BUTTON_MASK_R;
+	}
+
+	if (!theApp.allowLeftRight)
+	{
+		// disallow L+R or U+D to being pressed at the same time
+		if ((res & (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT)) == (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT))
+			res &= ~BUTTON_MASK_RIGHT; // leave only LEFT on
+		if ((res & (BUTTON_MASK_DOWN | BUTTON_MASK_UP)) == (BUTTON_MASK_DOWN | BUTTON_MASK_UP))
+			res &= ~BUTTON_MASK_DOWN; // leave only UP on
+	}
+
+	// done
+	currentButtons[i] = res;
+
+	return res | hackedButtons;
 }
 
 void systemSetJoypad(int which, u32 buttons)
@@ -78,12 +271,15 @@ void systemSetJoypad(int which, u32 buttons)
 	// TODO
 }
 
-
 // screen
 
+// delayed repaint
 void systemRefreshScreen()
 {
-	theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL);
+	if (theApp.m_pMainWnd)
+	{
+		theApp.m_pMainWnd->PostMessage(WM_PAINT, NULL, NULL);
+	}
 }
 
 extern bool vbaShuttingDown;
@@ -310,6 +506,7 @@ void systemSetTitle(const char *title)
 }
 
 // time
+
 u32 systemGetClock()
 {
 	return timeGetTime();
@@ -428,17 +625,6 @@ void systemFrame(int rate)
 ///  theApp.autoFrameSkipLastTime = time;
 }
 
-// input
-int systemGetSensorX()
-{
-	return theApp.sensorX;
-}
-
-int systemGetSensorY()
-{
-	return theApp.sensorY;
-}
-
 // sound
 
 bool systemSoundInit()
@@ -499,6 +685,11 @@ bool systemSetSoundQuality(int quality)
 
 // emulated
 
+bool systemIsEmulating()
+{
+	return emulating != 0;
+}
+
 void systemGbBorderOn()
 {
 	if (emulating && theApp.cartridgeType == 1 && gbBorderOn)
@@ -512,6 +703,11 @@ bool systemIsRunningGBA()
 	return(theApp.cartridgeType == 0);
 }
 
+bool systemIsSpedUp()
+{
+	return theApp.speedupToggle;
+}
+
 bool systemIsPaused()
 {
 	return theApp.paused;
@@ -523,7 +719,7 @@ void systemSetPause(bool pause)
 	{
 		theApp.wasPaused	 = true;
 		theApp.paused		 = true;
-		theApp.speedupToggle = false;
+//		theApp.speedupToggle = false;
 		soundPause();
 	}
 	else
@@ -536,23 +732,27 @@ void systemSetPause(bool pause)
 	systemRefreshScreen();;
 }
 
+void systemPauseEmulator(bool /*forced*/)
+{
+	theApp.winPauseNextFrame = true;
+}
+
 bool systemPauseOnFrame()
 {
 	if (theApp.winPauseNextFrame)
 	{
-		if (!theApp.nextframeAccountForLag || theApp.nextframeAccountForLag && !theApp.emulator.lagged)
+		if (!theApp.nextframeAccountForLag || !theApp.emulator.lagged)
 		{
 			theApp.winPauseNextFrame = false;
-			theApp.paused = true;
+			systemSetPause(true);
+			return true;
 		}
 		else
 		{
 			theApp.winPauseNextFrame = true;
-			return false;
 		}
-
-		return true;
 	}
+
 	return false;
 }
 
