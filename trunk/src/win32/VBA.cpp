@@ -1263,7 +1263,7 @@ BOOL VBA::OnIdle(LONG lCount)
 		}
 		return TRUE;
 	}
-	else if (emulating) // this fixes reseting while paused
+	else if (emulating) // this fixes display if resetting while paused
 	{
 		VBAUpdateButtonPressDisplay();
 		VBAUpdateFrameCountDisplay();
