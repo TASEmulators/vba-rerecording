@@ -93,7 +93,6 @@ static inline uint16 Read16(const uint8 *& ptr) /* const version */
 	return v;
 }
 
-// WHY?
 static inline uint16 Read16(uint8 *& ptr) /* non-const version */
 {
 	uint16 v = (ptr[0] | (ptr[1]<<8));
@@ -101,8 +100,12 @@ static inline uint16 Read16(uint8 *& ptr) /* non-const version */
 	return v;
 }
 
-#define Read8(ptr) (*(ptr)++)
-static void Write32(uint32 v, uint8 *& ptr)
+static inline uint8 Read8(const uint8 *& ptr)
+{
+	return *(ptr)++;
+}
+
+static inline void Write32(uint32 v, uint8 *& ptr)
 {
 	ptr[0] = (uint8)(v&0xff);
 	ptr[1] = (uint8)((v>>8)&0xff);
@@ -111,14 +114,17 @@ static void Write32(uint32 v, uint8 *& ptr)
 	ptr	  += 4;
 }
 
-static void Write16(uint16 v, uint8 *& ptr)
+static inline void Write16(uint16 v, uint8 *& ptr)
 {
 	ptr[0] = (uint8)(v&0xff);
 	ptr[1] = (uint8)((v>>8)&0xff);
 	ptr	  += 2;
 }
 
-#define Write8(v, ptr) (*ptr++ = v)
+static inline void Write8(uint8 v, uint8 *& ptr)
+{
+	*ptr++ = v;
+}
 
 static int read_movie_header(FILE *file, SMovie &movie)
 {
@@ -169,7 +175,7 @@ static int read_movie_header(FILE *file, SMovie &movie)
     return SUCCESS;
 }
 
-static void write_movie_header(FILE *file, const SMovie & movie)
+static void write_movie_header(FILE *file, const SMovie &movie)
 {
     assert(ftell(file) == 0); // we assume file points to beginning of movie file
 
@@ -296,7 +302,7 @@ static void reserve_buffer_space(uint32 space_needed)
         Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
         Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
         Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
-		for (int i = 0; i < Movie.bytesPerFrame; ++i)
+		for (uint32 i = 0; i < Movie.bytesPerFrame; ++i)
 		{
 			Movie.inputBuffer[i] = 0;	// clear the dummy frame
 		}
