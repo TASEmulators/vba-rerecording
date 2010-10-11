@@ -3347,13 +3347,10 @@ void gbEmulate(int ticksToStop)
 						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
 						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 
-						if (gbFrameCount >= 60)
+						u32 currentTime = systemGetClock();
+						if (currentTime - gbLastTime >= 1000)
 						{
-							u32 currentTime = systemGetClock();
-							if (currentTime != gbLastTime)
-								systemShowSpeed((1000000 / (currentTime - gbLastTime) + 5) / 10);
-							else
-								systemShowSpeed(0);
+							systemShowSpeed(int(float(gbFrameCount) * 100000 / (float(currentTime - gbLastTime) * 60) + .5f));
 							gbLastTime   = currentTime;
 							gbFrameCount = 0;
 						}
