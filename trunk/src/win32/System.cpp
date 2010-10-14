@@ -401,6 +401,12 @@ void systemRenderFrame()
 	}
 	while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
 
+	if (textMethod != 0) // do not draw Lua HUD to a video dump
+	{
+		extern void DrawLuaGui();
+		DrawLuaGui();
+	}
+
 	// interframe blending
 	if (theApp.ifbFunction)
 	{
