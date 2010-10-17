@@ -2322,4 +2322,3 @@ void VBA::saveSettings()
 	regSetDwordValue("movieOnEndPause", movieOnEndPause);
 //	regSetDwordValue("movieReadOnly", movieReadOnly);
 }
-

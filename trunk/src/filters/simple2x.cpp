@@ -30,9 +30,9 @@ void Simple2x16(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 		u32 *bP = (u32 *) srcPtr;
 		u32 *dP = (u32 *) dstPtr;
 		u32 *nL = (u32 *) nextLine;
-		u32  currentPixel;
+		u32	 currentPixel;
 
-		finish       = (u8 *) bP + ((width+2) << 1);
+		finish		 = (u8 *) bP + ((width + 2) << 1);
 		currentPixel = *bP++;
 
 		do
@@ -53,7 +53,7 @@ void Simple2x16(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 #else
 			color = currentPixel >> 16;
 #endif
-			color     = color| (color << 16);
+			color	  = color | (color << 16);
 			*(dP + 1) = color;
 			*(nL + 1) = color;
 
@@ -64,8 +64,8 @@ void Simple2x16(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 		}
 		while ((u8 *) bP < finish);
 
-		srcPtr   += srcPitch;
-		dstPtr   += dstPitch << 1;
+		srcPtr	 += srcPitch;
+		dstPtr	 += dstPitch << 1;
 		nextLine += dstPitch << 1;
 	}
 	while (--height);
@@ -83,18 +83,18 @@ void Simple2x32(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 		u32 *bP = (u32 *) srcPtr;
 		u32 *dP = (u32 *) dstPtr;
 		u32 *nL = (u32 *) nextLine;
-		u32  currentPixel;
+		u32	 currentPixel;
 
-		finish       = (u8 *) bP + ((width+1) << 2);
+		finish		 = (u8 *) bP + ((width + 1) << 2);
 		currentPixel = *bP++;
 
 		do
 		{
 			u32 color = currentPixel;
 
-			*(dP)     = color;
+			*(dP)	  = color;
 			*(dP + 1) = color;
-			*(nL)     = color;
+			*(nL)	  = color;
 			*(nL + 1) = color;
 
 			currentPixel = *bP++;
@@ -104,8 +104,8 @@ void Simple2x32(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 		}
 		while ((u8 *) bP < finish);
 
-		srcPtr   += srcPitch;
-		dstPtr   += dstPitch << 1;
+		srcPtr	 += srcPitch;
+		dstPtr	 += dstPitch << 1;
 		nextLine += dstPitch << 1;
 	}
 	while (--height);
@@ -115,43 +115,46 @@ void Simple2x32(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 // generic Simple Nx magnification filter
 template <int magnification, typename ColorType>
 void SimpleNx(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
-                u8 *dstPtr, u32 dstPitch, int width, int height)
+              u8 *dstPtr, u32 dstPitch, int width, int height)
 {
-	srcPitch      = srcPitch / sizeof(ColorType) - width;
-	u32 dstNextP  = dstPitch / sizeof(ColorType);
-	u32 dstNextL  = (dstNextP - width) * magnification; // skip to the next magnificated 'line'
-	dstNextP     -= magnification;
+	srcPitch = srcPitch / sizeof(ColorType) - width;
+	u32 dstNextP = dstPitch / sizeof(ColorType);
+	u32 dstNextL = (dstNextP - width) * magnification;  // skip to the next magnificated 'line'
+	dstNextP -= magnification;
 
-	u32 offset    = (dstPitch + sizeof(ColorType)) * magnification - dstPitch;
+	u32 offset = (dstPitch + sizeof(ColorType)) * magnification - dstPitch;
 
-	ColorType *src   = (ColorType *)srcPtr;
-	ColorType *dst   = (ColorType *)dstPtr;
+	ColorType *src = (ColorType *)srcPtr;
+	ColorType *dst = (ColorType *)dstPtr;
 
 	do // per src line
 	{
 		u8 *finishP = (u8 *)dst + offset;
 		for (int x = 0; x < width; ++x) // per pixel in line
 		{
-			ColorType col    = *src;
-			ColorType *dst2  = dst;
-			u8 *finishM = (u8 *)(dst + magnification);
+			ColorType  col	   = *src;
+			ColorType *dst2	   = dst;
+			u8 *	   finishM = (u8 *)(dst + magnification);
 			do // dst magnificated pixel
 			{
 				do
 				{
 					*dst2 = col;
-				} while ((u8 *)++dst2 < finishM);
-				dst2 += dstNextP;
+				}
+				while ((u8 *)++dst2 < finishM);
+				dst2	+= dstNextP;
 				finishM += dstPitch;
-			} while ((u8 *)dst2 < finishP);
+			}
+			while ((u8 *)dst2 < finishP);
 
 			++src;
-			dst += magnification;
+			dst		+= magnification;
 			finishP += magnification * sizeof(ColorType);
 		}
 		src += srcPitch;
 		dst += dstNextL;
-	} while (--height);
+	}
+	while (--height);
 }
 
 #else
@@ -161,10 +164,10 @@ template <int magnification, typename ColorType>
 void SimpleNx(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
               u8 *dstPtr, u32 dstPitch, int width, int height)
 {
-	srcPitch     = srcPitch / sizeof(ColorType) - width;
-	dstPitch    /= sizeof(ColorType);
+	srcPitch  = srcPitch / sizeof(ColorType) - width;
+	dstPitch /= sizeof(ColorType);
 	u32 dstBlank = (dstPitch - width) * magnification; // skip to the next magnificated 'line'
-	dstPitch    -= magnification;
+	dstPitch -= magnification;
 
 	ColorType *src = (ColorType *)srcPtr;
 	ColorType *dst = (ColorType *)dstPtr;
@@ -173,7 +176,7 @@ void SimpleNx(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 	{
 		for (int x = 0; x < width; ++x) // per pixel in src line
 		{
-			ColorType col   = *src;
+			ColorType  col	= *src;
 			ColorType *dst2 = dst;
 			for (int dy = 0; dy < magnification; ++dy) // dst magnificated pixel
 			{
@@ -190,12 +193,13 @@ void SimpleNx(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 		}
 		src += srcPitch;
 		dst += dstBlank;
-	} while (--height);
+	}
+	while (--height);
 }
 
 #endif
 
-typedef void (*SimpleNxFP)(u8*, u32, u8*, u8*, u32, int, int);
+typedef void (*SimpleNxFP)(u8 *, u32, u8 *, u8 *, u32, int, int);
 
 SimpleNxFP Simple3x16 = SimpleNx<3, u16>;
 SimpleNxFP Simple3x32 = SimpleNx<3, u32>;

@@ -18,7 +18,7 @@
 
 #include "../Port.h"
 #include "hq_shared32.h"
-#include "interp.h" 
+#include "interp.h"
 
 #define SIZE_PIXEL 2 // 16bit = 2 bytes
 #define PIXELTYPE unsigned short
@@ -28,14 +28,14 @@
 #define Interp4 Interp4_16
 #define Interp5 Interp5_16
 
-void hq3x(unsigned char * pIn,  unsigned int srcPitch,
-			unsigned char *,
-			unsigned char * pOut, unsigned int dstPitch,
-			int Xres, int Yres)
+void hq3x(unsigned char *pIn,  unsigned int srcPitch,
+          unsigned char *,
+          unsigned char *pOut, unsigned int dstPitch,
+          int Xres, int Yres)
 {
 	int i, j;
 	unsigned int line;
-	PIXELTYPE c[10];
+	PIXELTYPE	 c[10];
 
 	// +----+----+----+
 	// |    |    |    |
@@ -48,24 +48,24 @@ void hq3x(unsigned char * pIn,  unsigned int srcPitch,
 	// | c7 | c8 | c9 |
 	// +----+----+----+
 
-	for (j=0; j<Yres; j++)
+	for (j = 0; j < Yres; j++)
 	{
-		if ( (j>0) || (j<Yres-1) )
+		if ((j > 0) || (j < Yres - 1))
 			line = srcPitch;
 		else
 			line = 0;
 
-		for (i=0; i<Xres; i++)
+		for (i = 0; i < Xres; i++)
 		{
-			c[2] = *((PIXELTYPE*)(pIn - line));
-			c[5] = *((PIXELTYPE*)(pIn        ));
-			c[8] = *((PIXELTYPE*)(pIn + line));
+			c[2] = *((PIXELTYPE *)(pIn - line));
+			c[5] = *((PIXELTYPE *)(pIn));
+			c[8] = *((PIXELTYPE *)(pIn + line));
 
-			if (i>0)
+			if (i > 0)
 			{
-				c[1] = *((PIXELTYPE*)(pIn - line - SIZE_PIXEL));
-				c[4] = *((PIXELTYPE*)(pIn        - SIZE_PIXEL));
-				c[7] = *((PIXELTYPE*)(pIn + line - SIZE_PIXEL));
+				c[1] = *((PIXELTYPE *)(pIn - line - SIZE_PIXEL));
+				c[4] = *((PIXELTYPE *)(pIn        - SIZE_PIXEL));
+				c[7] = *((PIXELTYPE *)(pIn + line - SIZE_PIXEL));
 			}
 			else
 			{
@@ -74,11 +74,11 @@ void hq3x(unsigned char * pIn,  unsigned int srcPitch,
 				c[7] = c[8];
 			}
 
-			if (i<Xres-1)
+			if (i < Xres - 1)
 			{
-				c[3] = *((PIXELTYPE*)(pIn - line + SIZE_PIXEL));
-				c[6] = *((PIXELTYPE*)(pIn        + SIZE_PIXEL));
-				c[9] = *((PIXELTYPE*)(pIn + line + SIZE_PIXEL));
+				c[3] = *((PIXELTYPE *)(pIn - line + SIZE_PIXEL));
+				c[6] = *((PIXELTYPE *)(pIn        + SIZE_PIXEL));
+				c[9] = *((PIXELTYPE *)(pIn + line + SIZE_PIXEL));
 			}
 			else
 			{
@@ -109,12 +109,12 @@ void hq3x(unsigned char * pIn,  unsigned int srcPitch,
 #define Diff interp_16_diff
 #include "hq3x32.h"
 #undef Diff
-			pIn+=SIZE_PIXEL;
-			pOut+=3<<1;
+			pIn	 += SIZE_PIXEL;
+			pOut += 3 << 1;
 		}
-		pIn+=srcPitch-(Xres<<1);
-		pOut+=dstPitch-(3*Xres<<1);
-		pOut+=dstPitch<<1;
+		pIn	 += srcPitch - (Xres << 1);
+		pOut += dstPitch - (3 * Xres << 1);
+		pOut += dstPitch << 1;
 		//	pIn+=SIZE_PIXEL;
 		//	pOut+=3*SIZE_PIXEL;
 		//}
@@ -124,10 +124,10 @@ void hq3x(unsigned char * pIn,  unsigned int srcPitch,
 	}
 }
 
-void hq3xS(unsigned char * pIn,  unsigned int srcPitch,
-			unsigned char *,
-			unsigned char * pOut, unsigned int dstPitch,
-			int Xres, int Yres)
+void hq3xS(unsigned char *pIn,  unsigned int srcPitch,
+           unsigned char *,
+           unsigned char *pOut, unsigned int dstPitch,
+           int Xres, int Yres)
 {
 	int i, j;
 	PIXELTYPE c[10];
@@ -143,22 +143,21 @@ void hq3xS(unsigned char * pIn,  unsigned int srcPitch,
 	// | c7 | c8 | c9 |
 	// +----+----+----+
 
-	for (j=0; j<Yres; j++)
+	for (j = 0; j < Yres; j++)
 	{
-		for (i=0; i<Xres; i++)
+		for (i = 0; i < Xres; i++)
 		{
-			c[2] = *((PIXELTYPE*)(pIn - srcPitch));
-			c[5] = *((PIXELTYPE*)(pIn        ));
-			c[8] = *((PIXELTYPE*)(pIn + srcPitch));
+			c[2] = *((PIXELTYPE *)(pIn - srcPitch));
+			c[5] = *((PIXELTYPE *)(pIn));
+			c[8] = *((PIXELTYPE *)(pIn + srcPitch));
 
-			c[1] = *((PIXELTYPE*)(pIn - srcPitch - SIZE_PIXEL));
-			c[4] = *((PIXELTYPE*)(pIn        - SIZE_PIXEL));
-			c[7] = *((PIXELTYPE*)(pIn + srcPitch - SIZE_PIXEL));
+			c[1] = *((PIXELTYPE *)(pIn - srcPitch - SIZE_PIXEL));
+			c[4] = *((PIXELTYPE *)(pIn        - SIZE_PIXEL));
+			c[7] = *((PIXELTYPE *)(pIn + srcPitch - SIZE_PIXEL));
 
-			c[3] = *((PIXELTYPE*)(pIn - srcPitch + SIZE_PIXEL));
-			c[6] = *((PIXELTYPE*)(pIn        + SIZE_PIXEL));
-			c[9] = *((PIXELTYPE*)(pIn + srcPitch + SIZE_PIXEL));
-
+			c[3] = *((PIXELTYPE *)(pIn - srcPitch + SIZE_PIXEL));
+			c[6] = *((PIXELTYPE *)(pIn        + SIZE_PIXEL));
+			c[9] = *((PIXELTYPE *)(pIn + srcPitch + SIZE_PIXEL));
 
 			int pattern = 0;
 
@@ -167,60 +166,63 @@ void hq3xS(unsigned char * pIn,  unsigned int srcPitch,
 			// so, instead, compare the center color relative to the max difference in brightness of this 3x3 block
 			int brightArray[10];
 			int maxBright = 0, minBright = 999999;
-			for(int j = 1 ; j < 10 ; j++)
+			for (int j = 1; j < 10; j++)
 			{
-				int r,g,b;
-				if (interp_bits_per_pixel == 16) {
+				int r, g, b;
+				if (interp_bits_per_pixel == 16)
+				{
 					b = (int)((c[j] & 0x1F)) << 3;
 					g = (int)((c[j] & 0x7E0)) >> 3;
 					r = (int)((c[j] & 0xF800)) >> 8;
-				} else {
+				}
+				else
+				{
 					b = (int)((c[j] & 0x1F)) << 3;
 					g = (int)((c[j] & 0x3E0)) >> 2;
 					r = (int)((c[j] & 0x7C00)) >> 7;
 				}
-				const int bright = r+r+r + g+g+g + b+b;
-				if(bright > maxBright) maxBright = bright;
-				if(bright < minBright) minBright = bright;
+				const int bright = r + r + r + g + g + g + b + b;
+				if (bright > maxBright) maxBright = bright;
+				if (bright < minBright) minBright = bright;
 
 				brightArray[j] = bright;
 			}
 			const int diffBright = ((maxBright - minBright) * 7) >> 4;
-			if(diffBright > 7)
+			if (diffBright > 7)
 			{
 				#define ABS(x) ((x) < 0 ? -(x) : (x))
 
 				const int centerBright = brightArray[5];
-				if(ABS(brightArray[1] - centerBright) > diffBright)
+				if (ABS(brightArray[1] - centerBright) > diffBright)
 					pattern |= 1 << 0;
-				if(ABS(brightArray[2] - centerBright) > diffBright)
+				if (ABS(brightArray[2] - centerBright) > diffBright)
 					pattern |= 1 << 1;
-				if(ABS(brightArray[3] - centerBright) > diffBright)
+				if (ABS(brightArray[3] - centerBright) > diffBright)
 					pattern |= 1 << 2;
-				if(ABS(brightArray[4] - centerBright) > diffBright)
+				if (ABS(brightArray[4] - centerBright) > diffBright)
 					pattern |= 1 << 3;
-				if(ABS(brightArray[6] - centerBright) > diffBright)
+				if (ABS(brightArray[6] - centerBright) > diffBright)
 					pattern |= 1 << 4;
-				if(ABS(brightArray[7] - centerBright) > diffBright)
+				if (ABS(brightArray[7] - centerBright) > diffBright)
 					pattern |= 1 << 5;
-				if(ABS(brightArray[8] - centerBright) > diffBright)
+				if (ABS(brightArray[8] - centerBright) > diffBright)
 					pattern |= 1 << 6;
-				if(ABS(brightArray[9] - centerBright) > diffBright)
+				if (ABS(brightArray[9] - centerBright) > diffBright)
 					pattern |= 1 << 7;
 			}
 
-#define Diff(x,y) false//(ABS((x) - (y)) > diffBright)
+#define Diff(x, y) false //(ABS((x) - (y)) > diffBright)
 #undef cget
 #define cget(x) brightArray[x]
 #include "hq3x32.h"
 #undef cget
 #undef Diff
-			pIn+=SIZE_PIXEL;
-			pOut+=3<<1;
+			pIn	 += SIZE_PIXEL;
+			pOut += 3 << 1;
 		}
-		pIn+=srcPitch-(Xres<<1);
-		pOut+=dstPitch-(3*Xres<<1);
-		pOut+=dstPitch<<1;
+		pIn	 += srcPitch - (Xres << 1);
+		pOut += dstPitch - (3 * Xres << 1);
+		pOut += dstPitch << 1;
 		//	pIn+=SIZE_PIXEL;
 		//	pOut+=3*SIZE_PIXEL;
 		//}
@@ -240,10 +242,10 @@ void hq3xS(unsigned char * pIn,  unsigned int srcPitch,
 #define SIZE_PIXEL 4 // 32bit = 4 bytes
 #define PIXELTYPE unsigned int
 
-void hq3x32(unsigned char * pIn,  unsigned int srcPitch,
-			unsigned char *,
-			unsigned char * pOut, unsigned int dstPitch,
-			int Xres, int Yres)
+void hq3x32(unsigned char *pIn,  unsigned int srcPitch,
+            unsigned char *,
+            unsigned char *pOut, unsigned int dstPitch,
+            int Xres, int Yres)
 {
 	unsigned int YUV1, YUV2;
 	int i, j, k;
@@ -261,24 +263,24 @@ void hq3x32(unsigned char * pIn,  unsigned int srcPitch,
 	// | c7 | c8 | c9 |
 	// +----+----+----+
 
-	for (j=0; j<Yres; j++)
+	for (j = 0; j < Yres; j++)
 	{
-		if ( (j>0) && (j<Yres-1) )
+		if ((j > 0) && (j < Yres - 1))
 			line = srcPitch;
 		else
 			line = 0;
 
-		for (i=0; i<Xres; i++)
+		for (i = 0; i < Xres; i++)
 		{
-			c[2] = *((PIXELTYPE*)(pIn - line));
-			c[5] = *((PIXELTYPE*)(pIn        ));
-			c[8] = *((PIXELTYPE*)(pIn + line));
+			c[2] = *((PIXELTYPE *)(pIn - line));
+			c[5] = *((PIXELTYPE *)(pIn));
+			c[8] = *((PIXELTYPE *)(pIn + line));
 
-			if (i>0)
+			if (i > 0)
 			{
-				c[1] = *((PIXELTYPE*)(pIn - line - SIZE_PIXEL));
-				c[4] = *((PIXELTYPE*)(pIn        - SIZE_PIXEL));
-				c[7] = *((PIXELTYPE*)(pIn + line - SIZE_PIXEL));
+				c[1] = *((PIXELTYPE *)(pIn - line - SIZE_PIXEL));
+				c[4] = *((PIXELTYPE *)(pIn        - SIZE_PIXEL));
+				c[7] = *((PIXELTYPE *)(pIn + line - SIZE_PIXEL));
 			}
 			else
 			{
@@ -287,11 +289,11 @@ void hq3x32(unsigned char * pIn,  unsigned int srcPitch,
 				c[7] = c[8];
 			}
 
-			if (i<Xres-1)
+			if (i < Xres - 1)
 			{
-				c[3] = *((PIXELTYPE*)(pIn - line + SIZE_PIXEL));
-				c[6] = *((PIXELTYPE*)(pIn        + SIZE_PIXEL));
-				c[9] = *((PIXELTYPE*)(pIn + line + SIZE_PIXEL));
+				c[3] = *((PIXELTYPE *)(pIn - line + SIZE_PIXEL));
+				c[6] = *((PIXELTYPE *)(pIn        + SIZE_PIXEL));
+				c[9] = *((PIXELTYPE *)(pIn + line + SIZE_PIXEL));
 			}
 			else
 			{
@@ -301,34 +303,34 @@ void hq3x32(unsigned char * pIn,  unsigned int srcPitch,
 			}
 
 			int pattern = 0;
-			int flag = 1;
+			int flag	= 1;
 
 			YUV1 = RGBtoYUV(c[5]);
 
-			for (k=1; k<=9; k++)
+			for (k = 1; k <= 9; k++)
 			{
-				if (k==5) continue;
+				if (k == 5) continue;
 
-				if ( c[k] != c[5] )
+				if (c[k] != c[5])
 				{
 					YUV2 = RGBtoYUV(c[k]);
 					if (
-						( abs32((YUV1 & Ymask) - (YUV2 & Ymask)) > trY ) ||
-						( abs32((YUV1 & Umask) - (YUV2 & Umask)) > trU ) ||
-						( abs32((YUV1 & Vmask) - (YUV2 & Vmask)) > trV )
-						)
+					    (abs32((YUV1 & Ymask) - (YUV2 & Ymask)) > trY) ||
+					    (abs32((YUV1 & Umask) - (YUV2 & Umask)) > trU) ||
+					    (abs32((YUV1 & Vmask) - (YUV2 & Vmask)) > trV)
+					    )
 						pattern |= flag;
 				}
 				flag <<= 1;
 			}
 
 #include "hq3x32.h"
-			pIn+=SIZE_PIXEL;
-			pOut+=3<<2;
+			pIn	 += SIZE_PIXEL;
+			pOut += 3 << 2;
 		}
-		pIn+=srcPitch-(Xres<<2);
-		pOut+=dstPitch-(3*Xres<<2);
-		pOut+=dstPitch<<1;
+		pIn	 += srcPitch - (Xres << 2);
+		pOut += dstPitch - (3 * Xres << 2);
+		pOut += dstPitch << 1;
 		//	pIn+=SIZE_PIXEL;
 		//	pOut+=3*SIZE_PIXEL;
 		//}
@@ -338,11 +340,10 @@ void hq3x32(unsigned char * pIn,  unsigned int srcPitch,
 	}
 }
 
-
-void hq3xS32(unsigned char * pIn,  unsigned int srcPitch,
-			unsigned char *,
-			unsigned char * pOut, unsigned int dstPitch,
-			int Xres, int Yres)
+void hq3xS32(unsigned char *pIn,  unsigned int srcPitch,
+             unsigned char *,
+             unsigned char *pOut, unsigned int dstPitch,
+             int Xres, int Yres)
 {
 	int i, j;
 	unsigned int line;
@@ -359,24 +360,24 @@ void hq3xS32(unsigned char * pIn,  unsigned int srcPitch,
 	// | c7 | c8 | c9 |
 	// +----+----+----+
 
-	for (j=0; j<Yres; j++)
+	for (j = 0; j < Yres; j++)
 	{
-		if ( (j>0) && (j<Yres-1) )
+		if ((j > 0) && (j < Yres - 1))
 			line = srcPitch;
 		else
 			line = 0;
 
-		for (i=0; i<Xres; i++)
+		for (i = 0; i < Xres; i++)
 		{
-			c[2] = *((PIXELTYPE*)(pIn - line));
-			c[5] = *((PIXELTYPE*)(pIn        ));
-			c[8] = *((PIXELTYPE*)(pIn + line));
+			c[2] = *((PIXELTYPE *)(pIn - line));
+			c[5] = *((PIXELTYPE *)(pIn));
+			c[8] = *((PIXELTYPE *)(pIn + line));
 
-			if (i>0)
+			if (i > 0)
 			{
-				c[1] = *((PIXELTYPE*)(pIn - line - SIZE_PIXEL));
-				c[4] = *((PIXELTYPE*)(pIn        - SIZE_PIXEL));
-				c[7] = *((PIXELTYPE*)(pIn + line - SIZE_PIXEL));
+				c[1] = *((PIXELTYPE *)(pIn - line - SIZE_PIXEL));
+				c[4] = *((PIXELTYPE *)(pIn        - SIZE_PIXEL));
+				c[7] = *((PIXELTYPE *)(pIn + line - SIZE_PIXEL));
 			}
 			else
 			{
@@ -385,11 +386,11 @@ void hq3xS32(unsigned char * pIn,  unsigned int srcPitch,
 				c[7] = c[8];
 			}
 
-			if (i<Xres-1)
+			if (i < Xres - 1)
 			{
-				c[3] = *((PIXELTYPE*)(pIn - line + SIZE_PIXEL));
-				c[6] = *((PIXELTYPE*)(pIn        + SIZE_PIXEL));
-				c[9] = *((PIXELTYPE*)(pIn + line + SIZE_PIXEL));
+				c[3] = *((PIXELTYPE *)(pIn - line + SIZE_PIXEL));
+				c[6] = *((PIXELTYPE *)(pIn        + SIZE_PIXEL));
+				c[9] = *((PIXELTYPE *)(pIn + line + SIZE_PIXEL));
 			}
 			else
 			{
@@ -405,53 +406,53 @@ void hq3xS32(unsigned char * pIn,  unsigned int srcPitch,
 			// so, instead, compare the center color relative to the max difference in brightness of this 3x3 block
 			int brightArray[10];
 			int maxBright = 0, minBright = 999999;
-			for(int j = 1 ; j < 10 ; j++)
+			for (int j = 1; j < 10; j++)
 			{
-				const int b = (int)((c[j] & 0xF8));
-				const int g = (int)((c[j] & 0xF800)) >> 8;
-				const int r = (int)((c[j] & 0xF80000)) >> 16;
-				const int bright = r+r+r + g+g+g + b+b;
-				if(bright > maxBright) maxBright = bright;
-				if(bright < minBright) minBright = bright;
+				const int b		 = (int)((c[j] & 0xF8));
+				const int g		 = (int)((c[j] & 0xF800)) >> 8;
+				const int r		 = (int)((c[j] & 0xF80000)) >> 16;
+				const int bright = r + r + r + g + g + g + b + b;
+				if (bright > maxBright) maxBright = bright;
+				if (bright < minBright) minBright = bright;
 
 				brightArray[j] = bright;
 			}
 			int diffBright = ((maxBright - minBright) * 7) >> 4;
-			if(diffBright > 7)
+			if (diffBright > 7)
 			{
 				#define ABS(x) ((x) < 0 ? -(x) : (x))
 
 				const int centerBright = brightArray[5];
-				if(ABS(brightArray[1] - centerBright) > diffBright)
+				if (ABS(brightArray[1] - centerBright) > diffBright)
 					pattern |= 1 << 0;
-				if(ABS(brightArray[2] - centerBright) > diffBright)
+				if (ABS(brightArray[2] - centerBright) > diffBright)
 					pattern |= 1 << 1;
-				if(ABS(brightArray[3] - centerBright) > diffBright)
+				if (ABS(brightArray[3] - centerBright) > diffBright)
 					pattern |= 1 << 2;
-				if(ABS(brightArray[4] - centerBright) > diffBright)
+				if (ABS(brightArray[4] - centerBright) > diffBright)
 					pattern |= 1 << 3;
-				if(ABS(brightArray[6] - centerBright) > diffBright)
+				if (ABS(brightArray[6] - centerBright) > diffBright)
 					pattern |= 1 << 4;
-				if(ABS(brightArray[7] - centerBright) > diffBright)
+				if (ABS(brightArray[7] - centerBright) > diffBright)
 					pattern |= 1 << 5;
-				if(ABS(brightArray[8] - centerBright) > diffBright)
+				if (ABS(brightArray[8] - centerBright) > diffBright)
 					pattern |= 1 << 6;
-				if(ABS(brightArray[9] - centerBright) > diffBright)
+				if (ABS(brightArray[9] - centerBright) > diffBright)
 					pattern |= 1 << 7;
 			}
 
-#define Diff(x,y) false//(ABS((x) - (y)) > diffBright)
+#define Diff(x, y) false //(ABS((x) - (y)) > diffBright)
 #undef cget
 #define cget(x) brightArray[x]
 #include "hq3x32.h"
 #undef cget
 #undef Diff
-			pIn+=SIZE_PIXEL;
-			pOut+=3<<2;
+			pIn	 += SIZE_PIXEL;
+			pOut += 3 << 2;
 		}
-		pIn+=srcPitch-(Xres<<2);
-		pOut+=dstPitch-(3*Xres<<2);
-		pOut+=dstPitch<<1;
+		pIn	 += srcPitch - (Xres << 2);
+		pOut += dstPitch - (3 * Xres << 2);
+		pOut += dstPitch << 1;
 		//	pIn+=SIZE_PIXEL;
 		//	pOut+=3*SIZE_PIXEL;
 		//}
