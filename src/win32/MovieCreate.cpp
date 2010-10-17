@@ -24,7 +24,7 @@ extern u32 myROM[];
 // MovieCreate dialog
 
 IMPLEMENT_DYNAMIC(MovieCreate, CDialog)
-MovieCreate::MovieCreate(CWnd*pParent /*=NULL*/)
+MovieCreate::MovieCreate(CWnd *pParent /*=NULL*/)
 	: CDialog(MovieCreate::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(MovieCreate)
@@ -63,13 +63,13 @@ BOOL MovieCreate::OnInitDialog()
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
 	// scroll to show the rightmost side of the movie filename
-	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
+	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 
 	return TRUE; // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void MovieCreate::DoDataExchange(CDataExchange*pDX)
+void MovieCreate::DoDataExchange(CDataExchange *pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(MovieCreate)
@@ -111,7 +111,7 @@ void MovieCreate::OnBnClickedBrowse()
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
 	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
-	CString movieDir = winGetDestDir(IDS_MOVIE_DIR);
+	CString movieDir  = winGetDestDir(IDS_MOVIE_DIR);
 
 	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, true);
 
@@ -125,7 +125,7 @@ void MovieCreate::OnBnClickedBrowse()
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
 	// scroll to show the rightmost side of the movie filename
-	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
+	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 }
 
 void loadBIOS()
@@ -136,7 +136,7 @@ void loadBIOS()
 	useBios = false;
 	if (theApp.useBiosFile)
 	{
-		int         size = 0x4000;
+		int size = 0x4000;
 		if (utilLoad(theApp.biosFileName,
 		             utilIsGBABios,
 		             bios,
@@ -153,14 +153,14 @@ void loadBIOS()
 	}
 }
 
-bool checkBIOS(CString & biosFileName)
+bool checkBIOS(CString &biosFileName)
 {
 	if (biosFileName.IsEmpty())
 		return false;
 
-	bool        ok       = false;
-	u8 *        tempBIOS = (u8 *)malloc(0x4000);
-	int         size     = 0x4000;
+	bool ok		  = false;
+	u8 * tempBIOS = (u8 *)malloc(0x4000);
+	int	 size	  = 0x4000;
 	if (utilLoad(biosFileName,
 	             utilIsGBABios,
 	             tempBIOS,
@@ -193,7 +193,7 @@ void MovieCreate::OnBnClickedOk()
 	else if (m_systemOption == 2)
 		typeFlags |= MOVIE_TYPE_SGB, gbEmulatorType = 2;
 	else
-		gbEmulatorType = 3; // plain old GB
+		gbEmulatorType = 3;  // plain old GB
 
 	controllerFlags |= MOVIE_CONTROLLER(0);
 	if (typeFlags & MOVIE_TYPE_SGB)
@@ -217,11 +217,11 @@ void MovieCreate::OnBnClickedOk()
 
 	GetDlgItem(IDC_EDIT_AUTHOR)->GetWindowText(buffer, MOVIE_METADATA_AUTHOR_SIZE);
 	strncpy(info, buffer, MOVIE_METADATA_AUTHOR_SIZE);
-	info[MOVIE_METADATA_AUTHOR_SIZE-1] = '\0';
+	info[MOVIE_METADATA_AUTHOR_SIZE - 1] = '\0';
 
 	GetDlgItem(IDC_EDIT_DESCRIPTION)->GetWindowText(buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 	strncpy(info + MOVIE_METADATA_AUTHOR_SIZE, buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
-	info[MOVIE_METADATA_SIZE-1] = '\0';
+	info[MOVIE_METADATA_SIZE - 1] = '\0';
 
 	if (memLagTempEnabled && theApp.cartridgeType == 0)
 	{
@@ -229,7 +229,7 @@ void MovieCreate::OnBnClickedOk()
 		int ans = !memLagEnabled ? IDYES : AfxGetApp()->m_pMainWnd->MessageBox(
 		    "Lag reduction is currently OFF.\nIt is recommended that you turn this ON for recording.\nWould you like to turn it on now?",
 		    "Warning",
-		    MB_YESNOCANCEL|MB_ICONWARNING);
+		    MB_YESNOCANCEL | MB_ICONWARNING);
 		switch (ans)
 		{
 		case IDYES:

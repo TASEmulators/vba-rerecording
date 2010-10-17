@@ -21,27 +21,27 @@
 #include "../version.h"
 #include <cassert>
 
-u32  RGB_LOW_BITS_MASK = 0;
-int  emulating       = 0;
-int  systemSpeed     = 0;
-bool systemSoundOn   = false;
-u32  systemColorMap32[0x10000];
-u16  systemColorMap16[0x10000];
-u16  systemGbPalette[24];
-int  systemRedShift = 0;
-int  systemBlueShift         = 0;
-int  systemGreenShift        = 0;
-int  systemColorDepth        = 16;
-int  systemDebug             = 0;
-int  systemVerbose           = 0;
-int  systemFrameSkip = 0;
-int  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
+u32	 RGB_LOW_BITS_MASK = 0;
+int	 emulating		   = 0;
+int	 systemSpeed	   = 0;
+bool systemSoundOn	   = false;
+u32	 systemColorMap32[0x10000];
+u16	 systemColorMap16[0x10000];
+u16	 systemGbPalette[24];
+int	 systemRedShift = 0;
+int	 systemBlueShift		 = 0;
+int	 systemGreenShift		 = 0;
+int	 systemColorDepth		 = 16;
+int	 systemDebug			 = 0;
+int	 systemVerbose			 = 0;
+int	 systemFrameSkip		 = 0;
+int	 systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
 const int32 INITIAL_SENSOR_VALUE = 2047;
 
 int32 sensorX = INITIAL_SENSOR_VALUE;
 int32 sensorY = INITIAL_SENSOR_VALUE;
-u32   currentButtons [4] = {0, 0, 0, 0};
+u32	  currentButtons [4] = { 0, 0, 0, 0 };
 
 #define BMP_BUFFER_MAX_WIDTH (256)
 #define BMP_BUFFER_MAX_HEIGHT (224)
@@ -173,7 +173,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 	u32 res = 0;
 	if (theApp.input)
 		res = theApp.input->readDevice(i, sensor);
-	
+
 	// +auto input, XOR
 	// maybe these should be moved into DirectInput.cpp
 	if (theApp.autoFire || theApp.autoFire2)
@@ -195,9 +195,9 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 	{
 		// disallow L+R or U+D to being pressed at the same time
 		if ((res & (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT)) == (BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT))
-			res &= ~BUTTON_MASK_RIGHT; // leave only LEFT on
+			res &= ~BUTTON_MASK_RIGHT;  // leave only LEFT on
 		if ((res & (BUTTON_MASK_DOWN | BUTTON_MASK_UP)) == (BUTTON_MASK_DOWN | BUTTON_MASK_UP))
-			res &= ~BUTTON_MASK_DOWN; // leave only UP on
+			res &= ~BUTTON_MASK_DOWN;  // leave only UP on
 	}
 
 	if (!sensor)
@@ -465,7 +465,7 @@ void systemMessage(int number, const char *defaultMsg, ...)
 	theApp.winCheckFullscreen();
 	if (theApp.sound) theApp.sound->clearAudioBuffer();
 
-	AfxGetApp()->m_pMainWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK|MB_ICONERROR);
+	AfxGetApp()->m_pMainWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK | MB_ICONERROR);
 
 	va_end(valist);
 }
@@ -549,8 +549,8 @@ void systemFrame(int rate)
 
 	// no more stupid updates :)
 
-	extern int quitAfterTime;					// from VBA.cpp
-	void VBAMovieStop(bool8 suppress_message);	// from ../movie.cpp
+	extern int quitAfterTime;                   // from VBA.cpp
+	void	   VBAMovieStop(bool8 suppress_message); // from ../movie.cpp
 	if (quitAfterTime >= 0 && GBASystemCounters.frameCount == quitAfterTime)
 	{
 		VBAMovieStop(true);
@@ -638,7 +638,7 @@ bool systemSoundInit()
 {
 	if (theApp.sound)
 		delete theApp.sound;
-	
+
 	extern ISound *newDirectSound();
 	theApp.sound = newDirectSound();
 	return theApp.sound->init();
@@ -724,8 +724,8 @@ void systemSetPause(bool pause)
 {
 	if (pause)
 	{
-		theApp.wasPaused	 = true;
-		theApp.paused		 = true;
+		theApp.wasPaused = true;
+		theApp.paused	 = true;
 //		theApp.speedupToggle = false;
 		soundPause();
 	}
@@ -768,7 +768,7 @@ bool systemPauseOnFrame()
 
 void VBAOnEnteringFrameBoundary()
 {
-    VBAUpdateFrameCountDisplay();
+	VBAUpdateFrameCountDisplay();
 	VBAUpdateButtonPressDisplay();
 	Update_RAM_Search(); // updates RAM search and RAM watch
 }
