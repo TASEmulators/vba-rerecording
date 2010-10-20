@@ -1024,7 +1024,6 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
-	extern void systemClearJoypads();
 	systemClearJoypads();
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
@@ -1477,7 +1476,6 @@ void CPUCleanUp()
 
 	elfCleanUp();
 
-	extern void systemClearJoypads();
 	systemClearJoypads();
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;

@@ -456,8 +456,10 @@ protected:
 	afx_msg void OnUpdateToolsOnMovieEndStop(CCmdUI*pCmdUI);
 	afx_msg void OnToolsOnMovieEndRestart();
 	afx_msg void OnUpdateToolsOnMovieEndRestart(CCmdUI*pCmdUI);
-	afx_msg void OnToolsOnMovieEndRerecord();
-	afx_msg void OnUpdateToolsOnMovieEndRerecord(CCmdUI*pCmdUI);
+	afx_msg void OnToolsOnMovieEndAppend();
+	afx_msg void OnUpdateToolsOnMovieEndAppend(CCmdUI*pCmdUI);
+	afx_msg void OnToolsOnMovieEndKeep();
+	afx_msg void OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI);
 
 	afx_msg void OnToolsRewind();
 	afx_msg void OnUpdateToolsRewind(CCmdUI*pCmdUI);

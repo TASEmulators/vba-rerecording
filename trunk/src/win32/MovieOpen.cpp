@@ -18,10 +18,9 @@
 // MovieOpen dialog
 
 IMPLEMENT_DYNAMIC(MovieOpen, CDialog)
-MovieOpen::MovieOpen(CWnd*pParent /*=NULL*/)
+MovieOpen::MovieOpen(CWnd *pParent /*=NULL*/)
 	: CDialog(MovieOpen::IDD, pParent)
-{
-}
+{}
 
 MovieOpen::~MovieOpen()
 {
@@ -58,7 +57,7 @@ BOOL MovieOpen::OnInitDialog()
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
 	// scroll to show the rightmost side of the movie filename
-	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
+	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 
 	OnBnClickedMovieRefresh();
 
@@ -66,7 +65,7 @@ BOOL MovieOpen::OnInitDialog()
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void MovieOpen::DoDataExchange(CDataExchange*pDX)
+void MovieOpen::DoDataExchange(CDataExchange *pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(MovieCreate)
@@ -95,7 +94,7 @@ static bool shouldReopenBrowse = false;
 
 void MovieOpen::OnBnClickedBrowse()
 {
-	theApp.winCheckFullscreen();	// FIXME: necessary or not?
+	theApp.winCheckFullscreen();    // FIXME: necessary or not?
 
 	LPCTSTR exts[] = { ".vbm", NULL };
 
@@ -103,7 +102,7 @@ void MovieOpen::OnBnClickedBrowse()
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
 	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
-	CString movieDir = winGetDestDir(IDS_MOVIE_DIR);
+	CString movieDir  = winGetDestDir(IDS_MOVIE_DIR);
 
 	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, false, true);
 
@@ -123,11 +122,11 @@ void MovieOpen::OnBnClickedBrowse()
 		// SetWindowText calls OnEnChangeMovieFilename which calls OnBnClickedMovieRefresh
 		// so this extra call to OnBnClickedMovieRefresh is bad
 		//OnBnClickedMovieRefresh();
-
-	} while(shouldReopenBrowse);
+	}
+	while (shouldReopenBrowse);
 
 	// scroll to show the rightmost side of the movie filename
-	((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength()-1), FALSE);
+	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 }
 
 // returns the checksum of the BIOS that will be loaded after the next restart
@@ -138,7 +137,7 @@ u16 checksumBIOS()
 	if (theApp.useBiosFile)
 	{
 		tempBIOS = (u8 *)malloc(0x4000);
-		int         size = 0x4000;
+		int size = 0x4000;
 		if (utilLoad(theApp.biosFileName,
 		             utilIsGBABios,
 		             tempBIOS,
@@ -160,7 +159,7 @@ u16 checksumBIOS()
 	return biosCheck;
 }
 
-void fillRomInfo(const SMovie & movieInfo, char romTitle [12], uint32 & romGameCode, uint16 & checksum, uint8 & crc)
+void fillRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
 {
 	if (theApp.cartridgeType == 0) // GBA
 	{
@@ -180,23 +179,28 @@ void fillRomInfo(const SMovie & movieInfo, char romTitle [12], uint32 & romGameC
 		memcpy(romTitle, (const char *)&gbRom[0x134], 12); // GB TITLE (note this can be 15 but is truncated to 12)
 		romGameCode = (uint32)gbRom[0x146]; // GB ROM UNIT CODE
 
-		checksum = (gbRom[0x14e]<<8)|gbRom[0x14f]; // GB ROM CHECKSUM
-		crc      = gbRom[0x14d]; // GB ROM CRC
+		checksum = (gbRom[0x14e] << 8) | gbRom[0x14f]; // GB ROM CHECKSUM
+		crc		 = gbRom[0x14d]; // GB ROM CRC
 	}
 }
 
-// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not directly.
+// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not
+// directly.
 // also includes definitely non-movie extensions we know about, since we only use this variable in a movie opening function.
-// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even extensionless or unusually-named archives.
-static const char* s_movieIgnoreExtensions [] = {"gba", "gbc", "gb", "sgb", "cgb", "bin", "agb", "bios", "mb", "elf", "sgm", "clt", "dat", "gbs", "gcf", "spc", "xpc", "pal", "act", "dmp", "avi", "ini",
-	"txt", "nfo", "htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "luasav", "sav"};
+// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
+// extensionless or unusually-named archives.
+static const char *s_movieIgnoreExtensions [] = {
+	"gba", "gbc", "gb",	 "sgb", "cgb", "bin", "agb", "bios", "mb",	"elf",  "sgm", "clt",  "dat", "gbs", "gcf", "spc",
+	"xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",  "htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3",
+	"wav", "lnk", "exe", "bat", "sav", "luasav"
+};
 
 void MovieOpen::OnBnClickedMovieRefresh()
 {
 	static int recursionDepth = 0;
-	if(recursionDepth > 0)
+	if (recursionDepth > 0)
 		return;
-	struct Scope {Scope(){++recursionDepth;} ~Scope(){--recursionDepth;}} scope;
+	struct Scope {Scope(){ ++ recursionDepth; } ~Scope(){ --recursionDepth; }} scope;
 
 	CString tempName;
 	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(tempName);
@@ -204,22 +208,23 @@ void MovieOpen::OnBnClickedMovieRefresh()
 #if 1
 	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
 
-	if(movieLogicalName.GetLength() > 2048) movieLogicalName.Truncate(2048);
+	if (movieLogicalName.GetLength() > 2048) movieLogicalName.Truncate(2048);
 
 	char LogicalName[2048], PhysicalName[2048];
-	if(ObtainFile(tempName, LogicalName, PhysicalName, "mov", s_movieIgnoreExtensions, sizeof(s_movieIgnoreExtensions)/sizeof(*s_movieIgnoreExtensions)))
+	if (ObtainFile(tempName, LogicalName, PhysicalName, "mov", s_movieIgnoreExtensions, 
+		sizeof(s_movieIgnoreExtensions) / sizeof(*s_movieIgnoreExtensions)))
 	{
-		if(tempName != LogicalName)
+		if (tempName != LogicalName)
 		{
-			int selStart=0, selEnd=0;
-			((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->GetSel(selStart, selEnd);
+			int selStart = 0, selEnd = 0;
+			((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->GetSel(selStart, selEnd);
 
 			GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(LogicalName);
 
-			((CEdit*)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel(selStart, selEnd, FALSE);
+			((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel(selStart, selEnd, FALSE);
 		}
 		moviePhysicalName = PhysicalName;
-		movieLogicalName = LogicalName;
+		movieLogicalName  = LogicalName;
 		ReleaseTempFileCategory("mov", PhysicalName);
 	}
 	else
@@ -230,9 +235,8 @@ void MovieOpen::OnBnClickedMovieRefresh()
 #else
 	// old version that only supports uncompressed movies
 	moviePhysicalName = tempName;
-	movieLogicalName = tempName;
+	movieLogicalName  = tempName;
 #endif
-
 
 	if (VBAMovieGetInfo(moviePhysicalName, &movieInfo) == SUCCESS)
 	{
@@ -242,7 +246,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			m_editDescription.SetReadOnly(TRUE);
 		}
 
-		char buffer [MOVIE_METADATA_SIZE];
+		char buffer[MOVIE_METADATA_SIZE];
 
 		strncpy(buffer, movieInfo.authorInfo, MOVIE_METADATA_AUTHOR_SIZE);
 		buffer[MOVIE_METADATA_AUTHOR_SIZE - 1] = '\0';
@@ -288,7 +292,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_NOBIOS + option);
 
 		{
-			char*  p;
+			char * p;
 			time_t ttime = (time_t)movieInfo.header.uid;
 			strncpy(buffer, ctime(&ttime), 127);
 			buffer[127] = '\0';
@@ -296,8 +300,8 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				*p = '\0';
 			GetDlgItem(IDC_LABEL_DATE)->SetWindowText(buffer);
 
-			uint32 div     = 60;
-			uint32 l       = (movieInfo.header.length_frames + (div >> 1)) / div;
+			uint32 div	   = 60;
+			uint32 l	   = (movieInfo.header.length_frames + (div >> 1)) / div;
 			uint32 seconds = l % 60;
 			l /= 60;
 			uint32 minutes = l % 60;
@@ -342,10 +346,10 @@ void MovieOpen::OnBnClickedMovieRefresh()
 ///			if (((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (theApp.cartridgeType == 0))
 			{
 				sprintf(buffer, "type=%s  ",
-				        (movieInfo.header.typeFlags&MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags&
-				                                                               MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.
-				                                                                                          typeFlags&
-				                                                                                          MOVIE_TYPE_SGB) ? "SGB" : "GB");
+				        (movieInfo.header.typeFlags & MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags &
+				                                                                 MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.
+				                                                                                            typeFlags &
+				                                                                                            MOVIE_TYPE_SGB) ? "SGB" : "GB");
 				strcat(warning1, buffer);
 
 				sprintf(buffer, "type=%s  ", theApp.cartridgeType ==
@@ -363,7 +367,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 ///			if (movieInfo.header.romGameCode != romGameCode)
 			{
 				char code [5];
-				if (movieInfo.header.typeFlags&MOVIE_TYPE_GBA)
+				if (movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
 				{
 					memcpy(code, &movieInfo.header.romGameCode, 4);
 					code[4] = '\0';
@@ -379,13 +383,14 @@ void MovieOpen::OnBnClickedMovieRefresh()
 					strcat(warning2, buffer);
 				}
 			}
-///			if (movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)==0
+///			if (movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags &
+// MOVIE_SETTING_USEBIOSFILE)==0
 // && checksum==0))
 			{
 				sprintf(buffer,
-				        movieInfo.header.typeFlags&
+				        movieInfo.header.typeFlags &
 				        MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) ==
-				                          0 ? "(bios=none)  " :  "(bios=%d)  ") : "check=%d  ",
+				                          0 ? "(bios=none)  " : "(bios=%d)  ") : "check=%d  ",
 				        movieInfo.header.romOrBiosChecksum);
 				strcat(warning1, buffer);
 
@@ -517,15 +522,15 @@ void MovieOpen::OnBnClickedOk()
 	else
 	{
 		// get author and movie info from the edit fields (the description might change):
-		char info [MOVIE_METADATA_SIZE], buffer [MOVIE_METADATA_SIZE];
+		char info[MOVIE_METADATA_SIZE], buffer[MOVIE_METADATA_SIZE];
 
 		GetDlgItem(IDC_EDIT_AUTHOR)->GetWindowText(buffer, MOVIE_METADATA_AUTHOR_SIZE);
 		strncpy(info, buffer, MOVIE_METADATA_AUTHOR_SIZE);
-		info[MOVIE_METADATA_AUTHOR_SIZE-1] = '\0';
+		info[MOVIE_METADATA_AUTHOR_SIZE - 1] = '\0';
 
 		GetDlgItem(IDC_EDIT_DESCRIPTION)->GetWindowText(buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 		strncpy(info + MOVIE_METADATA_AUTHOR_SIZE, buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
-		info[MOVIE_METADATA_SIZE-1] = '\0';
+		info[MOVIE_METADATA_SIZE - 1] = '\0';
 
 		VBAMovieSetMetadata(info);
 	}

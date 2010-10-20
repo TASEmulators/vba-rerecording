@@ -231,6 +231,15 @@ static void flush_movie()
 	fflush(Movie.file);
 }
 
+static long file_length(FILE *fp)
+{
+	long cur_pos = ftell(fp);
+	fseek(fp, 0, SEEK_END);
+	long length = ftell(fp);
+	fseek(fp, cur_pos, SEEK_SET);
+	return length;
+}
+
 static void truncateMovie()
 {
 	// truncate movie to header.length_frames length
@@ -244,8 +253,11 @@ static void truncateMovie()
 	if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
 		return;
 
-	const u32 truncLen = Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.header.length_frames;
-	ftruncate(fileno(Movie.file), truncLen);
+	const long truncLen = long(Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.header.length_frames);
+	if (file_length(Movie.file) != truncLen)
+	{
+		ftruncate(fileno(Movie.file), truncLen);
+	}
 }
 
 static void change_state(MovieState new_state)
@@ -664,7 +676,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	// recalculate length of movie from the file size
 	Movie.bytesPerFrame = bytes_per_frame(Movie);
 	fseek(file, 0, SEEK_END);
-	int fileSize = ftell(file);
+	long fileSize = ftell(file);
 	Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame;
 
 	if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
@@ -676,19 +688,18 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	fread(Movie.inputBuffer, 1, to_read, file);
 
 	strcpy(Movie.filename, movie_filename);
-	Movie.file = file;
+	Movie.file			 = file;
 	Movie.inputBufferPtr = Movie.inputBuffer;
 	Movie.currentFrame	 = 0;
 	Movie.readOnly		 = movieReadOnly;
-
-	change_state(MOVIE_STATE_PLAY);
-
 	Movie.RecordedThisSession = false;
 
+	change_state(MOVIE_STATE_PLAY);
 	if (Movie.readOnly)
 		systemScreenMessage("Movie replay (read)");
 	else
 		systemScreenMessage("Movie replay (edit)");
+	VBAMovieUpdateState();
 
 	{ loadingMovie = false; return SUCCESS; }
 }
@@ -924,10 +935,9 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	Movie.inputBufferPtr = Movie.inputBuffer;
 	Movie.currentFrame	 = 0;
 	Movie.readOnly		 = false;
+	Movie.RecordedThisSession = true;
 
 	change_state(MOVIE_STATE_RECORD);
-
-	Movie.RecordedThisSession = true;
 
 	systemScreenMessage("Recording movie...");
 	{ loadingMovie = false; return SUCCESS; }
@@ -1047,7 +1057,30 @@ void VBAUpdateFrameCountDisplay()
 #       if (defined(WIN32) && !defined(SDL))
 		if (theApp.frameCounter)
 		{
-			sprintf(frameDisplayString, "%d (movie)", Movie.currentFrame);
+			sprintf(frameDisplayString, "%d (recording)", Movie.currentFrame);
+			if (theApp.lagCounter)
+			{
+				sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
+				strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+			}
+		}
+		else
+		{
+			frameDisplayString[0] = '\0';
+		}
+		systemScreenMessage(frameDisplayString, 1, -1);
+#       else
+		/// SDL FIXME
+#       endif
+		break;
+	}
+
+	case MOVIE_STATE_END:
+	{
+#       if (defined(WIN32) && !defined(SDL))
+		if (theApp.frameCounter)
+		{
+			sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
 			if (theApp.lagCounter)
 			{
 				sprintf(lagFrameDisplayString, " | %d%s", emuCounters.lagCount, emuCounters.laggedLast ? " *" : "");
@@ -1090,26 +1123,29 @@ void VBAUpdateFrameCountDisplay()
 	}
 }
 
-void VBAMovieUpdate(int controllerNum, bool sensor)
+void VBAMovieUpdateState()
 {
+	bool willPause   = false;
 	bool willRestart = false;
-	bool willPause	 = false;
 
-	switch (Movie.state)
+	if (Movie.state == MOVIE_STATE_PLAY)
 	{
-	case MOVIE_STATE_PLAY:
-	{
-		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
-			break;      // not a controller we're recognizing
-
 		if (Movie.currentFrame >= Movie.header.length_frames)
 		{
+			// the movie ends anyway; what to do next depends on the settings
+			change_state(MOVIE_STATE_END);
+			systemScreenMessage("Movie end");
+
+#if (defined(WIN32) && !defined(SDL))
+			willPause = theApp.movieOnEndPause;
+#else
+			willPause = false;     // SDL FIXME
+#endif
+
 #if (defined(WIN32) && !defined(SDL))
 			if (theApp.movieOnEndBehavior == 1)
 			{
-				willRestart = true;
-				willPause	= theApp.movieOnEndPause;
-				break;
+				// do nothing until next frame
 			}
 			else if (theApp.movieOnEndBehavior == 2 && Movie.RecordedThisSession)
 #else
@@ -1120,53 +1156,30 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 				// if user has been recording this movie since the last time it started playing,
 				// they probably don't want the movie to end now during playback,
 				// so switch back to recording when it reaches the end
-				if (Movie.readOnly)
-				{
-					VBAMovieToggleReadOnly();
-				}
-
 				VBAMovieSwitchToRecording();
 				willPause = true;
-				break;
-//					goto movieUpdateStart;
 			}
+#if (defined(WIN32) && !defined(SDL))
+			else if (theApp.movieOnEndBehavior == 3)
+			{
+				// keep open
+			}
+#endif
 			else
 			{
-				// stop movie; it reached the end
+				// close movie
 				change_state(MOVIE_STATE_NONE);
-				systemScreenMessage("Movie end");
-#if (defined(WIN32) && !defined(SDL))
-				willPause = theApp.movieOnEndPause;
-#else
-				willPause = false;     // SDL FIXME
-#endif
-				break;
 			}
 		}
-		else
-		{
-			read_frame_controller_data(controllerNum);
-			++Movie.currentFrame;
-		}
-		break;
 	}
-
-	case MOVIE_STATE_RECORD:
+	else if (Movie.state == MOVIE_STATE_END)
 	{
-		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
-			break;      // not a controller we're recognizing
-
-		write_frame_controller_data(controllerNum);
-		++Movie.currentFrame;
-		Movie.header.length_frames = Movie.currentFrame;
-		fwrite((Movie.inputBufferPtr - Movie.bytesPerFrame), 1, Movie.bytesPerFrame, Movie.file);
-
-		Movie.RecordedThisSession = true;
-		break;
-	}
-
-	default:
-		break;
+#if (defined(WIN32) && !defined(SDL))
+		if (theApp.movieOnEndBehavior == 1 && Movie.currentFrame == Movie.header.length_frames + 1)
+		{
+			VBAMovieRestart();
+		}
+#endif
 	}
 
 	// if the movie's been set to pause at a certain frame
@@ -1176,16 +1189,42 @@ void VBAMovieUpdate(int controllerNum, bool sensor)
 		willPause		 = true;
 	}
 
-	if (willRestart)
-	{
-		VBAMovieRestart();
-	}
-
 	if (willPause)
 	{
-		extern void systemPauseEmulator(bool = true);
-		systemPauseEmulator(true);
+		systemSetPause(true);
 	}
+}
+
+void VBAMovieUpdateInput(int controllerNum, bool sensor)
+{
+	switch (Movie.state)
+	{
+	case MOVIE_STATE_PLAY:
+	{
+		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
+			break;      // not a controller we're recognizing
+
+		read_frame_controller_data(controllerNum);
+		break;
+	}
+
+	case MOVIE_STATE_RECORD:
+	{
+		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
+			break;      // not a controller we're recognizing
+
+		write_frame_controller_data(controllerNum);
+		Movie.header.length_frames = Movie.currentFrame + 1;
+		fwrite((Movie.inputBufferPtr - Movie.bytesPerFrame), 1, Movie.bytesPerFrame, Movie.file);
+		Movie.RecordedThisSession = true;
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	++Movie.currentFrame;
 }
 
 void VBAMovieStop(bool8 suppress_message)
@@ -1200,8 +1239,11 @@ void VBAMovieStop(bool8 suppress_message)
 
 int VBAMovieGetInfo(const char *filename, SMovie *info)
 {
-	flush_movie();
-
+/*
+	// unnecessary
+	if (Movie.state == MOVIE_STATE_RECORD)
+		flush_movie();
+*/
 	assert(info != NULL);
 	if (info == NULL)
 		return -1;
@@ -1406,12 +1448,10 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	if (movie_id != Movie.header.uid)
 		return NOT_FROM_THIS_MOVIE;
 
-	if (current_frame > end_frame)
-		return SNAPSHOT_INCONSISTENT;
-
 	if (space_needed > size)
 		return WRONG_FORMAT;
 
+	uint32 length_history = min(current_frame, end_frame);
 	if (Movie.readOnly)
 	{
 		// here, we are going to keep the input data from the movie file
@@ -1421,24 +1461,31 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		// by loading another savestate or playing the movie from the beginning
 
 		// don't allow loading a state inconsistent with the current movie
-		uint32 space_shared = Movie.bytesPerFrame * current_frame;
-		if (current_frame > Movie.header.length_frames ||
-		    memcmp(Movie.inputBuffer, ptr, space_shared))
+		if (end_frame < Movie.header.length_frames && end_frame < current_frame)
 			return SNAPSHOT_INCONSISTENT;
 
-		change_state(MOVIE_STATE_PLAY);
-///		systemScreenMessage("Movie rewind");
+		if (length_history > Movie.header.length_frames)
+			length_history = Movie.header.length_frames;
+		uint32 space_shared = Movie.bytesPerFrame * length_history;
+		if (memcmp(Movie.inputBuffer, ptr, space_shared))
+			return SNAPSHOT_INCONSISTENT;
 
 		Movie.currentFrame = current_frame;
+
+		if (current_frame >= Movie.header.length_frames)
+		{
+			change_state(MOVIE_STATE_END);
+		}
+		else
+		{
+			change_state(MOVIE_STATE_PLAY);
+		}
 	}
 	else
 	{
 		// here, we are going to take the input data from the savestate
 		// and make it the input data for the current movie, then continue
 		// writing new input data at the currentFrame pointer
-		change_state(MOVIE_STATE_RECORD);
-///		systemScreenMessage("Movie re-record");
-
 		Movie.currentFrame		   = current_frame;
 		Movie.header.length_frames = end_frame;
 		if (!VBALuaRerecordCountSkip())
@@ -1448,17 +1495,44 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 		flush_movie();
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
+
+		if (current_frame >= Movie.header.length_frames)
+		{
+			change_state(MOVIE_STATE_END);
+		}
+		else
+		{
+			change_state(MOVIE_STATE_RECORD);
+		}
 	}
 
+	// FIXME: out of range
 	Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
 	return SUCCESS;
 }
 
+// bool8 doesn't make much sense if it is meant to solve any portability problem,
+//   because there's no guarantee that true == 1 and false == 0 (or TRUE == 1 and FALSE == 0) on all platforms.
+//   while using user-defined boolean types might impact on performance.
+//   the more reliable (and faster!) way to maintain cross-platform I/O compatibility is
+//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
+//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
+bool VBAMovieAllowsRerecording()
+{
+	bool allows = /*!VBAMovieReadOnly() &&*/ (Movie.currentFrame <= Movie.header.length_frames) && (Movie.state != MOVIE_STATE_NONE);
+	return allows;
+}
+
 bool8 VBAMovieSwitchToRecording()
 {
-	if (Movie.state != MOVIE_STATE_PLAY || Movie.readOnly)
+	if (!VBAMovieAllowsRerecording())
 		return false;
+
+	if (Movie.readOnly)
+	{
+		VBAMovieToggleReadOnly();
+	}
 
 	change_state(MOVIE_STATE_RECORD);
 	systemScreenMessage("Movie re-record");
@@ -1467,7 +1541,7 @@ bool8 VBAMovieSwitchToRecording()
 	if (!VBALuaRerecordCountSkip())
 		++Movie.header.rerecord_count;
 
-	flush_movie();
+	flush_movie(); // necessary
 
 	return true;
 }
@@ -1505,6 +1579,9 @@ void VBAMovieResetIfRequested()
 
 void VBAMovieSetMetadata(const char *info)
 {
+	if (!memcmp(Movie.authorInfo, info, MOVIE_METADATA_SIZE))
+		return;
+
 	memcpy(Movie.authorInfo, info, MOVIE_METADATA_SIZE); // strncpy would omit post-0 bytes
 	Movie.authorInfo[MOVIE_METADATA_SIZE - 1] = '\0';
 
@@ -1537,6 +1614,7 @@ void VBAMovieRestart()
 		Movie.RecordedThisSession = modified;
 
 //		systemScreenMessage("movie replay (restart)");
+		systemClearJoypads();
 		systemRefreshScreen();
 	}
 }

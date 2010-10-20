@@ -2166,13 +2166,14 @@ BEGIN
             MENUITEM "&Resume Record From Now",     ID_MOVIE_RESUME_RECORD
             MENUITEM SEPARATOR
             MENUITEM "Read-&Only Mode",             ID_MOVIE_READONLY
-            POPUP "At Movie &End"
+            POPUP "When Movie &Ends"
             BEGIN
-                MENUITEM "&Pause",                      ID_MOVIE_END_PAUSE
+                MENUITEM "&Pause Emulator",             ID_MOVIE_END_PAUSE
                 MENUITEM SEPARATOR
                 MENUITEM "&Close Movie",                ID_MOVIE_END_STOP
-                MENUITEM "&Replay From Beginning",      ID_MOVIE_END_RESTART
-                MENUITEM "Resume Record If &Modified",  ID_MOVIE_END_RERECORD
+                MENUITEM "&Watch From Beginning",       ID_MOVIE_END_RESTART
+                MENUITEM "&Append If Modified",         ID_MOVIE_END_APPEND
+                MENUITEM "&Leave Open",                 ID_MOVIE_END_KEEP
             END
             MENUITEM SEPARATOR
             MENUITEM "&Stop Movie",                 ID_MOVIE_STOP

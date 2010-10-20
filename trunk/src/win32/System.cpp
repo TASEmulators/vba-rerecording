@@ -28,7 +28,7 @@ bool systemSoundOn	   = false;
 u32	 systemColorMap32[0x10000];
 u16	 systemColorMap16[0x10000];
 u16	 systemGbPalette[24];
-int	 systemRedShift = 0;
+int	 systemRedShift			 = 0;
 int	 systemBlueShift		 = 0;
 int	 systemGreenShift		 = 0;
 int	 systemColorDepth		 = 16;
@@ -238,10 +238,10 @@ u32 systemGetJoypad(int i, bool sensor)
 	u32 hackedButtons = res & BUTTON_NONRECORDINGONLY_MASK;
 
 	// movie input
-	// VBAMovieUpdate() might overwrite currentButtons[i]
+	// VBAMovieUpdateInput() might overwrite currentButtons[i]
 	u32 currentButtonsBackup = currentButtons[i];
 
-	VBAMovieUpdate(i);
+	VBAMovieUpdateInput(i);
 
 	res = currentButtons[i];
 
@@ -270,7 +270,6 @@ void systemSetJoypad(int which, u32 buttons)
 	// TODO
 }
 
-// not in system.h yet
 void systemClearJoypads()
 {
 	for (int i = 0; i < 3; ++i)
@@ -690,7 +689,7 @@ bool systemSetSoundQuality(int quality)
 	return true;
 }
 
-// emulated
+// emulation
 
 bool systemIsEmulating()
 {
@@ -726,8 +725,10 @@ void systemSetPause(bool pause)
 	{
 		theApp.wasPaused = true;
 		theApp.paused	 = true;
-//		theApp.speedupToggle = false;
+		theApp.speedupToggle = false;
+		theApp.winPauseNextFrame = false;
 		soundPause();
+		systemRefreshScreen();;
 	}
 	else
 	{
@@ -735,8 +736,6 @@ void systemSetPause(bool pause)
 		theApp.paused	 = false;
 		soundResume();
 	}
-
-	systemRefreshScreen();;
 }
 
 void systemPauseEmulator(bool /*forced*/)
@@ -744,19 +743,16 @@ void systemPauseEmulator(bool /*forced*/)
 	theApp.winPauseNextFrame = true;
 }
 
+// aka. frame advance
 bool systemPauseOnFrame()
 {
 	if (theApp.winPauseNextFrame)
 	{
 		if (!theApp.nextframeAccountForLag || !GBASystemCounters.laggedLast)
 		{
-			theApp.winPauseNextFrame = false;
 			systemSetPause(true);
+			theApp.winPauseNextFrame = false;
 			return true;
-		}
-		else
-		{
-			theApp.winPauseNextFrame = true;
 		}
 	}
 
@@ -768,6 +764,7 @@ bool systemPauseOnFrame()
 
 void VBAOnEnteringFrameBoundary()
 {
+	VBAMovieUpdateState();
 	VBAUpdateFrameCountDisplay();
 	VBAUpdateButtonPressDisplay();
 	Update_RAM_Search(); // updates RAM search and RAM watch

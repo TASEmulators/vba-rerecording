@@ -17,7 +17,7 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "stdafx.h"
-
+#include <cassert>
 #include "resource.h"
 #include "MainWnd.h"
 #include "AccelEditor.h"
@@ -768,7 +768,7 @@ void MainWnd::OnToolsResumeRecord()
 
 void MainWnd::OnUpdateToolsResumeRecord(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(!VBAMovieReadOnly() && VBAMovieGetState() == MOVIE_STATE_PLAY);
+	pCmdUI->Enable(VBAMovieAllowsRerecording());
 }
 
 void MainWnd::OnToolsPlayRestart()
@@ -811,17 +811,26 @@ void MainWnd::OnUpdateToolsOnMovieEndRestart(CCmdUI*pCmdUI)
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 1);
 }
 
-void MainWnd::OnToolsOnMovieEndRerecord()
+void MainWnd::OnToolsOnMovieEndAppend()
 {
 	theApp.movieOnEndBehavior = 2;
 }
 
-void MainWnd::OnUpdateToolsOnMovieEndRerecord(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOnMovieEndAppend(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 2);
 }
 
-#include "assert.h"
+void MainWnd::OnToolsOnMovieEndKeep()
+{
+	theApp.movieOnEndBehavior = 3;
+}
+
+void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 3);
+}
+
 void MainWnd::OnToolsRewind()
 {
 	assert(theApp.rewindTimer > 0 && theApp.rewindSlots > 0);
