@@ -73,7 +73,7 @@ extern void remoteCleanUp();
 MainWnd::MainWnd()
 {
 	m_hAccelTable = NULL;
-	arrow         = LoadCursor(NULL, IDC_ARROW);
+	arrow		  = LoadCursor(NULL, IDC_ARROW);
 
 	InitDecoder();
 }
@@ -437,8 +437,10 @@ ON_COMMAND(ID_MOVIE_END_STOP, OnToolsOnMovieEndStop)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_END_STOP, OnUpdateToolsOnMovieEndStop)
 ON_COMMAND(ID_MOVIE_END_RESTART, OnToolsOnMovieEndRestart)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_END_RESTART, OnUpdateToolsOnMovieEndRestart)
-ON_COMMAND(ID_MOVIE_END_RERECORD, OnToolsOnMovieEndRerecord)
-ON_UPDATE_COMMAND_UI(ID_MOVIE_END_RERECORD, OnUpdateToolsOnMovieEndRerecord)
+ON_COMMAND(ID_MOVIE_END_APPEND, OnToolsOnMovieEndAppend)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_END_APPEND, OnUpdateToolsOnMovieEndAppend)
+ON_COMMAND(ID_MOVIE_END_KEEP, OnToolsOnMovieEndKeep)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_END_KEEP, OnUpdateToolsOnMovieEndKeep)
 
 ON_COMMAND(ID_TOOLS_REWIND, OnToolsRewind)
 ON_UPDATE_COMMAND_UI(ID_TOOLS_REWIND, OnUpdateToolsRewind)
@@ -567,11 +569,15 @@ void MainWnd::OnClose()
 	delete this;
 }
 
-// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not directly.
+// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not
+// directly.
 // also includes definitely non-ROM extensions we know about, since we only use this variable in a ROM opening function.
-// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even extensionless or unusually-named archives.
-static const char* s_romIgnoreExtensions [] = {"vbm", "sgm", "clt", "dat", "gbs", "gcf", "spc", "xpc", "pal", "act", "dmp", "avi", "ini",
-	"txt", "nfo", "htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "luasav", "sav"};
+// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
+// extensionless or unusually-named archives.
+static const char *s_romIgnoreExtensions[] = {
+	"vbm", "sgm",  "clt", "dat",  "gbs", "gcf",	"spc", "xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",
+	"htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
+};
 
 bool noWriteNextBatteryFile = false;
 bool MainWnd::FileRun()
@@ -589,9 +595,9 @@ bool MainWnd::FileRun()
 		theApp.emulator.emuCleanUp();
 		remoteCleanUp();
 		if (VBAMovieActive())
-			VBAMovieStop(false); // will only get here on user selecting to open a ROM, canceling movie
+			VBAMovieStop(false);  // will only get here on user selecting to open a ROM, canceling movie
 		emulating = false;
-		theApp.frameSearching      = false;
+		theApp.frameSearching	   = false;
 		theApp.frameSearchSkipping = false;
 	}
 	noWriteNextBatteryFile = false;
@@ -600,11 +606,12 @@ bool MainWnd::FileRun()
 #if 1
 	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
 
-	if(theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
+	if (theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
 
 	char LogicalName[2048], PhysicalName[2048];
 	// FIXME: assertion failure in fopen.c if canceled
-	if (ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions, sizeof(s_romIgnoreExtensions)/sizeof(*s_romIgnoreExtensions)))
+	if (ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions,
+		sizeof(s_romIgnoreExtensions) / sizeof(*s_romIgnoreExtensions)))
 	{
 		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
 		theApp.szFile = theApp.filename = LogicalName;
@@ -622,11 +629,11 @@ bool MainWnd::FileRun()
 	_fullpath(file, tempName, 1024);
 	theApp.filename = file;
 
-	const char* LogicalName = theApp.szFile;
-	const char* PhysicalName = theApp.szFile;
+	const char *LogicalName	 = theApp.szFile;
+	const char *PhysicalName = theApp.szFile;
 #endif
 
-	theApp.dir		= winGetDirFromFilename(LogicalName);
+	theApp.dir = winGetDirFromFilename(LogicalName);
 
 	CString ipsname = winGetDestFilename(LogicalName, IDS_IPS_DIR, ".ips");
 
@@ -639,14 +646,14 @@ bool MainWnd::FileRun()
 		return false;
 	}
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-	theApp.cartridgeType    = (int)type;
+	theApp.cartridgeType	= (int)type;
 	if (type == IMAGE_GB)
 	{
 		if (!gbLoadRom(PhysicalName))
 			return false;
 		theApp.emulator = GBSystem;
-		gbBorderOn      = theApp.winGbBorderOn;
-		theApp.romSize  = gbRomSize;
+		gbBorderOn		= theApp.winGbBorderOn;
+		theApp.romSize	= gbRomSize;
 		if (theApp.autoIPS)
 		{
 			int size = gbRomSize;
@@ -712,7 +719,7 @@ bool MainWnd::FileRun()
 		theApp.emulator = GBASystem;
 		/* disabled due to problems
 		   if(theApp.removeIntros && rom != NULL) {
-		 *((u32 *)rom)= 0xea00002e;
+		   *((u32 *)rom)= 0xea00002e;
 		   }
 		 */
 
@@ -770,16 +777,16 @@ bool MainWnd::FileRun()
 	if (theApp.autoLoadMostRecent && !VBAMovieActive() && !VBAMovieLoading()) // would cause desync in movies...
 		OnFileLoadgameMostrecent();
 
-	theApp.renderedFrames  = 0;
+	theApp.renderedFrames = 0;
 
-	theApp.rewindCount      = 0;
-	theApp.rewindCounter    = 0;
+	theApp.rewindCount		= 0;
+	theApp.rewindCounter	= 0;
 	theApp.rewindSaveNeeded = false;
 
 	{
 		extern bool playMovieFile, playMovieFileReadOnly, outputWavFile, outputAVIFile, flagHideMenu; // from VBA.cpp
 		extern char movieFileToPlay [1024], wavFileToOutput [1024]; // from VBA.cpp
-		extern int  pauseAfterTime; // from VBA.cpp
+		extern int	pauseAfterTime; // from VBA.cpp
 		if (playMovieFile)
 		{
 			playMovieFile = false;
@@ -859,7 +866,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
 
-	static int  lastType  = -1;
+	static int lastType = -1;
 
 	// hack to re-maximize window after it auto-unmaximizes while loading a ROM
 	if (nType == SIZE_MAXIMIZED && lastType == SIZE_MAXIMIZED)
@@ -896,7 +903,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 					theApp.adjustDestRect();
 					if (theApp.display)
 						theApp.display->resize(theApp.dest.right - theApp.dest.left, theApp.dest.bottom - theApp.dest.top);
-					systemRefreshScreen();	// useful when shrinking
+					systemRefreshScreen();  // useful when shrinking
 				}
 			}
 			else
@@ -905,7 +912,7 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 				{
 					if (!theApp.paused)
 					{
-						wasPaused     = false;
+						wasPaused	  = false;
 						theApp.paused = true;
 						soundPause();
 					}
@@ -994,7 +1001,7 @@ bool MainWnd::writeSaveGame(const char *name)
 	return false;
 }
 
-void MainWnd::OnContextMenu(CWnd*pWnd, CPoint point)
+void MainWnd::OnContextMenu(CWnd *pWnd, CPoint point)
 {
 	winMouseOn();
 }
@@ -1003,6 +1010,7 @@ void MainWnd::OnSystemMinimize()
 {
 	ShowWindow(SW_SHOWMINIMIZED);
 }
+
 void MainWnd::OnSystemMaximize()
 {
 	ShowWindow(SW_SHOWMAXIMIZED);
@@ -1018,12 +1026,12 @@ bool MainWnd::fileOpenSelect(int cartridgeType)
 	CString filter = winLoadFilter(IDS_FILTER_ROM);
 	CString title  = winResLoadString(IDS_SELECT_ROM);
 
-	bool isOverrideEmpty = false;
-	CString initialDir = regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
+	bool	isOverrideEmpty = false;
+	CString initialDir		= regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
 	if (initialDir.IsEmpty())
 	{
 		isOverrideEmpty = true;
-		initialDir = theApp.dir;
+		initialDir		= theApp.dir;
 	}
 
 	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
@@ -1032,7 +1040,7 @@ bool MainWnd::fileOpenSelect(int cartridgeType)
 	{
 		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
 		theApp.szFile = dlg.GetPathName();
-		initialDir = winGetDirFromFilename(theApp.szFile);
+		initialDir	  = winGetDirFromFilename(theApp.szFile);
 
 		// we have directory override for that purpose
 		// but this can be...desirable
@@ -1057,12 +1065,12 @@ static bool translatingAccelerator = false;
 
 // FIXME: this fix for accel keys is ugly
 //   using too many static variables for a single accel key kludge
-static bool recursiveCall = true;
-static bool fullUpdated = false;
-static bool lastKeyModifier = false;	// maybe better check current key press status instead
-static WPARAM lastKey = 0;
+static bool	  recursiveCall	  = true;
+static bool	  fullUpdated	  = false;
+static bool	  lastKeyModifier = false;  // maybe better check current key press status instead
+static WPARAM lastKey		  = 0;
 
-BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
+BOOL MainWnd::PreTranslateMessage(MSG *pMsg)
 {
 	if (RamSearchHWnd && ::IsDialogMessage(RamSearchHWnd, pMsg))
 	{
@@ -1074,7 +1082,7 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 			TranslateAccelerator(RamWatchHWnd, RamWatchAccels, pMsg);
 		return TRUE;
 	}
-	else if(LuaConsoleHWnd && ::IsDialogMessage(LuaConsoleHWnd, pMsg))
+	else if (LuaConsoleHWnd && ::IsDialogMessage(LuaConsoleHWnd, pMsg))
 	{
 		return TRUE;
 	}
@@ -1086,7 +1094,7 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 	{
 		translatingAccelerator = true;
 
-		bool bHit = theApp.hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, theApp.hAccel, pMsg);
+		bool bHit		= theApp.hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, theApp.hAccel, pMsg);
 		bool isModifier = pMsg->wParam == VK_SHIFT || pMsg->wParam == VK_CONTROL || pMsg->wParam == VK_MENU;
 
 		// HACK to get around the fact that TranslateAccelerator can't handle modifier-only accelerators
@@ -1096,11 +1104,11 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 			if (isModifier)
 			{
 				// do a linear loop through all accelerators to find modifier-only ones...
-				CCmdAccelOb*pCmdAccel;
-				WORD        wKey;
-				CAccelsOb*  pAccelOb;
-				POSITION    pos       = theApp.winAccelMgr.m_mapAccelTable.GetStartPosition();
-				const int   modifiers = ((pMsg->wParam == VK_SHIFT) ? FSHIFT : ((pMsg->wParam == VK_CONTROL) ? FCONTROL : FALT));
+				CCmdAccelOb *pCmdAccel;
+				WORD		 wKey;
+				CAccelsOb *	 pAccelOb;
+				POSITION	 pos	   = theApp.winAccelMgr.m_mapAccelTable.GetStartPosition();
+				const int	 modifiers = ((pMsg->wParam == VK_SHIFT) ? FSHIFT : ((pMsg->wParam == VK_CONTROL) ? FCONTROL : FALT));
 				while (pos != NULL)
 				{
 					theApp.winAccelMgr.m_mapAccelTable.GetNextAssoc(pos, wKey, pCmdAccel);
@@ -1126,22 +1134,21 @@ BOOL MainWnd::PreTranslateMessage(MSG*pMsg)
 				lastKeyModifier = true;
 			}
 		}
-		
+
 		if (bHit)
 		{
 			if (lastKeyModifier && !isModifier)
 			{
-				fullUpdated = false;
+				fullUpdated		= false;
 				lastKeyModifier = false;
 			}
 
 			if (lastKey != pMsg->wParam)
 			{
 				fullUpdated = false;
-				lastKey = pMsg->wParam;
+				lastKey		= pMsg->wParam;
 			}
 		}
-
 
 		translatingAccelerator = false;
 		return bHit ? TRUE : FALSE;
@@ -1194,7 +1201,7 @@ static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
 
 	CCmdUI state;
 	state.m_pParentMenu = pParentMenu;
-	state.m_pMenu = pMenu;
+	state.m_pMenu		= pMenu;
 	ASSERT(state.m_pOther == NULL);
 
 	state.m_nIndexMax = pMenu->GetMenuItemCount();
@@ -1203,7 +1210,7 @@ static void InitMenuKludge(CMenu *pParentMenu, CMenu *pMenu, CCmdTarget *pWnd)
 	{
 		state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
 		if (state.m_nID == 0)
-			continue; // menu separator or invalid cmd - ignore it
+			continue;  // menu separator or invalid cmd - ignore it
 
 		ASSERT(state.m_pOther == NULL);
 		ASSERT(state.m_pMenu != NULL);
@@ -1260,10 +1267,10 @@ void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 	//  it if so (m_pParentMenu == NULL indicates that it is secondary popup)
 	HMENU hParentMenu;
 	if (AfxGetThreadState()->m_hTrackingMenu == pMenu->m_hMenu)
-		state.m_pParentMenu = pMenu; // parent == child for tracking popup
+		state.m_pParentMenu = pMenu;  // parent == child for tracking popup
 	else if ((hParentMenu = ::GetMenu(m_hWnd)) != NULL)
 	{
-		CWnd*pParent = GetTopLevelParent();
+		CWnd *pParent = GetTopLevelParent();
 		// children windows don't have menus -- need to go to the top!
 		if (pParent != NULL &&
 		    (hParentMenu = ::GetMenu(pParent->m_hWnd)) != NULL)
@@ -1286,7 +1293,7 @@ void MainWnd::OnInitMenuPopup(CMenu *pMenu, UINT nIndex, BOOL bSysMenu)
 	{
 		state.m_pMenu = state.m_pParentMenu;
 		recursiveCall = true;
-		fullUpdated = true;
+		fullUpdated	  = true;
 	}
 	else if (!translatingAccelerator && fullUpdated)
 	{
@@ -1303,8 +1310,7 @@ void MainWnd::OnInitMenu(CMenu *pMenu)
 //	CWnd::OnInitMenu(pMenu);
 
 	if (translatingAccelerator)
-	{
-	}
+	{}
 	else
 	{
 		// HACK: we only want to call this if the user is pulling down the menu,
@@ -1314,18 +1320,18 @@ void MainWnd::OnInitMenu(CMenu *pMenu)
 	}
 }
 
-void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
+void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 {
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
 	bool activated = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
 /*
-		// FIXME: this might be a logical error, which causes the emulator fail to pause when the focus is lost
-		//   see what theApp.pauseDuringCheatSearch is supposed to be used for: MainWndCheats.cpp
-		//   it would be problematic to use, as long as the old cheat search is still using it
-		|| (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
-		|| (RamWatchHWnd && pWndOther->GetSafeHwnd() == RamWatchHWnd && !theApp.pauseDuringCheatSearch)
-*/
+        // FIXME: this might be a logical error, which causes the emulator fail to pause when the focus is lost
+        //   see what theApp.pauseDuringCheatSearch is supposed to be used for: MainWndCheats.cpp
+        //   it would be problematic to use, as long as the old cheat search is still using it
+ || (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
+ || (RamWatchHWnd && pWndOther->GetSafeHwnd() == RamWatchHWnd && !theApp.pauseDuringCheatSearch)
+ */
 	;
 
 	extern bool inputActive;
@@ -1349,7 +1355,7 @@ void MainWnd::OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized)
 	}
 	else
 	{
-		wasPaused        = theApp.paused;
+		wasPaused		 = theApp.paused;
 		theApp.wasPaused = true;
 		if (theApp.pauseWhenInactive)
 		{
@@ -1396,7 +1402,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 	// FIXME: required for the accel key fix
 	fullUpdated = false;
 
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	if (theApp.sound) theApp.sound->clearAudioBuffer();
 
 	char szFile[1024];
 	char ext[1024];
@@ -1425,7 +1431,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			uint32 romGameCode;
 			uint16 checksum;
 			uint8  crc;
-			
+
 			if (VBAMovieGetInfo(movieName, &movieInfo) != SUCCESS)
 			{
 				return;
@@ -1442,7 +1448,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				if (fileOpenSelect(cartType))
 				{
 					if (VBAMovieActive())
-						VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
+						VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
 					if (!FileRun())
 						return;
 				}
@@ -1456,7 +1462,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			       || movieInfo.header.romOrBiosChecksum != checksum
 			       && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) == 0 && checksum == 0))
 			{
-				char msg [1024], warning1 [1024], warning2 [1024], buffer [1024];
+				char msg[1024], warning1[1024], warning2[1024], buffer[1024];
 
 				strcpy(warning1, "");
 				strcpy(warning2, "");
@@ -1474,10 +1480,9 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				}
 				{
 					sprintf(buffer, "type=%s  ",
-					        (movieInfo.header.typeFlags&MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags&
-					                                                               MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.
-					                                                                                          typeFlags&
-					                                                                                          MOVIE_TYPE_SGB) ? "SGB" : "GB");
+					        (movieInfo.header.typeFlags & MOVIE_TYPE_GBA) ?
+							"GBA" : (movieInfo.header.typeFlags & MOVIE_TYPE_GBC) ?
+							"GBC" : (movieInfo.header.typeFlags & MOVIE_TYPE_SGB) ? "SGB" : "GB");
 					strcat(warning1, buffer);
 
 					sprintf(buffer, "type=%s  ", theApp.cartridgeType ==
@@ -1493,7 +1498,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				}
 				{
 					char code [5];
-					if (movieInfo.header.typeFlags&MOVIE_TYPE_GBA)
+					if (movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
 					{
 						memcpy(code, &movieInfo.header.romGameCode, 4);
 						code[4] = '\0';
@@ -1511,9 +1516,9 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				}
 				{
 					sprintf(buffer,
-					        movieInfo.header.typeFlags&
+					        movieInfo.header.typeFlags &
 					        MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) ==
-					                          0 ? "(bios=none)  " :  "(bios=%d)  ") : "check=%d  ",
+					                          0 ? "(bios=none)  " : "(bios=%d)  ") : "check=%d  ",
 					        movieInfo.header.romOrBiosChecksum);
 					strcat(warning1, buffer);
 
@@ -1530,7 +1535,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				strcat(msg, buffer);
 				strcat(msg, "still want to play the movie?");
 
-				int sel = MessageBox(msg, TEXT("ROM Mismatch"), MB_ABORTRETRYIGNORE|MB_ICONQUESTION);
+				int sel = MessageBox(msg, TEXT("ROM Mismatch"), MB_ABORTRETRYIGNORE | MB_ICONQUESTION);
 				switch (sel)
 				{
 				case IDABORT:
@@ -1540,7 +1545,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					if (fileOpenSelect(cartType))
 					{
 						if (VBAMovieActive())
-							VBAMovieStop(false); // will only get here on user selecting to play a ROM, canceling movie
+							VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
 						if (!FileRun())
 							return;
 						fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
@@ -1589,7 +1594,8 @@ romcheck_exit:
 		}
 		else if (strcasecmp(ext, ".wch") == 0)
 		{
-			if (emulating) {
+			if (emulating)
+			{
 				MainWnd::OnFileRamWatch();
 				Load_Watches(true, szFile);
 			}
@@ -1617,7 +1623,7 @@ LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
 {
 	if (emulating && !theApp.paused)
 	{
-		if ((wParam&0xFFF0) == SC_SCREENSAVE || (wParam&0xFFF0) == SC_MONITORPOWER)
+		if ((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
 			return 0;
 	}
 	return Default();

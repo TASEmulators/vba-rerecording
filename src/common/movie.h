@@ -79,7 +79,8 @@ enum MovieState
 {
 	MOVIE_STATE_NONE = 0,
 	MOVIE_STATE_PLAY,
-	MOVIE_STATE_RECORD
+	MOVIE_STATE_RECORD,
+	MOVIE_STATE_END
 };
 
 struct SMovieFileHeader
@@ -134,7 +135,8 @@ const char *VBAChooseMovieFilename(bool8 read_only);
 
 // methods used by the emulation
 void VBAMovieInit();
-void VBAMovieUpdate(int controllerNum = 0, bool sensor = false);
+void VBAMovieUpdateState();
+void VBAMovieUpdateInput(int controllerNum = 0, bool sensor = false);
 void VBAUpdateButtonPressDisplay();
 void VBAUpdateFrameCountDisplay();
 //bool8 VBAMovieRewind (uint32 at_frame);
@@ -163,6 +165,7 @@ void VBAMovieSignalReset();
 void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
 void VBAMovieToggleReadOnly();
+bool VBAMovieAllowsRerecording();
 bool8 VBAMovieSwitchToRecording();
 void VBAMovieSetPauseAt();
 void VBAMovieSetPauseAt(int at);

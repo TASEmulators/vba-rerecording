@@ -139,10 +139,10 @@ u8 flashRead(u32 address)
 		{
 		case 0:
 			// manufacturer ID
-			return static_cast<u8> (flashManufacturerID);
+			return u8(flashManufacturerID);
 		case 1:
 			// device ID
-			return static_cast<u8> (flashDeviceID);
+			return u8(flashDeviceID);
 		}
 		break;
 	case FLASH_ERASE_COMPLETE:

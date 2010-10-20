@@ -178,13 +178,6 @@ static inline u32 swap32(u32 v)
     *((u32 *)x) = (v)
 #endif
 
-// global functions with os-specific implementations
-#ifdef WIN32
-	void OnFrameBoundary(); // probably defined in win32\MainWnd.cpp
-#else
-	#define OnFrameBoundary() // doesn't need to do anything, yet
-#endif
-
 #ifndef CTASSERT
 #define CTASSERT(x)  typedef char __assert ## y[(x) ? 1 : -1];
 #endif

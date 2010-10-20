@@ -109,6 +109,7 @@ extern bool systemReadJoypads();
 extern u32  systemGetOriginalJoypad(int, bool);
 extern u32  systemGetJoypad(int, bool);
 extern void systemSetJoypad(int, u32);
+extern void systemClearJoypads();
 extern void systemMessage(int, const char *, ...);
 extern void systemSetTitle(const char *);
 extern void systemWriteDataToSoundBuffer();

@@ -2773,7 +2773,6 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
-	extern void systemClearJoypads();
 	systemClearJoypads();
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
@@ -2894,7 +2893,6 @@ void gbCleanUp()
 		gbWram = NULL;
 	}
 
-	extern void systemClearJoypads();
 	systemClearJoypads();
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
