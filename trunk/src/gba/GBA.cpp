@@ -3857,7 +3857,7 @@ void CPULoop(int _ticks)
 		newFrame = false;
 	}
 
-	for (;; )
+	for (;;)
 	{
 #ifndef FINAL_VERSION
 		if (systemDebug)
@@ -4031,7 +4031,7 @@ updateLoop:
 						VCOUNT++;
 						UPDATE_REG(0x06, VCOUNT);
 
-						lcdTicks += (960);
+						lcdTicks += 960;
 						DISPSTAT &= 0xFFFD;
 						if (VCOUNT == 160)
 						{
@@ -4064,10 +4064,8 @@ updateLoop:
 
 							// HACK: some special "buttons"
 							u32 ext = (joy >> 18);
-//							int32 cheatTicks = 0;
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1 ^ 0x3FF, ext);
-//							cpuDmaTicksToUpdate += cheatTicks;
 
 							speedup	 = (ext & 1) ? true : false;
 							capture |= (ext & 2) ? true : false;
