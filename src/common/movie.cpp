@@ -1416,7 +1416,6 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	if (space_needed > size)
 		return WRONG_FORMAT;
 
-	uint32 length_history = min(current_frame, end_frame);
 	if (Movie.readOnly)
 	{
 		// here, we are going to keep the input data from the movie file
@@ -1429,6 +1428,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		if (end_frame < Movie.header.length_frames && end_frame < current_frame)
 			return SNAPSHOT_INCONSISTENT;
 
+		uint32 length_history = min(current_frame, end_frame);
 		if (length_history > Movie.header.length_frames)
 			length_history = Movie.header.length_frames;
 		uint32 space_shared = Movie.bytesPerFrame * length_history;
@@ -1607,6 +1607,7 @@ void VBAMovieConvertOld()
 			if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 			{
 				Write16(initialInputs[i], firstFramePtr);
+				// note: this is correct since Write16 advances the dest pointer by sizeof u16
 			}
 		}
 	}
@@ -1631,4 +1632,17 @@ void VBAMovieConvertOld()
 	}
 
 	flush_movie();
+}
+
+void VBAMovieExtractFromSavestate()
+{
+	// Currently, snapshots taken from a movie don't contain the initial SRAM or savestate of the movie, 
+	// even if the movie was recorded from either of them. If a snapshot was taken at the first frame
+	// i.e. Frame 0, it can be safely assumed that the snapshot reflects the initial state of such a movie.
+	// However, if it was taken after the first frame, the SRAM contained might either be still the same
+	// as the original (usually true if no write operations on the SRAM occured) or have been modified,
+	// while the exact original state could hardly, if not impossibly, be safely worked out.
+	
+	// TODO
+	;
 }

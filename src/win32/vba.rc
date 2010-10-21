@@ -2182,7 +2182,7 @@ BEGIN
             BEGIN
                 MENUITEM "Convert Old &Movie",          ID_MOVIE_END_NEW
                 MENUITEM SEPARATOR
-                MENUITEM "&Extract Movie From Saved Games...", ID_MOVIE_END_NEW, INACTIVE
+                MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_END_NEW
             END
         END
         MENUITEM "&Pause/Resume AVI Recording", ID_TOOLS_PAUSEAVIRECORDING
