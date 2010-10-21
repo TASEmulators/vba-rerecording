@@ -2177,6 +2177,13 @@ BEGIN
             END
             MENUITEM SEPARATOR
             MENUITEM "&Stop Movie",                 ID_MOVIE_STOP
+            MENUITEM SEPARATOR
+            POPUP "&Advanced Tools"
+            BEGIN
+                MENUITEM "Convert Old &Movie",          ID_MOVIE_END_NEW
+                MENUITEM SEPARATOR
+                MENUITEM "&Extract Movie From Saved Games...", ID_MOVIE_END_NEW, INACTIVE
+            END
         END
         MENUITEM "&Pause/Resume AVI Recording", ID_TOOLS_PAUSEAVIRECORDING
         MENUITEM "Start/Stop &AVI Recording...", ID_TOOLS_AVIRECORDING

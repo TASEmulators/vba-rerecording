@@ -461,6 +461,9 @@ protected:
 	afx_msg void OnToolsOnMovieEndKeep();
 	afx_msg void OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI);
 
+	afx_msg void OnToolsMovieConvertOld();
+	afx_msg void OnUpdateToolsMovieConvertOld(CCmdUI*pCmdUI);
+
 	afx_msg void OnToolsRewind();
 	afx_msg void OnUpdateToolsRewind(CCmdUI*pCmdUI);
 	afx_msg void OnToolsCustomize();

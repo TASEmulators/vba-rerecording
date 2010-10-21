@@ -831,6 +831,18 @@ void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI)
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 3);
 }
 
+// temporary
+void MainWnd::OnToolsMovieConvertOld()
+{
+	extern void VBAMovieConvertOld();
+	VBAMovieConvertOld();
+}
+
+void MainWnd::OnUpdateToolsMovieConvertOld(CCmdUI*pCmdUI)
+{
+	VBAMovieActive();
+}
+
 void MainWnd::OnToolsRewind()
 {
 	assert(theApp.rewindTimer > 0 && theApp.rewindSlots > 0);
