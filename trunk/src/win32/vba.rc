@@ -2180,9 +2180,9 @@ BEGIN
             MENUITEM SEPARATOR
             POPUP "&Advanced Tools"
             BEGIN
-                MENUITEM "Convert Old &Movie",          ID_MOVIE_END_NEW
+                MENUITEM "Convert Current &Movie",      ID_MOVIE_TOOL_CONVERT_CURRENT
                 MENUITEM SEPARATOR
-                MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_END_NEW
+                MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT
             END
         END
         MENUITEM "&Pause/Resume AVI Recording", ID_TOOLS_PAUSEAVIRECORDING

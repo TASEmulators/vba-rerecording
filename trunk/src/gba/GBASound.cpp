@@ -1335,6 +1335,14 @@ void soundResume()
 	soundPaused = 0;
 }
 
+void soundToggle(int channels)
+{
+	int active = soundGetEnable() & 0x30f;
+	active ^= channels;
+	soundEnable(active);
+	soundDisable((~active)&0x30f);
+}
+
 void soundEnable(int channels)
 {
 	int c = channels & 0x0f;

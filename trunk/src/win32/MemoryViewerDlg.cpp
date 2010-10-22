@@ -355,7 +355,7 @@ void MemoryViewerDlg::OnSave()
 
 	if (dlg.DoModal() == IDOK)
 	{
-		CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
+		CString filter = theApp.winResLoadFilter(IDS_FILTER_DUMP);
 		CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 
 		FileDlg file(this,
@@ -398,7 +398,7 @@ void MemoryViewerDlg::OnLoad()
 	CString buffer;
 	LPCTSTR exts[] = { ".dmp", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 
 	FileDlg file(this,

@@ -128,7 +128,7 @@ void MainWnd::OnCheatsLoadcheatlist()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { ".clt", NULL };
-	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
+	CString filter = winResLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
 	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
@@ -152,7 +152,7 @@ void MainWnd::OnCheatsSavecheatlist()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { ".clt", NULL };
-	CString filter = winLoadFilter(IDS_FILTER_CHEAT_LIST);
+	CString filter = winResLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
 	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);

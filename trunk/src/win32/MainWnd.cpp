@@ -27,11 +27,10 @@
 
 #include "CmdAccelOb.h"
 #include "FileDlg.h"
+#include "ModeConfirm.h"
 #include "Reg.h"
 #include "WinResUtil.h"
 #include "WinMiscUtil.h"
-#include "GBACheatsDlg.h"
-#include "GBCheatsDlg.h"
 #include "Input.h"
 #include "7zip/7zip.h"
 #include "7zip/OpenArchive.h"
@@ -42,20 +41,12 @@
 #include "VBA.h"
 
 #include "../AutoBuild.h"
-#include "../gba/GBACheats.h"
-#include "../gba/CheatSearch.h"
-#include "../gba/GBA.h"
-#include "../gba/GBAGlobals.h"
-#include "../gba/Flash.h"
-#include "../gba/GBAGlobals.h"
-#include "../gba/RTC.h"
-#include "../gba/GBASound.h"
-#include "../gb/GB.h"
-#include "../gb/gbCheats.h"
-#include "../gb/gbGlobals.h"
 #include "../common/Util.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
+#include "../gba/GBASound.h"
+#include "../gba/GBAGlobals.h"
+#include "../gb/gbGlobals.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -442,8 +433,10 @@ ON_UPDATE_COMMAND_UI(ID_MOVIE_END_APPEND, OnUpdateToolsOnMovieEndAppend)
 ON_COMMAND(ID_MOVIE_END_KEEP, OnToolsOnMovieEndKeep)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_END_KEEP, OnUpdateToolsOnMovieEndKeep)
 
-ON_COMMAND(ID_MOVIE_END_NEW, OnToolsMovieConvertOld)
-ON_UPDATE_COMMAND_UI(ID_MOVIE_END_NEW, OnUpdateToolsMovieConvertOld)
+ON_COMMAND(ID_MOVIE_TOOL_CONVERT_CURRENT, OnToolsMovieConvertCurrent)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_CONVERT_CURRENT, OnUpdateToolsMovieConvertCurrent)
+ON_COMMAND(ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, OnToolsMovieExtractFromSnapshot)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, OnUpdateToolsMovieExtractFromSnapshot)
 
 ON_COMMAND(ID_TOOLS_REWIND, OnToolsRewind)
 ON_UPDATE_COMMAND_UI(ID_TOOLS_REWIND, OnUpdateToolsRewind)
@@ -572,274 +565,6 @@ void MainWnd::OnClose()
 	delete this;
 }
 
-// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not
-// directly.
-// also includes definitely non-ROM extensions we know about, since we only use this variable in a ROM opening function.
-// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
-// extensionless or unusually-named archives.
-static const char *s_romIgnoreExtensions[] = {
-	"vbm", "sgm",  "clt", "dat",  "gbs", "gcf",	"spc", "xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",
-	"htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
-};
-
-bool noWriteNextBatteryFile = false;
-bool MainWnd::FileRun()
-{
-	int prevCartridgeType = theApp.cartridgeType;
-
-	// save battery file before we change the filename...
-	if (rom != NULL || gbRom != NULL)
-	{
-		if (theApp.autoSaveLoadCheatList)
-			winSaveCheatListDefault();
-		if (!noWriteNextBatteryFile)
-			writeBatteryFile();
-		cheatSearchCleanup(&cheatSearchData);
-		theApp.emulator.emuCleanUp();
-		remoteCleanUp();
-		if (VBAMovieActive())
-			VBAMovieStop(false);  // will only get here on user selecting to open a ROM, canceling movie
-		emulating = false;
-		theApp.frameSearching	   = false;
-		theApp.frameSearchSkipping = false;
-	}
-	noWriteNextBatteryFile = false;
-	char tempName[2048];
-
-#if 1
-	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
-
-	if (theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
-
-	char LogicalName[2048], PhysicalName[2048];
-	// FIXME: assertion failure in fopen.c if canceled
-	if (ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions,
-		sizeof(s_romIgnoreExtensions) / sizeof(*s_romIgnoreExtensions)))
-	{
-		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
-		theApp.szFile = theApp.filename = LogicalName;
-		ReleaseTempFileCategory("rom", PhysicalName);
-	}
-	else
-	{
-		return false;
-	}
-#else
-	// old version that only supports uncompressed, zip, and gzip formats, and doesn't handle multi-file archives well
-	char file[2048];
-	utilGetBaseName(theApp.szFile, tempName);
-
-	_fullpath(file, tempName, 1024);
-	theApp.filename = file;
-
-	const char *LogicalName	 = theApp.szFile;
-	const char *PhysicalName = theApp.szFile;
-#endif
-
-	theApp.dir = winGetDirFromFilename(LogicalName);
-
-	CString ipsname = winGetDestFilename(LogicalName, IDS_IPS_DIR, ".ips");
-
-	IMAGE_TYPE type = utilFindType(PhysicalName);
-
-	if (type == IMAGE_UNKNOWN)
-	{
-		systemMessage(IDS_UNSUPPORTED_FILE_TYPE,
-		              "The file \"%s\" is an unsupported type.", LogicalName);
-		return false;
-	}
-	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-	theApp.cartridgeType	= (int)type;
-	if (type == IMAGE_GB)
-	{
-		if (!gbLoadRom(PhysicalName))
-			return false;
-		theApp.emulator = GBSystem;
-		gbBorderOn		= theApp.winGbBorderOn;
-		theApp.romSize	= gbRomSize;
-		if (theApp.autoIPS)
-		{
-			int size = gbRomSize;
-			utilApplyIPS(ipsname, &gbRom, &size);
-			if (size != gbRomSize)
-			{
-				extern bool gbUpdateSizes();
-				gbUpdateSizes();
-				gbReset();
-				theApp.romSize = size;
-			}
-		}
-	}
-	else
-	{
-		int size = CPULoadRom(PhysicalName);
-		if (!size)
-			return false;
-
-		theApp.romSize = size;
-
-		flashSetSize(theApp.winFlashSize);
-		rtcEnable(theApp.winRtcEnable);
-		cpuSaveType = theApp.winSaveType;
-
-		//    if(cpuEnhancedDetection && winSaveType == 0) {
-		//      utilGBAFindSave(rom, size);
-		//    }
-
-		GetModuleFileName(NULL, tempName, 2048);
-
-		char *p = strrchr(tempName, '\\');
-		if (p)
-			*p = 0;
-
-		char buffer[5];
-		strncpy(buffer, (const char *)&rom[0xac], 4);
-		buffer[4] = 0;
-
-		strcat(tempName, "\\vba-over.ini");
-
-		UINT i = GetPrivateProfileInt(buffer,
-		                              "rtcEnabled",
-		                              -1,
-		                              tempName);
-		if (i != (UINT)-1)
-			rtcEnable(i == 0 ? false : true);
-
-		i = GetPrivateProfileInt(buffer,
-		                         "flashSize",
-		                         -1,
-		                         tempName);
-		if (i != (UINT)-1 && (i == 0x10000 || i == 0x20000))
-			flashSetSize((int)i);
-
-		i = GetPrivateProfileInt(buffer,
-		                         "saveType",
-		                         -1,
-		                         tempName);
-		if (i != (UINT)-1 && (i <= 5))
-			cpuSaveType = (int)i;
-
-		theApp.emulator = GBASystem;
-		/* disabled due to problems
-		   if(theApp.removeIntros && rom != NULL) {
-		   *((u32 *)rom)= 0xea00002e;
-		   }
-		 */
-
-		if (theApp.autoIPS)
-		{
-			int size = 0x2000000;
-			utilApplyIPS(ipsname, &rom, &size);
-			if (size != 0x2000000)
-			{
-				CPUReset();
-			}
-		}
-	}
-
-	if (theApp.soundInitialized)
-	{
-		if (theApp.cartridgeType == 1)
-			gbSoundReset();
-		else
-			soundReset();
-	}
-	else
-	{
-		if (!soundOffFlag)
-			soundInit();
-		theApp.soundInitialized = true;
-	}
-
-	if (type == IMAGE_GBA)
-	{
-		skipBios = theApp.skipBiosFile ? true : false;
-		CPUInit((char *)(LPCTSTR)theApp.biosFileName, theApp.useBiosFile ? true : false);
-		CPUReset();
-	}
-
-	readBatteryFile();
-
-	if (theApp.autoSaveLoadCheatList)
-		winLoadCheatListDefault();
-
-	if (theApp.filenamePreference == 0)
-		theApp.addRecentFile(winGetOriginalFilename(LogicalName));
-	else
-		theApp.addRecentFile(LogicalName);
-
-	theApp.updateWindowSize(theApp.videoOption);
-
-	theApp.updateFrameSkip();
-
-	if (theApp.autoHideMenu && theApp.videoOption > VIDEO_4X && theApp.menuToggle)
-		OnFileTogglemenu();
-
-	emulating = true;
-
-	if (theApp.autoLoadMostRecent && !VBAMovieActive() && !VBAMovieLoading()) // would cause desync in movies...
-		OnFileLoadgameMostrecent();
-
-	theApp.renderedFrames = 0;
-
-	theApp.rewindCount		= 0;
-	theApp.rewindCounter	= 0;
-	theApp.rewindSaveNeeded = false;
-
-	{
-		extern bool playMovieFile, playMovieFileReadOnly, outputWavFile, outputAVIFile, flagHideMenu; // from VBA.cpp
-		extern char movieFileToPlay [1024], wavFileToOutput [1024]; // from VBA.cpp
-		extern int	pauseAfterTime; // from VBA.cpp
-		if (playMovieFile)
-		{
-			playMovieFile = false;
-			VBAMovieOpen(movieFileToPlay, playMovieFileReadOnly);
-		}
-		if (outputWavFile)
-		{
-			outputWavFile = false;
-			theApp.soundRecordName = wavFileToOutput;
-			theApp.soundRecording  = true;
-		}
-		if (outputAVIFile)
-		{
-			outputAVIFile = false;
-			OnToolsStartAVIRecording();
-		}
-		if (pauseAfterTime >= 0)
-		{
-			VBAMovieSetPauseAt(pauseAfterTime);
-		}
-		if (flagHideMenu)
-		{
-			OnFileTogglemenu();
-			theApp.updateWindowSize(theApp.videoOption);
-		}
-	}
-
-	if (theApp.cartridgeType != prevCartridgeType)
-	{
-		extern GBACheatSearch gbaDlg;
-		extern GBCheatSearch  gbDlg;
-		if (!theApp.pauseDuringCheatSearch && theApp.modelessCheatDialogIsOpen)
-		{
-			gbaDlg.DestroyWindow();
-			gbDlg.DestroyWindow();
-			theApp.modelessCheatDialogIsOpen = false;
-		}
-	}
-
-	ReopenRamWindows();
-	reset_address_info();
-
-	if (AutoRWLoad)
-		MainWnd::OnFileRamWatch();     //auto load ramwatch
-
-	systemRefreshScreen();
-
-	return true;
-}
-
 void MainWnd::OnMove(int x, int y)
 {
 	CWnd::OnMove(x, y);
@@ -926,84 +651,6 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 	}
 }
 
-void MainWnd::winSaveCheatListDefault()
-{
-	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
-
-	winSaveCheatList(cheatName);
-}
-
-void MainWnd::winSaveCheatList(const char *name)
-{
-	if (theApp.cartridgeType == 0)
-		cheatsSaveCheatList(name);
-	else
-		gbCheatsSaveCheatList(name);
-}
-
-void MainWnd::winLoadCheatListDefault()
-{
-	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
-
-	winLoadCheatList(cheatName);
-}
-
-void MainWnd::winLoadCheatList(const char *name)
-{
-	bool res = false;
-
-	if (theApp.cartridgeType == 0)
-		res = cheatsLoadCheatList(name);
-	else
-		res = gbCheatsLoadCheatList(name);
-
-	if (res)
-		systemScreenMessage(winResLoadString(IDS_LOADED_CHEATS));
-}
-
-void MainWnd::writeBatteryFile()
-{
-	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
-
-	if (theApp.emulator.emuWriteBattery)
-		theApp.emulator.emuWriteBattery(batteryName);
-}
-
-void MainWnd::readBatteryFile()
-{
-	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
-
-	bool res = false;
-
-	if (theApp.emulator.emuReadBattery)
-		res = theApp.emulator.emuReadBattery(batteryName);
-
-	if (res)
-		systemScreenMessage(winResLoadString(IDS_LOADED_BATTERY));
-}
-
-CString MainWnd::winLoadFilter(UINT id)
-{
-	CString res = winResLoadString(id);
-	res.Replace('_', '|');
-
-	return res;
-}
-
-bool MainWnd::loadSaveGame(const char *name)
-{
-	if (theApp.emulator.emuReadState)
-		return theApp.emulator.emuReadState(name);
-	return false;
-}
-
-bool MainWnd::writeSaveGame(const char *name)
-{
-	if (theApp.emulator.emuWriteState)
-		return theApp.emulator.emuWriteState(name);
-	return false;
-}
-
 void MainWnd::OnContextMenu(CWnd *pWnd, CPoint point)
 {
 	winMouseOn();
@@ -1017,41 +664,6 @@ void MainWnd::OnSystemMinimize()
 void MainWnd::OnSystemMaximize()
 {
 	ShowWindow(SW_SHOWMAXIMIZED);
-}
-
-bool MainWnd::fileOpenSelect(int cartridgeType)
-{
-	int selectedFilter = regQueryDwordValue("selectedFilter", 0);
-	if (selectedFilter < 0 || selectedFilter > 2)
-		selectedFilter = 0;
-
-	LPCTSTR exts[] = { NULL };
-	CString filter = winLoadFilter(IDS_FILTER_ROM);
-	CString title  = winResLoadString(IDS_SELECT_ROM);
-
-	bool	isOverrideEmpty = false;
-	CString initialDir		= regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
-	if (initialDir.IsEmpty())
-	{
-		isOverrideEmpty = true;
-		initialDir		= theApp.dir;
-	}
-
-	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
-
-	if (dlg.DoModal() == IDOK)
-	{
-		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
-		theApp.szFile = dlg.GetPathName();
-		initialDir	  = winGetDirFromFilename(theApp.szFile);
-
-		// we have directory override for that purpose
-		// but this can be...desirable
-		if (isOverrideEmpty)
-			regSetStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, initialDir);
-		return true;
-	}
-	return false;
 }
 
 void MainWnd::OnPaint()
@@ -1158,36 +770,6 @@ BOOL MainWnd::PreTranslateMessage(MSG *pMsg)
 	}
 
 	return FALSE;
-}
-
-void MainWnd::screenCapture(int captureNumber)
-{
-	CString ext;
-	if (theApp.captureFormat != 0)
-		ext.Format("_%02d.bmp", captureNumber);
-	else
-		ext.Format("_%02d.png", captureNumber);
-
-	CString captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
-
-	if (theApp.captureFormat == 0)
-		theApp.emulator.emuWritePNG(captureName);
-	else
-		theApp.emulator.emuWriteBMP(captureName);
-
-	CString msg = winResLoadString(IDS_SCREEN_CAPTURE);
-	systemScreenMessage(msg);
-}
-
-void MainWnd::winMouseOn()
-{
-	SetCursor(arrow);
-	if (theApp.videoOption > VIDEO_4X)
-	{
-		theApp.mouseCounter = 120;
-	}
-	else
-		theApp.mouseCounter = 0;
 }
 
 void MainWnd::OnMouseMove(UINT nFlags, CPoint point)
@@ -1400,6 +982,16 @@ void MainWnd::OnActivateApp(BOOL bActive, DWORD hTask)
 	}
 }
 
+LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
+{
+	if (emulating && !theApp.paused)
+	{
+		if ((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
+			return 0;
+	}
+	return Default();
+}
+
 void MainWnd::OnDropFiles(HDROP hDropInfo)
 {
 	// FIXME: required for the accel key fix
@@ -1448,11 +1040,11 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			if (!emulating)
 			{
 				theApp.winCheckFullscreen();
-				if (fileOpenSelect(cartType))
+				if (winFileOpenSelect(cartType))
 				{
 					if (VBAMovieActive())
 						VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
-					if (!FileRun())
+					if (!winFileRun())
 						return;
 				}
 				else
@@ -1545,11 +1137,11 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					return;
 				case IDRETRY:
 					theApp.winCheckFullscreen();
-					if (fileOpenSelect(cartType))
+					if (winFileOpenSelect(cartType))
 					{
 						if (VBAMovieActive())
 							VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
-						if (!FileRun())
+						if (!winFileRun())
 							return;
 						fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 					}
@@ -1606,7 +1198,7 @@ romcheck_exit:
 		else
 		{
 			theApp.szFile = szFile;
-			if (FileRun())
+			if (winFileRun())
 			{
 				SetForegroundWindow();
 				emulating = TRUE;
@@ -1622,13 +1214,343 @@ romcheck_exit:
 		DragFinish(hDropInfo);
 }
 
-LRESULT MainWnd::OnMySysCommand(WPARAM wParam, LPARAM lParam)
+
+/////////////////////
+
+void MainWnd::winMouseOn()
 {
-	if (emulating && !theApp.paused)
+	SetCursor(arrow);
+	if (theApp.videoOption > VIDEO_4X)
 	{
-		if ((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
-			return 0;
+		theApp.mouseCounter = 120;
 	}
-	return Default();
+	else
+		theApp.mouseCounter = 0;
 }
 
+void MainWnd::winConfirmMode()
+{
+	if (theApp.renderMethod == DIRECT_DRAW && theApp.videoOption > VIDEO_4X)
+	{
+		theApp.winCheckFullscreen();
+		ModeConfirm dlg(this);
+
+		if (!dlg.DoModal())
+		{
+			theApp.updateVideoSize(ID_OPTIONS_VIDEO_X2);
+		}
+	}
+}
+
+bool MainWnd::winFileOpenSelect(int cartridgeType)
+{
+	int selectedFilter = regQueryDwordValue("selectedFilter", 0);
+	if (selectedFilter < 0 || selectedFilter > 2)
+		selectedFilter = 0;
+
+	LPCTSTR exts[] = { NULL };
+	CString filter = winResLoadFilter(IDS_FILTER_ROM);
+	CString title  = winResLoadString(IDS_SELECT_ROM);
+
+	bool	isOverrideEmpty = false;
+	CString initialDir		= regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
+	if (initialDir.IsEmpty())
+	{
+		isOverrideEmpty = true;
+		initialDir		= theApp.dir;
+	}
+
+	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
+		theApp.szFile = dlg.GetPathName();
+		initialDir	  = winGetDirFromFilename(theApp.szFile);
+
+		// we have directory override for that purpose
+		// but this can be...desirable
+		if (isOverrideEmpty)
+			regSetStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, initialDir);
+		return true;
+	}
+	return false;
+}
+
+// some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not
+// directly.
+// also includes definitely non-ROM extensions we know about, since we only use this variable in a ROM opening function.
+// we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
+// extensionless or unusually-named archives.
+static const char *s_romIgnoreExtensions[] = {
+	"vbm", "sgm",  "clt", "dat",  "gbs", "gcf",	"spc", "xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",
+	"htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
+};
+
+bool noWriteNextBatteryFile = false;
+
+#include "GBACheatsDlg.h"
+#include "GBCheatsDlg.h"
+
+#include "../gba/CheatSearch.h"
+#include "../gba/GBA.h"
+#include "../gb/GB.h"
+#include "../gba/Flash.h"
+#include "../gba/RTC.h"
+
+bool MainWnd::winFileRun()
+{
+	int prevCartridgeType = theApp.cartridgeType;
+
+	// save battery file before we change the filename...
+	if (rom != NULL || gbRom != NULL)
+	{
+		if (theApp.autoSaveLoadCheatList)
+			winSaveCheatListDefault();
+		if (!noWriteNextBatteryFile)
+			winWriteBatteryFile();
+		cheatSearchCleanup(&cheatSearchData);
+		theApp.emulator.emuCleanUp();
+		remoteCleanUp();
+		if (VBAMovieActive())
+			VBAMovieStop(false);  // will only get here on user selecting to open a ROM, canceling movie
+		emulating = false;
+		theApp.frameSearching	   = false;
+		theApp.frameSearchSkipping = false;
+	}
+	noWriteNextBatteryFile = false;
+	char tempName[2048];
+
+#if 1
+	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
+
+	if (theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
+
+	char LogicalName[2048], PhysicalName[2048];
+	// FIXME: assertion failure in fopen.c if canceled
+	if (ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions,
+		sizeof(s_romIgnoreExtensions) / sizeof(*s_romIgnoreExtensions)))
+	{
+		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
+		theApp.szFile = theApp.filename = LogicalName;
+		ReleaseTempFileCategory("rom", PhysicalName);
+	}
+	else
+	{
+		return false;
+	}
+#else
+	// old version that only supports uncompressed, zip, and gzip formats, and doesn't handle multi-file archives well
+	char file[2048];
+	utilGetBaseName(theApp.szFile, tempName);
+
+	_fullpath(file, tempName, 1024);
+	theApp.filename = file;
+
+	const char *LogicalName	 = theApp.szFile;
+	const char *PhysicalName = theApp.szFile;
+#endif
+
+	theApp.dir = winGetDirFromFilename(LogicalName);
+
+	CString ipsname = winGetDestFilename(LogicalName, IDS_IPS_DIR, ".ips");
+
+	IMAGE_TYPE type = utilFindType(PhysicalName);
+
+	if (type == IMAGE_UNKNOWN)
+	{
+		systemMessage(IDS_UNSUPPORTED_FILE_TYPE,
+		              "The file \"%s\" is an unsupported type.", LogicalName);
+		return false;
+	}
+	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
+	theApp.cartridgeType	= (int)type;
+	if (type == IMAGE_GB)
+	{
+		if (!gbLoadRom(PhysicalName))
+			return false;
+		theApp.emulator = GBSystem;
+		gbBorderOn		= theApp.winGbBorderOn;
+		theApp.romSize	= gbRomSize;
+		if (theApp.autoIPS)
+		{
+			int size = gbRomSize;
+			utilApplyIPS(ipsname, &gbRom, &size);
+			if (size != gbRomSize)
+			{
+				extern bool gbUpdateSizes();
+				gbUpdateSizes();
+				gbReset();
+				theApp.romSize = size;
+			}
+		}
+	}
+	else
+	{
+		int size = CPULoadRom(PhysicalName);
+		if (!size)
+			return false;
+
+		theApp.romSize = size;
+
+		flashSetSize(theApp.winFlashSize);
+		rtcEnable(theApp.winRtcEnable);
+		cpuSaveType = theApp.winSaveType;
+
+		//    if(cpuEnhancedDetection && winSaveType == 0) {
+		//      utilGBAFindSave(rom, size);
+		//    }
+
+		GetModuleFileName(NULL, tempName, 2048);
+
+		char *p = strrchr(tempName, '\\');
+		if (p)
+			*p = 0;
+
+		char buffer[5];
+		strncpy(buffer, (const char *)&rom[0xac], 4);
+		buffer[4] = 0;
+
+		strcat(tempName, "\\vba-over.ini");
+
+		UINT i = GetPrivateProfileInt(buffer,
+		                              "rtcEnabled",
+		                              -1,
+		                              tempName);
+		if (i != (UINT)-1)
+			rtcEnable(i == 0 ? false : true);
+
+		i = GetPrivateProfileInt(buffer,
+		                         "flashSize",
+		                         -1,
+		                         tempName);
+		if (i != (UINT)-1 && (i == 0x10000 || i == 0x20000))
+			flashSetSize((int)i);
+
+		i = GetPrivateProfileInt(buffer,
+		                         "saveType",
+		                         -1,
+		                         tempName);
+		if (i != (UINT)-1 && (i <= 5))
+			cpuSaveType = (int)i;
+
+		theApp.emulator = GBASystem;
+		/* disabled due to problems
+		   if(theApp.removeIntros && rom != NULL) {
+		   *((u32 *)rom)= 0xea00002e;
+		   }
+		 */
+
+		if (theApp.autoIPS)
+		{
+			int size = 0x2000000;
+			utilApplyIPS(ipsname, &rom, &size);
+			if (size != 0x2000000)
+			{
+				CPUReset();
+			}
+		}
+	}
+
+	if (theApp.soundInitialized)
+	{
+		if (theApp.cartridgeType == 1)
+			gbSoundReset();
+		else
+			soundReset();
+	}
+	else
+	{
+		if (!soundOffFlag)
+			soundInit();
+		theApp.soundInitialized = true;
+	}
+
+	if (type == IMAGE_GBA)
+	{
+		skipBios = theApp.skipBiosFile ? true : false;
+		CPUInit((char *)(LPCTSTR)theApp.biosFileName, theApp.useBiosFile ? true : false);
+		CPUReset();
+	}
+
+	winReadBatteryFile();
+
+	if (theApp.autoSaveLoadCheatList)
+		winLoadCheatListDefault();
+
+	if (theApp.filenamePreference == 0)
+		theApp.addRecentFile(winGetOriginalFilename(LogicalName));
+	else
+		theApp.addRecentFile(LogicalName);
+
+	theApp.updateWindowSize(theApp.videoOption);
+
+	theApp.updateFrameSkip();
+
+	if (theApp.autoHideMenu && theApp.videoOption > VIDEO_4X && theApp.menuToggle)
+		OnFileTogglemenu();
+
+	emulating = true;
+
+	if (theApp.autoLoadMostRecent && !VBAMovieActive() && !VBAMovieLoading()) // would cause desync in movies...
+		OnFileLoadgameMostrecent();
+
+	theApp.renderedFrames = 0;
+
+	theApp.rewindCount		= 0;
+	theApp.rewindCounter	= 0;
+	theApp.rewindSaveNeeded = false;
+
+	{
+		extern bool playMovieFile, playMovieFileReadOnly, outputWavFile, outputAVIFile, flagHideMenu; // from VBA.cpp
+		extern char movieFileToPlay [1024], wavFileToOutput [1024]; // from VBA.cpp
+		extern int	pauseAfterTime; // from VBA.cpp
+		if (playMovieFile)
+		{
+			playMovieFile = false;
+			VBAMovieOpen(movieFileToPlay, playMovieFileReadOnly);
+		}
+		if (outputWavFile)
+		{
+			outputWavFile = false;
+			theApp.soundRecordName = wavFileToOutput;
+			theApp.soundRecording  = true;
+		}
+		if (outputAVIFile)
+		{
+			outputAVIFile = false;
+			OnToolsStartAVIRecording();
+		}
+		if (pauseAfterTime >= 0)
+		{
+			VBAMovieSetPauseAt(pauseAfterTime);
+		}
+		if (flagHideMenu)
+		{
+			OnFileTogglemenu();
+			theApp.updateWindowSize(theApp.videoOption);
+		}
+	}
+
+	if (theApp.cartridgeType != prevCartridgeType)
+	{
+		extern GBACheatSearch gbaDlg;
+		extern GBCheatSearch  gbDlg;
+		if (!theApp.pauseDuringCheatSearch && theApp.modelessCheatDialogIsOpen)
+		{
+			gbaDlg.DestroyWindow();
+			gbDlg.DestroyWindow();
+			theApp.modelessCheatDialogIsOpen = false;
+		}
+	}
+
+	ReopenRamWindows();
+	reset_address_info();
+
+	if (AutoRWLoad)
+		((MainWnd *)theApp.m_pMainWnd)->OnFileRamWatch();     //auto load ramwatch
+
+	systemRefreshScreen();
+
+	return true;
+}

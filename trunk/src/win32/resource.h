@@ -960,6 +960,11 @@
 #define ID_MOVIE_END_KEEP               40491
 #define ID_MOVIE_END_PLAY               40492
 #define ID_MOVIE_END_NEW                40493
+#define ID_MOVIE_TOOL_CONVERT           40500
+#define ID_MOVIE_TOOL_CONVERT_CURRENT   40501
+#define ID_MOVIE_TOOL_AUTO_CONVERT      40502
+#define ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT 40505
+#define ID_MOVIE_TOOL_FIX_CURRENT_HEADER 40507
 #define ID_RAM_SEARCH                   40522
 #define ID_RAM_WATCH                    40523
 #define RAMMENU_FILE_RECENT             40653

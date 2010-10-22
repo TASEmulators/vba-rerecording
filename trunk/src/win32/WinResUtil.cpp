@@ -106,3 +106,10 @@ CString winResLoadString(UINT id)
 	return res;
 }
 
+CString winResLoadFilter(UINT id)
+{
+	CString res = winResLoadString(id);
+	res.Replace('_', '|');
+
+	return res;
+}

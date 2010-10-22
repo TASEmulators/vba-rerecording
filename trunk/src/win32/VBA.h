@@ -235,7 +235,7 @@ public:
 	RECT rect;
 	RECT dest;
 
-	struct EmulatedSystem emulator;
+	struct EmulatedSystem &emulator;
 
 	CString szFile;
 	CString filename;
@@ -253,7 +253,7 @@ public:
 	void updateMenuBar();
 	void winAddUpdateListener(IUpdateListener *l);
 	void winRemoveUpdateListener(IUpdateListener *l);
-	CString winLoadFilter(UINT id);
+	CString winResLoadFilter(UINT id);
 
 	// Overrides
 	// ClassWizard generated virtual function overrides

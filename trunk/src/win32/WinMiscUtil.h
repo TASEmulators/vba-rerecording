@@ -16,4 +16,15 @@ extern CString winGetDestFilename(const CString &LogicalRomName, const CString &
 extern void winCorrectPath(CString &path);
 extern void winCorrectPath(char *path);
 
+void winScreenCapture(int captureNumber);
+bool winImportGSACodeFile(CString& fileName);
+void winLoadCheatList(const char *name);
+void winSaveCheatList(const char *name);
+void winLoadCheatListDefault();
+void winSaveCheatListDefault();
+void winReadBatteryFile();
+void winWriteBatteryFile();
+bool winReadSaveGame(const char *name);
+bool winWriteSaveGame(const char *name);
+
 #endif // VBA_WIN32_WINMISCUTIL_H

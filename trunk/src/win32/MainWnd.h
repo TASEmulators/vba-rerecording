@@ -31,15 +31,26 @@
 
 class MainWnd : public CWnd
 {
-	// Construction
+	// Constructor/Destructor
 public:
 	MainWnd();
+	virtual ~MainWnd();
 
 	// Attributes
-public:
+private:
+	HCURSOR arrow;
+	HACCEL m_hAccelTable;
+
+	// Implementation
+private:
+
 	// Operations
 public:
-	bool FileRun();
+	afx_msg void OnOptionsEmulatorSelectbiosfile();
+	bool winFileRun();
+	bool winFileOpenSelect(int cartridgeType);
+	void winMouseOn();
+	void winConfirmMode();
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
@@ -48,34 +59,28 @@ public:
 	virtual BOOL PreTranslateMessage(MSG*pMsg);
 	//}}AFX_VIRTUAL
 
-	// Implementation
-public:
-	afx_msg void OnOptionsEmulatorSelectbiosfile();
-
-	HCURSOR arrow;
-	HACCEL m_hAccelTable;
-	bool fileOpenSelect(int cartridgeType);
-	void updateSoundChannels(UINT nID);
-	void screenCapture(int captureNumber);
-	bool fileImportGSACodeFile(CString& fileName);
-	void readBatteryFile();
-	void writeBatteryFile();
-	bool writeSaveGame(const char *name);
-	bool loadSaveGame(const char *name);
-	CString winLoadFilter(UINT id);
-	void winLoadCheatList(const char *name);
-	void winSaveCheatList(const char *name);
-	void winLoadCheatListDefault();
-	void winSaveCheatListDefault();
-	void winMouseOn();
-	void winConfirmMode();
-	virtual ~MainWnd();
-
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(MainWnd)
 	afx_msg LRESULT OnConfirmMode(WPARAM, LPARAM);
 	afx_msg LRESULT OnMySysCommand(WPARAM, LPARAM);
+
+	afx_msg void OnMove(int x, int y);
+	afx_msg void OnContextMenu(CWnd*pWnd, CPoint point);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnClose();
+	afx_msg void OnInitMenuPopup(CMenu*pPopupMenu, UINT nIndex, BOOL bSysMenu);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnInitMenu(CMenu*pMenu);
+	afx_msg void OnPaint();
+	afx_msg void OnDropFiles(HDROP hDropInfo);
+	afx_msg void OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized);
+#if _MSC_VER <= 1200
+	afx_msg void OnActivateApp(BOOL bActive, HTASK hTask);
+#else
+	afx_msg void OnActivateApp(BOOL bActive, DWORD hTask);
+#endif
+
 	afx_msg void OnUpdateOptionsJoypadAutofire(CCmdUI *pCmdUI);
 	afx_msg BOOL OnOptionsJoypadAutofire(UINT nID);
 	afx_msg void OnUpdateOptionsJoypadSticky(CCmdUI *pCmdUI);
@@ -92,20 +97,19 @@ protected:
 	afx_msg BOOL OnOptionsSoundVolume(UINT nID);
 	afx_msg void OnUpdateOptionsEmulatorShowSpeed(CCmdUI *pCmdUI);
 	afx_msg BOOL OnOptionsEmulatorShowSpeed(UINT nID);
-	afx_msg void OnSystemMinimize();
-	afx_msg void OnSystemMaximize();
 	afx_msg void OnUpdateVideoLayer(CCmdUI*pCmdUI);
 	afx_msg BOOL OnVideoLayer(UINT nID);
 	afx_msg BOOL OnOptionVideoSize(UINT nID);
 	afx_msg BOOL OnOptionsFrameskip(UINT nID);
 	afx_msg void OnFileTogglemenu();
 
-	afx_msg void OnClose();
+	afx_msg void OnSystemMinimize();
+	afx_msg void OnSystemMaximize();
+
 	afx_msg void OnHelpAbout();
 	afx_msg void OnHelpFaq();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileOpenGBx();
-	afx_msg void OnInitMenuPopup(CMenu*pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg void OnFilePause();
 	afx_msg void OnUpdateFilePause(CCmdUI*pCmdUI);
 	afx_msg void OnFileReset();
@@ -198,8 +202,6 @@ protected:
 	afx_msg void OnOptionsVideoFullscreen800x600();
 	afx_msg void OnOptionsVideoFullscreen();
 	afx_msg void OnUpdateOptionsVideoFullscreen(CCmdUI*pCmdUI);
-	afx_msg void OnMove(int x, int y);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnOptionsVideoDisablesfx();
 	afx_msg void OnUpdateOptionsVideoDisablesfx(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsVideoFullscreenstretchtofit();
@@ -234,8 +236,6 @@ protected:
 	afx_msg void OnUpdateOptionsVideoRenderoptionsSelectskin(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsVideoRenderoptionsSkin();
 	afx_msg void OnUpdateOptionsVideoRenderoptionsSkin(CCmdUI*pCmdUI);
-
-	afx_msg void OnContextMenu(CWnd*pWnd, CPoint point);
 
 	afx_msg void OnOptionsEmulatorAssociate();
 	afx_msg void OnOptionsEmulatorDirectories();
@@ -280,18 +280,20 @@ protected:
 	afx_msg void OnUpdateOptionsEmulatorSavetypeFlash512k(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorSavetypeFlash1m();
 	afx_msg void OnUpdateOptionsEmulatorSavetypeFlash1m(CCmdUI*pCmdUI);
-	afx_msg void OnOptionsEmulatorUsebiosfile();
-	afx_msg void OnUpdateOptionsEmulatorUsebiosfile(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorUseOldGBTiming();
 	afx_msg void OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorGBALag();
 	afx_msg void OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsEmulatorUsebiosfile();
+	afx_msg void OnUpdateOptionsEmulatorUsebiosfile(CCmdUI*pCmdUI);
+
 	afx_msg void OnOptionsEmulatorSkipbios();
 	afx_msg void OnUpdateOptionsEmulatorSkipbios(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorPngformat();
 	afx_msg void OnUpdateOptionsEmulatorPngformat(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorBmpformat();
 	afx_msg void OnUpdateOptionsEmulatorBmpformat(CCmdUI*pCmdUI);
+
 	afx_msg void OnOptionsSoundOff();
 	afx_msg void OnUpdateOptionsSoundOff(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsSoundMute();
@@ -436,7 +438,7 @@ protected:
 	afx_msg void OnToolsAVIRecording();
 	afx_msg void OnUpdateToolsAVIRecording(CCmdUI*pCmdUI);
 	afx_msg void OnUpdateToolsPauseAVIRecording(CCmdUI*pCmdUI);
-	afx_msg void OnPaint();
+
 	afx_msg void OnToolsRecordMovie();
 	afx_msg void OnUpdateToolsRecordMovie(CCmdUI*pCmdUI);
 	afx_msg void OnToolsStopMovie();
@@ -461,8 +463,10 @@ protected:
 	afx_msg void OnToolsOnMovieEndKeep();
 	afx_msg void OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI);
 
-	afx_msg void OnToolsMovieConvertOld();
-	afx_msg void OnUpdateToolsMovieConvertOld(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieConvertCurrent();
+	afx_msg void OnUpdateToolsMovieConvertCurrent(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieExtractFromSnapshot();
+	afx_msg void OnUpdateToolsMovieExtractFromSnapshot(CCmdUI*pCmdUI);
 
 	afx_msg void OnToolsRewind();
 	afx_msg void OnUpdateToolsRewind(CCmdUI*pCmdUI);
@@ -473,15 +477,7 @@ protected:
 	afx_msg void OnToolsCopyVBAWatchSetting();
 	afx_msg void OnToolsCopyVBxWatchSetting();
 	afx_msg void OnHelpBugreport();
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnInitMenu(CMenu*pMenu);
-	afx_msg void OnActivate(UINT nState, CWnd*pWndOther, BOOL bMinimized);
-#if _MSC_VER <= 1200
-	afx_msg void OnActivateApp(BOOL bActive, HTASK hTask);
-#else
-	afx_msg void OnActivateApp(BOOL bActive, DWORD hTask);
-#endif
-	afx_msg void OnDropFiles(HDROP hDropInfo);
+
 	afx_msg void OnFileSavegameOldestslot();
 	afx_msg void OnUpdateFileSavegameOldestslot(CCmdUI*pCmdUI);
 	afx_msg void OnFileLoadgameMostrecent();

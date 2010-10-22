@@ -98,7 +98,7 @@ void MovieOpen::OnBnClickedBrowse()
 
 	LPCTSTR exts[] = { ".vbm", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_MOVIE);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
 	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
