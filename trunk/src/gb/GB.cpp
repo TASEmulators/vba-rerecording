@@ -1612,17 +1612,19 @@ void gbSpeedSwitch()
 
 void gbReset(bool userReset)
 {
-	if (!VBAMovieActive())   // movie must be closed while opening/creating a movie
+	// movie must be closed while opening/creating a movie
+	if (userReset && VBAMovieRecording())
+	{
+		VBAMovieSignalReset();
+		return;
+	}
+
+	if (!VBAMovieActive())
 	{
 		GBSystemCounters.frameCount = 0;
 		GBSystemCounters.lagCount	= 0;
 		GBSystemCounters.lagged		= true;
 		GBSystemCounters.laggedLast = true;
-	}
-	else if (userReset)
-	{
-		VBAMovieSignalReset();
-		return;
 	}
 
 	SP.W = 0xfffe;
