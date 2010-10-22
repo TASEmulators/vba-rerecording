@@ -345,7 +345,8 @@ void MainWnd::OnFileImportBatteryfile()
 
 void MainWnd::OnUpdateFileImportBatteryfile(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(emulating);
+	// we allow this as we allow using cheats during recording
+	pCmdUI->Enable(emulating /*&& !VBAMovieActive()*/);
 }
 
 void MainWnd::OnFileImportGamesharkcodefile()
@@ -382,7 +383,7 @@ void MainWnd::OnFileImportGamesharkcodefile()
 
 void MainWnd::OnUpdateFileImportGamesharkcodefile(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(emulating);
+	pCmdUI->Enable(emulating  /*&& !VBAMovieActive()*/);
 }
 
 void MainWnd::OnFileImportGamesharksnapshot()
@@ -415,7 +416,7 @@ void MainWnd::OnFileImportGamesharksnapshot()
 
 void MainWnd::OnUpdateFileImportGamesharksnapshot(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(emulating);
+	pCmdUI->Enable(emulating /*&& !VBAMovieActive()*/);
 }
 
 void MainWnd::OnFileExportBatteryfile()

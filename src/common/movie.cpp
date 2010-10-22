@@ -1061,9 +1061,13 @@ void VBAUpdateFrameCountDisplay()
 		switch (Movie.state)
 		{
 		case MOVIE_STATE_PLAY:
-		case MOVIE_STATE_END:
 		{
 			sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
+			break;
+		}
+		case MOVIE_STATE_END:
+		{
+			sprintf(frameDisplayString, "%d (%d)", Movie.currentFrame, Movie.header.length_frames);
 			break;
 		}
 		case MOVIE_STATE_RECORD:
@@ -1084,6 +1088,7 @@ void VBAUpdateFrameCountDisplay()
 	/// SDL FIXME
 #endif
 		{
+//			sprintf(lagFrameDisplayString, " %c %d", GBASystemCounters.laggedLast ? '*' : '|', GBASystemCounters.lagCount);
 			sprintf(lagFrameDisplayString, " | %d%s", GBASystemCounters.lagCount, GBASystemCounters.laggedLast ? " *" : "");
 			strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 		}
@@ -1521,6 +1526,7 @@ bool8 VBAMovieSwitchToRecording()
 
 uint32 VBAMovieGetState()
 {
+	// ?
 	if (!VBAMovieActive())
 		return MOVIE_STATE_NONE;
 
@@ -1579,7 +1585,7 @@ void VBAMovieRestart()
 
 		Movie.RecordedThisSession = modified;
 
-//		systemScreenMessage("movie replay (restart)");
+//		systemScreenMessage("Movie replay (restart)");
 		systemClearJoypads();
 		VBAUpdateButtonPressDisplay();
 		systemRefreshScreen();
@@ -1613,25 +1619,26 @@ void VBAMovieConvertCurrent()
 	}
 
 	// convert old resets to new ones
-	const u8 OLD_RESET = BUTTON_MASK_OLD_RESET >> 8;
-	const u8 NEW_RESET = BUTTON_MASK_NEW_RESET >> 8;
+	const u8 OLD_RESET = u8(BUTTON_MASK_OLD_RESET >> 8);
+	const u8 NEW_RESET = u8(BUTTON_MASK_NEW_RESET >> 8);
 	for (int i = 0; i < 4; ++i)
 	{
 		if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 		{
-			uint8 *startPtr = Movie.inputBuffer + Movie.bytesPerFrame + sizeof(u16) * i;
-			uint8 *endPtr   = Movie.inputBuffer + Movie.bytesPerFrame * Movie.header.length_frames;
+			uint8 *startPtr = Movie.inputBuffer + sizeof(u16) * i + 1;
+			uint8 *endPtr   = Movie.inputBuffer + Movie.bytesPerFrame * (Movie.header.length_frames - 1);
 			for (; startPtr < endPtr; startPtr += Movie.bytesPerFrame)
 			{
-				if (startPtr[1] & OLD_RESET)
+				if (startPtr[Movie.bytesPerFrame] & OLD_RESET)
 				{
-					startPtr[-1] |= NEW_RESET;
+					startPtr[0] |= NEW_RESET;
 				}
 			}
 		}
 	}
 
 	flush_movie();
+	systemScreenMessage("Movie converted");
 }
 
 void VBAMovieExtractFromSnapshot()

@@ -3390,17 +3390,19 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 
 void CPUReset(bool userReset)
 {
-	if (!VBAMovieActive())   // movie must be closed while opening/creating a movie
+	// movie must be closed while opening/creating a movie
+	if (userReset && VBAMovieRecording())
+	{
+		VBAMovieSignalReset();
+		return;
+	}
+
+	if (!VBAMovieActive())
 	{
 		GBASystemCounters.frameCount = 0;
 		GBASystemCounters.lagCount	 = 0;
 		GBASystemCounters.lagged	 = true;
 		GBASystemCounters.laggedLast = true;
-	}
-	else if (userReset)
-	{
-		VBAMovieSignalReset();
-		return;
 	}
 
 	if (gbaSaveType == 0)
