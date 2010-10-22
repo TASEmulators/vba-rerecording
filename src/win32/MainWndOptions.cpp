@@ -1099,7 +1099,7 @@ void MainWnd::OnOptionsEmulatorSelectbiosfile()
 {
 	theApp.winCheckFullscreen();
 	LPCTSTR exts[] = { NULL };
-	CString filter = winLoadFilter(IDS_FILTER_BIOS);
+	CString filter = winResLoadFilter(IDS_FILTER_BIOS);
 	CString title  = winResLoadString(IDS_SELECT_BIOS_FILE);
 
 	FileDlg dlg(this,
@@ -1313,42 +1313,9 @@ void MainWnd::OnUpdateOptionsSoundVolume5x(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(soundVolume == 5);
 }
 
-void MainWnd::updateSoundChannels(UINT id)
-{
-	int flag = 0;
-
-	if (id == ID_OPTIONS_SOUND_CHANNEL1)
-		flag = 1;
-
-	if (id == ID_OPTIONS_SOUND_CHANNEL2)
-		flag = 2;
-
-	if (id == ID_OPTIONS_SOUND_CHANNEL3)
-		flag = 4;
-
-	if (id == ID_OPTIONS_SOUND_CHANNEL4)
-		flag = 8;
-
-	if (id == ID_OPTIONS_SOUND_DIRECTSOUNDA)
-		flag = 256;
-
-	if (id == ID_OPTIONS_SOUND_DIRECTSOUNDB)
-		flag = 512;
-
-	int active = soundGetEnable() & 0x30f;
-
-	if (active & flag)
-		active &= (~flag);
-	else
-		active |= flag;
-
-	soundEnable(active);
-	soundDisable((~active)&0x30f);
-}
-
 void MainWnd::OnOptionsSoundChannel1()
 {
-	updateSoundChannels(ID_OPTIONS_SOUND_CHANNEL1);
+	soundToggle(0x01);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel1(CCmdUI*pCmdUI)
@@ -1358,7 +1325,7 @@ void MainWnd::OnUpdateOptionsSoundChannel1(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSoundChannel2()
 {
-	updateSoundChannels(ID_OPTIONS_SOUND_CHANNEL2);
+	soundToggle(0x02);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel2(CCmdUI*pCmdUI)
@@ -1368,7 +1335,7 @@ void MainWnd::OnUpdateOptionsSoundChannel2(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSoundChannel3()
 {
-	updateSoundChannels(ID_OPTIONS_SOUND_CHANNEL3);
+	soundToggle(0x04);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel3(CCmdUI*pCmdUI)
@@ -1378,7 +1345,7 @@ void MainWnd::OnUpdateOptionsSoundChannel3(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSoundChannel4()
 {
-	updateSoundChannels(ID_OPTIONS_SOUND_CHANNEL4);
+	soundToggle(0x08);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel4(CCmdUI*pCmdUI)
@@ -1388,7 +1355,7 @@ void MainWnd::OnUpdateOptionsSoundChannel4(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSoundDirectsounda()
 {
-	updateSoundChannels(ID_OPTIONS_SOUND_DIRECTSOUNDA);
+	soundToggle(0x0100);
 }
 
 void MainWnd::OnUpdateOptionsSoundDirectsounda(CCmdUI*pCmdUI)
@@ -1399,7 +1366,7 @@ void MainWnd::OnUpdateOptionsSoundDirectsounda(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSoundDirectsoundb()
 {
-	updateSoundChannels(ID_OPTIONS_SOUND_DIRECTSOUNDB);
+	soundToggle(0x0200);
 }
 
 void MainWnd::OnUpdateOptionsSoundDirectsoundb(CCmdUI*pCmdUI)
@@ -2331,20 +2298,6 @@ LRESULT MainWnd::OnConfirmMode(WPARAM, LPARAM)
 	// parent. must be related to the way MFC does modal dialogs
 	winConfirmMode();
 	return 0;
-}
-
-void MainWnd::winConfirmMode()
-{
-	if (theApp.renderMethod == DIRECT_DRAW && theApp.videoOption > VIDEO_4X)
-	{
-		theApp.winCheckFullscreen();
-		ModeConfirm dlg(theApp.m_pMainWnd);
-
-		if (!dlg.DoModal())
-		{
-			theApp.updateVideoSize(ID_OPTIONS_VIDEO_X2);
-		}
-	}
 }
 
 void MainWnd::OnOptionsVideoFullscreenmaxscale()

@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "WinMiscUtil.h"
+#include "WinResUtil.h"
+#include "resource.h"
+#include "../NLS.h"
 #include "VBA.h"
 #include "Reg.h"
 
@@ -217,4 +220,156 @@ void winCorrectPath(char *path)
 	CString pathCStr(path);
 	winCorrectPath(pathCStr);
 	strcpy(path, pathCStr);
+}
+
+// some file I/O
+
+void winScreenCapture(int captureNumber)
+{
+	CString ext;
+	if (theApp.captureFormat != 0)
+		ext.Format("_%02d.bmp", captureNumber);
+	else
+		ext.Format("_%02d.png", captureNumber);
+
+	CString captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+
+	if (theApp.captureFormat == 0)
+		theApp.emulator.emuWritePNG(captureName);
+	else
+		theApp.emulator.emuWriteBMP(captureName);
+
+	CString msg = winResLoadString(IDS_SCREEN_CAPTURE);
+	systemScreenMessage(msg);
+}
+
+#include "GSACodeSelect.h"
+#include "../gba/GBACheats.h"
+#include "../gb/gbCheats.h"
+
+bool winImportGSACodeFile(CString& fileName)
+{
+	FILE *f = fopen(fileName, "rb");
+
+	if (f == NULL)
+	{
+		systemMessage(MSG_CANNOT_OPEN_FILE, "Cannot open file %s", fileName);
+		return false;
+	}
+
+	u32 len;
+	fread(&len, 1, 4, f);
+	if (len != 14)
+	{
+		fclose(f);
+		systemMessage(MSG_UNSUPPORTED_CODE_FILE, "Unsupported code file %s",
+		              fileName);
+		return false;
+	}
+	char buffer[16];
+	fread(buffer, 1, 14, f);
+	buffer[14] = 0;
+	if (memcmp(buffer, "SharkPortCODES", 14))
+	{
+		fclose(f);
+		systemMessage(MSG_UNSUPPORTED_CODE_FILE, "Unsupported code file %s",
+		              fileName);
+		return false;
+	}
+	fseek(f, 0x1e, SEEK_SET);
+	fread(&len, 1, 4, f);
+	int game = 0;
+	if (len > 1)
+	{
+		GSACodeSelect dlg(f);
+		game = dlg.DoModal();
+	}
+	fclose(f);
+
+	bool v3 = false;
+
+	int index = fileName.ReverseFind('.');
+
+	if (index != -1)
+	{
+		if (fileName.Right(3).CompareNoCase("XPC") == 0)
+			v3 = true;
+	}
+
+	if (game != -1)
+	{
+		return cheatsImportGSACodeFile(fileName, game, v3);
+	}
+
+	return true;
+}
+
+void winLoadCheatList(const char *name)
+{
+	bool res = false;
+
+	if (theApp.cartridgeType == 0)
+		res = cheatsLoadCheatList(name);
+	else
+		res = gbCheatsLoadCheatList(name);
+
+	if (res)
+		systemScreenMessage(winResLoadString(IDS_LOADED_CHEATS));
+}
+
+void winSaveCheatList(const char *name)
+{
+	if (theApp.cartridgeType == 0)
+		cheatsSaveCheatList(name);
+	else
+		gbCheatsSaveCheatList(name);
+}
+
+void winLoadCheatListDefault()
+{
+	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
+
+	winLoadCheatList(cheatName);
+}
+
+void winSaveCheatListDefault()
+{
+	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
+
+	winSaveCheatList(cheatName);
+}
+
+void winReadBatteryFile()
+{
+	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+
+	bool res = false;
+
+	if (theApp.emulator.emuReadBattery)
+		res = theApp.emulator.emuReadBattery(batteryName);
+
+	if (res)
+		systemScreenMessage(winResLoadString(IDS_LOADED_BATTERY));
+}
+
+void winWriteBatteryFile()
+{
+	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+
+	if (theApp.emulator.emuWriteBattery)
+		theApp.emulator.emuWriteBattery(batteryName);
+}
+
+bool winReadSaveGame(const char *name)
+{
+	if (theApp.emulator.emuReadState)
+		return theApp.emulator.emuReadState(name);
+	return false;
+}
+
+bool winWriteSaveGame(const char *name)
+{
+	if (theApp.emulator.emuWriteState)
+		return theApp.emulator.emuWriteState(name);
+	return false;
 }

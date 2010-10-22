@@ -51,7 +51,7 @@
 
 #include "vbalua.h"
 
-extern int emulating; // from VBA.cpp
+extern int emulating; // from system.cpp
 
 SMovie Movie;
 bool   loadingMovie		   = false;
@@ -266,7 +266,7 @@ static long file_length(FILE *fp)
 	return length;
 }
 
-static void truncateMovie()
+static void truncate_movie()
 {
 	// truncate movie to header.length_frames length
 	// NOTE: it's certain that the savestate block is never after the
@@ -303,7 +303,7 @@ static void change_state(MovieState new_state)
 
 	if (new_state == MOVIE_STATE_NONE)
 	{
-		truncateMovie();
+		truncate_movie();
 
 		fclose(Movie.file);
 		Movie.file		   = NULL;
@@ -572,7 +572,7 @@ static void HardResetAndSRAMClear()
 	GetBatterySaveName(filename);
 	remove(filename);     // delete the damn SRAM file
 	extern bool noWriteNextBatteryFile; noWriteNextBatteryFile = true;     // keep it from being resurrected from RAM
-	((MainWnd *)theApp.m_pMainWnd)->FileRun();     // start running the game
+	((MainWnd *)theApp.m_pMainWnd)->winFileRun();     // start running the game
 #   else
 	char fname [1024];
 	GetBatterySaveName(fname);
@@ -827,6 +827,14 @@ static void SetRecordEmuSettings()
 #   else
 	/// FIXME
 #   endif
+}
+
+uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly)
+{
+	if (controllerNum < 0 || controllerNum >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
+		return 0;
+
+	return normalOnly ? (currentButtons[controllerNum] & BUTTON_REGULAR_MASK) : currentButtons[controllerNum];
 }
 
 int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags)
@@ -1511,14 +1519,6 @@ bool8 VBAMovieSwitchToRecording()
 	return true;
 }
 
-uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly)
-{
-	if (controllerNum < 0 || controllerNum >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
-		return 0;
-
-	return normalOnly ? (currentButtons[controllerNum] & BUTTON_REGULAR_MASK) : currentButtons[controllerNum];
-}
-
 uint32 VBAMovieGetState()
 {
 	if (!VBAMovieActive())
@@ -1591,7 +1591,7 @@ void VBAMovieSetPauseAt(int at)
 	Movie.pauseFrame = at;
 }
 
-void VBAMovieConvertOld()
+void VBAMovieConvertCurrent()
 {
 	if (!VBAMovieActive())
 	{
@@ -1634,7 +1634,7 @@ void VBAMovieConvertOld()
 	flush_movie();
 }
 
-void VBAMovieExtractFromSavestate()
+void VBAMovieExtractFromSnapshot()
 {
 	// Currently, snapshots taken from a movie don't contain the initial SRAM or savestate of the movie, 
 	// even if the movie was recorded from either of them. If a snapshot was taken at the first frame

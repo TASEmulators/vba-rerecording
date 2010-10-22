@@ -418,7 +418,7 @@ void GBOamView::save()
 
 	LPCTSTR exts[] = {".png", ".bmp", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_PNG);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_PNG);
 	CString title  = winResLoadString(IDS_SELECT_CAPTURE_NAME);
 
 	FileDlg dlg(this,

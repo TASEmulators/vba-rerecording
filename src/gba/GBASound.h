@@ -59,6 +59,7 @@ extern void soundShutdown();
 extern bool soundInit();
 extern void soundPause();
 extern void soundResume();
+extern void soundToggle(int);
 extern void soundEnable(int);
 extern void soundDisable(int);
 extern void soundSetMuted(bool isMuted);

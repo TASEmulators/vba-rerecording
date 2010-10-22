@@ -78,15 +78,7 @@ struct EmulatedSystemCounters
 	bool8 laggedLast;
 };
 
-#if (defined(WIN32) && !defined(SDL))
-#   include "../win32/stdafx.h"
-#   include "../win32/MainWnd.h"
-#   include "../win32/VBA.h"
-	#define theEmulator (theApp.emulator)
-#else
-	extern struct EmulatedSystem	emulator;
-	#define theEmulator (emulator)
-#endif
+extern struct EmulatedSystem theEmulator;
 
 extern void log(const char *, ...);
 

@@ -424,9 +424,9 @@ void MainWnd::OnUpdateToolsDebugGdb(CCmdUI*pCmdUI)
 void MainWnd::OnToolsDebugLoadandwait()
 {
 	theApp.winCheckFullscreen();
-	if (fileOpenSelect(0))
+	if (winFileOpenSelect(0))
 	{
-		if (FileRun())
+		if (winFileRun())
 		{
 			if (theApp.cartridgeType != 0)
 			{
@@ -511,7 +511,7 @@ void MainWnd::OnToolsSoundStartrecording()
 
 	LPCTSTR exts[] = { ".wav", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_WAV);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_WAV);
 	CString title  = winResLoadString(IDS_SELECT_WAV_NAME);
 
 	wavName = winGetDestFilename(wavName, IDS_WAV_DIR, exts[0]);
@@ -578,7 +578,7 @@ void MainWnd::OnToolsStartAVIRecording()
 
 	LPCTSTR exts[] = { ".avi", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_AVI);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_AVI);
 	CString title  = winResLoadString(IDS_SELECT_AVI_NAME);
 
 	aviName = winGetDestFilename(aviName, IDS_AVI_DIR, exts[0]);
@@ -832,15 +832,27 @@ void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI)
 }
 
 // temporary
-void MainWnd::OnToolsMovieConvertOld()
+void MainWnd::OnToolsMovieConvertCurrent()
 {
-	extern void VBAMovieConvertOld();
-	VBAMovieConvertOld();
+	extern void VBAMovieConvertCurrent();
+	VBAMovieConvertCurrent();
 }
 
-void MainWnd::OnUpdateToolsMovieConvertOld(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsMovieConvertCurrent(CCmdUI*pCmdUI)
 {
-	VBAMovieActive();
+	pCmdUI->Enable(VBAMovieActive());
+}
+
+// TODO
+void MainWnd::OnToolsMovieExtractFromSnapshot()
+{
+	extern void VBAMovieExtractFromSnapshot();
+	VBAMovieExtractFromSnapshot();
+}
+
+void MainWnd::OnUpdateToolsMovieExtractFromSnapshot(CCmdUI*pCmdUI)
+{
+	pCmdUI->Enable(FALSE);
 }
 
 void MainWnd::OnToolsRewind()

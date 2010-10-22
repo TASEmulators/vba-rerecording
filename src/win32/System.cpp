@@ -4,6 +4,7 @@
 #include "Sound.h"
 #include "Input.h"
 #include "IUpdate.h"
+#include "WinMiscUtil.h"
 #include "WinResUtil.h"
 #include "resource.h"
 #include "VBA.h"
@@ -20,6 +21,8 @@
 #include "../common/nesvideos-piece.h"
 #include "../version.h"
 #include <cassert>
+
+struct EmulatedSystem theEmulator;
 
 u32	 RGB_LOW_BITS_MASK = 0;
 int	 emulating		   = 0;
@@ -48,6 +51,8 @@ u32	  currentButtons [4] = { 0, 0, 0, 0 };
 #define BMP_BUFFER_MAX_DEPTH (4)
 static u8 bmpBuffer[BMP_BUFFER_MAX_WIDTH * BMP_BUFFER_MAX_HEIGHT * BMP_BUFFER_MAX_DEPTH];
 
+// systemXYZ: Win32 stuff
+
 // input
 
 void systemSetSensorX(int32 x)
@@ -73,72 +78,6 @@ int32 systemGetSensorX()
 int32 systemGetSensorY()
 {
 	return sensorY;
-}
-
-// unused
-// FIXME: This should be moved to the right place
-void systemDoMotionSensor(int i)
-{
-//	extern bool8 cpuEEPROMSensorEnabled;
-
-	// handle motion sensor input
-	if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
-	{
-		sensorX += 3;
-		if (sensorX > 2197)
-			sensorX = 2197;
-		if (sensorX < 2047)
-			sensorX = 2057;
-	}
-	else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
-	{
-		sensorX -= 3;
-		if (sensorX < 1897)
-			sensorX = 1897;
-		if (sensorX > 2047)
-			sensorX = 2037;
-	}
-	else if (sensorX > 2047)
-	{
-		sensorX -= 2;
-		if (sensorX < 2047)
-			sensorX = 2047;
-	}
-	else
-	{
-		sensorX += 2;
-		if (sensorX > 2047)
-			sensorX = 2047;
-	}
-
-	if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
-	{
-		sensorY += 3;
-		if (sensorY > 2197)
-			sensorY = 2197;
-		if (sensorY < 2047)
-			sensorY = 2057;
-	}
-	else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
-	{
-		sensorY -= 3;
-		if (sensorY < 1897)
-			sensorY = 1897;
-		if (sensorY > 2047)
-			sensorY = 2037;
-	}
-	else if (sensorY > 2047)
-	{
-		sensorY -= 2;
-		if (sensorY < 2047)
-			sensorY = 2047;
-	}
-	else
-	{
-		sensorY += 2;
-		if (sensorY > 2047)
-			sensorY = 2047;
-	}
 }
 
 int systemGetDefaultJoypad()
@@ -443,8 +382,7 @@ void systemRedrawScreen()
 
 void systemScreenCapture(int captureNumber)
 {
-	if (theApp.m_pMainWnd)
-		((MainWnd *)theApp.m_pMainWnd)->screenCapture(captureNumber);
+	winScreenCapture(captureNumber);
 
 	//if (theApp.m_pMainWnd)
 	//	theApp.m_pMainWnd->PostMessage(WM_COMMAND, (WPARAM)ID_FILE_QUICKSCREENCAPTURE, (LPARAM)NULL);
@@ -621,7 +559,7 @@ void systemFrame(int rate)
 		{
 			if (--systemSaveUpdateCounter <= SYSTEM_SAVE_NOT_UPDATED)
 			{
-				((MainWnd *)theApp.m_pMainWnd)->writeBatteryFile();
+				winWriteBatteryFile();
 				systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 			}
 		}
@@ -759,7 +697,77 @@ bool systemPauseOnFrame()
 	return false;
 }
 
+// FIXME: now platform-independant stuff
 // it should be admitted that the naming schema/code organization is a whole mess
+// these things should be moved somewhere else
+
+// since this is supposed to be part of the core emulation, it shouldn't be moved to such a place as Util.cpp
+// currently unused
+void systemUpdateMotionSensor(int i)
+{
+//	extern bool8 cpuEEPROMSensorEnabled;
+
+	// handle motion sensor input
+	if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
+	{
+		sensorX += 3;
+		if (sensorX > 2197)
+			sensorX = 2197;
+		if (sensorX < 2047)
+			sensorX = 2057;
+	}
+	else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
+	{
+		sensorX -= 3;
+		if (sensorX < 1897)
+			sensorX = 1897;
+		if (sensorX > 2047)
+			sensorX = 2037;
+	}
+	else if (sensorX > 2047)
+	{
+		sensorX -= 2;
+		if (sensorX < 2047)
+			sensorX = 2047;
+	}
+	else
+	{
+		sensorX += 2;
+		if (sensorX > 2047)
+			sensorX = 2047;
+	}
+
+	if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
+	{
+		sensorY += 3;
+		if (sensorY > 2197)
+			sensorY = 2197;
+		if (sensorY < 2047)
+			sensorY = 2057;
+	}
+	else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
+	{
+		sensorY -= 3;
+		if (sensorY < 1897)
+			sensorY = 1897;
+		if (sensorY > 2047)
+			sensorY = 2037;
+	}
+	else if (sensorY > 2047)
+	{
+		sensorY -= 2;
+		if (sensorY < 2047)
+			sensorY = 2047;
+	}
+	else
+	{
+		sensorY += 2;
+		if (sensorY > 2047)
+			sensorY = 2047;
+	}
+}
+
+// VBAxyz stuff are not part of the core. Util.cpp might be a suitable place
 #include "ram_search.h"
 
 void VBAOnEnteringFrameBoundary()

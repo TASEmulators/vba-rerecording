@@ -272,7 +272,7 @@ void GBMapView::OnSave()
 
 	LPCTSTR exts[] = {".png", ".bmp", NULL };
 	CString title  = winResLoadString(IDS_SELECT_CAPTURE_NAME);
-	CString filter = theApp.winLoadFilter(IDS_FILTER_PNG);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_PNG);
 
 	FileDlg dlg(this,
 	            filename,

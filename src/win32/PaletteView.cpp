@@ -112,7 +112,7 @@ void PaletteView::save(int which)
 
 	LPCTSTR exts[] = {".pal", ".pal", ".act", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_PAL);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_PAL);
 	CString title  = winResLoadString(IDS_SELECT_PALETTE_NAME);
 	FileDlg dlg(this,
 	            captureBuffer,

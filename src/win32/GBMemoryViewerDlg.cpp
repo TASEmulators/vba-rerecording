@@ -349,7 +349,7 @@ void GBMemoryViewerDlg::OnSave()
 
 	LPCTSTR exts[] = { ".dmp", NULL };
 
-	CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 
 	if (dlg.DoModal() == IDOK)
@@ -392,7 +392,7 @@ void GBMemoryViewerDlg::OnLoad()
 {
 	CString buffer;
 	LPCTSTR exts[] = { ".dmp", NULL };
-	CString filter = theApp.winLoadFilter(IDS_FILTER_DUMP);
+	CString filter = theApp.winResLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 
 	FileDlg file(this,

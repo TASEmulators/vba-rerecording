@@ -51,18 +51,18 @@ extern void remoteCleanUp();
 void MainWnd::OnFileOpen()
 {
 	theApp.winCheckFullscreen();
-	if (fileOpenSelect(0))
+	if (winFileOpenSelect(0))
 	{
-		FileRun();
+		winFileRun();
 	}
 }
 
 void MainWnd::OnFileOpenGBx()
 {
 	theApp.winCheckFullscreen();
-	if (fileOpenSelect(1))
+	if (winFileOpenSelect(1))
 	{
-		FileRun();
+		winFileRun();
 	}
 }
 
@@ -108,7 +108,7 @@ BOOL MainWnd::OnFileRecentFile(UINT nID)
 	if (theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1].GetLength())
 	{
 		theApp.szFile = theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1];
-		if (FileRun())
+		if (winFileRun())
 			emulating = TRUE;
 		else
 		{
@@ -153,7 +153,7 @@ void MainWnd::OnFileClose()
 	{
 		if (theApp.autoSaveLoadCheatList)
 			winSaveCheatListDefault();
-		writeBatteryFile();
+		winWriteBatteryFile();
 		soundPause();
 		theApp.emulator.emuCleanUp();
 		CloseRamWindows();
@@ -176,7 +176,7 @@ void MainWnd::OnFileLoad()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { ".sgm", NULL };
-	CString filter = winLoadFilter(IDS_FILTER_SGM);
+	CString filter = winResLoadFilter(IDS_FILTER_SGM);
 	CString title  = winResLoadString(IDS_SELECT_SAVE_GAME_NAME);
 
 	CString saveName = winGetDestFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
@@ -186,7 +186,7 @@ void MainWnd::OnFileLoad()
 
 	if (dlg.DoModal() == IDOK)
 	{
-		bool res = loadSaveGame(dlg.GetPathName());
+		bool res = winReadSaveGame(dlg.GetPathName());
 
 		theApp.rewindCount      = 0;
 		theApp.rewindCounter    = 0;
@@ -208,7 +208,7 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 
 	CString filename = winGetSavestateFilename(theApp.filename, nID);
 
-	bool res = loadSaveGame(filename);
+	bool res = winReadSaveGame(filename);
 
 	// deleting rewinds because you loaded a save state is stupid
 ///  theApp.rewindCount = 0;
@@ -253,7 +253,7 @@ void MainWnd::OnFileSave()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { ".sgm", NULL };
-	CString filter = winLoadFilter(IDS_FILTER_SGM);
+	CString filter = winResLoadFilter(IDS_FILTER_SGM);
 	CString title  = winResLoadString(IDS_SELECT_SAVE_GAME_NAME);
 
 	CString saveName = winGetDestFilename(theApp.filename, IDS_SAVE_DIR, exts[0]);
@@ -263,7 +263,7 @@ void MainWnd::OnFileSave()
 
 	if (dlg.DoModal() == IDOK)
 	{
-		bool res = writeSaveGame(dlg.GetPathName());
+		bool res = winWriteSaveGame(dlg.GetPathName());
 		if (res)
 			systemScreenMessage(winResLoadString(IDS_WROTE_STATE));
 	}
@@ -283,7 +283,7 @@ BOOL MainWnd::OnFileSaveSlot(UINT nID)
 
 	CString filename = winGetSavestateFilename(theApp.filename, nID);
 
-	bool res = writeSaveGame(filename);
+	bool res = winWriteSaveGame(filename);
 
 	CString format = winResLoadString(IDS_WROTE_STATE_N);
 	CString buffer;
@@ -311,7 +311,7 @@ void MainWnd::OnFileImportBatteryfile()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { ".sav", NULL };
-	CString filter = winLoadFilter(IDS_FILTER_SAV);
+	CString filter = winResLoadFilter(IDS_FILTER_SAV);
 	CString title  = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
 	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
@@ -353,7 +353,7 @@ void MainWnd::OnFileImportGamesharkcodefile()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { NULL };
-	CString filter = theApp.cartridgeType == 0 ? winLoadFilter(IDS_FILTER_SPC) : winLoadFilter(IDS_FILTER_GCF);
+	CString filter = theApp.cartridgeType == 0 ? winResLoadFilter(IDS_FILTER_SPC) : winResLoadFilter(IDS_FILTER_GCF);
 	CString title  = winResLoadString(IDS_SELECT_CODE_FILE);
 
 	FileDlg dlg(this, "", filter, 0, "", exts, "", title, false, true);
@@ -376,7 +376,7 @@ void MainWnd::OnFileImportGamesharkcodefile()
 		res = gbCheatReadGSCodeFile(file);
 	else
 	{
-		res = fileImportGSACodeFile(file);
+		res = winImportGSACodeFile(file);
 	}
 }
 
@@ -390,7 +390,7 @@ void MainWnd::OnFileImportGamesharksnapshot()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { NULL };
-	CString filter = theApp.cartridgeType == 1 ? winLoadFilter(IDS_FILTER_GBS) : winLoadFilter(IDS_FILTER_SPS);
+	CString filter = theApp.cartridgeType == 1 ? winResLoadFilter(IDS_FILTER_GBS) : winResLoadFilter(IDS_FILTER_SPS);
 	CString title  = winResLoadString(IDS_SELECT_SNAPSHOT_FILE);
 
 	FileDlg dlg(this, "", filter, 0, "", exts, "", title, false, true);
@@ -423,7 +423,7 @@ void MainWnd::OnFileExportBatteryfile()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = {".sav", ".dat", NULL };
-	CString filter = winLoadFilter(IDS_FILTER_SAV);
+	CString filter = winResLoadFilter(IDS_FILTER_SAV);
 	CString title  = winResLoadString(IDS_SELECT_BATTERY_FILE);
 
 	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, exts[0]);
@@ -466,7 +466,7 @@ void MainWnd::OnFileExportGamesharksnapshot()
 
 	LPCTSTR exts[] = {".sps", NULL };
 
-	CString filter = winLoadFilter(IDS_FILTER_SPS);
+	CString filter = winResLoadFilter(IDS_FILTER_SPS);
 	CString title  = winResLoadString(IDS_SELECT_SNAPSHOT_FILE);
 
 	CString name = winGetDestFilename(theApp.filename, CString(), exts[0]);
@@ -495,7 +495,7 @@ void MainWnd::OnFileQuickScreencapture()
 	extern int32 gbCaptureNumber; // GB.cpp
 
 	int vbaCaptureNumber = systemIsRunningGBA() ? captureNumber : gbCaptureNumber;
-	screenCapture(vbaCaptureNumber - 1);
+	winScreenCapture(vbaCaptureNumber - 1);
 }
 
 void MainWnd::OnFileScreencapture()
@@ -504,7 +504,7 @@ void MainWnd::OnFileScreencapture()
 
 	LPCTSTR exts[] = {".png", ".bmp", NULL };
 
-	CString filter = winLoadFilter(IDS_FILTER_PNG);
+	CString filter = winResLoadFilter(IDS_FILTER_PNG);
 	CString title  = winResLoadString(IDS_SELECT_CAPTURE_NAME);
 
 	CString ext;
@@ -587,63 +587,6 @@ void MainWnd::OnFileTogglemenu()
 void MainWnd::OnUpdateFileTogglemenu(CCmdUI*pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption > VIDEO_4X);
-}
-
-bool MainWnd::fileImportGSACodeFile(CString& fileName)
-{
-	FILE *f = fopen(fileName, "rb");
-
-	if (f == NULL)
-	{
-		systemMessage(MSG_CANNOT_OPEN_FILE, "Cannot open file %s", fileName);
-		return false;
-	}
-
-	u32 len;
-	fread(&len, 1, 4, f);
-	if (len != 14)
-	{
-		fclose(f);
-		systemMessage(MSG_UNSUPPORTED_CODE_FILE, "Unsupported code file %s",
-		              fileName);
-		return false;
-	}
-	char buffer[16];
-	fread(buffer, 1, 14, f);
-	buffer[14] = 0;
-	if (memcmp(buffer, "SharkPortCODES", 14))
-	{
-		fclose(f);
-		systemMessage(MSG_UNSUPPORTED_CODE_FILE, "Unsupported code file %s",
-		              fileName);
-		return false;
-	}
-	fseek(f, 0x1e, SEEK_SET);
-	fread(&len, 1, 4, f);
-	int game = 0;
-	if (len > 1)
-	{
-		GSACodeSelect dlg(f);
-		game = dlg.DoModal();
-	}
-	fclose(f);
-
-	bool v3 = false;
-
-	int index = fileName.ReverseFind('.');
-
-	if (index != -1)
-	{
-		if (fileName.Right(3).CompareNoCase("XPC") == 0)
-			v3 = true;
-	}
-
-	if (game != -1)
-	{
-		return cheatsImportGSACodeFile(fileName, game, v3);
-	}
-
-	return true;
 }
 
 void MainWnd::OnFileSavegameOldestslot()

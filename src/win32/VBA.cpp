@@ -324,7 +324,7 @@ VBA theApp;
 /////////////////////////////////////////////////////////////////////////////
 // VBA construction
 
-VBA::VBA()
+VBA::VBA() : emulator(::theEmulator)
 {
 	mode320Available	 = false;
 	mode640Available	 = false;
@@ -547,8 +547,8 @@ VBA::~VBA()
 	if (gbRom != NULL || rom != NULL)
 	{
 		if (autoSaveLoadCheatList)
-			((MainWnd *)m_pMainWnd)->winSaveCheatListDefault();
-		((MainWnd *)m_pMainWnd)->writeBatteryFile();
+			winSaveCheatListDefault();
+		winWriteBatteryFile();
 		cheatSearchCleanup(&cheatSearchData);
 		emulator.emuCleanUp();
 
@@ -848,7 +848,7 @@ invalidArgument:
  */
 		if (szFile.GetLength() > 0)
 		{
-			if (((MainWnd *)m_pMainWnd)->FileRun())
+			if (((MainWnd *)theApp.m_pMainWnd)->winFileRun())
 				emulating = true;
 			else
 				emulating = false;
@@ -1202,33 +1202,33 @@ void VBA::saveRewindStateIfNecessary()
 	}
 
 	// also update/cache some frame search stuff
-	if (theApp.frameSearching)
+	if (frameSearching)
 	{
 		extern SMovie Movie;
 		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? GBASystemCounters.frameCount : Movie.currentFrame;
 		int endFrame = theApp.frameSearchStart + theApp.frameSearchLength;
-		theApp.frameSearchSkipping	= (curFrame < endFrame);
-		theApp.frameSearchFirstStep = false;
+		frameSearchSkipping	= (curFrame < endFrame);
+		frameSearchFirstStep = false;
 
 		if (curFrame == endFrame)
 		{
 			// cache intermediate state to speed up searching forward
-			theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE*1], REWIND_SIZE);
+			emulator.emuWriteMemState(&frameSearchMemory[REWIND_SIZE * 1], REWIND_SIZE);
 		}
 
 		if (curFrame == endFrame + 1)
 		{
-			theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE*2], REWIND_SIZE);
-			theApp.frameSearchLoadValid = true;
+			emulator.emuWriteMemState(&frameSearchMemory[REWIND_SIZE * 2], REWIND_SIZE);
+			frameSearchLoadValid = true;
 		}
 	}
 	else
 	{
-		theApp.frameSearchFirstStep = false;
+		frameSearchFirstStep = false;
 
-		assert(!theApp.frameSearchSkipping);
+		assert(!frameSearchSkipping);
 		// just in case
-		theApp.frameSearchSkipping = false;
+		frameSearchSkipping = false;
 	}
 }
 
@@ -1887,7 +1887,7 @@ void VBA::winRemoveUpdateListener(IUpdateListener *l)
 	}
 }
 
-CString VBA::winLoadFilter(UINT id)
+CString VBA::winResLoadFilter(UINT id)
 {
 	CString res = winResLoadString(id);
 	res.Replace('_', '|');
