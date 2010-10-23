@@ -218,6 +218,8 @@ void MainWnd::OnDebugNextframe()
 {
 	if (theApp.paused)
 		theApp.paused = false;
+	if (theApp.muteFrameAdvance)
+		theApp.frameAdvanceMuteNow = true;
 	theApp.winPauseNextFrame = true;
 }
 

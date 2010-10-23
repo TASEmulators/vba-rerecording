@@ -957,7 +957,7 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 	if (theApp.muteWhenInactive)
 	{
-		soundSetMuted(!activated);
+		soundSetQuiet(!activated);
 	}
 
 	if (theApp.paused && emulating)

@@ -62,6 +62,8 @@ extern void soundResume();
 extern void soundToggle(int);
 extern void soundEnable(int);
 extern void soundDisable(int);
+extern void soundSetQuiet(bool isQuiet);
+extern bool soundGetQuiet();
 extern void soundSetMuted(bool isMuted);
 extern int  soundGetEnable();
 extern int  soundGetMuted();

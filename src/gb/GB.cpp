@@ -42,8 +42,6 @@
 
 extern soundtick_t GB_USE_TICKS_AS;
 
-extern int32 soundFrameSoundWritten;
-
 #ifdef __GNUC__
 #define _stricmp strcasecmp
 #endif
@@ -3337,7 +3335,6 @@ void gbEmulate(int ticksToStop)
 						}
 
 						systemFrame(60);
-						soundFrameSoundWritten = 0;
 
 						++GBSystemCounters.frameCount;
 						if (GBSystemCounters.lagged)
@@ -3397,10 +3394,6 @@ void gbEmulate(int ticksToStop)
 
 						if (pauseAfterFrameAdvance)
 						{
-#if (defined(WIN32) && !defined(SDL))
-							if (theApp.muteFrameAdvance)
-								theApp.frameAdvanceMuteNow = true;
-#endif
 							systemSetPause(true);
 						}
 						else
