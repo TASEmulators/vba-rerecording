@@ -36,7 +36,7 @@ VBM is the movie capture format of Visual Boy Advance
        bit 3: (unsupported) must be "0" or the movie file is considered invalid (legacy).
        bit 4: (lagReduction) if "0" and the movie is of a GBA game, the movie was made using the old excessively laggy GBA timing.
        bit 5: (gbcHdma5Fix) if "0" and the movie is of a GBC game, the movie was made using the old buggy HDMA5 timing.
-       bit 6: (echoRAMFix)  if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with Echo RAM Fix on, otherwise it wasn't.
+       bit 6: (echoRAMFix)  if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with Echo RAM Fix on, otherwise it was made with Echo RAM Fix off.
        bit 7: reserved, set to 0.
 018 4-byte little-endian unsigned int: theApp.winSaveType (value of that emulator option)
 01C 4-byte little-endian unsigned int: theApp.winFlashSize (value of that emulator option)
