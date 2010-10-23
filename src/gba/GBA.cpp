@@ -3848,6 +3848,8 @@ void CPULoop(int _ticks)
 			}
 		}
 
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
+
 		GBASystemCounters.lagged = true;
 
 		newFrame = false;
@@ -4075,8 +4077,6 @@ updateLoop:
 
 							speedup	 = (ext & 1) ? true : false;
 							capture |= (ext & 2) ? true : false;
-
-							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 							Update_RAM_Search(); // updates RAM search and RAM watch
 
