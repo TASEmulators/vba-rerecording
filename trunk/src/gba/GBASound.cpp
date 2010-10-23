@@ -38,43 +38,43 @@ soundtick_t USE_TICKS_AS = 380; // (16777216.0/44100.0); // FIXME: (16777216.0/2
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
-#define NOISE_MAGIC (2097152.0/44100.0)
+#define NOISE_MAGIC (2097152.0 / 44100.0)
 
 extern bool8 stopState;
 
 u8 soundWavePattern[4][32] = {
-	{0x01, 0x01, 0x01, 0x01,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff},
-	{0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff},
-	{0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff},
-	{0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0x01, 0x01, 0x01, 0x01,
-	 0xff, 0xff, 0xff, 0xff,
-	 0xff, 0xff, 0xff, 0xff}
+	{ 0x01, 0x01, 0x01, 0x01,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff },
+	{ 0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff },
+	{ 0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff },
+	{ 0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0x01, 0x01, 0x01, 0x01,
+	  0xff, 0xff, 0xff, 0xff,
+	  0xff, 0xff, 0xff, 0xff }
 };
 
 int32 soundFreqRatio[8] = {
@@ -109,197 +109,199 @@ int32 soundShiftClock[16] = {
 
 int32 soundVolume = 0;
 
-u8  soundBuffer[6][735];
+u8	soundBuffer[6][735];
 u16 soundFinalWave[1470];
-u16 soundFrameSound[735*30*2]; // for avi logging
+u16 soundFrameSound[735 * 30 * 2]; // for avi logging
 
-u32         soundBufferLen      = 1470;
-u32         soundBufferTotalLen = 14700;
-int32       soundQuality        = 2;
-int32       soundPaused         = 1;
-int32       soundPlay         = 0;
-soundtick_t soundTicks        = soundQuality * USE_TICKS_AS;
-soundtick_t SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
-u32         soundNextPosition = 0;
+u32			soundBufferLen		= 1470;
+u32			soundBufferTotalLen = 14700;
+int32		soundQuality		= 2;
+int32		soundPaused			= 1;
+int32		soundPlay			= 0;
+soundtick_t soundTicks			= soundQuality * USE_TICKS_AS;
+soundtick_t SOUND_CLOCK_TICKS	= soundQuality * USE_TICKS_AS;
+u32			soundNextPosition	= 0;
 
-int32 soundLevel1            = 0;
-int32 soundLevel2            = 0;
-int32 soundBalance           = 0;
-int32 soundMasterOn          = 0;
-u32   soundIndex             = 0;
-u32   soundBufferIndex       = 0;
+int32 soundLevel1 = 0;
+int32 soundLevel2 = 0;
+int32 soundBalance = 0;
+int32 soundMasterOn = 0;
+u32	  soundIndex = 0;
+u32	  soundBufferIndex		 = 0;
 int32 soundFrameSoundWritten = 0;
-int32 soundDebug             = 0;
-bool8 soundOffFlag           = false;
+int32 soundDebug			 = 0;
+bool8 soundOffFlag			 = false;
 
-int32 sound1On                = 0;
-int32 sound1ATL               = 0;
-int32 sound1Skip              = 0;
-int32 sound1Index             = 0;
-int32 sound1Continue          = 0;
-int32 sound1EnvelopeVolume    =  0;
-int32 sound1EnvelopeATL       = 0;
-int32 sound1EnvelopeUpDown    = 0;
+int32 sound1On = 0;
+int32 sound1ATL = 0;
+int32 sound1Skip = 0;
+int32 sound1Index = 0;
+int32 sound1Continue = 0;
+int32 sound1EnvelopeVolume	  =  0;
+int32 sound1EnvelopeATL		  = 0;
+int32 sound1EnvelopeUpDown	  = 0;
 int32 sound1EnvelopeATLReload = 0;
-int32 sound1SweepATL          = 0;
-int32 sound1SweepATLReload    = 0;
-int32 sound1SweepSteps        = 0;
-int32 sound1SweepUpDown       = 0;
-int32 sound1SweepStep         = 0;
-u8 *  sound1Wave              = soundWavePattern[2];
+int32 sound1SweepATL		  = 0;
+int32 sound1SweepATLReload	  = 0;
+int32 sound1SweepSteps		  = 0;
+int32 sound1SweepUpDown		  = 0;
+int32 sound1SweepStep		  = 0;
+u8 *  sound1Wave			  = soundWavePattern[2];
 
-int32 sound2On                = 0;
-int32 sound2ATL               = 0;
-int32 sound2Skip              = 0;
-int32 sound2Index             = 0;
-int32 sound2Continue          = 0;
-int32 sound2EnvelopeVolume    =  0;
-int32 sound2EnvelopeATL       = 0;
-int32 sound2EnvelopeUpDown    = 0;
+int32 sound2On = 0;
+int32 sound2ATL = 0;
+int32 sound2Skip = 0;
+int32 sound2Index = 0;
+int32 sound2Continue = 0;
+int32 sound2EnvelopeVolume	  =  0;
+int32 sound2EnvelopeATL		  = 0;
+int32 sound2EnvelopeUpDown	  = 0;
 int32 sound2EnvelopeATLReload = 0;
-u8 *  sound2Wave              = soundWavePattern[2];
+u8 *  sound2Wave			  = soundWavePattern[2];
 
-int32 sound3On          = 0;
-int32 sound3ATL         = 0;
-int32 sound3Skip        = 0;
-int32 sound3Index       = 0;
-int32 sound3Continue    = 0;
+int32 sound3On = 0;
+int32 sound3ATL			= 0;
+int32 sound3Skip		= 0;
+int32 sound3Index		= 0;
+int32 sound3Continue	= 0;
 int32 sound3OutputLevel = 0;
-int32 sound3Last        = 0;
-u8    sound3WaveRam[0x20];
-int32 sound3Bank         = 0;
-int32 sound3DataSize     = 0;
+int32 sound3Last		= 0;
+u8	  sound3WaveRam[0x20];
+int32 sound3Bank		 = 0;
+int32 sound3DataSize	 = 0;
 int32 sound3ForcedOutput = 0;
 
-int32 sound4On                = 0;
-int32 sound4Clock             = 0;
-int32 sound4ATL               = 0;
-int32 sound4Skip              = 0;
-int32 sound4Index             = 0;
-int32 sound4ShiftRight        = 0x7f;
-int32 sound4ShiftSkip         = 0;
-int32 sound4ShiftIndex        = 0;
-int32 sound4NSteps            = 0;
-int32 sound4CountDown         = 0;
-int32 sound4Continue          = 0;
-int32 sound4EnvelopeVolume    =  0;
-int32 sound4EnvelopeATL       = 0;
-int32 sound4EnvelopeUpDown    = 0;
+int32 sound4On = 0;
+int32 sound4Clock = 0;
+int32 sound4ATL = 0;
+int32 sound4Skip = 0;
+int32 sound4Index = 0;
+int32 sound4ShiftRight		  = 0x7f;
+int32 sound4ShiftSkip		  = 0;
+int32 sound4ShiftIndex		  = 0;
+int32 sound4NSteps			  = 0;
+int32 sound4CountDown		  = 0;
+int32 sound4Continue		  = 0;
+int32 sound4EnvelopeVolume	  =  0;
+int32 sound4EnvelopeATL		  = 0;
+int32 sound4EnvelopeUpDown	  = 0;
 int32 sound4EnvelopeATLReload = 0;
 
 int32 soundControl = 0;
 
-int32 soundDSFifoAIndex      = 0;
-int32 soundDSFifoACount      = 0;
+int32 soundDSFifoAIndex		 = 0;
+int32 soundDSFifoACount		 = 0;
 int32 soundDSFifoAWriteIndex = 0;
-bool8 soundDSAEnabled        = false;
+bool8 soundDSAEnabled		 = false;
 int32 soundDSATimer = 0;
-u8    soundDSFifoA[32];
-u8    soundDSAValue = 0;
+u8	  soundDSFifoA[32];
+u8	  soundDSAValue = 0;
 
-int32 soundDSFifoBIndex      = 0;
-int32 soundDSFifoBCount      = 0;
+int32 soundDSFifoBIndex		 = 0;
+int32 soundDSFifoBCount		 = 0;
 int32 soundDSFifoBWriteIndex = 0;
-bool8 soundDSBEnabled        = false;
+bool8 soundDSBEnabled		 = false;
 int32 soundDSBTimer = 0;
-u8    soundDSFifoB[32];
-u8    soundDSBValue = 0;
+u8	  soundDSFifoB[32];
+u8	  soundDSBValue = 0;
 
 int32 soundEnableFlag = 0x3ff;
 int32 soundMutedFlag  = 0;
 
-s16   soundFilter[4000];
-s16   soundRight[5] = { 0, 0, 0, 0, 0 };
-s16   soundLeft[5] = { 0, 0, 0, 0, 0 };
+bool soundQuiet	= 0;
+
+s16	  soundFilter[4000];
+s16	  soundRight[5] = { 0, 0, 0, 0, 0 };
+s16	  soundLeft[5] = { 0, 0, 0, 0, 0 };
 int32 soundEchoIndex = 0;
-bool8 soundEcho      = false;
-bool8 soundLowPass   = false;
-bool8 soundReverse   = false;
+bool8 soundEcho		 = false;
+bool8 soundLowPass	 = false;
+bool8 soundReverse	 = false;
 
 static int32  soundTicks_int32;
 static int32  SOUND_CLOCK_TICKS_int32;
 static int32  soundDSBValue_int32;
 variable_desc soundSaveStruct[] = {
-	{ &soundPaused,				sizeof(int32) },
-	{ &soundPlay,				sizeof(int32) },
-	{ &soundTicks_int32,		sizeof(int32) },
-	{ &SOUND_CLOCK_TICKS_int32, sizeof(int32) },
-	{ &soundLevel1,				sizeof(int32) },
-	{ &soundLevel2,				sizeof(int32) },
-	{ &soundBalance,			sizeof(int32) },
-	{ &soundMasterOn,			sizeof(int32) },
-	{ &soundIndex,				sizeof(int32) },
-	{ &sound1On,				sizeof(int32) },
-	{ &sound1ATL,				sizeof(int32) },
-	{ &sound1Skip,				sizeof(int32) },
-	{ &sound1Index,				sizeof(int32) },
-	{ &sound1Continue,			sizeof(int32) },
-	{ &sound1EnvelopeVolume,	sizeof(int32) },
-	{ &sound1EnvelopeATL,		sizeof(int32) },
-	{ &sound1EnvelopeATLReload, sizeof(int32) },
-	{ &sound1EnvelopeUpDown,	sizeof(int32) },
-	{ &sound1SweepATL,			sizeof(int32) },
-	{ &sound1SweepATLReload,	sizeof(int32) },
-	{ &sound1SweepSteps,		sizeof(int32) },
-	{ &sound1SweepUpDown,		sizeof(int32) },
-	{ &sound1SweepStep,			sizeof(int32) },
-	{ &sound2On,				sizeof(int32) },
-	{ &sound2ATL,				sizeof(int32) },
-	{ &sound2Skip,				sizeof(int32) },
-	{ &sound2Index,				sizeof(int32) },
-	{ &sound2Continue,			sizeof(int32) },
-	{ &sound2EnvelopeVolume,	sizeof(int32) },
-	{ &sound2EnvelopeATL,		sizeof(int32) },
-	{ &sound2EnvelopeATLReload, sizeof(int32) },
-	{ &sound2EnvelopeUpDown,	sizeof(int32) },
-	{ &sound3On,				sizeof(int32) },
-	{ &sound3ATL,				sizeof(int32) },
-	{ &sound3Skip,				sizeof(int32) },
-	{ &sound3Index,				sizeof(int32) },
-	{ &sound3Continue,			sizeof(int32) },
-	{ &sound3OutputLevel,		sizeof(int32) },
-	{ &sound4On,				sizeof(int32) },
-	{ &sound4ATL,				sizeof(int32) },
-	{ &sound4Skip,				sizeof(int32) },
-	{ &sound4Index,				sizeof(int32) },
-	{ &sound4Clock,				sizeof(int32) },
-	{ &sound4ShiftRight,		sizeof(int32) },
-	{ &sound4ShiftSkip,			sizeof(int32) },
-	{ &sound4ShiftIndex,		sizeof(int32) },
-	{ &sound4NSteps,			sizeof(int32) },
-	{ &sound4CountDown,			sizeof(int32) },
-	{ &sound4Continue,			sizeof(int32) },
-	{ &sound4EnvelopeVolume,	sizeof(int32) },
-	{ &sound4EnvelopeATL,		sizeof(int32) },
-	{ &sound4EnvelopeATLReload, sizeof(int32) },
-	{ &sound4EnvelopeUpDown,	sizeof(int32) },
-	{ &soundEnableFlag,			sizeof(int32) },
-	{ &soundControl,			sizeof(int32) },
-	{ &soundDSFifoAIndex,		sizeof(int32) },
-	{ &soundDSFifoACount,		sizeof(int32) },
-	{ &soundDSFifoAWriteIndex,	sizeof(int32) },
-	{ &soundDSAEnabled,			sizeof(bool8) },
-	{ &soundDSATimer,			sizeof(int32) },
-	{ &soundDSFifoA[0],                    32 },
-	{ &soundDSAValue,			sizeof(u8)    },
-	{ &soundDSFifoBIndex,		sizeof(int32) },
-	{ &soundDSFifoBCount,		sizeof(int32) },
-	{ &soundDSFifoBWriteIndex,	sizeof(int32) },
-	{ &soundDSBEnabled,			sizeof(int32) },
-	{ &soundDSBTimer,			sizeof(int32) },
-	{ &soundDSFifoB[0],                    32 },
-	{ &soundDSBValue_int32,		sizeof(int32) }, // save as int32 because of a mistake of the past.
-	{ &soundBuffer[0][0],				6*735 },
-	{ &soundFinalWave[0],				2*735 },
-	{ NULL,									0 }
+	{ &soundPaused,				sizeof(int32)					  },
+	{ &soundPlay,				sizeof(int32)					  },
+	{ &soundTicks_int32,		sizeof(int32)					  },
+	{ &SOUND_CLOCK_TICKS_int32, sizeof(int32)					  },
+	{ &soundLevel1,				sizeof(int32)					  },
+	{ &soundLevel2,				sizeof(int32)					  },
+	{ &soundBalance,			sizeof(int32)					  },
+	{ &soundMasterOn,			sizeof(int32)					  },
+	{ &soundIndex,				sizeof(int32)					  },
+	{ &sound1On,				sizeof(int32)					  },
+	{ &sound1ATL,				sizeof(int32)					  },
+	{ &sound1Skip,				sizeof(int32)					  },
+	{ &sound1Index,				sizeof(int32)					  },
+	{ &sound1Continue,			sizeof(int32)					  },
+	{ &sound1EnvelopeVolume,	sizeof(int32)					  },
+	{ &sound1EnvelopeATL,		sizeof(int32)					  },
+	{ &sound1EnvelopeATLReload, sizeof(int32)					  },
+	{ &sound1EnvelopeUpDown,	sizeof(int32)					  },
+	{ &sound1SweepATL,			sizeof(int32)					  },
+	{ &sound1SweepATLReload,	sizeof(int32)					  },
+	{ &sound1SweepSteps,		sizeof(int32)					  },
+	{ &sound1SweepUpDown,		sizeof(int32)					  },
+	{ &sound1SweepStep,			sizeof(int32)					  },
+	{ &sound2On,				sizeof(int32)					  },
+	{ &sound2ATL,				sizeof(int32)					  },
+	{ &sound2Skip,				sizeof(int32)					  },
+	{ &sound2Index,				sizeof(int32)					  },
+	{ &sound2Continue,			sizeof(int32)					  },
+	{ &sound2EnvelopeVolume,	sizeof(int32)					  },
+	{ &sound2EnvelopeATL,		sizeof(int32)					  },
+	{ &sound2EnvelopeATLReload, sizeof(int32)					  },
+	{ &sound2EnvelopeUpDown,	sizeof(int32)					  },
+	{ &sound3On,				sizeof(int32)					  },
+	{ &sound3ATL,				sizeof(int32)					  },
+	{ &sound3Skip,				sizeof(int32)					  },
+	{ &sound3Index,				sizeof(int32)					  },
+	{ &sound3Continue,			sizeof(int32)					  },
+	{ &sound3OutputLevel,		sizeof(int32)					  },
+	{ &sound4On,				sizeof(int32)					  },
+	{ &sound4ATL,				sizeof(int32)					  },
+	{ &sound4Skip,				sizeof(int32)					  },
+	{ &sound4Index,				sizeof(int32)					  },
+	{ &sound4Clock,				sizeof(int32)					  },
+	{ &sound4ShiftRight,		sizeof(int32)					  },
+	{ &sound4ShiftSkip,			sizeof(int32)					  },
+	{ &sound4ShiftIndex,		sizeof(int32)					  },
+	{ &sound4NSteps,			sizeof(int32)					  },
+	{ &sound4CountDown,			sizeof(int32)					  },
+	{ &sound4Continue,			sizeof(int32)					  },
+	{ &sound4EnvelopeVolume,	sizeof(int32)					  },
+	{ &sound4EnvelopeATL,		sizeof(int32)					  },
+	{ &sound4EnvelopeATLReload, sizeof(int32)					  },
+	{ &sound4EnvelopeUpDown,	sizeof(int32)					  },
+	{ &soundEnableFlag,			sizeof(int32)					  },
+	{ &soundControl,			sizeof(int32)					  },
+	{ &soundDSFifoAIndex,		sizeof(int32)					  },
+	{ &soundDSFifoACount,		sizeof(int32)					  },
+	{ &soundDSFifoAWriteIndex,	sizeof(int32)					  },
+	{ &soundDSAEnabled,			sizeof(bool8)					  },
+	{ &soundDSATimer,			sizeof(int32)					  },
+	{ &soundDSFifoA[0],			32								  },
+	{ &soundDSAValue,			sizeof(u8)						  },
+	{ &soundDSFifoBIndex,		sizeof(int32)					  },
+	{ &soundDSFifoBCount,		sizeof(int32)					  },
+	{ &soundDSFifoBWriteIndex,	sizeof(int32)					  },
+	{ &soundDSBEnabled,			sizeof(int32)					  },
+	{ &soundDSBTimer,			sizeof(int32)					  },
+	{ &soundDSFifoB[0],			32								  },
+	{ &soundDSBValue_int32,		sizeof(int32)					  }, // save as int32 because of a mistake of the past.
+	{ &soundBuffer[0][0],		6 * 735							  },
+	{ &soundFinalWave[0],		2 * 735							  },
+	{ NULL,						0								  }
 };
 
 variable_desc soundSaveStructV2[] = {
-	{ &sound3WaveRam[0],			0x20 },
-	{ &sound3Bank,         sizeof(int32) },
-	{ &sound3DataSize,     sizeof(int32) },
-	{ &sound3ForcedOutput, sizeof(int32) },
-	{ NULL,                            0 }
+	{ &sound3WaveRam[0],   0x20							},
+	{ &sound3Bank,		   sizeof(int32)				},
+	{ &sound3DataSize,	   sizeof(int32)				},
+	{ &sound3ForcedOutput, sizeof(int32)				},
+	{ NULL,				   0							}
 };
 
 //variable_desc soundSaveStructV3[] = {
@@ -317,28 +319,28 @@ void soundEvent(u32 address, u8 data)
 	{
 	case NR10:
 		data &= 0x7f;
-		sound1SweepATL    = sound1SweepATLReload = 344 * ((data >> 4) & 7);
+		sound1SweepATL	  = sound1SweepATLReload = 344 * ((data >> 4) & 7);
 		sound1SweepSteps  = data & 7;
 		sound1SweepUpDown = data & 0x08;
-		sound1SweepStep   = 0;
-		ioMem[address]    = data;
+		sound1SweepStep	  = 0;
+		ioMem[address]	  = data;
 		break;
 	case NR11:
-		sound1Wave     = soundWavePattern[data >> 6];
-		sound1ATL      = 172 * (64 - (data & 0x3f));
+		sound1Wave	   = soundWavePattern[data >> 6];
+		sound1ATL	   = 172 * (64 - (data & 0x3f));
 		ioMem[address] = data;
 		break;
 	case NR12:
-		sound1EnvelopeUpDown    = data & 0x08;
+		sound1EnvelopeUpDown	= data & 0x08;
 		sound1EnvelopeATLReload = 689 * (data & 7);
 		if ((data & 0xF8) == 0)
 			sound1EnvelopeVolume = 0;
 		ioMem[address] = data;
 		break;
 	case NR13:
-		freq      = (((int)(ioMem[NR14] & 7)) << 8) | data;
+		freq	  = (((int)(ioMem[NR14] & 7)) << 8) | data;
 		sound1ATL = 172 * (64 - (ioMem[NR11] & 0x3f));
-		freq      = 2048 - freq;
+		freq	  = 2048 - freq;
 		if (freq)
 		{
 			sound1Skip = SOUND_MAGIC / freq;
@@ -348,10 +350,10 @@ void soundEvent(u32 address, u8 data)
 		ioMem[address] = data;
 		break;
 	case NR14:
-		data          &= 0xC7;
-		freq           = (((int)(data&7) << 8) | ioMem[NR13]);
-		freq           = 2048 - freq;
-		sound1ATL      = 172 * (64 - (ioMem[NR11] & 0x3f));
+		data &= 0xC7;
+		freq = (((int)(data & 7) << 8) | ioMem[NR13]);
+		freq = 2048 - freq;
+		sound1ATL	   = 172 * (64 - (ioMem[NR11] & 0x3f));
 		sound1Continue = data & 0x40;
 		if (freq)
 		{
@@ -366,32 +368,32 @@ void soundEvent(u32 address, u8 data)
 			sound1EnvelopeUpDown = ioMem[NR12] & 0x08;
 			sound1ATL = 172 * (64 - (ioMem[NR11] & 0x3f));
 			sound1EnvelopeATLReload = sound1EnvelopeATL = 689 * (ioMem[NR12] & 7);
-			sound1SweepATL    = sound1SweepATLReload = 344 * ((ioMem[NR10] >> 4) & 7);
-			sound1SweepSteps  = ioMem[NR10] & 7;
-			sound1SweepUpDown = ioMem[NR10] & 0x08;
-			sound1SweepStep   = 0;
+			sound1SweepATL			= sound1SweepATLReload = 344 * ((ioMem[NR10] >> 4) & 7);
+			sound1SweepSteps		= ioMem[NR10] & 7;
+			sound1SweepUpDown		= ioMem[NR10] & 0x08;
+			sound1SweepStep			= 0;
 
 			sound1Index = 0;
-			sound1On    = 1;
+			sound1On	= 1;
 		}
 		ioMem[address] = data;
 		break;
 	case NR21:
-		sound2Wave     = soundWavePattern[data >> 6];
-		sound2ATL      = 172 * (64 - (data & 0x3f));
+		sound2Wave	   = soundWavePattern[data >> 6];
+		sound2ATL	   = 172 * (64 - (data & 0x3f));
 		ioMem[address] = data;
 		break;
 	case NR22:
-		sound2EnvelopeUpDown    = data & 0x08;
+		sound2EnvelopeUpDown	= data & 0x08;
 		sound2EnvelopeATLReload = 689 * (data & 7);
 		if ((data & 0xF8) == 0)
 			sound2EnvelopeVolume = 0;
 		ioMem[address] = data;
 		break;
 	case NR23:
-		freq      = (((int)(ioMem[NR24] & 7)) << 8) | data;
+		freq	  = (((int)(ioMem[NR24] & 7)) << 8) | data;
 		sound2ATL = 172 * (64 - (ioMem[NR21] & 0x3f));
-		freq      = 2048 - freq;
+		freq	  = 2048 - freq;
 		if (freq)
 		{
 			sound2Skip = SOUND_MAGIC / freq;
@@ -401,10 +403,10 @@ void soundEvent(u32 address, u8 data)
 		ioMem[address] = data;
 		break;
 	case NR24:
-		data          &= 0xC7;
-		freq           = (((int)(data&7) << 8) | ioMem[NR23]);
-		freq           = 2048 - freq;
-		sound2ATL      = 172 * (64 - (ioMem[NR21] & 0x3f));
+		data &= 0xC7;
+		freq = (((int)(data & 7) << 8) | ioMem[NR23]);
+		freq = 2048 - freq;
+		sound2ATL	   = 172 * (64 - (ioMem[NR21] & 0x3f));
 		sound2Continue = data & 0x40;
 		if (freq)
 		{
@@ -421,7 +423,7 @@ void soundEvent(u32 address, u8 data)
 			sound2EnvelopeATLReload = sound2EnvelopeATL = 689 * (ioMem[NR22] & 7);
 
 			sound2Index = 0;
-			sound2On    = 1;
+			sound2On	= 1;
 		}
 		break;
 		ioMem[address] = data;
@@ -430,27 +432,27 @@ void soundEvent(u32 address, u8 data)
 		if (!(data & 0x80))
 		{
 			ioMem[NR52] &= 0xfb;
-			sound3On     = 0;
+			sound3On	 = 0;
 		}
 		if (((data >> 6) & 1) != sound3Bank)
-			memcpy(&ioMem[0x90], &sound3WaveRam[(((data >> 6) & 1) * 0x10)^0x10],
+			memcpy(&ioMem[0x90], &sound3WaveRam[(((data >> 6) & 1) * 0x10) ^ 0x10],
 			       0x10);
-		sound3Bank     = (data >> 6) & 1;
+		sound3Bank	   = (data >> 6) & 1;
 		sound3DataSize = (data >> 5) & 1;
 		ioMem[address] = data;
 		break;
 	case NR31:
-		sound3ATL      = 172 * (256-data);
+		sound3ATL	   = 172 * (256 - data);
 		ioMem[address] = data;
 		break;
 	case NR32:
 		data &= 0xe0;
 		sound3OutputLevel  = (data >> 5) & 3;
 		sound3ForcedOutput = (data >> 7) & 1;
-		ioMem[address]     = data;
+		ioMem[address]	   = data;
 		break;
 	case NR33:
-		freq = 2048 - (((int)(ioMem[NR34]&7) << 8) | data);
+		freq = 2048 - (((int)(ioMem[NR34] & 7) << 8) | data);
 		if (freq)
 		{
 			sound3Skip = SOUND_MAGIC_2 / freq;
@@ -461,7 +463,7 @@ void soundEvent(u32 address, u8 data)
 		break;
 	case NR34:
 		data &= 0xc7;
-		freq  = 2048 - (((data &7) << 8) | (int)ioMem[NR33]);
+		freq  = 2048 - (((data & 7) << 8) | (int)ioMem[NR33]);
 		if (freq)
 		{
 			sound3Skip = SOUND_MAGIC_2 / freq;
@@ -474,26 +476,26 @@ void soundEvent(u32 address, u8 data)
 		if ((data & 0x80) && (ioMem[NR30] & 0x80))
 		{
 			ioMem[NR52] |= 4;
-			sound3ATL    = 172 * (256 - ioMem[NR31]);
-			sound3Index  = 0;
-			sound3On     = 1;
+			sound3ATL	 = 172 * (256 - ioMem[NR31]);
+			sound3Index	 = 0;
+			sound3On	 = 1;
 		}
 		ioMem[address] = data;
 		break;
 	case NR41:
-		data          &= 0x3f;
-		sound4ATL      = 172 * (64 - (data & 0x3f));
+		data &= 0x3f;
+		sound4ATL	   = 172 * (64 - (data & 0x3f));
 		ioMem[address] = data;
 		break;
 	case NR42:
-		sound4EnvelopeUpDown    = data & 0x08;
+		sound4EnvelopeUpDown	= data & 0x08;
 		sound4EnvelopeATLReload = 689 * (data & 7);
 		if ((data & 0xF8) == 0)
 			sound4EnvelopeVolume = 0;
 		ioMem[address] = data;
 		break;
 	case NR43:
-		freq         = soundFreqRatio[data & 7];
+		freq		 = soundFreqRatio[data & 7];
 		sound4NSteps = data & 0x08;
 
 		sound4Skip = freq * NOISE_MAGIC;
@@ -503,7 +505,7 @@ void soundEvent(u32 address, u8 data)
 		freq = freq / soundShiftClock[sound4Clock];
 
 		sound4ShiftSkip = freq * NOISE_MAGIC;
-		ioMem[address]  = data;
+		ioMem[address]	= data;
 		break;
 	case NR44:
 		data &= 0xc0;
@@ -518,7 +520,7 @@ void soundEvent(u32 address, u8 data)
 
 			sound4On = 1;
 
-			sound4Index      = 0;
+			sound4Index		 = 0;
 			sound4ShiftIndex = 0;
 
 			freq = soundFreqRatio[ioMem[NR43] & 7];
@@ -538,9 +540,9 @@ void soundEvent(u32 address, u8 data)
 		ioMem[address] = data;
 		break;
 	case NR50:
-		data          &= 0x77;
-		soundLevel1    = data & 7;
-		soundLevel2    = (data >> 4) & 7;
+		data &= 0x77;
+		soundLevel1	   = data & 7;
+		soundLevel2	   = (data >> 4) & 7;
 		ioMem[address] = data;
 		break;
 	case NR51:
@@ -576,7 +578,7 @@ void soundEvent(u32 address, u8 data)
 	case 0x9d:
 	case 0x9e:
 	case 0x9f:
-		sound3WaveRam[(sound3Bank*0x10)^0x10+(address&15)] = data;
+		sound3WaveRam[(sound3Bank * 0x10) ^ 0x10 + (address & 15)] = data;
 		break;
 	}
 }
@@ -586,44 +588,44 @@ void soundEvent(u32 address, u16 data)
 	switch (address)
 	{
 	case SGCNT0_H:
-		data        &= 0xFF0F;
+		data		&= 0xFF0F;
 		soundControl = data & 0x770F;;
 		if (data & 0x0800)
 		{
 			soundDSFifoAWriteIndex = 0;
-			soundDSFifoAIndex      = 0;
-			soundDSFifoACount      = 0;
+			soundDSFifoAIndex	   = 0;
+			soundDSFifoACount	   = 0;
 			soundDSAValue = 0;
 			memset(soundDSFifoA, 0, 32);
 		}
 		soundDSAEnabled = (data & 0x0300) ? true : false;
-		soundDSATimer   = (data & 0x0400) ? 1 : 0;
+		soundDSATimer	= (data & 0x0400) ? 1 : 0;
 		if (data & 0x8000)
 		{
 			soundDSFifoBWriteIndex = 0;
-			soundDSFifoBIndex      = 0;
-			soundDSFifoBCount      = 0;
+			soundDSFifoBIndex	   = 0;
+			soundDSFifoBCount	   = 0;
 			soundDSBValue = 0;
 			memset(soundDSFifoB, 0, 32);
 		}
 		soundDSBEnabled = (data & 0x3000) ? true : false;
-		soundDSBTimer   = (data & 0x4000) ? 1 : 0;
+		soundDSBTimer	= (data & 0x4000) ? 1 : 0;
 		*((u16 *)&ioMem[address]) = data;
 		break;
 	case FIFOA_L:
 	case FIFOA_H:
 		soundDSFifoA[soundDSFifoAWriteIndex++] = data & 0xFF;
 		soundDSFifoA[soundDSFifoAWriteIndex++] = data >> 8;
-		soundDSFifoACount        += 2;
-		soundDSFifoAWriteIndex   &= 31;
+		soundDSFifoACount		 += 2;
+		soundDSFifoAWriteIndex	 &= 31;
 		*((u16 *)&ioMem[address]) = data;
 		break;
 	case FIFOB_L:
 	case FIFOB_H:
 		soundDSFifoB[soundDSFifoBWriteIndex++] = data & 0xFF;
 		soundDSFifoB[soundDSFifoBWriteIndex++] = data >> 8;
-		soundDSFifoBCount        += 2;
-		soundDSFifoBWriteIndex   &= 31;
+		soundDSFifoBCount		 += 2;
+		soundDSFifoBWriteIndex	 &= 31;
 		*((u16 *)&ioMem[address]) = data;
 		break;
 	case 0x88:
@@ -638,7 +640,7 @@ void soundEvent(u32 address, u16 data)
 	case 0x9a:
 	case 0x9c:
 	case 0x9e:
-		*((u16 *)&sound3WaveRam[(sound3Bank*0x10)^0x10+(address&14)]) = data;
+		*((u16 *)&sound3WaveRam[(sound3Bank * 0x10) ^ 0x10 + (address & 14)]) = data;
 		*((u16 *)&ioMem[address]) = data;
 		break;
 	}
@@ -653,10 +655,10 @@ void soundChannel1()
 
 	if (sound1On && (sound1ATL || !sound1Continue))
 	{
-		sound1Index += soundQuality*sound1Skip;
+		sound1Index += soundQuality * sound1Skip;
 		sound1Index &= 0x1fffffff;
 
-		value = ((s8)sound1Wave[sound1Index>>24]) * vol;
+		value = ((s8)sound1Wave[sound1Index >> 24]) * vol;
 	}
 
 	soundBuffer[0][soundIndex] = value;
@@ -670,7 +672,7 @@ void soundChannel1()
 			if (sound1ATL <= 0 && sound1Continue)
 			{
 				ioMem[NR52] &= 0xfe;
-				sound1On     = 0;
+				sound1On	 = 0;
 			}
 		}
 
@@ -701,7 +703,7 @@ void soundChannel1()
 
 			if (sound1SweepATL <= 0)
 			{
-				freq = (((int)(ioMem[NR14]&7) << 8) | ioMem[NR13]);
+				freq = (((int)(ioMem[NR14] & 7) << 8) | ioMem[NR13]);
 
 				int updown = 1;
 
@@ -725,16 +727,16 @@ void soundChannel1()
 				else if (newfreq > 2047)
 				{
 					sound1SweepATL = 0;
-					sound1On       = 0;
-					ioMem[NR52]   &= 0xfe;
+					sound1On	   = 0;
+					ioMem[NR52]	  &= 0xfe;
 				}
 				else
 				{
 					sound1SweepATL += sound1SweepATLReload;
-					sound1Skip      = SOUND_MAGIC/(2048 - newfreq);
+					sound1Skip		= SOUND_MAGIC / (2048 - newfreq);
 
 					ioMem[NR13] = newfreq & 0xff;
-					ioMem[NR14] = (ioMem[NR14] & 0xf8) |((newfreq >> 8) & 7);
+					ioMem[NR14] = (ioMem[NR14] & 0xf8) | ((newfreq >> 8) & 7);
 				}
 			}
 		}
@@ -750,10 +752,10 @@ void soundChannel2()
 
 	if (sound2On && (sound2ATL || !sound2Continue))
 	{
-		sound2Index += soundQuality*sound2Skip;
+		sound2Index += soundQuality * sound2Skip;
 		sound2Index &= 0x1fffffff;
 
-		value = ((s8)sound2Wave[sound2Index>>24]) * vol;
+		value = ((s8)sound2Wave[sound2Index >> 24]) * vol;
 	}
 
 	soundBuffer[1][soundIndex] = value;
@@ -767,7 +769,7 @@ void soundChannel2()
 			if (sound2ATL <= 0 && sound2Continue)
 			{
 				ioMem[NR52] &= 0xfd;
-				sound2On     = 0;
+				sound2On	 = 0;
 			}
 		}
 
@@ -799,16 +801,16 @@ void soundChannel3()
 
 	if (sound3On && (sound3ATL || !sound3Continue))
 	{
-		sound3Index += soundQuality*sound3Skip;
+		sound3Index += soundQuality * sound3Skip;
 		if (sound3DataSize)
 		{
 			sound3Index &= 0x3fffffff;
-			value        = sound3WaveRam[sound3Index>>25];
+			value		 = sound3WaveRam[sound3Index >> 25];
 		}
 		else
 		{
 			sound3Index &= 0x1fffffff;
-			value        = sound3WaveRam[sound3Bank*0x10 + (sound3Index>>25)];
+			value		 = sound3WaveRam[sound3Bank * 0x10 + (sound3Index >> 25)];
 		}
 
 		if ((sound3Index & 0x01000000))
@@ -858,7 +860,7 @@ void soundChannel3()
 			if (sound3ATL <= 0 && sound3Continue)
 			{
 				ioMem[NR52] &= 0xfb;
-				sound3On     = 0;
+				sound3On	 = 0;
 			}
 		}
 	}
@@ -876,8 +878,8 @@ void soundChannel4()
 		{
 	  #define NOISE_ONE_SAMP_SCALE  0x200000
 
-			sound4Index      += soundQuality*sound4Skip;
-			sound4ShiftIndex += soundQuality*sound4ShiftSkip;
+			sound4Index		 += soundQuality * sound4Skip;
+			sound4ShiftIndex += soundQuality * sound4ShiftSkip;
 
 			if (sound4NSteps)
 			{
@@ -901,10 +903,10 @@ void soundChannel4()
 				}
 			}
 
-			sound4Index      %= NOISE_ONE_SAMP_SCALE;
+			sound4Index		 %= NOISE_ONE_SAMP_SCALE;
 			sound4ShiftIndex %= NOISE_ONE_SAMP_SCALE;
 
-			value = ((sound4ShiftRight & 1)*2-1) * vol;
+			value = ((sound4ShiftRight & 1) * 2 - 1) * vol;
 		}
 		else
 		{
@@ -923,7 +925,7 @@ void soundChannel4()
 			if (sound4ATL <= 0 && sound4Continue)
 			{
 				ioMem[NR52] &= 0xfd;
-				sound4On     = 0;
+				sound4On	 = 0;
 			}
 		}
 
@@ -974,7 +976,7 @@ void soundDirectSoundATimer()
 			}
 		}
 
-		soundDSAValue     = (soundDSFifoA[soundDSFifoAIndex]);
+		soundDSAValue	  = (soundDSFifoA[soundDSFifoAIndex]);
 		soundDSFifoAIndex = (++soundDSFifoAIndex) & 31;
 		soundDSFifoACount--;
 	}
@@ -1007,7 +1009,7 @@ void soundDirectSoundBTimer()
 			}
 		}
 
-		soundDSBValue     = (soundDSFifoB[soundDSFifoBIndex]);
+		soundDSBValue	  = (soundDSFifoB[soundDSFifoBIndex]);
 		soundDSFifoBIndex = (++soundDSFifoBIndex) & 31;
 		soundDSFifoBCount--;
 	}
@@ -1035,9 +1037,9 @@ void soundTimerOverflow(int timer)
 
 void soundMix()
 {
-	int res      = 0;
-	int cgbRes   = 0;
-	int ratio    = ioMem[0x82] & 3;
+	int res		 = 0;
+	int cgbRes	 = 0;
+	int ratio	 = ioMem[0x82] & 3;
 	int dsaRatio = ioMem[0x82] & 4;
 	int dsbRatio = ioMem[0x82] & 8;
 
@@ -1061,7 +1063,7 @@ void soundMix()
 	if ((soundControl & 0x0200) && (soundEnableFlag & 0x100))
 	{
 		if (!dsaRatio)
-			res = ((s8)soundBuffer[4][soundIndex])>>1;
+			res = ((s8)soundBuffer[4][soundIndex]) >> 1;
 		else
 			res = ((s8)soundBuffer[4][soundIndex]);
 	}
@@ -1069,12 +1071,12 @@ void soundMix()
 	if ((soundControl & 0x2000) && (soundEnableFlag & 0x200))
 	{
 		if (!dsbRatio)
-			res += ((s8)soundBuffer[5][soundIndex])>>1;
+			res += ((s8)soundBuffer[5][soundIndex]) >> 1;
 		else
 			res += ((s8)soundBuffer[5][soundIndex]);
 	}
 
-	res    = (res * 170);
+	res	   = (res * 170);
 	cgbRes = (cgbRes * 52 * soundLevel1);
 
 	switch (ratio)
@@ -1107,8 +1109,8 @@ void soundMix()
 		soundLeft[2] = soundLeft[1];
 		soundLeft[1] = soundLeft[0];
 		soundLeft[0] = res;
-		res = (soundLeft[4] + 2*soundLeft[3] + 8*soundLeft[2] + 2*soundLeft[1] +
-		       soundLeft[0])/14;
+		res = (soundLeft[4] + 2 * soundLeft[3] + 8 * soundLeft[2] + 2 * soundLeft[1] +
+		       soundLeft[0]) / 14;
 	}
 
 	bool noSpecialEffects = false;
@@ -1125,7 +1127,7 @@ void soundMix()
 		case 1:
 		case 2:
 		case 3:
-			res *= (soundVolume+1);
+			res *= (soundVolume + 1);
 			break;
 		case 4:
 			res >>= 2;
@@ -1141,20 +1143,30 @@ void soundMix()
 	if (res < -32768)
 		res = -32768;
 
+	int resFinal = soundQuiet ? 0 : res;
+#if (defined(WIN32) && !defined(SDL))
+	if (theApp.frameAdvanceMuteNow)
+		resFinal = 0;
+#endif
+
 	if (soundReverse && !noSpecialEffects)
 	{
-		soundFinalWave[++soundBufferIndex] = res;
-		if ((soundFrameSoundWritten+1) >= countof(soundFrameSound)) /*assert(false)*/;else
+		soundFinalWave[++soundBufferIndex] = resFinal;
+		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
+			/*assert(false)*/;
+		else
 			soundFrameSound[++soundFrameSoundWritten] = res;
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++] = res;
-		if (soundFrameSoundWritten >= countof(soundFrameSound)) /*assert(false)*/;else
+		soundFinalWave[soundBufferIndex++] = resFinal;
+		if (soundFrameSoundWritten >= countof(soundFrameSound))
+			/*assert(false)*/;
+		else
 			soundFrameSound[soundFrameSoundWritten++] = res;
 	}
 
-	res    = 0;
+	res	   = 0;
 	cgbRes = 0;
 
 	if (soundBalance & 1)
@@ -1177,7 +1189,7 @@ void soundMix()
 	if ((soundControl & 0x0100) && (soundEnableFlag & 0x100))
 	{
 		if (!dsaRatio)
-			res = ((s8)soundBuffer[4][soundIndex])>>1;
+			res = ((s8)soundBuffer[4][soundIndex]) >> 1;
 		else
 			res = ((s8)soundBuffer[4][soundIndex]);
 	}
@@ -1185,12 +1197,12 @@ void soundMix()
 	if ((soundControl & 0x1000) && (soundEnableFlag & 0x200))
 	{
 		if (!dsbRatio)
-			res += ((s8)soundBuffer[5][soundIndex])>>1;
+			res += ((s8)soundBuffer[5][soundIndex]) >> 1;
 		else
 			res += ((s8)soundBuffer[5][soundIndex]);
 	}
 
-	res    = (res * 170);
+	res	   = (res * 170);
 	cgbRes = (cgbRes * 52 * soundLevel1);
 
 	switch (ratio)
@@ -1226,8 +1238,8 @@ void soundMix()
 		soundRight[2] = soundRight[1];
 		soundRight[1] = soundRight[0];
 		soundRight[0] = res;
-		res = (soundRight[4] + 2*soundRight[3] + 8*soundRight[2] + 2*soundRight[1] +
-		       soundRight[0])/14;
+		res = (soundRight[4] + 2 * soundRight[3] + 8 * soundRight[2] + 2 * soundRight[1] +
+		       soundRight[0]) / 14;
 	}
 
 	if (!noSpecialEffects)
@@ -1238,7 +1250,7 @@ void soundMix()
 		case 1:
 		case 2:
 		case 3:
-			res *= (soundVolume+1);
+			res *= (soundVolume + 1);
 			break;
 		case 4:
 			res >>= 2;
@@ -1254,15 +1266,26 @@ void soundMix()
 	if (res < -32768)
 		res = -32768;
 
+	resFinal = soundQuiet ? 0 : res;
+#if (defined(WIN32) && !defined(SDL))
+	if (theApp.frameAdvanceMuteNow)
+		resFinal = 0;
+#endif
+
 	if (soundReverse && !noSpecialEffects)
 	{
-		soundFinalWave[-1+soundBufferIndex++]        = res;
-		soundFrameSound[-1+soundFrameSoundWritten++] = res;
+		soundFinalWave[-1 + soundBufferIndex++]		   = resFinal;
+		if ((soundFrameSoundWritten) >= countof(soundFrameSound))
+			/*assert(false)*/;
+		else
+			soundFrameSound[-1 + soundFrameSoundWritten++] = res;
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++] = res;
-		if ((soundFrameSoundWritten+1) >= countof(soundFrameSound)) /*assert(false)*/;else
+		soundFinalWave[soundBufferIndex++]			  = resFinal;
+		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
+			/*assert(false)*/;
+		else
 			soundFrameSound[soundFrameSoundWritten++] = res;
 	}
 }
@@ -1285,23 +1308,18 @@ void soundTick()
 		{
 			soundFinalWave[soundBufferIndex++] = 0;
 			soundFinalWave[soundBufferIndex++] = 0;
-			if ((soundFrameSoundWritten+1) >= countof(soundFrameSound)) /*assert(false)*/;else
+			if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
+				/*assert(false)*/;
+			else
 			{
 				soundFrameSound[soundFrameSoundWritten++] = 0;
 				soundFrameSound[soundFrameSoundWritten++] = 0;
 			}
 		}
-#if (defined(WIN32) && !defined(SDL))
-		if (theApp.frameAdvanceMuteNow)
-		{
-			soundFinalWave[soundBufferIndex++] = 0;
-			soundFinalWave[soundBufferIndex++] = 0;
-		}
-#endif
 
 		soundIndex++;
 
-		if (2*soundBufferIndex >= soundBufferLen)
+		if (2 * soundBufferIndex >= soundBufferLen)
 		{
 			if (systemSoundOn)
 			{
@@ -1312,7 +1330,7 @@ void soundTick()
 
 				systemWriteDataToSoundBuffer();
 			}
-			soundIndex       = 0;
+			soundIndex		 = 0;
 			soundBufferIndex = 0;
 		}
 	}
@@ -1340,15 +1358,15 @@ void soundToggle(int channels)
 	int active = soundGetEnable() & 0x30f;
 	active ^= channels;
 	soundEnable(active);
-	soundDisable((~active)&0x30f);
+	soundDisable((~active) & 0x30f);
 }
 
 void soundEnable(int channels)
 {
 	int c = channels & 0x0f;
 
-	soundEnableFlag |= ((channels & 0x30f) |c | (c << 4));
-	soundMutedFlag |= ((channels & 0x30f) |c | (c << 4));
+	soundEnableFlag |= ((channels & 0x30f) | c | (c << 4));
+	soundMutedFlag	|= ((channels & 0x30f) | c | (c << 4));
 	extern u8 *gbMemory;
 	if (ioMem)
 		soundBalance = (ioMem[NR51] & soundEnableFlag);
@@ -1360,8 +1378,8 @@ void soundDisable(int channels)
 {
 	int c = channels & 0x0f;
 
-	soundEnableFlag &= (~((channels & 0x30f)|c|(c<<4)));
-	soundMutedFlag &= (~((channels & 0x30f)|c|(c<<4)));
+	soundEnableFlag &= (~((channels & 0x30f) | c | (c << 4)));
+	soundMutedFlag	&= (~((channels & 0x30f) | c | (c << 4)));
 	extern u8 *gbMemory;
 	if (ioMem)
 		soundBalance = (ioMem[NR51] & soundEnableFlag);
@@ -1372,6 +1390,16 @@ void soundDisable(int channels)
 int soundGetEnable()
 {
 	return (soundEnableFlag & 0x30f);
+}
+
+void soundSetQuiet(bool isQuiet)
+{
+	soundQuiet = isQuiet;
+}
+
+bool soundGetQuiet()
+{
+	return soundQuiet;
 }
 
 void soundSetMuted(bool isMuted)
@@ -1397,67 +1425,67 @@ void soundReset()
 {
 	systemSoundReset();
 
-	soundPaused       = 1;
-	soundPlay         = 0;
+	soundPaused		  = 1;
+	soundPlay		  = 0;
 	SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
-	soundTicks        = SOUND_CLOCK_TICKS;
+	soundTicks		  = SOUND_CLOCK_TICKS;
 	soundNextPosition = 0;
-	soundMasterOn     = 1;
-	soundIndex        = 0;
+	soundMasterOn	  = 1;
+	soundIndex		  = 0;
 	soundBufferIndex  = 0;
-	soundLevel1       = 7;
-	soundLevel2       = 7;
+	soundLevel1		  = 7;
+	soundLevel2		  = 7;
 
-	sound1On                = 0;
-	sound1ATL               = 0;
-	sound1Skip              = 0;
-	sound1Index             = 0;
-	sound1Continue          = 0;
-	sound1EnvelopeVolume    =  0;
-	sound1EnvelopeATL       = 0;
-	sound1EnvelopeUpDown    = 0;
+	sound1On = 0;
+	sound1ATL = 0;
+	sound1Skip = 0;
+	sound1Index = 0;
+	sound1Continue = 0;
+	sound1EnvelopeVolume	=  0;
+	sound1EnvelopeATL		= 0;
+	sound1EnvelopeUpDown	= 0;
 	sound1EnvelopeATLReload = 0;
-	sound1SweepATL          = 0;
-	sound1SweepATLReload    = 0;
-	sound1SweepSteps        = 0;
-	sound1SweepUpDown       = 0;
-	sound1SweepStep         = 0;
-	sound1Wave              = soundWavePattern[2];
+	sound1SweepATL			= 0;
+	sound1SweepATLReload	= 0;
+	sound1SweepSteps		= 0;
+	sound1SweepUpDown		= 0;
+	sound1SweepStep			= 0;
+	sound1Wave				= soundWavePattern[2];
 
-	sound2On                = 0;
-	sound2ATL               = 0;
-	sound2Skip              = 0;
-	sound2Index             = 0;
-	sound2Continue          = 0;
-	sound2EnvelopeVolume    =  0;
-	sound2EnvelopeATL       = 0;
-	sound2EnvelopeUpDown    = 0;
+	sound2On = 0;
+	sound2ATL = 0;
+	sound2Skip = 0;
+	sound2Index = 0;
+	sound2Continue = 0;
+	sound2EnvelopeVolume	=  0;
+	sound2EnvelopeATL		= 0;
+	sound2EnvelopeUpDown	= 0;
 	sound2EnvelopeATLReload = 0;
-	sound2Wave              = soundWavePattern[2];
+	sound2Wave				= soundWavePattern[2];
 
-	sound3On           = 0;
-	sound3ATL          = 0;
-	sound3Skip         = 0;
-	sound3Index        = 0;
-	sound3Continue     = 0;
+	sound3On = 0;
+	sound3ATL = 0;
+	sound3Skip		   = 0;
+	sound3Index		   = 0;
+	sound3Continue	   = 0;
 	sound3OutputLevel  = 0;
-	sound3Last         = 0;
-	sound3Bank         = 0;
-	sound3DataSize     = 0;
+	sound3Last		   = 0;
+	sound3Bank		   = 0;
+	sound3DataSize	   = 0;
 	sound3ForcedOutput = 0;
 
-	sound4On                = 0;
-	sound4Clock             = 0;
-	sound4ATL               = 0;
-	sound4Skip              = 0;
-	sound4Index             = 0;
-	sound4ShiftRight        = 0x7f;
-	sound4NSteps            = 0;
-	sound4CountDown         = 0;
-	sound4Continue          = 0;
-	sound4EnvelopeVolume    =  0;
-	sound4EnvelopeATL       = 0;
-	sound4EnvelopeUpDown    = 0;
+	sound4On = 0;
+	sound4Clock = 0;
+	sound4ATL = 0;
+	sound4Skip = 0;
+	sound4Index = 0;
+	sound4ShiftRight		= 0x7f;
+	sound4NSteps			= 0;
+	sound4CountDown			= 0;
+	sound4Continue			= 0;
+	sound4EnvelopeVolume	=  0;
+	sound4EnvelopeATL		= 0;
+	sound4EnvelopeUpDown	= 0;
 	sound4EnvelopeATLReload = 0;
 
 	sound1On = 0;
@@ -1490,10 +1518,10 @@ bool soundInit()
 {
 	if (systemSoundInit())
 	{
-		memset(soundBuffer[0], 0, 735*2);
-		memset(soundBuffer[1], 0, 735*2);
-		memset(soundBuffer[2], 0, 735*2);
-		memset(soundBuffer[3], 0, 735*2);
+		memset(soundBuffer[0], 0, 735 * 2);
+		memset(soundBuffer[1], 0, 735 * 2);
+		memset(soundBuffer[2], 0, 735 * 2);
+		memset(soundBuffer[3], 0, 735 * 2);
 
 		memset(soundFinalWave, 0, soundBufferLen);
 
@@ -1509,28 +1537,28 @@ void soundSetQuality(int quality)
 	{
 		if (!soundOffFlag)
 			soundShutdown();
-		soundQuality      = quality;
+		soundQuality	  = quality;
 		soundNextPosition = 0;
 		if (!soundOffFlag)
 			soundInit();
 		SOUND_CLOCK_TICKS = USE_TICKS_AS * soundQuality;
-		soundIndex        = 0;
+		soundIndex		  = 0;
 		soundBufferIndex  = 0;
 	}
 	else if (soundQuality != quality)
 	{
 		soundNextPosition = 0;
 		SOUND_CLOCK_TICKS = USE_TICKS_AS * soundQuality;
-		soundIndex        = 0;
+		soundIndex		  = 0;
 		soundBufferIndex  = 0;
 	}
 }
 
 void soundSaveGame(gzFile gzFile)
 {
-	soundTicks_int32        = (int32) soundTicks;
+	soundTicks_int32		= (int32) soundTicks;
 	SOUND_CLOCK_TICKS_int32 = (int32) SOUND_CLOCK_TICKS;
-	soundDSBValue_int32     = (int32) soundDSBValue;
+	soundDSBValue_int32		= (int32) soundDSBValue;
 
 	utilWriteData(gzFile, soundSaveStruct);
 	utilWriteData(gzFile, soundSaveStructV2);
@@ -1548,8 +1576,8 @@ void soundReadGame(gzFile gzFile, int version)
 	}
 	else
 	{
-		sound3Bank         = (ioMem[NR30] >> 6) & 1;
-		sound3DataSize     = (ioMem[NR30] >> 5) & 1;
+		sound3Bank		   = (ioMem[NR30] >> 6) & 1;
+		sound3DataSize	   = (ioMem[NR30] >> 5) & 1;
 		sound3ForcedOutput = (ioMem[NR32] >> 7) & 1;
 		// nothing better to do here...
 		memcpy(&sound3WaveRam[0x00], &ioMem[0x90], 0x10);
@@ -1568,7 +1596,7 @@ void soundReadGame(gzFile gzFile, int version)
 	//  utilReadData(gzFile, soundSaveStructV3);
 	//}
 	//else {
-	soundTicks        = (soundtick_t) soundTicks_int32;
+	soundTicks		  = (soundtick_t) soundTicks_int32;
 	SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
 	//}
 	soundDSBValue = (u8) (soundDSBValue_int32 & 0xff);

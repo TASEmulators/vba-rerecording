@@ -2042,14 +2042,9 @@ void CPUSoftwareInterrupt(int comment)
 		}
 #endif
 		if (reg[0].I)
-			systemSoundPause();
+			soundPause();
 		else
-		{
-#if (defined(WIN32) && !defined(SDL))
-			if (!theApp.frameAdvanceMuteNow)
-#endif
-			systemSoundResume();
-		}
+			soundResume();
 		break;
 	case 0x1F:
 		BIOS_MidiKey2Freq();
@@ -4047,7 +4042,6 @@ updateLoop:
 							CPUCheckDMA(1, 0x0f);
 
 							systemFrame(60);
-							soundFrameSoundWritten = 0;
 
 							++GBASystemCounters.frameCount;
 							if (GBASystemCounters.lagged)
@@ -4108,10 +4102,6 @@ updateLoop:
 
 							if (pauseAfterFrameAdvance)
 							{
-				#if (defined(WIN32) && !defined(SDL))
-								if (theApp.muteFrameAdvance)
-									theApp.frameAdvanceMuteNow = true;
-				#endif
 								systemSetPause(true);
 							}
 							else

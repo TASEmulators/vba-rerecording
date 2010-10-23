@@ -484,6 +484,8 @@ void systemFrame(int rate)
 		}
 	}
 
+	soundFrameSoundWritten = 0;
+
 	// no more stupid updates :)
 
 	extern int quitAfterTime;                   // from VBA.cpp
@@ -502,8 +504,6 @@ void systemFrame(int rate)
 		theApp.sound->setSpeed(
 		    theApp.throttle != 100 && !speedup && !theApp.winPauseNextFrame && synchronize && !theApp.accuratePitchThrottle &&
 		    !theApp.useOldSync ? (float)theApp.throttle / 100.0f : 1.0f);
-
-//  bool deadSound = !theApp.sound->isPlaying();
 
 	// if a throttle speed is set and we're not allowed to change the sound frequency to achieve it,
 	// sleep for a certain amount each time we get here to approximate the necessary slowdown
