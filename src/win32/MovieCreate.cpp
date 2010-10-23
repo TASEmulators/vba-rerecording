@@ -250,7 +250,7 @@ void MovieCreate::OnBnClickedOk()
 	// actually make the movie file:
 	int code = VBAMovieCreate(movieName, info, startFlags, controllerFlags, typeFlags);
 
-	if (code != SUCCESS)
+	if (code != MOVIE_SUCCESS)
 	{
 		systemMessage(0, "Failed to create movie %s", (const char *)movieName);
 		return;

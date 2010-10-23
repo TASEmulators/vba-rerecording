@@ -1836,7 +1836,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Customi&ze All Commands...",  ID_TOOLS_CUSTOMIZE
         END
-        POPUP "S&peed"
+        POPUP "&Speed"
         BEGIN
             POPUP "Set &Speed"
             BEGIN
@@ -1976,7 +1976,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Disable MMX Optimizations",  ID_OPTIONS_FILTER_DISABLEMMX
         END
-        POPUP "&Sound"
+        POPUP "&Audio"
         BEGIN
             MENUITEM "&On",                         ID_OPTIONS_SOUND_ON
             MENUITEM "&Mute",                       ID_OPTIONS_SOUND_MUTE
@@ -2014,7 +2014,7 @@ BEGIN
             MENUITEM "&44 Khz",                     ID_OPTIONS_SOUND_44KHZ
         END
         MENUITEM SEPARATOR
-        POPUP "GB&A Emulation"
+        POPUP "GBA &Emulation"
         BEGIN
             MENUITEM "&Real Time Clock",            ID_OPTIONS_EMULATOR_REALTIMECLOCK
             POPUP "Save &Type"
@@ -2148,7 +2148,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Frame &Search",               ID_DEBUG_FRAMESEARCH
-        MENUITEM "Frame Search &Prev",          ID_DEBUG_FRAMESEARCHPREV
+        MENUITEM "Frame Search Pre&v",          ID_DEBUG_FRAMESEARCHPREV
         MENUITEM "Frame Search &End",           ID_DEBUG_FRAMESEARCHLOAD
         MENUITEM SEPARATOR
         POPUP "&Lua Scripting"
@@ -2182,10 +2182,12 @@ BEGIN
             BEGIN
                 MENUITEM "Convert Current &Movie",      ID_MOVIE_TOOL_CONVERT_CURRENT
                 MENUITEM SEPARATOR
+                MENUITEM "&Auto Convert When Playing",  ID_MOVIE_TOOL_AUTO_CONVERT
+                MENUITEM SEPARATOR
                 MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT
             END
         END
-        MENUITEM "&Pause/Resume AVI Recording", ID_TOOLS_PAUSEAVIRECORDING
+        MENUITEM "Pause/Resume AVI &Recording", ID_TOOLS_PAUSEAVIRECORDING
         MENUITEM "Start/Stop &AVI Recording...", ID_TOOLS_AVIRECORDING
         MENUITEM "Start/Stop &WAV Recording...", ID_TOOLS_SOUNDRECORDING
         MENUITEM SEPARATOR
@@ -2366,14 +2368,14 @@ STRINGTABLE
 BEGIN
     IDS_STARTAVIRECORDING   "Start &AVI Recording..."
     IDS_STOPAVIRECORDING    "Stop &AVI Recording"
-    IDS_PAUSEAVIRECORDING   "Pause AVI Recording"
-    IDS_RESUMEAVIRECORDING  "Resume AVI Recording"
+    IDS_PAUSEAVIRECORDING   "Pause AVI &Recording"
+    IDS_RESUMEAVIRECORDING  "Resume AVI &Recording"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_STARTSOUNDRECORDING "Start &Sound Recording..."
-    IDS_STOPSOUNDRECORDING  "Stop &Sound Recording"
+    IDS_STARTSOUNDRECORDING "Start &WAV Recording..."
+    IDS_STOPSOUNDRECORDING  "Stop &WAV Recording"
 END
 
 STRINGTABLE

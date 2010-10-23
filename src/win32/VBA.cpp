@@ -2155,6 +2155,9 @@ void VBA::loadSettings()
 	movieOnEndPause	   = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
 //	movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
 
+	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	autoConvertMovieWhenPlaying = regQueryDwordValue("autoConvertMovieWhenPlaying", 0) ? true : false;
+
 	// RamWatch Settings
 	AutoRWLoad		= regQueryDwordValue(AUTORWLOAD, false);
 	RWSaveWindowPos = regQueryDwordValue(RWSAVEPOS, false);
@@ -2321,4 +2324,7 @@ void VBA::saveSettings()
 	regSetDwordValue("movieOnEndBehavior", movieOnEndBehavior);
 	regSetDwordValue("movieOnEndPause", movieOnEndPause);
 //	regSetDwordValue("movieReadOnly", movieReadOnly);
+
+	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	regSetDwordValue("autoConvertMovieWhenPlaying", autoConvertMovieWhenPlaying);
 }

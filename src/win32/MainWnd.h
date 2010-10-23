@@ -465,6 +465,8 @@ protected:
 
 	afx_msg void OnToolsMovieConvertCurrent();
 	afx_msg void OnUpdateToolsMovieConvertCurrent(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieAutoConvert();
+	afx_msg void OnUpdateToolsMovieAutoConvert(CCmdUI*pCmdUI);
 	afx_msg void OnToolsMovieExtractFromSnapshot();
 	afx_msg void OnUpdateToolsMovieExtractFromSnapshot(CCmdUI*pCmdUI);
 
