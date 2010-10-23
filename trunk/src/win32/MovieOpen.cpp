@@ -238,7 +238,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 	movieLogicalName  = tempName;
 #endif
 
-	if (VBAMovieGetInfo(moviePhysicalName, &movieInfo) == SUCCESS)
+	if (VBAMovieGetInfo(moviePhysicalName, &movieInfo) == MOVIE_SUCCESS)
 	{
 		if (movieInfo.readOnly)
 		{
@@ -507,13 +507,13 @@ void MovieOpen::OnBnClickedOk()
 
 	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
 
-	if (code != SUCCESS)
+	if (code != MOVIE_SUCCESS)
 	{
-		if (code == FILE_NOT_FOUND)
+		if (code == MOVIE_FILE_NOT_FOUND)
 			systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieLogicalName);
-		else if (code == WRONG_FORMAT)
+		else if (code == MOVIE_WRONG_FORMAT)
 			systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieLogicalName);
-		else if (code == WRONG_VERSION)
+		else if (code == MOVIE_WRONG_VERSION)
 			systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieLogicalName);
 		else
 			systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieLogicalName);

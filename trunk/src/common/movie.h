@@ -12,15 +12,16 @@
 
 #include "../Port.h"
 
-#ifndef SUCCESS
-#  define SUCCESS 1
-#  define WRONG_FORMAT (-1)
-#  define WRONG_VERSION (-2)
-#  define FILE_NOT_FOUND (-3)
-#  define NOT_FROM_THIS_MOVIE (-4)
-#  define NOT_FROM_A_MOVIE (-5)
-#  define SNAPSHOT_INCONSISTENT (-6)
-#  define UNKNOWN_ERROR (-7)
+#ifndef MOVIE_SUCCESS
+#  define MOVIE_SUCCESS 1
+#  define MOVIE_NOTHING 0
+#  define MOVIE_WRONG_FORMAT (-1)
+#  define MOVIE_WRONG_VERSION (-2)
+#  define MOVIE_FILE_NOT_FOUND (-3)
+#  define MOVIE_NOT_FROM_THIS_MOVIE (-4)
+#  define MOVIE_NOT_FROM_A_MOVIE (-5)
+#  define MOVIE_SNAPSHOT_INCONSISTENT (-6)
+#  define MOVIE_UNKNOWN_ERROR (-7)
 #endif
 
 #define VBM_MAGIC (0x1a4D4256) // VBM0x1a
@@ -30,6 +31,9 @@
 #define BUFFER_GROWTH_SIZE (4096)
 #define MOVIE_METADATA_SIZE (192)
 #define MOVIE_METADATA_AUTHOR_SIZE (64)
+
+// revision 1 uses (?) insted of (!) as reset
+#define VBM_REVISION   (1)
 
 #define MOVIE_START_FROM_SNAPSHOT   (1<<0)
 #define MOVIE_START_FROM_SRAM       (1<<1)
@@ -98,10 +102,10 @@ struct SMovieFileHeader
 	uint32 flashSize;       // emulator setting value
 	uint32 gbEmulatorType;  // emulator setting value
 	char   romTitle [12];
-	uint8  reservedByte;
-	uint8  romCRC;          // the CRC of the ROM used while recording
-	uint16 romOrBiosChecksum;       // the Checksum of the ROM used while recording, or a CRC of the BIOS if GBA
-	uint32 romGameCode;     // the Game Code of the ROM used while recording, or "\0\0\0\0" if not GBA
+	uint8  minorVersion;	// minor version/revision of the current movie version
+	uint8  romCRC;						// the CRC of the ROM used while recording
+	uint16 romOrBiosChecksum;			// the Checksum of the ROM used while recording, or a CRC of the BIOS if GBA
+	uint32 romGameCode;					// the Game Code of the ROM used while recording, or "\0\0\0\0" if not GBA
 	uint32 offset_to_savestate;         // offset to the savestate or SRAM inside file, set to 0 if unused
 	uint32 offset_to_controller_data;   // offset to the controller data inside file
 };
@@ -151,6 +155,8 @@ bool8 VBAMoviePlaying();
 bool8 VBAMovieRecording();
 // the following accessors return 0/false if !VBAMovieActive()
 uint8 VBAMovieReadOnly();
+uint32 VBAMovieGetVersion();
+uint32 VBAMovieGetMinorVersion();
 uint32 VBAMovieGetId();
 uint32 VBAMovieGetLength();
 uint32 VBAMovieGetFrameCounter();
@@ -169,6 +175,7 @@ bool VBAMovieAllowsRerecording();
 bool8 VBAMovieSwitchToRecording();
 void VBAMovieSetPauseAt();
 void VBAMovieSetPauseAt(int at);
+int VBAMovieConvertCurrent();
 
 extern bool8 loadedMovieSnapshot;
 

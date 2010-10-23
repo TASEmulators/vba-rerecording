@@ -435,6 +435,8 @@ ON_UPDATE_COMMAND_UI(ID_MOVIE_END_KEEP, OnUpdateToolsOnMovieEndKeep)
 
 ON_COMMAND(ID_MOVIE_TOOL_CONVERT_CURRENT, OnToolsMovieConvertCurrent)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_CONVERT_CURRENT, OnUpdateToolsMovieConvertCurrent)
+ON_COMMAND(ID_MOVIE_TOOL_AUTO_CONVERT, OnToolsMovieAutoConvert)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_AUTO_CONVERT, OnUpdateToolsMovieAutoConvert)
 ON_COMMAND(ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, OnToolsMovieExtractFromSnapshot)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, OnUpdateToolsMovieExtractFromSnapshot)
 
@@ -1027,7 +1029,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			uint16 checksum;
 			uint8  crc;
 
-			if (VBAMovieGetInfo(movieName, &movieInfo) != SUCCESS)
+			if (VBAMovieGetInfo(movieName, &movieInfo) != MOVIE_SUCCESS)
 			{
 				return;
 			}
@@ -1174,13 +1176,13 @@ romcheck_exit:
 
 			int code = VBAMovieOpen(movieName, TRUE);
 
-			if (code != SUCCESS)
+			if (code != MOVIE_SUCCESS)
 			{
-				if (code == FILE_NOT_FOUND)
+				if (code == MOVIE_FILE_NOT_FOUND)
 					systemMessage(0, "Could not find movie file \"%s\".", (const char *)movieName);
-				else if (code == WRONG_FORMAT)
+				else if (code == MOVIE_WRONG_FORMAT)
 					systemMessage(0, "Movie file \"%s\" is not in proper VBM format.", (const char *)movieName);
-				else if (code == WRONG_VERSION)
+				else if (code == MOVIE_WRONG_VERSION)
 					systemMessage(0, "Movie file \"%s\" is not a supported version.", (const char *)movieName);
 				else
 					systemMessage(0, "Failed to open movie \"%s\".", (const char *)movieName);

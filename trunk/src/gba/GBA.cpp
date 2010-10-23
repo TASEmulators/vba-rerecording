@@ -968,19 +968,19 @@ bool CPUReadStateFromStream(gzFile gzFile)
 			int code = VBAMovieUnfreeze(local_movie_data, movieInputDataSize);
 			if (local_movie_data)
 				delete [] local_movie_data;
-			if (code != SUCCESS && VBAMovieActive())
+			if (code != MOVIE_SUCCESS && VBAMovieActive())
 			{
 				char errStr [1024];
 				strcpy(errStr, "Failed to load movie snapshot");
 				switch (code)
 				{
-				case NOT_FROM_THIS_MOVIE:
+				case MOVIE_NOT_FROM_THIS_MOVIE:
 					strcat(errStr, ";\nSnapshot not from this movie"); break;
-				case NOT_FROM_A_MOVIE:
+				case MOVIE_NOT_FROM_A_MOVIE:
 					strcat(errStr, ";\nNot a movie snapshot"); break;                   // shouldn't get here...
-				case SNAPSHOT_INCONSISTENT:
+				case MOVIE_SNAPSHOT_INCONSISTENT:
 					strcat(errStr, ";\nSnapshot inconsistent with movie"); break;
-				case WRONG_FORMAT:
+				case MOVIE_WRONG_FORMAT:
 					strcat(errStr, ";\nWrong format"); break;
 				}
 				strcat(errStr, ".");

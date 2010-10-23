@@ -57,6 +57,9 @@ SMovie Movie;
 bool   loadingMovie		   = false;
 bool8  loadedMovieSnapshot = 0;
 
+// probably bad idea to have so many global variables, but I hate to recompile almost everything after editing VBA.h
+bool autoConvertMovieWhenPlaying = false;
+
 #if (defined(WIN32) && !defined(SDL))
 extern u32 currentButtons[4];     // from System.cpp
 #else
@@ -70,17 +73,6 @@ static bool resetSignaledLast = false;
 
 static int controllersLeftThisFrame = 0;
 static int prevBorder, prevWinBorder, prevBorderAuto;
-
-static int bytes_per_frame(SMovie &mov)
-{
-	int num_controllers = 0;
-
-	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
-		if (mov.header.controllerFlags & MOVIE_CONTROLLER(i))
-			num_controllers++;
-
-	return CONTROLLER_DATA_SIZE * num_controllers;
-}
 
 // little-endian integer read/write functions:
 static inline uint32 Read32(const uint8 * &ptr)
@@ -138,20 +130,20 @@ static int read_movie_header(FILE *file, SMovie &movie)
 	uint8 headerData [VBM_HEADER_SIZE];
 
 	if (fread(headerData, 1, VBM_HEADER_SIZE, file) != VBM_HEADER_SIZE)
-		return WRONG_FORMAT;  // if we failed to read in all VBM_HEADER_SIZE bytes of the header
+		return MOVIE_WRONG_FORMAT;  // if we failed to read in all VBM_HEADER_SIZE bytes of the header
 
 	const uint8 *	  ptr	 = headerData;
 	SMovieFileHeader &header = movie.header;
 
 	header.magic = Read32(ptr);
 	if (header.magic != VBM_MAGIC)
-		return WRONG_FORMAT;
+		return MOVIE_WRONG_FORMAT;
 
 	header.version = Read32(ptr);
 	if (header.version != VBM_VERSION)
-		return WRONG_VERSION;
+		return MOVIE_WRONG_VERSION;
 
-	header.uid = Read32(ptr);
+	header.uid			  = Read32(ptr);
 	header.length_frames  = Read32(ptr) + 1;    // HACK: add 1 to the length for compatibility
 	header.rerecord_count = Read32(ptr);
 
@@ -167,7 +159,7 @@ static int read_movie_header(FILE *file, SMovie &movie)
 	for (int i = 0; i < 12; i++)
 		header.romTitle[i] = Read8(ptr);
 
-	header.reservedByte = Read8(ptr);
+	header.minorVersion	   = Read8(ptr);
 
 	header.romCRC = Read8(ptr);
 	header.romOrBiosChecksum = Read16(ptr);
@@ -176,7 +168,7 @@ static int read_movie_header(FILE *file, SMovie &movie)
 	header.offset_to_savestate		 = Read32(ptr);
 	header.offset_to_controller_data = Read32(ptr);
 
-	return SUCCESS;
+	return MOVIE_SUCCESS;
 }
 
 static void write_movie_header(FILE *file, const SMovie &movie)
@@ -207,7 +199,7 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 	for (int i = 0; i < 12; i++)
 		Write8(header.romTitle[i], ptr);
 
-	Write8(header.reservedByte, ptr);
+	Write8(header.minorVersion, ptr);
 
 	Write8(header.romCRC, ptr);
 	Write16(header.romOrBiosChecksum, ptr);
@@ -219,10 +211,23 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 	fwrite(headerData, 1, VBM_HEADER_SIZE, file);
 }
 
+static int bytes_per_frame(SMovie &mov)
+{
+	int num_controllers = 0;
+
+	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
+		if (mov.header.controllerFlags & MOVIE_CONTROLLER(i))
+			num_controllers++;
+
+	return CONTROLLER_DATA_SIZE * num_controllers;
+}
+
 static void flush_movie()
 {
 	if (!Movie.file)
 		return;
+
+//	long originalPos = ftell(Movie.file);
 
 	// (over-)write the header
 	fseek(Movie.file, 0, SEEK_SET);
@@ -233,6 +238,8 @@ static void flush_movie()
 	fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame * Movie.header.length_frames, Movie.file);
 
 	fflush(Movie.file);
+
+//	fseek(Movie.file, originalPos, SEEK_SET);
 }
 
 static void remember_input_state()
@@ -606,10 +613,10 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 #endif
 
 	if (movie_filename[0] == '\0')
-	{ loadingMovie = false; return FILE_NOT_FOUND; }
+	{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 
 	if (!emulating)
-	{ loadingMovie = false; return UNKNOWN_ERROR; }
+	{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
 
 //	bool alreadyOpen = (Movie.file != NULL && _stricmp(movie_filename, Movie.filename) == 0);
 
@@ -618,7 +625,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 	if (!(file = fopen(movie_filename, "rb+")))
 		if (!(file = fopen(movie_filename, "rb")))
-		{ loadingMovie = false; return FILE_NOT_FOUND; }
+		{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 	//else
 	//	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
 
@@ -627,7 +634,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 //
 //	if (!(file = fopen(movie_filename, "rb+")))
 //		if(!(file = fopen(movie_filename, "rb")))
-//			{loadingMovie = false; return FILE_NOT_FOUND;}
+//			{loadingMovie = false; return MOVIE_FILE_NOT_FOUND;}
 //		else
 //			movieReadOnly = 2;
 
@@ -635,7 +642,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	VBAMovieInit();
 
 	// read header
-	if ((result = read_movie_header(file, Movie)) != SUCCESS)
+	if ((result = read_movie_header(file, Movie)) != MOVIE_SUCCESS)
 	{
 		fclose(file);
 		{ loadingMovie = false; return result; }
@@ -653,7 +660,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	lseek(fn, Movie.header.offset_to_savestate, SEEK_SET);
 	if (!(stream = utilGzReopen(fn, "rb")))
 		if (!(stream = utilGzOpen(movie_filename, "rb")))
-		{ loadingMovie = false; return FILE_NOT_FOUND; }
+		{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 		else
 			fn = dup(fileno(file));
 	// in case the above dup failed but opening the file normally doesn't fail
@@ -661,7 +668,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
 	{
 		// load the snapshot
-		result = theEmulator.emuReadStateFromStream(stream) ? SUCCESS : WRONG_FORMAT;
+		result = theEmulator.emuReadStateFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
 
 		// FIXME: Kludge for conversion
 		remember_input_state();
@@ -672,7 +679,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 		theEmulator.emuReset(false);
 
 		// load the SRAM
-		result = theEmulator.emuReadBatteryFromStream(stream) ? SUCCESS : WRONG_FORMAT;
+		result = theEmulator.emuReadBatteryFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
 	}
 	else
 	{
@@ -685,17 +692,17 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 	utilGzClose(stream);
 
-	if (result != SUCCESS)
+	if (result != MOVIE_SUCCESS)
 	{ loadingMovie = false; return result; }
 
 //	if (!(file = fopen(movie_filename, /*read_only ? "rb" :*/ "rb+"))) // want to be able to switch out of read-only later
 //	{
 //		if(!Movie.readOnly || !(file = fopen(movie_filename, "rb"))) // try read-only if failed
-//			return FILE_NOT_FOUND;
+//			return MOVIE_FILE_NOT_FOUND;
 //	}
 	if (!(file = fopen(movie_filename, "rb+")))
 		if (!(file = fopen(movie_filename, "rb")))
-		{ loadingMovie = false; return FILE_NOT_FOUND; }
+		{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 		else
 			movieReadOnly = 2;
 
@@ -706,7 +713,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame;
 
 	if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
-	{ loadingMovie = false; return WRONG_FORMAT; }
+	{ loadingMovie = false; return MOVIE_WRONG_FORMAT; }
 
 	// read controller data
 	uint32 to_read = Movie.bytesPerFrame * Movie.header.length_frames;
@@ -721,13 +728,29 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	Movie.RecordedThisSession = false;
 
 	change_state(MOVIE_STATE_PLAY);
-	if (Movie.readOnly)
-		systemScreenMessage("Movie replay (read)");
-	else
-		systemScreenMessage("Movie replay (edit)");
 	VBAMovieUpdateState();
 
-	{ loadingMovie = false; return SUCCESS; }
+	char messageString[64] = "Movie ";
+	bool converted = false;
+	if (autoConvertMovieWhenPlaying)
+	{
+		int result = VBAMovieConvertCurrent();
+		if (result == MOVIE_SUCCESS)
+			strcat(messageString, "converted and ");
+		else if (result == MOVIE_WRONG_VERSION)
+			strcat(messageString, "higher revision ");
+	}
+	if (Movie.state == MOVIE_STATE_PLAY)
+		strcat(messageString, "replaying ");
+	else
+		strcat(messageString, "finished ");
+	if (Movie.readOnly)
+		strcat(messageString, "(read)");
+	else
+		strcat(messageString, "(edit)");
+	systemScreenMessage(messageString);
+
+	{ loadingMovie = false; return MOVIE_SUCCESS; }
 }
 
 static void CalcROMInfo()
@@ -841,10 +864,10 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 {
 	// make sure at least one controller is enabled
 	if ((controllerFlags & MOVIE_CONTROLLERS_ANY_MASK) == 0)
-		return WRONG_FORMAT;
+		return MOVIE_WRONG_FORMAT;
 
 	if (!emulating)
-		return UNKNOWN_ERROR;
+		return MOVIE_UNKNOWN_ERROR;
 
 	loadingMovie = true;
 
@@ -867,10 +890,10 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 		change_state(MOVIE_STATE_NONE);  // have to stop current movie before trying to re-open it
 
 	if (movie_filename[0] == '\0')
-	{ loadingMovie = false; return FILE_NOT_FOUND; }
+	{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 
 	if (!(file = fopen(movie_filename, "wb")))
-	{ loadingMovie = false; return FILE_NOT_FOUND; }
+	{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 
 	if (!alreadyOpen)
 		change_state(MOVIE_STATE_NONE);  // stop current movie when we're able to open the other one
@@ -879,15 +902,15 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	VBAMovieInit();
 
 	// fill in the movie's header
-	Movie.header.uid = (uint32)time(NULL);
-	Movie.header.magic = VBM_MAGIC;
+	Movie.header.uid			 = (uint32)time(NULL);
+	Movie.header.magic			 = VBM_MAGIC;
 	Movie.header.version		 = VBM_VERSION;
 	Movie.header.rerecord_count	 = 0;
 	Movie.header.length_frames	 = 0;
 	Movie.header.startFlags		 = startFlags;
 	Movie.header.controllerFlags = controllerFlags;
 	Movie.header.typeFlags		 = typeFlags;
-	Movie.header.reservedByte	 = 0;
+	Movie.header.minorVersion	 = VBM_REVISION;
 
 	// set emulator settings that make the movie more likely to stay synchronized when it's later played back
 	SetRecordEmuSettings();
@@ -916,7 +939,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 		fclose(file);
 
 		if (!(stream = utilGzReopen(fn, "ab"))) // append mode to start at end, no seek necessary
-		{ loadingMovie = false; return FILE_NOT_FOUND; }
+		{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 
 		// write the save data:
 		if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
@@ -925,7 +948,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 			if (!theEmulator.emuWriteStateToStream(stream))
 			{
 				utilGzClose(stream);
-				{ loadingMovie = false; return UNKNOWN_ERROR; }
+				{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
 			}
 		}
 		else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
@@ -934,7 +957,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 			if (!theEmulator.emuWriteBatteryToStream(stream))
 			{
 				utilGzClose(stream);
-				{ loadingMovie = false; return UNKNOWN_ERROR; }
+				{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
 			}
 
 			// 'soft' reset:
@@ -946,7 +969,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 		// reopen the file and seek back to the end
 
 		if (!(file = fopen(movie_filename, "rb+")))
-		{ loadingMovie = false; return FILE_NOT_FOUND; }
+		{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 
 		fseek(file, 0, SEEK_END);
 	}
@@ -975,7 +998,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	change_state(MOVIE_STATE_RECORD);
 
 	systemScreenMessage("Recording movie...");
-	{ loadingMovie = false; return SUCCESS; }
+	{ loadingMovie = false; return MOVIE_SUCCESS; }
 }
 
 void VBAUpdateButtonPressDisplay()
@@ -1061,13 +1084,9 @@ void VBAUpdateFrameCountDisplay()
 		switch (Movie.state)
 		{
 		case MOVIE_STATE_PLAY:
-		{
-			sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
-			break;
-		}
 		case MOVIE_STATE_END:
 		{
-			sprintf(frameDisplayString, "%d (%d)", Movie.currentFrame, Movie.header.length_frames);
+			sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
 			break;
 		}
 		case MOVIE_STATE_RECORD:
@@ -1232,12 +1251,12 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 
 	memset(info, 0, sizeof(*info));
 	if (filename[0] == '\0')
-		return FILE_NOT_FOUND;
+		return MOVIE_FILE_NOT_FOUND;
 	if (!(file = fopen(filename, "rb")))
-		return FILE_NOT_FOUND;
+		return MOVIE_FILE_NOT_FOUND;
 
 	// read header
-	if ((result = (read_movie_header(file, local_movie))) != SUCCESS)
+	if ((result = (read_movie_header(file, local_movie))) != MOVIE_SUCCESS)
 		return result;
 
 	// read the metadata / author info from file
@@ -1266,7 +1285,7 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 	if (access(filename, W_OK))
 		info->readOnly = true;
 
-	return SUCCESS;
+	return MOVIE_SUCCESS;
 }
 
 bool8 VBAMovieActive()
@@ -1312,6 +1331,22 @@ void VBAMovieToggleReadOnly()
 	{
 		systemScreenMessage("Can't toggle read-only movie");
 	}
+}
+
+uint32 VBAMovieGetVersion()
+{
+	if (!VBAMovieActive())
+		return 0;
+
+	return Movie.header.version;
+}
+
+uint32 VBAMovieGetMinorVersion()
+{
+	if (!VBAMovieActive())
+		return 0;
+
+	return Movie.header.minorVersion;
 }
 
 uint32 VBAMovieGetId()
@@ -1409,13 +1444,13 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	// sanity check
 	if (!VBAMovieActive())
 	{
-		return NOT_FROM_A_MOVIE;
+		return MOVIE_NOT_FROM_A_MOVIE;
 	}
 
 	const uint8 *ptr = buf;
 	if (size < sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames))
 	{
-		return WRONG_FORMAT;
+		return MOVIE_WRONG_FORMAT;
 	}
 
 	uint32 movie_id		 = Read32(ptr);
@@ -1424,10 +1459,10 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	uint32 space_needed	 = Movie.bytesPerFrame * end_frame;
 
 	if (movie_id != Movie.header.uid)
-		return NOT_FROM_THIS_MOVIE;
+		return MOVIE_NOT_FROM_THIS_MOVIE;
 
 	if (space_needed > size)
-		return WRONG_FORMAT;
+		return MOVIE_WRONG_FORMAT;
 
 	if (Movie.readOnly)
 	{
@@ -1439,14 +1474,14 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		// don't allow loading a state inconsistent with the current movie
 		if (end_frame < Movie.header.length_frames && end_frame < current_frame)
-			return SNAPSHOT_INCONSISTENT;
+			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		uint32 length_history = min(current_frame, end_frame);
 		if (length_history > Movie.header.length_frames)
 			length_history = Movie.header.length_frames;
 		uint32 space_shared = Movie.bytesPerFrame * length_history;
 		if (memcmp(Movie.inputBuffer, ptr, space_shared))
-			return SNAPSHOT_INCONSISTENT;
+			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		Movie.currentFrame = current_frame;
 
@@ -1471,6 +1506,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		reserve_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
+		// for consistency, no auto movie conversion here since we don't auto convert the corresponding savestate
 		flush_movie();
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
 
@@ -1487,7 +1523,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	// FIXME: out of range
 	Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
-	return SUCCESS;
+	return MOVIE_SUCCESS;
 }
 
 // bool8 doesn't make much sense if it is meant to solve any portability problem,
@@ -1597,11 +1633,33 @@ void VBAMovieSetPauseAt(int at)
 	Movie.pauseFrame = at;
 }
 
-void VBAMovieConvertCurrent()
+///////////////////////
+// movie tools
+
+// FIXME: is it safe to convert/flush a movie while recording it (considering fseek() problem)?
+int VBAMovieConvertCurrent()
 {
 	if (!VBAMovieActive())
 	{
-		return;
+		return MOVIE_NOTHING;
+	}
+
+	if (Movie.header.minorVersion > VBM_REVISION)
+	{
+		return MOVIE_WRONG_VERSION;
+	}
+
+	if (Movie.header.minorVersion == VBM_REVISION)
+	{
+		return MOVIE_NOTHING;
+	}
+
+	Movie.header.minorVersion = VBM_REVISION;
+
+	if (Movie.header.length_frames == 0) // this could happen
+	{
+		flush_movie();
+		return MOVIE_SUCCESS;
 	}
 
 	// fix movies recorded from snapshots
@@ -1638,7 +1696,7 @@ void VBAMovieConvertCurrent()
 	}
 
 	flush_movie();
-	systemScreenMessage("Movie converted");
+	return MOVIE_SUCCESS;
 }
 
 void VBAMovieExtractFromSnapshot()

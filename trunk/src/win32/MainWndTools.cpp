@@ -834,13 +834,52 @@ void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI)
 // temporary
 void MainWnd::OnToolsMovieConvertCurrent()
 {
-	extern void VBAMovieConvertCurrent();
-	VBAMovieConvertCurrent();
+	int result = VBAMovieConvertCurrent();
+	switch (result)
+	{
+	case MOVIE_SUCCESS:
+		systemScreenMessage("Movie converted");
+		break;
+	case MOVIE_WRONG_VERSION:
+		systemScreenMessage("Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+		break;
+	default:
+		systemScreenMessage("Nothing to convert");
+		break;
+	}
 }
 
 void MainWnd::OnUpdateToolsMovieConvertCurrent(CCmdUI*pCmdUI)
 {
 	pCmdUI->Enable(VBAMovieActive());
+}
+
+void MainWnd::OnToolsMovieAutoConvert()
+{
+	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	autoConvertMovieWhenPlaying = !autoConvertMovieWhenPlaying;
+	if (autoConvertMovieWhenPlaying)
+	{
+		int result = VBAMovieConvertCurrent();
+		switch (result)
+		{
+		case MOVIE_SUCCESS:
+			systemScreenMessage("Movie converted");
+			break;
+		case MOVIE_WRONG_VERSION:
+			systemScreenMessage("Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+			break;
+		default:
+			systemScreenMessage("Auto movie conversion enabled");
+			break;
+		}
+	}
+}
+
+void MainWnd::OnUpdateToolsMovieAutoConvert(CCmdUI*pCmdUI)
+{
+	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	pCmdUI->SetCheck(autoConvertMovieWhenPlaying);
 }
 
 // TODO
