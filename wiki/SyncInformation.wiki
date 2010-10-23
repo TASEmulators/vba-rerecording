@@ -4,7 +4,6 @@ The following applies only to GB/SGB/GBC movies:
 
 These movies require VBA rerecording v19, v21 or v22 (the last SVN WIP with the same timing was revision 232):
 
-  * [http://tasvideos.org/910M.html The Smurfs]
   * [http://tasvideos.org/1329M.html Mega Man Xtreme]
   * [http://tasvideos.org/1581M.html The Smurfs]
 
