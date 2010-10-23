@@ -7,7 +7,7 @@ VBM is the movie capture format of Visual Boy Advance
 ===Header format:====
 {{{
 000 4-byte signature: 56 42 4D 1A "VBM\x1A"
-004 4-byte little-endian unsigned int: version number, must be 1
+004 4-byte little-endian unsigned int: major version number, must be "1"
 008 4-byte little-endian integer: movie "uid" - identifies the movie-savestate relationship, also used as the recording time in Unix epoch format
 00C 4-byte little-endian unsigned int: number of frames
 010 4-byte little-endian unsigned int: rerecord count
@@ -30,19 +30,19 @@ VBM is the movie capture format of Visual Boy Advance
     (At most one of bits 0, 1, 2 can be "1")
     other: reserved, set to 0
 017 1-byte flags: (values of some boolean emulator options)
-       bit 0: (useBiosFile) if "1" and the movie is of a GBA game, the movie was made using a GBA BIOS file
-       bit 1: (skipBiosFile) if "0" and the movie was made with a GBA BIOS file, the BIOS intro is included in the movie
-       bit 2: (rtcEnable) if "1", the emulator "real time clock" feature was enabled
-       bit 3: (unsupported) must be "0" or the movie file is considered invalid (legacy)
-       bit 4: (lagReduction) if "0" and the movie is of a GBA game, the movie was made using the old excessively laggy GBA timing
-       bit 5: (gbcHdma5Fix) if "0" and the movie is of a GBC game, the movie was made using the old buggy HDMA5 timing
-       bit 6: (later versions only) if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with Echo RAM Fix on
-       other: reserved, set to 0
+       bit 0: (useBiosFile) if "1" and the movie is of a GBA game, the movie was made using a GBA BIOS file.
+       bit 1: (skipBiosFile) if "0" and the movie was made with a GBA BIOS file, the BIOS intro is included in the movie.
+       bit 2: (rtcEnable) if "1", the emulator "real time clock" feature was enabled.
+       bit 3: (unsupported) must be "0" or the movie file is considered invalid (legacy).
+       bit 4: (lagReduction) if "0" and the movie is of a GBA game, the movie was made using the old excessively laggy GBA timing.
+       bit 5: (gbcHdma5Fix) if "0" and the movie is of a GBC game, the movie was made using the old buggy HDMA5 timing.
+       bit 6: (echoRAMFix)  if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with Echo RAM Fix on, otherwise it wasn't.
+       bit 7: reserved, set to 0.
 018 4-byte little-endian unsigned int: theApp.winSaveType (value of that emulator option)
 01C 4-byte little-endian unsigned int: theApp.winFlashSize (value of that emulator option)
 020 4-byte little-endian unsigned int: gbEmulatorType (value of that emulator option)
 024 12-byte character array: the internal game title of the ROM used while recording, not necessarily null-terminated (ASCII?)
-030 1-byte: reserved, set to 0
+030 1-byte unsigned char: minor version/revision number of current VBM version, the latest is "1"
 031 1-byte unsigned char: the internal CRC of the ROM used while recording
 032 2-byte little-endian unsigned short: the internal Checksum of the ROM used while recording, or a calculated CRC16 of the BIOS if GBA
 034 4-byte little-endian unsigned int: the Game Code of the ROM used while recording, or the Unit Code if not GBA
@@ -85,8 +85,8 @@ They will come in groups of however many controllers are active, in increasing o
   80 00 Down
   00 01 R
   00 02 L
-  00 04 Reset
-  00 08 (reserved)
+  00 04 Reset (old timing)
+  00 08 Reset (new timing since version 1.1)
   00 10 Left motion sensor
   00 20 Right motion sensor
   00 40 Down motion sensor
