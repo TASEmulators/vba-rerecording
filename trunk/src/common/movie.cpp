@@ -1510,14 +1510,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		flush_movie();
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
 
-		if (current_frame >= Movie.header.length_frames)
-		{
-			change_state(MOVIE_STATE_END);
-		}
-		else
-		{
-			change_state(MOVIE_STATE_RECORD);
-		}
+		change_state(MOVIE_STATE_RECORD);
 	}
 
 	// FIXME: out of range
