@@ -68,8 +68,7 @@ void MainWnd::OnFileOpenGBx()
 
 void MainWnd::OnFilePause()
 {
-	theApp.paused = !theApp.paused;
-	systemSetPause(theApp.paused);
+	systemSetPause(!theApp.paused);
 }
 
 void MainWnd::OnUpdateFilePause(CCmdUI*pCmdUI)

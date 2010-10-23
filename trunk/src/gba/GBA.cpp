@@ -135,14 +135,14 @@ u32	  dma3Source		= 0;
 u32	  dma3Dest			= 0;
 void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
-bool8 fxOn		 = false;
-bool8 windowOn	 = false;
-int32 frameCount = 0;
-char  buffer[1024];
-FILE *out = NULL;
+bool8 fxOn			 = false;
+bool8 windowOn		 = false;
+int32 frameSkipCount = 0;
 u32	  lastTime		 = 0;
 int32 gbaFrameCount	 = 0;
 bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
+char  buffer[1024];
+FILE *out = NULL;
 
 static bool8 pauseAfterFrameAdvance = false;
 
@@ -3603,7 +3603,7 @@ void CPUReset(bool userReset)
 	renderLine		  = mode0RenderLine;
 	fxOn			  = false;
 	windowOn		  = false;
-	frameCount		  = 0;
+	frameSkipCount	  = 0;
 	saveType		  = 0;
 	layerEnable		  = DISPCNT & layerSettings;
 
@@ -3827,7 +3827,6 @@ void CPULoop(int _ticks)
 		}
 
 		P1 = 0x03FF ^ (joy & 0x3FF);
-
 		UPDATE_REG(0x130, P1);
 		u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
 		// this seems wrong, but there are cases where the game
@@ -4037,18 +4036,28 @@ updateLoop:
 						DISPSTAT &= 0xFFFD;
 						if (VCOUNT == 160)
 						{
-							gbaFrameCount++;
+							DISPSTAT |= 1;
+							DISPSTAT &= 0xFFFD;
+							UPDATE_REG(0x04, DISPSTAT);
+							if (DISPSTAT & 0x0008)
+							{
+								IF |= 1;
+								UPDATE_REG(0x202, IF);
+							}
+							CPUCheckDMA(1, 0x0f);
+
 							systemFrame(60);
 							soundFrameSoundWritten = 0;
 
-							GBASystemCounters.frameCount++;
+							++GBASystemCounters.frameCount;
 							if (GBASystemCounters.lagged)
 							{
-								GBASystemCounters.lagCount++;
+								++GBASystemCounters.lagCount;
 							}
 							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
 							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 
+							++gbaFrameCount;
 							u32 currentTime = systemGetClock();
 							if (currentTime - lastTime >= 1000)
 							{
@@ -4066,6 +4075,7 @@ updateLoop:
 
 							// HACK: some special "buttons"
 							u32 ext = (joy >> 18);
+
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1 ^ 0x3FF, ext);
 
@@ -4074,27 +4084,18 @@ updateLoop:
 
 							CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
-							DISPSTAT |= 1;
-							DISPSTAT &= 0xFFFD;
-							UPDATE_REG(0x04, DISPSTAT);
-							if (DISPSTAT & 0x0008)
-							{
-								IF |= 1;
-								UPDATE_REG(0x202, IF);
-							}
-							CPUCheckDMA(1, 0x0f);
+							Update_RAM_Search(); // updates RAM search and RAM watch
 
 							pauseAfterFrameAdvance = systemPauseOnFrame();
 
-							if (frameCount >= framesToSkip || pauseAfterFrameAdvance)
+							if (frameSkipCount >= framesToSkip || pauseAfterFrameAdvance)
 							{
 								systemRenderFrame();
-								frameCount = 0;
+								frameSkipCount = 0;
 
 								if (capture && !capturePrevious)
 								{
 									++captureNumber;
-									//systemScreenMessage("");
 									systemScreenCapture(captureNumber);
 								}
 								capturePrevious = capture;
@@ -4102,11 +4103,9 @@ updateLoop:
 							}
 							else
 							{
-								++frameCount;
+								++frameSkipCount;
 							}
 
-///              if (pauseAfterFrameAdvance)
-///                ticks = 0;
 							if (pauseAfterFrameAdvance)
 							{
 				#if (defined(WIN32) && !defined(SDL))
@@ -4124,12 +4123,11 @@ updateLoop:
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);
-
 						CPUCompareVCOUNT();
 					}
 					else
 					{
-						if (frameCount >= framesToSkip || pauseAfterFrameAdvance)
+						if (frameSkipCount >= framesToSkip || pauseAfterFrameAdvance)
 						{
 							(*renderLine)();
 
@@ -4513,11 +4511,9 @@ updateLoop:
 #endif
 
 			ticks -= clockTicks;
-
 			cpuLoopTicks = CPUUpdateTicks();
 
 			// FIXME: it is too bad that it is still not determined whether the loop can be exited at this point
-
 			if (cpuDmaTicksToUpdate > 0)
 			{
 				clockTicks = cpuSavedTicks;
@@ -4579,19 +4575,16 @@ updateLoop:
 					break;
 				}
 			}
-			else
+			else if (frameBoundary)
 			{
-				if (frameBoundary)
-				{
-					extern void VBAOnEnteringFrameBoundary();
-					VBAOnEnteringFrameBoundary();
+				extern void VBAOnEnteringFrameBoundary();
+				VBAOnEnteringFrameBoundary();
 
-					// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
-					// but is there still any GBA .vbm that uses the old timing?
-					frameBoundary = false;
-					newFrame	  = true;
-					return;
-				}
+				// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
+				// but is there still any GBA .vbm that uses the old timing?
+				frameBoundary = false;
+				newFrame	  = true;
+				break;
 			}
 		}
 	}

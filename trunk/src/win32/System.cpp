@@ -688,7 +688,6 @@ bool systemPauseOnFrame()
 	{
 		if (!theApp.nextframeAccountForLag || !GBASystemCounters.laggedLast)
 		{
-			systemSetPause(true);
 			theApp.winPauseNextFrame = false;
 			return true;
 		}
@@ -775,7 +774,6 @@ void VBAOnEnteringFrameBoundary()
 	VBAMovieUpdateState();
 	VBAUpdateFrameCountDisplay();
 	VBAUpdateButtonPressDisplay();
-	Update_RAM_Search(); // updates RAM search and RAM watch
 }
 
 void VBAOnExitingFrameBoundary()
