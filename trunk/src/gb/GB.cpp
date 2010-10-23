@@ -3145,6 +3145,8 @@ void gbEmulate(int ticksToStop)
 			VBAMovieResetIfRequested();
 		}
 
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
+
 		GBSystemCounters.lagged = true;
 
 		newFrame = false;
@@ -3359,8 +3361,6 @@ void gbEmulate(int ticksToStop)
 						}
 
 						frameBoundary = true;
-
-						CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 						// HACK: some special "buttons"
 						u8 ext = (newmask >> 18);
