@@ -3107,6 +3107,7 @@ void gbEmulate(int ticksToStop)
 
 	register int opcode = 0;
 
+	u32 newmask = 0;
 	if (newFrame)
 	{
 		extern void VBAOnExitingFrameBoundary();
@@ -3135,6 +3136,12 @@ void gbEmulate(int ticksToStop)
 			else
 			{
 				gbJoymask[0] = systemGetJoypad(-1, sensor);
+			}
+
+			newmask = gbJoymask[0];
+			if (newmask & 0xFF)
+			{
+				gbInterrupt |= 16;
 			}
 
 			VBAMovieResetIfRequested();
@@ -3329,19 +3336,18 @@ void gbEmulate(int ticksToStop)
 								gbInterrupt |= 2;
 						}
 
-						gbFrameCount++;
-
 						systemFrame(60);
 						soundFrameSoundWritten = 0;
 
-						GBSystemCounters.frameCount++;
+						++GBSystemCounters.frameCount;
 						if (GBSystemCounters.lagged)
 						{
-							GBSystemCounters.lagCount++;
+							++GBSystemCounters.lagCount;
 						}
 						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
 						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 
+						++gbFrameCount;
 						u32 currentTime = systemGetClock();
 						if (currentTime - gbLastTime >= 1000)
 						{
@@ -3359,17 +3365,12 @@ void gbEmulate(int ticksToStop)
 
 						CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
-						int newmask = gbJoymask[0] & 255;
+						// HACK: some special "buttons"
+						u8 ext = (newmask >> 18);
+						speedup	   = (ext & 1) ? true : false;
+						gbCapture |= (ext & 2) ? true : false;
 
-						if (newmask)
-						{
-							gbInterrupt |= 16;
-						}
-
-						newmask = (gbJoymask[0] >> 18);
-
-						speedup	   = (newmask & 1) ? true : false;
-						gbCapture |= (newmask & 2) ? true : false;
+						Update_RAM_Search(); // updates RAM search and RAM watch
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -3383,8 +3384,7 @@ void gbEmulate(int ticksToStop)
 
 							if (gbCapture && !gbCapturePrevious)
 							{
-								gbCaptureNumber++;
-								//systemScreenMessage("");
+								++gbCaptureNumber;
 								systemScreenCapture(gbCaptureNumber);
 							}
 							gbCapturePrevious = gbCapture;
@@ -3392,7 +3392,7 @@ void gbEmulate(int ticksToStop)
 						}
 						else
 						{
-							gbFrameSkipCount++;
+							++gbFrameSkipCount;
 						}
 
 						if (pauseAfterFrameAdvance)
@@ -3848,7 +3848,7 @@ void gbEmulate(int ticksToStop)
 
 			frameBoundary = false;
 			newFrame	  = true;
-			return;
+			break;
 		}
 	}
 }
