@@ -5,9 +5,9 @@
 #include "../NLS.h"
 #include "VBA.h"
 #include "Reg.h"
+#include "../common/movie.h"
 
 extern int emulating;
-
 // these could be made VBA members, but  the VBA class is already oversized too much
 
 bool winFileExists(const char *filename)
@@ -119,8 +119,27 @@ CString winGetDestFilename(const CString &LogicalRomName, const CString &TargetD
 CString winGetSavestateFilename(const CString &LogicalRomName, int nID)
 {
 	CString ext;
-	ext.Format("%d.sgm", nID);
-
+	std::string fs;
+	size_t startindex;
+	size_t endindex;
+	if (VBAMovieActive()) {
+		fs =VBAMovieGetFilename();	
+		startindex = fs.find_last_of("/\\");
+		if(startindex < fs.length())
+			startindex++;
+		else
+			startindex = 0;
+		endindex = fs.find_last_of(".");
+		if(endindex < fs.length() && endindex > startindex)
+			endindex;
+		else
+			endindex = fs.length();
+		fs = fs.substr(startindex, endindex - startindex);
+		ext.Format("-%s-%d.sgm", fs.c_str(), nID);
+	}
+	else {
+		ext.Format("-%d.sgm", nID);
+	}
 	return winGetDestFilename(LogicalRomName, IDS_SAVE_DIR, ext);
 }
 
