@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include <mmsystem.h>
 #include <cassert>
+#include <direct.h>     
 
 #include "resource.h"
 #include "VBA.h"
@@ -66,6 +67,7 @@ extern void remoteSetProtocol(int);
 extern void remoteCleanUp();
 extern int remoteSocket;
 
+extern const char *IDS_tbl[] = { IDS_ROM_DIR, IDS_GBXROM_DIR, IDS_BATTERY_DIR, IDS_SAVE_DIR, IDS_MOVIE_DIR, IDS_CHEAT_DIR, IDS_LUA_DIR, IDS_IPS_DIR, IDS_AVI_DIR, IDS_WAV_DIR, IDS_CAPTURE_DIR};
 void winlog(const char *msg, ...);
 
 #ifdef _DEBUG
@@ -618,8 +620,8 @@ BOOL VBA::InitInstance()
 
 	regInit(winBuffer);
 
-	loadSettings();
-
+	loadSettings(winBuffer);
+	theApp.LuaFastForward = -1;
 	if (!initInput())
 		return FALSE;
 
@@ -661,7 +663,7 @@ BOOL VBA::InitInstance()
 			if (argv[i][0] == '-' || gotFlag)
 			{
 				if (!gotFlag)
-					loadSettings();
+					loadSettings(NULL);
 				gotFlag = true;
 				if (_stricmp(argv[i], "-rom") == 0)
 				{
@@ -836,7 +838,7 @@ invalidArgument:
 				// assume anything else is a ROM, for backward compatibility
 				szFile	 = argv[i++];
 				filename = szFile;
-				loadSettings();
+				loadSettings(NULL);
 			}
 		}
 
@@ -1895,10 +1897,12 @@ CString VBA::winResLoadFilter(UINT id)
 	return res;
 }
 
-void VBA::loadSettings()
+void VBA::loadSettings(const char *path)
 {
 	CString buffer;
-
+	CString tempStr;
+	std::string tempStr2;
+	std::string curDir;
 	// video
 	bool defaultVideoDriver = regQueryDwordValue("defaultVideoDriver", true) ? true : false;
 	if (!regQueryBinaryValue("videoDriverGUID", (char *)&videoDriverGUID, sizeof(GUID)))
@@ -2173,7 +2177,47 @@ void VBA::loadSettings()
 			continue;
 		RWAddRecentFile(s);
 	}
+	if (path != NULL) //Default directories, added by darkkobold.
+	{		
+		for (int i = 0; i < 11; i++)
+		{
+			tempStr = regQueryStringValue(IDS_tbl[i], NULL);  //Check if the String Exists in the INI
+			if (tempStr.IsEmpty())  //If not, create the directory
+			{
+				switch (i) {
+				case 0:
+					tempStr2 = "\\Roms"; break;					
+				case 1:
+					tempStr2 = "\\GBXroms"; break;
+				case 2: 
+					tempStr2 = "\\Battery"; break;
+				case 3: 
+					tempStr2 = "\\Saves"; break;	
+				case 4: 
+					tempStr2 = "\\Movies"; break;				
+				case 5: 
+					tempStr2 = "\\Cheat"; break;
+				case 6: 
+					tempStr2 = "\\Lua"; break;
+				case 7: 
+					tempStr2 = "\\IPS"; break;
+				case 8: 
+					tempStr2 = "\\AVI"; break;
+				case 9: 
+					tempStr2 = "\\WAV"; break;								
+				case 10: 
+					tempStr2 = "\\Snaps"; break;
+				default: break;
+				}				
+				curDir = std::string(path); //reset the curDir to path
+				curDir += tempStr2; //add path
+				_mkdir(curDir.c_str());	//make the directory
+				regSetStringValue(IDS_tbl[i], curDir.c_str());  //Add the directory to the INI file		
+			}
+		}
+	}
 }
+
 
 void VBA::saveSettings()
 {
@@ -2323,8 +2367,8 @@ void VBA::saveSettings()
 
 	regSetDwordValue("movieOnEndBehavior", movieOnEndBehavior);
 	regSetDwordValue("movieOnEndPause", movieOnEndPause);
-//	regSetDwordValue("movieReadOnly", movieReadOnly);
 
 	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
 	regSetDwordValue("autoConvertMovieWhenPlaying", autoConvertMovieWhenPlaying);
+
 }

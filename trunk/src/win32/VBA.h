@@ -67,6 +67,7 @@ enum
 #define IDS_WAV_DIR             "soundRecordDir"
 #define IDS_CAPTURE_DIR         "captureDir"
 
+ 
 /////////////////////////////////////////////////////////////////////////////
 // forward decl
 class IUpdateListener;
@@ -218,6 +219,7 @@ public:
 	int		   filenamePreference;
 	bool       frameSearching;
 	bool       frameSearchSkipping;
+	int		   LuaFastForward;
 	bool       frameSearchFirstStep;
 	bool       frameSearchLoadValid;
 	int        frameSearchLength;
@@ -281,7 +283,7 @@ public:
 	void updateWindowSize(int value);
 	void updateVideoSize(UINT id);
 	void updateFrameSkip();
-	void loadSettings();
+	void loadSettings(const char *path);
 	void addRecentFile(CString file);
 	void saveRewindStateIfNecessary();
 	//{{AFX_MSG(VBA)
