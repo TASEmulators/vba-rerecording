@@ -29,11 +29,15 @@
    Respond to various messages withinn the subclassed window.
 
    ----------------------------------------------------------------------*/
+// modified by the VBA-rr Team
+
 #include "stdafx.h"
 #include "ResizeDlg.h"
 #include "VBA.h"
 #include "Sound.h"
 #include "WinHelper.h"
+
+IMPLEMENT_DYNAMIC(ResizeDlg, CDialog)
 
 // moved functions to this file to reduce number of files
 

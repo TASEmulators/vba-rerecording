@@ -36,16 +36,25 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // AccelEditor dialog
 
-AccelEditor::AccelEditor(CWnd*pParent /*=NULL*/)
-	: ResizeDlg(AccelEditor::IDD, pParent)
+AccelEditor::AccelEditor(CWnd *pParent, CAcceleratorManager *pExtMgr)
+	: ResizeDlg(AccelEditor::IDD, pParent), m_extMgr(pExtMgr)
 {
 	//{{AFX_DATA_INIT(AccelEditor)
 	// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-	mgr = theApp.winAccelMgr;
 }
 
-void AccelEditor::DoDataExchange(CDataExchange*pDX)
+BOOL AccelEditor::IsModified() const
+{
+	return m_modified;
+}
+
+const CAcceleratorManager &AccelEditor::GetResultMangager() const
+{
+	return m_result;
+}
+
+void AccelEditor::DoDataExchange(CDataExchange *pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(AccelEditor)
@@ -53,17 +62,28 @@ void AccelEditor::DoDataExchange(CDataExchange*pDX)
 	DDX_Control(pDX, IDC_ALREADY_AFFECTED, m_alreadyAffected);
 	DDX_Control(pDX, IDC_COMMANDS, m_commands);
 	DDX_Control(pDX, IDC_EDIT_KEY, m_key);
+	DDX_Control(pDX, IDC_ACCELEDIT_AUTOTIMEOUT, m_timeout);
+	DDX_Control(pDX, IDC_ACCELEDIT_PROGRESSBAR, m_progress);
 	//}}AFX_DATA_MAP
 }
 
 BEGIN_MESSAGE_MAP(AccelEditor, CDialog)
 //{{AFX_MSG_MAP(AccelEditor)
 ON_BN_CLICKED(ID_OK, &AccelEditor::OnOk)
+ON_BN_CLICKED(ID_CANCEL, &AccelEditor::OnCancel)
+ON_BN_CLICKED(IDC_ACCELEDIT_APPLY, &AccelEditor::OnApply)
 ON_BN_CLICKED(IDC_RESET, &AccelEditor::OnReset)
 ON_BN_CLICKED(IDC_ASSIGN, &AccelEditor::OnAssign)
-ON_BN_CLICKED(ID_CANCEL, &AccelEditor::OnCancel)
 ON_BN_CLICKED(IDC_REMOVE, &AccelEditor::OnRemove)
+ON_BN_CLICKED(IDC_ACCELEDIT_REPLACE, &AccelEditor::OnReplace)
+ON_CONTROL(EN_CHANGE, IDC_EDIT_KEY, &AccelEditor::OnKeyboardEditChange)
+ON_CONTROL(EN_KILLFOCUS, IDC_EDIT_KEY, &AccelEditor::OnKeyboardEditKillfocus)
+ON_CONTROL(EN_KILLFOCUS, IDC_ACCELEDIT_AUTOTIMEOUT, &AccelEditor::OnTimeoutEditKillfocus)
 ON_NOTIFY(TVN_SELCHANGED, IDC_COMMANDS, &AccelEditor::OnTvnSelchangedCommands)
+//ON_NOTIFY(LVN_ITEMCHANGED, IDC_CURRENTS, &AccelEditor::OnListItemChanged)
+ON_NOTIFY(NM_DBLCLK, IDC_CURRENTS, &AccelEditor::OnListDblClick)
+ON_NOTIFY(NM_CLICK, IDC_CURRENTS, &AccelEditor::OnListClick)
+ON_WM_TIMER()
 //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -75,19 +95,21 @@ BOOL AccelEditor::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	DIALOG_SIZER_START(sz)
-	DIALOG_SIZER_ENTRY(IDC_STATIC1, DS_MoveX)
-	DIALOG_SIZER_ENTRY(IDC_STATIC2, DS_MoveY)
-	DIALOG_SIZER_ENTRY(IDC_STATIC3, DS_MoveX | DS_MoveY)
-	DIALOG_SIZER_ENTRY(IDC_ALREADY_AFFECTED, DS_MoveY)
 	DIALOG_SIZER_ENTRY(ID_OK, DS_MoveX)
 	DIALOG_SIZER_ENTRY(ID_CANCEL, DS_MoveX)
+	DIALOG_SIZER_ENTRY(IDC_ACCELEDIT_APPLY, DS_MoveX)
 	DIALOG_SIZER_ENTRY(IDC_ASSIGN, DS_MoveX)
 	DIALOG_SIZER_ENTRY(IDC_REMOVE, DS_MoveX)
-	DIALOG_SIZER_ENTRY(IDC_RESET, DS_MoveX)
-	DIALOG_SIZER_ENTRY(IDC_CLOSE, DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_ACCELEDIT_REPLACE, DS_MoveX)
 	DIALOG_SIZER_ENTRY(IDC_COMMANDS, DS_SizeX | DS_SizeY)
 	DIALOG_SIZER_ENTRY(IDC_CURRENTS, DS_MoveX | DS_SizeY)
 	DIALOG_SIZER_ENTRY(IDC_EDIT_KEY, DS_MoveX | DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_EDIT_KEY, DS_MoveX | DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_STATIC2, DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_STATIC3, DS_MoveX | DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_STATIC4, DS_MoveX | DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_STATIC5, DS_MoveX | DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_ACCELEDIT_AUTOTIMEOUT, DS_SizeX | DS_MoveY)
 	DIALOG_SIZER_END()
 	SetData(sz,
 	        TRUE,
@@ -95,37 +117,51 @@ BOOL AccelEditor::OnInitDialog()
 	        "Software\\Emulators\\VisualBoyAdvance\\Viewer\\AccelEditor",
 	        NULL);
 
-	InitCommands();
+	if (m_extMgr)
+		m_result = m_mgr = *m_extMgr;
 
+	m_currents.SetExtendedStyle(LVS_EX_FULLROWSELECT);
+	m_currents.InsertColumn(0, "Keys");
+	m_currents.SetColumnWidth(0, LVSCW_AUTOSIZE_USEHEADER);
+	InitCommands();
+	m_autoMode	   = AUTO_NEW;
+	m_modified	   = FALSE;
+	m_timeoutValue = 2000;
+	CString timeoutStr;
+	timeoutStr.Format("%d", m_timeoutValue);
+	m_timeout.SetWindowText(timeoutStr);
+	m_progress.SetPos(0);
+
+	GetDlgItem(IDC_ACCELEDIT_APPLY)->EnableWindow(FALSE);
 	return TRUE; // return TRUE unless you set the focus to a control
 	             // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void AccelEditor::AddCommandsFromTable()
 {
-	POSITION pos = mgr.m_mapAccelString.GetStartPosition();
+	POSITION pos = m_mgr.m_mapAccelString.GetStartPosition();
 	while (pos != NULL)
 	{
 		CString command;
-		WORD    wID;
-		mgr.m_mapAccelString.GetNextAssoc(pos, command, wID);
+		WORD	wID;
+		m_mgr.m_mapAccelString.GetNextAssoc(pos, command, wID);
 		int nPos = command.Find('\\');
 
-		if (nPos == 0)	// skip menu commands
+		if (nPos == 0)  // skip menu commands
 		{
 			continue;
 		}
 
-		HTREEITEM newItem   = TVI_ROOT;
+		HTREEITEM newItem = TVI_ROOT;
 #if 0
 /*
-		while (nPos != -1)
-		{
-			newItem = m_commands.InsertItem(command.Left(nPos), newItem);
-			command.Delete(0, nPos + 1);
-			nPos = command.Find('\\');
-		}
-*/
+        while (nPos != -1)
+        {
+            newItem = m_commands.InsertItem(command.Left(nPos), newItem);
+            command.Delete(0, nPos + 1);
+            nPos = command.Find('\\');
+        }
+ */
 #endif
 		newItem = m_commands.InsertItem(command, newItem);
 		m_commands.SetItemData(newItem, wID);
@@ -141,7 +177,7 @@ void AccelEditor::AddCommandsFromMenu(CMenu *pMenu, HTREEITEM hParent)
 	{
 		UINT nID = pMenu->GetMenuItemID(nIndex);
 		if (nID == 0)
-			continue; // menu separator or invalid cmd - ignore it
+			continue;  // menu separator or invalid cmd - ignore it
 
 		if (nID == (UINT)-1)
 		{
@@ -180,64 +216,107 @@ void AccelEditor::InitCommands()
 	m_commands.DeleteAllItems();
 	m_hItems.RemoveAll();
 	m_alreadyAffected.SetWindowText("");
-	
+
 	theApp.recreateMenuBar();
 	AddCommandsFromMenu(&theApp.m_menu, TVI_ROOT);
 	AddCommandsFromTable();
 }
 
-void AccelEditor::OnCancel()
+BOOL AccelEditor::PreTranslateMessage(MSG *pMsg)
 {
-	EndDialog(FALSE);
+	bool bBaseRequired = false;
+	if (GetFocus() == &m_currents)
+	{
+		if (pMsg->message == WM_KEYDOWN)
+		{
+			switch (pMsg->wParam)
+			{
+			case VK_ESCAPE:
+				m_currents.SetItemState(-1, 0, LVIS_SELECTED);
+				CheckListSelections();
+				break;
+			case VK_RETURN:
+			case VK_INSERT:
+				// kludge to workaround CKeyboardEdit::PreTranslateMessage()
+				break;
+			case VK_DELETE:
+			case VK_BACK:
+				OnRemove();
+				break;
+			case VK_F6:
+			case VK_LEFT:
+				m_commands.SetFocus();
+				break;
+			default:
+				return ResizeDlg::PreTranslateMessage(pMsg);
+			}
+			return TRUE;
+		}
+		else if (pMsg->message == WM_KEYUP)	// kludge to workaround CKeyboardEdit::PreTranslateMessage()
+		{
+			switch (pMsg->wParam)
+			{
+			case VK_RETURN:
+				OnNew();
+				break;
+			case VK_INSERT:
+				OnEdit();
+				break;
+			default:
+				return ResizeDlg::PreTranslateMessage(pMsg);
+			}
+			return TRUE;
+		}
+	}
+	else if (GetFocus() == &m_commands)
+	{
+		if (pMsg->message == WM_KEYDOWN)
+		{
+			switch (pMsg->wParam)
+			{
+			case VK_F6:
+				m_currents.SetFocus();
+				break;
+			case VK_RIGHT:
+				if (!m_commands.ItemHasChildren(m_commands.GetSelectedItem()))
+				{
+					m_currents.SetFocus();
+					break;
+				}
+				// fall through
+			default:
+				return ResizeDlg::PreTranslateMessage(pMsg);
+			}
+			return TRUE;
+		}
+	}
+
+	return ResizeDlg::PreTranslateMessage(pMsg);
 }
 
 void AccelEditor::OnOk()
 {
+	OnApply();
+//	OnTimeoutEditKillfocus();
 	EndDialog(TRUE);
 }
 
-void AccelEditor::OnTvnSelchangedCommands(NMHDR *pNMHDR, LRESULT *pResult)
+void AccelEditor::OnCancel()
 {
-//	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+//	OnTimeoutEditKillfocus();
+//	EndDialog(m_modified);
+	EndDialog(FALSE);	// this allows the caller to cancel even if the user has Apply'ed
+}
 
-	// TODO: Add your control notification handler code here
-	// Check if some commands exist.
-	HTREEITEM hItem = m_commands.GetSelectedItem();
-	if (hItem == NULL)
-		return;
-
-	WORD wIDCommand = LOWORD(m_commands.GetItemData(hItem));
-	m_currents.ResetContent();
-
-	CCmdAccelOb*pCmdAccel;
-
-	if (mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel))
-	{
-		CAccelsOb*pAccel;
-		CString   szBuffer;
-		POSITION  pos = pCmdAccel->m_Accels.GetHeadPosition();
-
-		// Add the keys to the 'currents keys' listbox.
-		while (pos != NULL)
-		{
-			pAccel = pCmdAccel->m_Accels.GetNext(pos);
-			pAccel->GetString(szBuffer);
-			int index = m_currents.AddString(szBuffer);
-			// and a pointer to the accel object.
-			m_currents.SetItemData(index, (DWORD)pAccel);
-		}
-		m_currents.SetCurSel(m_currents.GetCount() - 1);
-	}
-	// Init the key editor
-//  m_pKey->ResetKey();
-//	m_alreadyAffected.SetWindowText("");
-
-	*pResult = 0;
+void AccelEditor::OnApply()
+{
+	m_result   = m_mgr;
+	GetDlgItem(IDC_ACCELEDIT_APPLY)->EnableWindow(FALSE);
 }
 
 void AccelEditor::OnReset()
 {
-	mgr.Default(); /// FIXME accelerator reset NYI
+	m_mgr.Default(); /// FIXME accelerator reset NYI
 	systemMessage(
 	    0,
 	    "The \"Reset All Accelerators\" feature is currently unimplemented.\nYou can achieve the same result by closing VBA, opening up your \"vba.ini\" file, deleting the line that starts with \"keyboard\", then reopening VBA.");
@@ -246,62 +325,25 @@ void AccelEditor::OnReset()
 
 void AccelEditor::OnAssign()
 {
-	m_alreadyAffected.SetWindowText("");
-
-	// Control if it's not already affected
-	CCmdAccelOb*pCmdAccel;
-	CAccelsOb*  pAccel;
-	WORD        wIDCommand;
-	POSITION    pos;
-
-	WORD wKey;
-	bool bCtrl, bAlt, bShift;
-
-	if (!m_key.GetAccelKey(wKey, bCtrl, bAlt, bShift))
-		return; // no valid key, abort
+	if (CheckAffected())
+		return;
 
 	// get the currently selected group
 	HTREEITEM hItem = m_commands.GetSelectedItem();
 	if (hItem == NULL)
-		return;
+		return;  // abort
 
 	// Get the object who manage the accels list, associated to the command.
-	wIDCommand = LOWORD(m_commands.GetItemData(hItem));
+	WORD wIDCommand = LOWORD(m_commands.GetItemData(hItem));
 
-	POSITION posItem = m_hItems.GetHeadPosition();
-	while (posItem != NULL)
-	{
-		hItem = m_hItems.GetNext(posItem);
-		WORD wIDCommand2 = LOWORD(m_commands.GetItemData(hItem));
-		mgr.m_mapAccelTable.Lookup(wIDCommand2, pCmdAccel);
-
-		pos = pCmdAccel->m_Accels.GetHeadPosition();
-		while (pos != NULL)
-		{
-			pAccel = pCmdAccel->m_Accels.GetNext(pos);
-			if (pAccel->IsEqual(wKey, bCtrl, bAlt, bShift))
-			{
-				// the key is already affected (in the same or other command)
-				// (the parts that are commented out allow for a one-to-many mapping,
-				//  which is only disabled because the MFC stuff that automagically activates the commands
-				//  doesn't seem to be capable of activating more than one command per accelerator...)
-//				if (wIDCommand != wIDCommand2) {
-				// the key is already affected by a different command and also not already affected by the same commmand
-
-					m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
-//				} else {
-		  			// the key is already affected by the same command
-					m_key.SetSel(0, -1);
-					mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel);
-//        			m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
-					return; // abort
-//				}
-			}
-		}
-	}
-
-	if (mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel) != TRUE)
+	CCmdAccelOb *pCmdAccel;
+	if (m_mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel) != TRUE)
 		return;
+
+	WORD wKey;
+	bool bCtrl, bAlt, bShift;
+	if (!m_key.GetAccelKey(wKey, bCtrl, bAlt, bShift))
+		return;  // no valid key, abort
 
 	BYTE cVirt = 0;
 	if (bCtrl)
@@ -314,7 +356,7 @@ void AccelEditor::OnAssign()
 	cVirt |= FVIRTKEY;
 
 	// Create the new key...
-	pAccel = new CAccelsOb(cVirt, wKey, false);
+	CAccelsOb *pAccel = new CAccelsOb(cVirt, wKey, false);
 	ASSERT(pAccel != NULL);
 	// ...and add in the list.
 	pCmdAccel->m_Accels.AddTail(pAccel);
@@ -323,22 +365,28 @@ void AccelEditor::OnAssign()
 	CString szBuffer;
 	pAccel->GetString(szBuffer);
 
-	int index = m_currents.AddString(szBuffer);
-	m_currents.SetItemData(index, (DWORD)pAccel);
-	m_currents.SetCurSel(index);
+	POSITION selected = m_currents.GetFirstSelectedItemPosition();
+	int index = selected ? m_currents.GetNextSelectedItem(selected) : 0;	// selected has to be valid
+	m_currents.InsertItem(index, szBuffer);
+	m_currents.SetItemData(index, reinterpret_cast<DWORD>(pAccel));
+	m_currents.SetItemState(index, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+	GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
+	GetDlgItem(IDC_ACCELEDIT_REPLACE)->EnableWindow(TRUE);
 
 	// Reset the key editor.
 //	m_key.ResetKey();
+
+	m_modified = TRUE;
+	GetDlgItem(IDC_ACCELEDIT_APPLY)->EnableWindow(TRUE);
 }
 
 void AccelEditor::OnRemove()
 {
 	// Some controls
-	int indexCurrent = m_currents.GetCurSel();
-	if (indexCurrent == LB_ERR)
+	POSITION selected = m_currents.GetFirstSelectedItemPosition();
+	if (selected == NULL)
 		return;
 
-	// 2nd part.
 	HTREEITEM hItem = m_commands.GetSelectedItem();
 	if (hItem == NULL)
 		return;
@@ -346,41 +394,264 @@ void AccelEditor::OnRemove()
 	// Ref to the ID command
 	WORD wIDCommand = LOWORD(m_commands.GetItemData(hItem));
 
-	// Run through the accels,and control if it can be deleted.
-	CCmdAccelOb*pCmdAccel;
-	if (mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel) == TRUE)
+	// Run through the accels, and control if it can be deleted.
+	CCmdAccelOb *pCmdAccel;
+	if (m_mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel) == TRUE)
 	{
-		CAccelsOb*pAccel;
-		CAccelsOb*pAccelCurrent = (CAccelsOb *)(m_currents.GetItemData(indexCurrent));
-		CString   szBuffer;
-		POSITION  pos = pCmdAccel->m_Accels.GetHeadPosition();
-		POSITION  PrevPos;
+		POSITION pos = pCmdAccel->m_Accels.GetHeadPosition();
+		POSITION PrevPos;
 		while (pos != NULL)
 		{
 			PrevPos = pos;
-			pAccel  = pCmdAccel->m_Accels.GetNext(pos);
-			if (pAccel == pAccelCurrent)
+			CAccelsOb *pAccel = pCmdAccel->m_Accels.GetNext(pos);
+			do
 			{
-				if (!pAccel->m_bLocked)
+				int indexCurrent = m_currents.GetNextSelectedItem(selected);
+				CAccelsOb *pAccelCurrent = reinterpret_cast<CAccelsOb *>(m_currents.GetItemData(indexCurrent));
+				if (pAccel == pAccelCurrent)
 				{
-					// not locked, so we delete the key
-					pCmdAccel->m_Accels.RemoveAt(PrevPos);
-					delete pAccel;
-					// and update the listboxes/key editor/static text
-					m_currents.DeleteString(indexCurrent);
-//					m_key.ResetKey();
-					m_alreadyAffected.SetWindowText("");
-					return;
-				}
-				else
-				{
-					systemMessage(0, "Unable to remove this\naccelerator (Locked)");
-					return;
+					if (!pAccel->m_bLocked)
+					{
+						// not locked, so we delete the key
+						pCmdAccel->m_Accels.RemoveAt(PrevPos);
+						delete pAccel;
+						// and update the listboxes/key editor/static text
+						m_currents.DeleteItem(indexCurrent);
+//						m_key.ResetKey();
+						m_alreadyAffected.SetWindowText("");
+						m_modified = TRUE;
+						break;
+					}
+					else
+					{
+						systemMessage(0, "Unable to remove this locked accelerator: ", m_currents.GetItemText(indexCurrent, KEY_COLUMN));
+						m_currents.SetItemState(indexCurrent, 0, LVIS_SELECTED); // deselect it
+						break;
+					}
 				}
 			}
+			while (selected != NULL);
+
+			selected = m_currents.GetFirstSelectedItemPosition();
+			if (selected == NULL)	// the normal exit of this function
+			{
+				if (m_currents.GetSelectedCount() == 0)
+				{
+					GetDlgItem(IDC_REMOVE)->EnableWindow(FALSE);
+					GetDlgItem(IDC_ACCELEDIT_REPLACE)->EnableWindow(FALSE);
+				}
+				GetDlgItem(IDC_ACCELEDIT_APPLY)->EnableWindow(m_modified);
+				return;
+			}
 		}
-		systemMessage(0, "internal error (CAccelDlgHelper::Remove : pAccel unavailable)");
+		systemMessage(0, "internal error (AccelEditor::Remove : pAccel unavailable)");
 		return;
 	}
-	systemMessage(0, "internal error (CAccelDlgHelper::Remove : Lookup failed)");
+	systemMessage(0, "internal error (AccelEditor::Remove : Lookup failed)");
 }
+
+void AccelEditor::OnReplace()
+{
+	if (CheckAffected())
+		return;
+	OnRemove();
+	OnAssign();
+}
+
+void AccelEditor::OnNew()
+{
+	m_autoMode = AUTO_NEW;
+	m_key.SetFocus();
+}
+
+void AccelEditor::OnEdit()
+{
+	m_autoMode = AUTO_REPLACE;
+	m_key.SetFocus();
+}
+
+BOOL AccelEditor::CheckAffected()
+{
+	m_alreadyAffected.SetWindowText("");
+
+	WORD wKey;
+	bool bCtrl, bAlt, bShift;
+	if (!m_key.GetAccelKey(wKey, bCtrl, bAlt, bShift))
+		return TRUE;  // no valid key, abort
+
+	POSITION posItem = m_hItems.GetHeadPosition();
+	while (posItem != NULL)
+	{
+		HTREEITEM hItem		  = m_hItems.GetNext(posItem);
+		WORD	  wIDCommand2 = LOWORD(m_commands.GetItemData(hItem));
+
+		CCmdAccelOb *pCmdAccel;
+		m_mgr.m_mapAccelTable.Lookup(wIDCommand2, pCmdAccel);
+
+		POSITION pos = pCmdAccel->m_Accels.GetHeadPosition();
+		while (pos != NULL)
+		{
+			CAccelsOb *pAccel = pCmdAccel->m_Accels.GetNext(pos);
+			if (pAccel->IsEqual(wKey, bCtrl, bAlt, bShift))
+			{
+				// the key is already affected (in the same or other command)
+				// (the parts that were commented out allow for a one-to-many mapping,
+				//  which is only disabled because the MFC stuff that automagically activates the commands
+				//  doesn't seem to be capable of activating more than one command per accelerator...)
+				m_alreadyAffected.SetWindowText(pCmdAccel->m_szCommand);
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL AccelEditor::CheckListSelections()
+{
+	BOOL result = m_currents.GetFirstSelectedItemPosition() ? TRUE : FALSE;
+
+	GetDlgItem(IDC_REMOVE)->EnableWindow(result);
+	GetDlgItem(IDC_ACCELEDIT_REPLACE)->EnableWindow(result);
+
+	return result;
+}
+
+void AccelEditor::OnTvnSelchangedCommands(NMHDR *pNMHDR, LRESULT *pResult)
+{
+//	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+
+	// TODO: Add your control notification handler code here
+	// Check if some commands exist.
+	HTREEITEM hItem = m_commands.GetSelectedItem();
+	if (hItem == NULL)
+		return;
+
+	m_currents.DeleteAllItems();
+
+	WORD wIDCommand = LOWORD(m_commands.GetItemData(hItem));
+	CCmdAccelOb *pCmdAccel;
+	if (m_mgr.m_mapAccelTable.Lookup(wIDCommand, pCmdAccel))
+	{
+		CAccelsOb *pAccel;
+		CString	   szBuffer;
+		POSITION   pos = pCmdAccel->m_Accels.GetHeadPosition();
+
+		// Add the keys to the 'currents keys' listbox.
+		while (pos != NULL)
+		{
+			pAccel = pCmdAccel->m_Accels.GetNext(pos);
+			pAccel->GetString(szBuffer);
+			int index = m_currents.InsertItem(m_currents.GetItemCount(), szBuffer);
+			// and a pointer to the accel object.
+			m_currents.SetItemData(index, (DWORD)pAccel);
+		}
+
+		m_currents.SetItemState(-1, LVIS_SELECTED, LVIS_SELECTED);
+		// trick
+//		OnTimeoutEditKillfocus();
+		GetDlgItem(IDC_ASSIGN)->EnableWindow(TRUE);
+		m_currents.EnableWindow(TRUE);
+	}
+	else
+	{
+		// trick
+//		m_timeoutValue = 0;
+		GetDlgItem(IDC_ASSIGN)->EnableWindow(FALSE);
+		m_currents.EnableWindow(FALSE);
+	}
+
+	// Init the key editor
+//  m_pKey->ResetKey();
+//	m_alreadyAffected.SetWindowText("");
+
+	CheckListSelections();
+
+	*pResult = 0;
+}
+
+/*
+void AccelEditor::OnListItemChanged(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	NMLISTVIEW *pNMListView = reinterpret_cast<NMLISTVIEW *>(pNMHDR);
+	if (pNMListView->uChanged == LVIF_STATE)
+	{
+		if ((pNMListView->uOldState & LVIS_SELECTED) && !(pNMListView->uNewState & LVIS_SELECTED))
+		{
+		}
+	}
+
+	*pResult = 0;
+}
+*/
+
+void AccelEditor::OnListClick(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	CheckListSelections();
+	*pResult = 0;
+}
+
+void AccelEditor::OnListDblClick(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	if (m_currents.GetFirstSelectedItemPosition())
+		OnEdit();
+	else
+		OnNew();
+	*pResult = 0;
+}
+
+void AccelEditor::OnKeyboardEditChange()
+{
+	KillTimer(1);
+	CheckAffected();
+	m_timer = 0;
+	m_progress.SetPos(0);
+	m_progress.SetBarColor(RGB(128, 0, 255));
+	if (m_timeoutValue == 0)
+	{
+		return;
+	}
+	m_progress.SetRange32(0, m_timeoutValue);
+	SetTimer(1, 50, NULL);
+}
+
+void AccelEditor::OnKeyboardEditKillfocus()
+{
+	m_timer = 0;
+	m_progress.SetPos(0);
+	KillTimer(1);
+}
+
+void AccelEditor::OnTimeoutEditKillfocus()
+{
+	CString str;
+	m_timeout.GetWindowText(str);
+	m_timeoutValue = atoi(str);
+}
+
+void AccelEditor::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == 1)
+	{
+		m_timer += 50;
+		if (m_timer >= m_timeoutValue)
+		{
+			m_progress.SetPos(m_timeoutValue);
+			m_progress.SetBarColor(RGB(255, 255, 0));
+			if (m_autoMode == AUTO_NEW)
+			{
+				OnAssign();
+			}
+			else
+			{
+				OnReplace();
+			}
+			m_currents.SetFocus();
+			return;
+		}
+		UINT green = (m_timer * 255 / m_timeoutValue) ;
+		m_progress.SetBarColor(RGB(128 + green / 2, green, 255 - green));
+		m_progress.SetPos(m_timer);
+	}
+}
+

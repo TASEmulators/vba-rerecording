@@ -615,6 +615,14 @@
 #define IDC_BUTTON_LUAEDIT              1365
 #define IDC_LUACONSOLE_CLEAR            1366
 #define IDC_LUACONSOLE_CHOOSEFONT       1367
+#define IDC_ACCELEDIT_APPLY             1368
+#define IDC_ACCELEDIT_SELECTALL         1369
+#define IDC_ACCELEDIT_REPLACE           1370
+#define IDC_ACCELEDIT_ONFLYKEYEDIT      1371
+#define IDC_ACCELEDIT_PROGRESSBAR       1372
+#define IDC_ACCELEDIT_AUTOTIMEOUT       1373
+#define IDC_ACCELEDIT_UNDO              1374
+#define IDC_STATIC5                     1375
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
 #define ID_OPTIONS_VIDEO_VSYNC          40009
@@ -1043,9 +1051,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        170
+#define _APS_NEXT_RESOURCE_VALUE        171
 #define _APS_NEXT_COMMAND_VALUE         42411
-#define _APS_NEXT_CONTROL_VALUE         1368
+#define _APS_NEXT_CONTROL_VALUE         1376
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

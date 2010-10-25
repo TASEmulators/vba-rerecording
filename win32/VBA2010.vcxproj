@@ -701,6 +701,7 @@
     <None Include="..\README-win.txt" />
     <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
     <None Include="..\TODO.txt" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\AutoBuild.h" />
@@ -717,7 +718,6 @@
     <ClInclude Include="..\src\common\Util.h" />
     <ClInclude Include="..\src\common\vbalua.h" />
     <ClInclude Include="..\src\version.h" />
-    <ClInclude Include="..\src\common\zutil.h" />
     <ClInclude Include="..\src\filters\hq2x.h" />
     <ClInclude Include="..\src\filters\hq3x32.h" />
     <ClInclude Include="..\src\filters\hq_shared32.h" />

@@ -43,7 +43,7 @@ typedef struct DialogSizerSizingItem    //      sdi
 
 class ResizeDlg : public CDialog
 {
-	void *dd;
+	DECLARE_DYNAMIC(ResizeDlg)	// what will this do?
 public:
 	ResizeDlg(UINT id, CWnd *parent = NULL);
 
@@ -56,6 +56,8 @@ public:
 	void UpdateWindowSize(const int cx, const int cy, HWND);
 
 	virtual BOOL OnWndMsg(UINT, WPARAM, LPARAM, LRESULT *);
+private:
+	void *dd;
 };
 
 #endif
