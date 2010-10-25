@@ -76,6 +76,7 @@ protected:
 	// Implementation
 protected:
 	BOOL CheckAffected();
+	BOOL CheckJammed();
 	BOOL CheckListSelections();
 
 	// Generated message map functions

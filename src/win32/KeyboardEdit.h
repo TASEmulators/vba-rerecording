@@ -47,16 +47,17 @@ public:
 
 	// Attributes
 public:
-	bool m_bKeyDefined;
-
-	WORD m_wVirtKey;
 	bool m_bCtrlPressed;
 	bool m_bAltPressed;
 	bool m_bShiftPressed;
+	bool m_bKeyDefined;
+	WORD m_wVirtKey;
+	WORD m_wJamKey;
 
 	// Operations
 public:
-	bool GetAccelKey(WORD &wVirtKey, bool &bCtrl, bool &bAlt, bool &bShift);
+	bool GetAccelKey(WORD &wVirtKey, bool &bCtrl, bool &bAlt, bool &bShift) const;
+	bool GetJamKey(WORD &wJamKey) const;
 	void ResetKey();
 protected:
 	void DisplayKeyboardString();
