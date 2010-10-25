@@ -928,11 +928,11 @@ void MainWnd::OnUpdateToolsRewind(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsCustomize()
 {
-	AccelEditor dlg;
-
-	if (dlg.DoModal())
+	AccelEditor dlg(this, &theApp.winAccelMgr);
+	dlg.DoModal();
+	if (dlg.IsModified())
 	{
-		theApp.winAccelMgr = dlg.mgr;
+		theApp.winAccelMgr = dlg.GetResultMangager();
 		theApp.winAccelMgr.UpdateWndTable();
 		theApp.winAccelMgr.Write();
 	}

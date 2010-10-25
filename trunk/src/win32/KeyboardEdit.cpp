@@ -35,138 +35,155 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern TCHAR* mapVirtKeysStringFromWORD(WORD wKey);
+extern TCHAR *mapVirtKeysStringFromWORD(WORD wKey);
+
+IMPLEMENT_DYNAMIC(CKeyboardEdit, CEdit)
 
 /////////////////////////////////////////////////////////////////////////////
 // CKeyboardEdit
 
 CKeyboardEdit::CKeyboardEdit()
 {
-  m_bKeyDefined = false;
-  ResetKey ();
+	m_bKeyDefined = false;
+	ResetKey();
 }
 
 CKeyboardEdit::~CKeyboardEdit()
 {
 }
 
-
 BEGIN_MESSAGE_MAP(CKeyboardEdit, CEdit)
-  //{{AFX_MSG_MAP(CKeyboardEdit)
-  //}}AFX_MSG_MAP
-  END_MESSAGE_MAP()
+//{{AFX_MSG_MAP(CKeyboardEdit)
+//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
 #pragma warning( disable : 4706 )
-  /////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // CKeyboardEdit message handlers
-BOOL CKeyboardEdit::PreTranslateMessage (MSG* pMsg) 
+BOOL CKeyboardEdit::PreTranslateMessage(MSG *pMsg)
 {
-  bool bPressed;
-  if ((bPressed = (pMsg->message == WM_KEYDOWN)) || pMsg->message == WM_KEYUP || (bPressed = (pMsg->message == WM_SYSKEYDOWN)) || pMsg->message == WM_SYSKEYUP) {
-    bool bReset = false;
-	if (bPressed && m_bKeyDefined && !((1 << 30) & pMsg->lParam)) {
-      ResetKey ();
-	  bReset = true;
-	}
-	bool syncShift = true, syncCtrl = true, syncAlt = true;
-    if (pMsg->wParam == VK_SHIFT && !m_bKeyDefined) {
-		if(bPressed)
-		  m_bShiftPressed = bPressed;
-		syncShift = false;
-	}
-    else if (pMsg->wParam == VK_CONTROL &&!m_bKeyDefined) {
-		if(bPressed)
-          m_bCtrlPressed = bPressed;
-		syncCtrl = false;
-    }
-	else if (pMsg->wParam == VK_MENU && !m_bKeyDefined) {
-		if(bPressed)
-          m_bAltPressed = bPressed;
-		syncAlt = false;
-	}
-    else {
-      if (!m_bKeyDefined) {
-        m_wVirtKey = (WORD)pMsg->wParam;
-        if (bPressed)
-          m_bKeyDefined = true;
-      }
-    }
-	if (!m_bKeyDefined || bReset) {
-	  if (syncShift)
-	    m_bShiftPressed = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
-	  if (syncCtrl)
-	    m_bCtrlPressed = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
-	  if (syncAlt)
-	    m_bAltPressed = ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
+//	bool bPressed = (pMsg->message == WM_KEYDOWN) || (pMsg->message == WM_SYSKEYDOWN);
+//	if (bPressed || pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP)
+	bool bPressed;
+	if ((bPressed = (pMsg->message == WM_KEYDOWN)) || pMsg->message == WM_KEYUP	|| 
+		(bPressed = (pMsg->message == WM_SYSKEYDOWN)) || pMsg->message == WM_SYSKEYUP)
+	{
+		bool bReset = false;
+		if (bPressed && m_bKeyDefined && !((1 << 30) & pMsg->lParam))
+		{
+			ResetKey();
+			bReset = true;
+		}
+		bool syncShift = true, syncCtrl = true, syncAlt = true;
+		if (pMsg->wParam == VK_SHIFT && !m_bKeyDefined)
+		{
+			if (bPressed)
+				m_bShiftPressed = bPressed;
+			syncShift = false;
+		}
+		else if (pMsg->wParam == VK_CONTROL && !m_bKeyDefined)
+		{
+			if (bPressed)
+				m_bCtrlPressed = bPressed;
+			syncCtrl = false;
+		}
+		else if (pMsg->wParam == VK_MENU && !m_bKeyDefined)
+		{
+			if (bPressed)
+				m_bAltPressed = bPressed;
+			syncAlt = false;
+		}
+		else
+		{
+			if (!m_bKeyDefined)
+			{
+				m_wVirtKey = (WORD)pMsg->wParam;
+				if (bPressed)
+					m_bKeyDefined = true;
+			}
+		}
+		if (!m_bKeyDefined || bReset)
+		{
+			if (syncShift)
+				m_bShiftPressed = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
+			if (syncCtrl)
+				m_bCtrlPressed = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
+			if (syncAlt)
+				m_bAltPressed = ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
+		}
+
+		DisplayKeyboardString();
+		return TRUE;
 	}
 
-    DisplayKeyboardString ();
-    return TRUE;
-  }
-        
-  return CEdit::PreTranslateMessage(pMsg);
+	return CEdit::PreTranslateMessage(pMsg);
 }
+
 #pragma warning( default : 4706 )
 
 ////////////////////////////////////////////////////////////////////////
 //
 void CKeyboardEdit::DisplayKeyboardString()
 {
-  CString strKbd;
+	CString strKbd;
 
-  // modifiers
-  if (m_bCtrlPressed)
-    strKbd = "Ctrl";
-  if (m_bAltPressed) {
-    if (strKbd.GetLength () > 0)
-      strKbd += '+';
-    strKbd += "Alt";
-  }
-  if (m_bShiftPressed) {
-    if (strKbd.GetLength () > 0)
-      strKbd += '+';
-    strKbd += "Shift";
-  }
-  // virtual key
-  LPCTSTR szVirtKey = mapVirtKeysStringFromWORD(m_wVirtKey);
-  if (szVirtKey != NULL) {
-    if (strKbd.GetLength () > 0)
-      strKbd += '+';
-    strKbd += szVirtKey;
-  }
-  SetWindowText (strKbd);
+	// modifiers
+	if (m_bCtrlPressed)
+		strKbd = "Ctrl";
+	if (m_bAltPressed)
+	{
+		if (strKbd.GetLength() > 0)
+			strKbd += '+';
+		strKbd += "Alt";
+	}
+	if (m_bShiftPressed)
+	{
+		if (strKbd.GetLength() > 0)
+			strKbd += '+';
+		strKbd += "Shift";
+	}
+	// virtual key
+	LPCTSTR szVirtKey = mapVirtKeysStringFromWORD(m_wVirtKey);
+	if (szVirtKey != NULL)
+	{
+		if (strKbd.GetLength() > 0)
+			strKbd += '+';
+		strKbd += szVirtKey;
+	}
+
+	CString oldString;
+	GetWindowText(oldString);
+	if (oldString.Compare(strKbd))
+		SetWindowText(strKbd);
 }
-
 
 ////////////////////////////////////////////////////////////////////////
 //
-void CKeyboardEdit::ResetKey ()
+void CKeyboardEdit::ResetKey()
 {
-  m_wVirtKey = 0;
-  m_bCtrlPressed = false;
-  m_bAltPressed = false;
-  m_bShiftPressed = false;
-  
-  m_bKeyDefined = false;
-  if(m_hWnd != NULL)
-    SetWindowText(_T(""));
-}
+	m_wVirtKey		= 0;
+	m_bCtrlPressed	= false;
+	m_bAltPressed	= false;
+	m_bShiftPressed = false;
 
+	m_bKeyDefined = false;
+	if (m_hWnd != NULL)
+		SetWindowText(_T(""));
+}
 
 ////////////////////////////////////////////////////////////////////////
 //
-bool CKeyboardEdit::GetAccelKey(WORD& wVirtKey, bool& bCtrl, bool& bAlt, bool& bShift)
+bool CKeyboardEdit::GetAccelKey(WORD &wVirtKey, bool &bCtrl, bool &bAlt, bool &bShift)
 {
-  if (!m_bKeyDefined)
-  {
-    if(!m_bAltPressed && !m_bCtrlPressed && !m_bShiftPressed)
-      return false;
-  }
-  
-  wVirtKey = m_wVirtKey;
-  bAlt = m_bAltPressed;
-  bCtrl = m_bCtrlPressed;
-  bShift = m_bShiftPressed;
-  return true;
-}
+	if (!m_bKeyDefined)
+	{
+		if (!m_bAltPressed && !m_bCtrlPressed && !m_bShiftPressed)
+			return false;
+	}
 
+	wVirtKey = m_wVirtKey;
+	bAlt	 = m_bAltPressed;
+	bCtrl	 = m_bCtrlPressed;
+	bShift	 = m_bShiftPressed;
+	return true;
+}
