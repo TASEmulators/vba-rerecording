@@ -66,8 +66,8 @@ enum
 #define IDS_AVI_DIR             "aviRecordDir"
 #define IDS_WAV_DIR             "soundRecordDir"
 #define IDS_CAPTURE_DIR         "captureDir"
+#define IDS_WATCH_DIR           "watchDir"
 
- 
 /////////////////////////////////////////////////////////////////////////////
 // forward decl
 class IUpdateListener;

@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include <mmsystem.h>
 #include <cassert>
-#include <direct.h>     
+#include <direct.h>
 
 #include "resource.h"
 #include "VBA.h"
@@ -67,7 +67,9 @@ extern void remoteSetProtocol(int);
 extern void remoteCleanUp();
 extern int remoteSocket;
 
-extern const char *IDS_tbl[] = { IDS_ROM_DIR, IDS_GBXROM_DIR, IDS_BATTERY_DIR, IDS_SAVE_DIR, IDS_MOVIE_DIR, IDS_CHEAT_DIR, IDS_LUA_DIR, IDS_IPS_DIR, IDS_AVI_DIR, IDS_WAV_DIR, IDS_CAPTURE_DIR};
+extern const char *IDS_tbl[] = {
+	IDS_ROM_DIR, IDS_GBXROM_DIR, IDS_BATTERY_DIR, IDS_SAVE_DIR, IDS_MOVIE_DIR, IDS_CHEAT_DIR, 
+	IDS_LUA_DIR, IDS_IPS_DIR, IDS_AVI_DIR, IDS_WAV_DIR, IDS_CAPTURE_DIR, IDS_WATCH_DIR };
 void winlog(const char *msg, ...);
 
 #ifdef _DEBUG
@@ -113,7 +115,7 @@ void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 				drawText(dest,
 				         pitch,
 				         left,
-				         bottom - 10*(slot+1),
+				         bottom - 10 * (slot + 1),
 				         theApp.screenMessageBuffer[slot],
 				         theApp.screenMessageColorBuffer[slot]);
 			}
@@ -180,7 +182,7 @@ void winlog(const char *msg, ...)
 // code from SDL_main.c for Windows
 /* Parse a command line buffer into arguments */
 
-static int parseCommandLine(char *cmdline, char **argv)
+static int parseCommandLine(char *cmdline, char * *argv)
 {
 	char *bufp;
 	int	  argc;
@@ -257,7 +259,7 @@ static void winSignal(int, int)
 {}
 
 #define CPUReadByteQuick(addr) \
-    map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
+    map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask]
 
 static void winOutput(char *s, u32 addr)
 {
@@ -282,7 +284,7 @@ static void winOutput(char *s, u32 addr)
 	}
 }
 
-typedef BOOL (WINAPI *GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
+typedef BOOL (WINAPI * GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
 
 static int winGetMenuBarHeight()
 {
@@ -640,8 +642,8 @@ BOOL VBA::InitInstance()
 
 	winAccelMgr.Connect((MainWnd *)m_pMainWnd);
 
-	extern void winAccelAddCommandsFromMenu(CAcceleratorManager &mgr, CMenu *pMenu, const CString &parentStr);
-	extern void winAccelAddCommandsFromTable(CAcceleratorManager &mgr);
+	extern void winAccelAddCommandsFromMenu(CAcceleratorManager & mgr, CMenu * pMenu, const CString &parentStr);
+	extern void winAccelAddCommandsFromTable(CAcceleratorManager & mgr);
 
 	winAccelAddCommandsFromMenu(winAccelMgr, &m_menu, CString());
 	winAccelAddCommandsFromTable(winAccelMgr);
@@ -653,8 +655,8 @@ BOOL VBA::InitInstance()
 
 	if (m_lpCmdLine[0])
 	{
-		int	   argc = parseCommandLine(m_lpCmdLine, NULL);
-		char **argv = (char * *)malloc((argc+1)*sizeof(char *));
+		int		argc = parseCommandLine(m_lpCmdLine, NULL);
+		char * *argv = (char * *)malloc((argc + 1) * sizeof(char *));
 		parseCommandLine(m_lpCmdLine, argv);
 
 		bool gotFlag = false, enoughArgs = false;
@@ -667,7 +669,7 @@ BOOL VBA::InitInstance()
 				gotFlag = true;
 				if (_stricmp(argv[i], "-rom") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					szFile = argv[++i];
 					winCorrectPath(szFile);
@@ -675,7 +677,7 @@ BOOL VBA::InitInstance()
 				}
 				else if (_stricmp(argv[i], "-bios") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					biosFileName = argv[++i];
 					winCorrectPath(biosFileName);
@@ -684,7 +686,7 @@ BOOL VBA::InitInstance()
 				}
 				else if (_stricmp(argv[i], "-frameskip") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					frameSkip = atoi(argv[++i]);
 					if (frameSkip < 0)
@@ -695,7 +697,7 @@ BOOL VBA::InitInstance()
 				}
 				else if (_stricmp(argv[i], "-throttle") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					throttle = atoi(argv[++i]);
 					if (throttle < 5)
@@ -705,30 +707,30 @@ BOOL VBA::InitInstance()
 				}
 				else if (_stricmp(argv[i], "-throttleKeepPitch") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					accuratePitchThrottle = atoi(argv[++i]) != 0;
 				}
 				else if (_stricmp(argv[i], "-synchronize") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					synchronize = atoi(argv[++i]) != 0;
 				}
 				else if (_stricmp(argv[i], "-hideborder") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					hideMovieBorder = atoi(argv[++i]) != 0;
 				}
 				else if (_stricmp(argv[i], "-play") == 0)
 				{
 					playMovieFile = true;
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					strcpy(movieFileToPlay, argv[++i]);
 					winCorrectPath(movieFileToPlay);
-					if (i+1 >= argc || argv[i+1][0] == '-') {--i; goto invalidArgument; }
+					if (i + 1 >= argc || argv[i + 1][0] == '-') { --i; goto invalidArgument; }
 					playMovieFileReadOnly = atoi(argv[++i]) != 0;
 				}
 				else if (_stricmp(argv[i], "-videoLog") == 0)
@@ -736,7 +738,7 @@ BOOL VBA::InitInstance()
 					nvVideoLog	   = true;
 					nvAudioLog	   = true;
 					LoggingEnabled = 2;
-					if (i+1 >= argc || argv[i+1][0] == '-') {}
+					if (i + 1 >= argc || argv[i + 1][0] == '-') {}
 					else
 						NESVideoSetVideoCmd(argv[++i]);
 				}
@@ -751,7 +753,7 @@ BOOL VBA::InitInstance()
 				else if (_stricmp(argv[i], "-outputWAV") == 0)
 				{
 					outputWavFile = true;
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					strcpy(wavFileToOutput, argv[++i]);
 				}
@@ -761,19 +763,19 @@ BOOL VBA::InitInstance()
 				}
 				else if (_stricmp(argv[i], "-quitAfter") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					quitAfterTime = atoi(argv[++i]);
 				}
 				else if (_stricmp(argv[i], "-pauseAt") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					pauseAfterTime = atoi(argv[++i]);
 				}
 				else if (_stricmp(argv[i], "-videoScale") == 0)
 				{
-					if (i+1 >= argc || argv[i+1][0] == '-')
+					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
 					int size = atoi(argv[++i]);
 					if (size < 1)
@@ -829,7 +831,7 @@ invalidArgument:
 					            "-logDebug  \t tells logging to output debug info to screen, if logging is enabled\n"
 					       );
 					theApp.winCheckFullscreen();
-					AfxGetApp()->m_pMainWnd->MessageBox(str, "Commandline Help", MB_OK|MB_ICONINFORMATION);
+					AfxGetApp()->m_pMainWnd->MessageBox(str, "Commandline Help", MB_OK | MB_ICONINFORMATION);
 					exit(0);
 				}
 			}
@@ -1026,22 +1028,22 @@ void VBA::updateFilter()
 			rect.bottom = sizeY;
 			break;
 		default: // other -> 2x texture
-			rect.right	= sizeX*2;
-			rect.bottom = sizeY*2;
+			rect.right	= sizeX * 2;
+			rect.bottom = sizeY * 2;
 			memset(delta, 255, sizeof(delta));
 			break;
 		case 15: // hq3x -> 3x texture
 		case 16:
 		case 17:
 		case 19:
-			rect.right	= sizeX*3;
-			rect.bottom = sizeY*3;
+			rect.right	= sizeX * 3;
+			rect.bottom = sizeY * 3;
 			memset(delta, 255, sizeof(delta));
 			break;
 		case 18: // Simple4x -> 4x texture
 		case 20:
-			rect.right	= sizeX*4;
-			rect.bottom = sizeY*4;
+			rect.right	= sizeX * 4;
+			rect.bottom = sizeY * 4;
 			memset(delta, 255, sizeof(delta));
 			break;
 		}
@@ -1125,22 +1127,22 @@ void VBA::updateFilter()
 				rect.bottom = sizeY;
 				break;
 			default: // other -> 2x texture
-				rect.right	= sizeX*2;
-				rect.bottom = sizeY*2;
+				rect.right	= sizeX * 2;
+				rect.bottom = sizeY * 2;
 				memset(delta, 255, sizeof(delta));
 				break;
 			case 15: // hq3x -> 3x texture
 			case 16:
 			case 17:
 			case 19:
-				rect.right	= sizeX*3;
-				rect.bottom = sizeY*3;
+				rect.right	= sizeX * 3;
+				rect.bottom = sizeY * 3;
 				memset(delta, 255, sizeof(delta));
 				break;
 			case 18: // Simple4x -> 4x texture
 			case 20:
-				rect.right	= sizeX*4;
-				rect.bottom = sizeY*4;
+				rect.right	= sizeX * 4;
+				rect.bottom = sizeY * 4;
 				memset(delta, 255, sizeof(delta));
 				break;
 			}
@@ -1158,7 +1160,7 @@ void VBA::recreateMenuBar()
 	m_menu.Detach();
 	m_menu.Attach(winResLoadMenu(MAKEINTRESOURCE(IDR_MENU)));
 
-	if (m_pMainWnd && menuToggle)	// assuming that whether the menu has been set is always kept tracked
+	if (m_pMainWnd && menuToggle)   // assuming that whether the menu has been set is always kept tracked
 	{
 		m_pMainWnd->SetMenu(&m_menu);
 	}
@@ -1175,7 +1177,7 @@ void VBA::updateMenuBar()
 {
 	if (flagHideMenu)
 		return;
-	
+
 	recreateMenuBar();
 
 	if (popup != NULL)
@@ -1194,7 +1196,7 @@ void VBA::saveRewindStateIfNecessary()
 		if (rewindCount > rewindSlots)
 			rewindCount = rewindSlots;
 		assert(rewindPos >= 0 && rewindPos < rewindSlots);
-		if (emulator.emuWriteMemState(&rewindMemory[rewindPos*REWIND_SIZE], REWIND_SIZE))
+		if (emulator.emuWriteMemState(&rewindMemory[rewindPos * REWIND_SIZE], REWIND_SIZE))
 		{
 			rewindPos = ++rewindPos % rewindSlots;
 			assert(rewindPos >= 0 && rewindPos < rewindSlots);
@@ -1209,7 +1211,7 @@ void VBA::saveRewindStateIfNecessary()
 		extern SMovie Movie;
 		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? GBASystemCounters.frameCount : Movie.currentFrame;
 		int endFrame = theApp.frameSearchStart + theApp.frameSearchLength;
-		frameSearchSkipping	= (curFrame < endFrame);
+		frameSearchSkipping	 = (curFrame < endFrame);
 		frameSearchFirstStep = false;
 
 		if (curFrame == endFrame)
@@ -1297,7 +1299,7 @@ void VBA::addRecentFile(CString file)
 			CString p = recentFiles[i];
 			for (int j = i; j > 0; j--)
 			{
-				recentFiles[j] = recentFiles[j-1];
+				recentFiles[j] = recentFiles[j - 1];
 			}
 			recentFiles[0] = p;
 			return;
@@ -1316,7 +1318,7 @@ void VBA::addRecentFile(CString file)
 
 	for (i = num; i >= 1; i--)
 	{
-		recentFiles[i] = recentFiles[i-1];
+		recentFiles[i] = recentFiles[i - 1];
 	}
 	recentFiles[0] = file;
 }
@@ -1480,8 +1482,8 @@ void VBA::updateWindowSize(int value)
 
 	int winSizeX = 0;
 	int winSizeY = 0;
-	int x = 0;
-	int y = 0;
+	int x		 = 0;
+	int y		 = 0;
 
 	DWORD style	  = WS_POPUP | WS_VISIBLE;
 	DWORD styleEx = alwaysOnTop ? WS_EX_TOPMOST : 0;
@@ -1515,12 +1517,12 @@ void VBA::updateWindowSize(int value)
 		// Create a new window
 		m_pMainWnd = new MainWnd;
 		m_pMainWnd->CreateEx(styleEx,
-		               theApp.wndClass,
-		               VBA_NAME_AND_VERSION,
-		               style,
-		               x, y, winSizeX, winSizeY,
-		               NULL,
-		               0);
+		                     theApp.wndClass,
+		                     VBA_NAME_AND_VERSION,
+		                     style,
+		                     x, y, winSizeX, winSizeY,
+		                     NULL,
+		                     0);
 
 		if (!(HWND)*m_pMainWnd)
 		{
@@ -1546,7 +1548,7 @@ void VBA::updateWindowSize(int value)
 	updateIFB();
 	updateFilter();
 
-	m_pMainWnd->RedrawWindow(NULL, NULL, RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
+	m_pMainWnd->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
 }
 
 bool VBA::initDisplay()
@@ -1648,7 +1650,7 @@ bool VBA::updateRenderMethod(bool force)
 	updateIFB();
 	updateFilter();
 
-	m_pMainWnd->RedrawWindow(NULL, NULL, RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
+	m_pMainWnd->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
 
 	regSetDwordValue("renderMethod", renderMethod);
 
@@ -1703,9 +1705,9 @@ bool VBA::detectMMX()
 		__asm {
 			mov eax, 0;
 			cpuid;
-			mov [dword ptr brand+0], ebx;
-			mov [dword ptr brand+4], edx;
-			mov [dword ptr brand+8], ecx;
+			mov [dword ptr brand + 0], ebx;
+			mov [dword ptr brand + 4], edx;
+			mov [dword ptr brand + 8], ecx;
 		}
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER) {
@@ -1899,10 +1901,7 @@ CString VBA::winResLoadFilter(UINT id)
 
 void VBA::loadSettings(const char *path)
 {
-	CString buffer;
-	CString tempStr;
-	std::string tempStr2;
-	std::string curDir;
+	CString	buffer;
 	// video
 	bool defaultVideoDriver = regQueryDwordValue("defaultVideoDriver", true) ? true : false;
 	if (!regQueryBinaryValue("videoDriverGUID", (char *)&videoDriverGUID, sizeof(GUID)))
@@ -1943,10 +1942,10 @@ void VBA::loadSettings(const char *path)
 			videoOption = 0;
 	}
 
-	fsWidth		 = regQueryDwordValue("fsWidth", 0);
-	fsHeight	 = regQueryDwordValue("fsHeight", 0);
-	fsColorDepth = regQueryDwordValue("fsColorDepth", 0);
-	fsMaxScale = regQueryDwordValue("fsMaxScale", 0);
+	fsWidth = regQueryDwordValue("fsWidth", 0);
+	fsHeight = regQueryDwordValue("fsHeight", 0);
+	fsColorDepth	  = regQueryDwordValue("fsColorDepth", 0);
+	fsMaxScale		  = regQueryDwordValue("fsMaxScale", 0);
 	fullScreenStretch = regQueryDwordValue("stretch", 0) ? true : false;
 
 	renderMethod = (DISPLAY_TYPE)regQueryDwordValue("renderMethod", DIRECT_DRAW);
@@ -1973,7 +1972,7 @@ void VBA::loadSettings(const char *path)
 	if (filterType < 0 || filterType > 20)
 		filterType = 0;
 	disableMMX = regQueryDwordValue("disableMMX", 0) ? true : false;
-	ifbType = regQueryDwordValue("ifbType", 0);
+	ifbType	   = regQueryDwordValue("ifbType", 0);
 	if (ifbType < 0 || ifbType > 2)
 		ifbType = 0;
 
@@ -1999,7 +1998,7 @@ void VBA::loadSettings(const char *path)
 	if (throttle < 5 || throttle > 1000)
 		throttle = 100;
 
-	synchronize		  = regQueryDwordValue("synchronize", 1) ? true : false;
+	synchronize = regQueryDwordValue("synchronize", 1) ? true : false;
 	accuratePitchThrottle = regQueryDwordValue("accuratePitchThrottle", FALSE) ? TRUE : FALSE;
 
 	// sound
@@ -2042,7 +2041,7 @@ void VBA::loadSettings(const char *path)
 	if (winSaveType < 0 || winSaveType > 5)
 		winSaveType = 0;
 	cpuEnhancedDetection = regQueryDwordValue("enhancedDetection", 1) ? true : false;
-	winFlashSize = regQueryDwordValue("flashSize", 0x10000);
+	winFlashSize		 = regQueryDwordValue("flashSize", 0x10000);
 	if (winFlashSize != 0x10000 && winFlashSize != 0x20000)
 		winFlashSize = 0x10000;
 
@@ -2054,32 +2053,32 @@ void VBA::loadSettings(const char *path)
 		gbSerialFunction = gbPrinterSend;
 	else
 		gbSerialFunction = NULL;
-	gbEmulatorType	  = regQueryDwordValue("emulatorType", 0);
+	gbEmulatorType = regQueryDwordValue("emulatorType", 0);
 	if (gbEmulatorType < 0 || gbEmulatorType > 5)
 		gbEmulatorType = 1;
 	winGbBorderOn	  = regQueryDwordValue("borderOn", 0);
 	gbBorderAutomatic = regQueryDwordValue("borderAutomatic", 0);
 
-	gbColorOption = regQueryDwordValue("colorOption", 0);
+	gbColorOption	= regQueryDwordValue("colorOption", 0);
 	gbPaletteOption = regQueryDwordValue("gbPaletteOption", 0);
 	if (gbPaletteOption < 0)
 		gbPaletteOption = 0;
 	if (gbPaletteOption > 2)
 		gbPaletteOption = 2;
-	regQueryBinaryValue("gbPalette", (char *)systemGbPalette, 24*sizeof(u16));
+	regQueryBinaryValue("gbPalette", (char *)systemGbPalette, 24 * sizeof(u16));
 
 	// head-up display
 	showSpeed = regQueryDwordValue("showSpeed", 1);
 	if (showSpeed < 0 || showSpeed > 2)
 		showSpeed = 1;
 	showSpeedTransparent = regQueryDwordValue("showSpeedTransparent", TRUE) ? TRUE : FALSE;
-	outlinedText	= regQueryDwordValue("outlinedText", TRUE) != 0;
-	transparentText = regQueryDwordValue("transparentText", FALSE) != 0;
-	textColor		= regQueryDwordValue("textColor", 0);
-	textMethod		= regQueryDwordValue("textMethod", 1);
-	frameCounter  = regQueryDwordValue("frameCounter", false) ? true : false;
-	lagCounter	  = regQueryDwordValue("lagCounter", false) ? true : false;
-	inputDisplay  = regQueryDwordValue("inputDisplay", false) ? true : false;
+	outlinedText		 = regQueryDwordValue("outlinedText", TRUE) != 0;
+	transparentText		 = regQueryDwordValue("transparentText", FALSE) != 0;
+	textColor			 = regQueryDwordValue("textColor", 0);
+	textMethod			 = regQueryDwordValue("textMethod", 1);
+	frameCounter		 = regQueryDwordValue("frameCounter", false) ? true : false;
+	lagCounter			 = regQueryDwordValue("lagCounter", false) ? true : false;
+	inputDisplay		 = regQueryDwordValue("inputDisplay", false) ? true : false;
 	disableStatusMessage = regQueryDwordValue("disableStatus", 0) ? true : false;
 
 	// UI
@@ -2108,14 +2107,14 @@ void VBA::loadSettings(const char *path)
 	alwaysOnTop = regQueryDwordValue("alwaysOnTop", false) ? true : false;
 	pauseWhenInactive	  = regQueryDwordValue("pauseWhenInactive", 1) ? true : false;
 	enableBackgroundInput = regQueryDwordValue("enableBackgroundInput", 0) ? true : false;
-	threadPriority = regQueryDwordValue("priority", 2);
+	threadPriority		  = regQueryDwordValue("priority", 2);
 	if (threadPriority < 0 || threadPriority > 3)
 		threadPriority = 2;
 	updatePriority();
 
 	filenamePreference = regQueryDwordValue("filenamePreference", 0);
 	altAviRecordMethod = regQueryDwordValue("altAviRecordMethod", false) ? true : false;
-	captureFormat = regQueryDwordValue("captureFormat", 0);
+	captureFormat	   = regQueryDwordValue("captureFormat", 0);
 
 	rewindTimer = regQueryDwordValue("rewindTimer", 0);
 	rewindSlots = regQueryDwordValue("rewindSlots", 64);
@@ -2128,14 +2127,14 @@ void VBA::loadSettings(const char *path)
 	if (rewindTimer != 0)
 	{
 		if (rewindMemory == NULL)
-			rewindMemory = (char *)malloc(rewindSlots*REWIND_SIZE);
+			rewindMemory = (char *)malloc(rewindSlots * REWIND_SIZE);
 	}
 
 	if (frameSearchMemory == NULL)
-		frameSearchMemory = (char *)malloc(3*REWIND_SIZE);
+		frameSearchMemory = (char *)malloc(3 * REWIND_SIZE);
 
 	recentFreeze = regQueryDwordValue("recentFreeze", false) ? true : false;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 10; ++i)
 	{
 		buffer.Format("recent%d", i);
 		const char *s = regQueryStringValue(buffer, NULL);
@@ -2145,21 +2144,20 @@ void VBA::loadSettings(const char *path)
 	}
 
 	autoLoadMostRecent = regQueryDwordValue("autoLoadMostRecent", false) ? true : false;
-	loadMakesRecent = regQueryDwordValue("loadMakesRecent", false) ? true : false;
-	loadMakesCurrent = regQueryDwordValue("loadMakesCurrent", false) ? true : false;
-	saveMakesCurrent = regQueryDwordValue("saveMakesCurrent", false) ? true : false;
-	currentSlot		 = regQueryDwordValue("currentSlot", 0);
-	showSlotTime	 = regQueryDwordValue("showSlotTime", 0);
+	loadMakesRecent	   = regQueryDwordValue("loadMakesRecent", false) ? true : false;
+	loadMakesCurrent   = regQueryDwordValue("loadMakesCurrent", false) ? true : false;
+	saveMakesCurrent   = regQueryDwordValue("saveMakesCurrent", false) ? true : false;
+	currentSlot		   = regQueryDwordValue("currentSlot", 0);
+	showSlotTime	   = regQueryDwordValue("showSlotTime", 0);
 
 	cheatsEnabled = regQueryDwordValue("cheatsEnabled", true) ? true : false;
-	autoSaveLoadCheatList = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;
+	autoSaveLoadCheatList  = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;
 	pauseDuringCheatSearch = regQueryDwordValue("pauseDuringCheatSearch2", 0) ? true : false;
 
 	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
 	movieOnEndPause	   = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
-//	movieReadOnly = regQueryDwordValue("movieReadOnly", false) ? true : false;
 
-	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	extern bool autoConvertMovieWhenPlaying;    // from movie.cpp
 	autoConvertMovieWhenPlaying = regQueryDwordValue("autoConvertMovieWhenPlaying", 0) ? true : false;
 
 	// RamWatch Settings
@@ -2177,47 +2175,53 @@ void VBA::loadSettings(const char *path)
 			continue;
 		RWAddRecentFile(s);
 	}
-	if (path != NULL) //Default directories, added by darkkobold.
-	{		
-		for (int i = 0; i < 11; i++)
+
+	if (path != NULL)	// Default directories, added by darkkobold.
+	{
+		CString	tempStr;
+		for (int i = 0; i < 12; ++i)
 		{
-			tempStr = regQueryStringValue(IDS_tbl[i], NULL);  //Check if the String Exists in the INI
-			if (tempStr.IsEmpty())  //If not, create the directory
+			tempStr = regQueryStringValue(IDS_tbl[i], NULL);	// Check if the String Exists in the INI
+			if (tempStr.IsEmpty())	// If not, create the directory
 			{
-				switch (i) {
+				// these name are inconsistent due to legacy problems
+				switch (i)
+				{
 				case 0:
-					tempStr2 = "\\Roms"; break;					
+					tempStr = "\\Roms"; break;
 				case 1:
-					tempStr2 = "\\GBXroms"; break;
-				case 2: 
-					tempStr2 = "\\Battery"; break;
-				case 3: 
-					tempStr2 = "\\Saves"; break;	
-				case 4: 
-					tempStr2 = "\\Movies"; break;				
-				case 5: 
-					tempStr2 = "\\Cheat"; break;
-				case 6: 
-					tempStr2 = "\\Lua"; break;
-				case 7: 
-					tempStr2 = "\\IPS"; break;
-				case 8: 
-					tempStr2 = "\\AVI"; break;
-				case 9: 
-					tempStr2 = "\\WAV"; break;								
-				case 10: 
-					tempStr2 = "\\Snaps"; break;
-				default: break;
-				}				
-				curDir = std::string(path); //reset the curDir to path
-				curDir += tempStr2; //add path
-				_mkdir(curDir.c_str());	//make the directory
-				regSetStringValue(IDS_tbl[i], curDir.c_str());  //Add the directory to the INI file		
+					tempStr = "\\GBXroms"; break;
+				case 2:
+					tempStr = "\\Battery"; break;
+				case 3:
+					tempStr = "\\Saves"; break;
+				case 4:
+					tempStr = "\\Movies"; break;
+				case 5:
+					tempStr = "\\Cheats"; break;	// even the menu reads that
+				case 6:
+					tempStr = "\\Lua"; break;
+				case 7:
+					tempStr = "\\IPS"; break;
+				case 8:
+					tempStr = "\\AVI"; break;
+				case 9:
+					tempStr = "\\WAV"; break;
+				case 10:
+					tempStr = "\\Snaps"; break;
+				case 11:
+					tempStr = "\\Watch"; break;		// Wch would be too evil, and watches would be too long for a "new" member
+				default:
+					break;
+				}
+				CString curDir(path);	// reset the curDir to path
+				curDir += tempStr;		// add path
+				_mkdir(curDir);			// make the directory
+				regSetStringValue(IDS_tbl[i], curDir);	// Add the directory to the INI file
 			}
 		}
 	}
 }
-
 
 void VBA::saveSettings()
 {
@@ -2309,7 +2313,7 @@ void VBA::saveSettings()
 
 	regSetDwordValue("colorOption", gbColorOption);
 	regSetDwordValue("gbPaletteOption", gbPaletteOption);
-	regSetBinaryValue("gbPalette", (char *)systemGbPalette, 24*sizeof(u16));
+	regSetBinaryValue("gbPalette", (char *)systemGbPalette, 24 * sizeof(u16));
 
 	// head-up display
 	regSetDwordValue("showSpeed", showSpeed);
@@ -2327,7 +2331,7 @@ void VBA::saveSettings()
 	// UI
 	regSetDwordValue("windowX", windowPositionX);
 	regSetDwordValue("windowY", windowPositionY);
-	
+
 	regSetDwordValue("autoHideMenu", autoHideMenu);
 
 	regSetDwordValue("language", languageOption);
@@ -2338,7 +2342,7 @@ void VBA::saveSettings()
 	regSetDwordValue("pauseWhenInactive", pauseWhenInactive);
 	regSetDwordValue("enableBackgroundInput", enableBackgroundInput);
 	regSetDwordValue("priority", threadPriority);
-	
+
 	regSetDwordValue("filenamePreference", filenamePreference);
 	regSetDwordValue("altAviRecordMethod", altAviRecordMethod);
 	regSetDwordValue("captureFormat", captureFormat);
@@ -2368,7 +2372,7 @@ void VBA::saveSettings()
 	regSetDwordValue("movieOnEndBehavior", movieOnEndBehavior);
 	regSetDwordValue("movieOnEndPause", movieOnEndPause);
 
-	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	extern bool autoConvertMovieWhenPlaying;    // from movie.cpp
 	regSetDwordValue("autoConvertMovieWhenPlaying", autoConvertMovieWhenPlaying);
-
 }
+

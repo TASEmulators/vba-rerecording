@@ -553,15 +553,12 @@
 #define IDC_RADIO_POSTFILTER            1277
 #define IDC_RADIO_POSTRENDER            1278
 #define IDC_COMMANDS_HIDDEN             1279
-#define IDC_DECIMALDISPLAY              1281
 #define IDC_DECIMAL_DISPLAY             1281
 #define IDC_CHEATREFRESHBUTTON          1283
-#define IDC_CANCEL                      1284
 #define IDC_EDIT_LUAPATH                1285
 #define IDC_BUTTON_LUABROWSE            1286
 #define IDS_FILTER_LUA                  1287
 #define IDS_SELECT_LUA_NAME             1288
-#define IDC_BUTTON1                     1289
 #define IDS_SELECT_LUA_DIR              1289
 #define IDS_SELECT_MOVIE_DIR            1290
 #define IDS_SELECT_ROM_DIR              1291
@@ -575,6 +572,8 @@
 #define IDS_SELECT_WATCH_DIR            1299
 #define IDS_SELECT_IPS_DIR              1300
 #define IDS_SELECT_PLUGIN_DIR           1301
+#define IDC_PLUGIN_DIR                  1308
+#define IDC_WATCH_DIR                   1309
 #define IDC_ROM_DIR                     1310
 #define IDC_GBXROM_DIR                  1311
 #define IDC_BATTERY_DIR                 1312
@@ -586,6 +585,8 @@
 #define IDC_WAV_DIR                     1318
 #define IDC_CAPTURE_DIR                 1319
 #define IDC_IPS_DIR                     1320
+#define IDC_PLUGIN_PATH                 1328
+#define IDC_WATCH_PATH                  1329
 #define IDC_ROM_PATH                    1330
 #define IDC_GBXROM_PATH                 1331
 #define IDC_BATTERY_PATH                1332
@@ -597,6 +598,8 @@
 #define IDC_WAV_PATH                    1338
 #define IDC_CAPTURE_PATH                1339
 #define IDC_IPS_PATH                    1340
+#define IDC_PLUGIN_DIR_RESET            1348
+#define IDC_WATCH_DIR_RESET             1349
 #define IDC_ROM_DIR_RESET               1350
 #define IDC_GBXROM_DIR_RESET            1351
 #define IDC_BATTERY_DIR_RESET           1352
