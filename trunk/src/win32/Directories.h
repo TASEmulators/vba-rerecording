@@ -48,11 +48,11 @@ public:
 	CEdit m_cheatPath;
 	CEdit m_ipsPath;
 	CEdit m_luaPath;
-//  CEdit  m_watchPath;
-//  CEdit  m_pluginPath;
 	CEdit m_aviPath;
 	CEdit m_wavPath;
 	CEdit m_capturePath;
+	CEdit m_watchPath;
+//  CEdit m_pluginPath;
 	//}}AFX_DATA
 
 	// Overrides
@@ -89,6 +89,8 @@ protected:
 	afx_msg void OnWavDirReset();
 	afx_msg void OnCaptureDir();
 	afx_msg void OnCaptureDirReset();
+	afx_msg void OnWatchDir();
+	afx_msg void OnWatchDirReset();
 	virtual void OnCancel();
 	virtual void OnOK();
 	//}}AFX_MSG

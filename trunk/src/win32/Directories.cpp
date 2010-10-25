@@ -75,6 +75,7 @@ void Directories::DoDataExchange(CDataExchange*pDX)
 	DDX_Control(pDX, IDC_AVI_PATH, m_aviPath);
 	DDX_Control(pDX, IDC_WAV_PATH, m_wavPath);
 	DDX_Control(pDX, IDC_CAPTURE_PATH, m_capturePath);
+	DDX_Control(pDX, IDC_WATCH_PATH, m_watchPath);
 	//}}AFX_DATA_MAP
 }
 
@@ -102,6 +103,8 @@ ON_BN_CLICKED(IDC_WAV_DIR, OnWavDir)
 ON_BN_CLICKED(IDC_WAV_DIR_RESET, OnWavDirReset)
 ON_BN_CLICKED(IDC_CAPTURE_DIR, OnCaptureDir)
 ON_BN_CLICKED(IDC_CAPTURE_DIR_RESET, OnCaptureDirReset)
+ON_BN_CLICKED(IDC_WATCH_DIR, OnWatchDir)
+ON_BN_CLICKED(IDC_WATCH_DIR_RESET, OnWatchDirReset)
 //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -155,6 +158,10 @@ BOOL Directories::OnInitDialog()
 	p = regQueryStringValue(IDS_CAPTURE_DIR, NULL);
 	if (!p.IsEmpty())
 		GetDlgItem(IDC_CAPTURE_PATH)->SetWindowText(p);
+
+	p = regQueryStringValue(IDS_WATCH_DIR, NULL);
+	if (!p.IsEmpty())
+		GetDlgItem(IDC_WATCH_PATH)->SetWindowText(p);
 
 	CenterWindow();
 
@@ -305,21 +312,18 @@ void Directories::OnIpsDirReset()
 	m_ipsPath.SetWindowText("");
 }
 
-#if 0
 void Directories::OnWatchDir()
 {
 	m_watchPath.GetWindowText(initialFolderDir);
 	CString p = browseForDir(winResLoadString(IDS_SELECT_WATCH_DIR));
 	if(!p.IsEmpty())
-	m_watchPath.SetWindowText(p);
+		m_watchPath.SetWindowText(p);
 }
 
 void Directories::OnWatchDirReset()
 {
-	regDeleteValue("watchDir");
 	m_watchPath.SetWindowText("");
 }
-#endif
 
 void Directories::OnCancel()
 {
@@ -396,6 +400,12 @@ void Directories::OnOK()
 	else
 		regDeleteValue(IDS_CAPTURE_DIR);
 
+	m_watchPath.GetWindowText(buffer);
+	if (!buffer.IsEmpty())
+		regSetStringValue(IDS_WATCH_DIR, buffer);
+	else
+		regDeleteValue(IDS_WATCH_DIR);
+
 	EndDialog(TRUE);
 }
 
@@ -432,4 +442,3 @@ CString Directories::browseForDir(CString title)
 	}
 	return res;
 }
-
