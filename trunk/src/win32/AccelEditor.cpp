@@ -78,6 +78,7 @@ ON_BN_CLICKED(IDC_REMOVE, &AccelEditor::OnRemove)
 ON_BN_CLICKED(IDC_ACCELEDIT_REPLACE, &AccelEditor::OnReplace)
 ON_CONTROL(EN_CHANGE, IDC_EDIT_KEY, &AccelEditor::OnKeyboardEditChange)
 ON_CONTROL(EN_KILLFOCUS, IDC_EDIT_KEY, &AccelEditor::OnKeyboardEditKillfocus)
+ON_CONTROL(EN_SETFOCUS, IDC_ACCELEDIT_AUTOTIMEOUT, &AccelEditor::OnTimeoutEditSetfocus)
 ON_CONTROL(EN_KILLFOCUS, IDC_ACCELEDIT_AUTOTIMEOUT, &AccelEditor::OnTimeoutEditKillfocus)
 ON_NOTIFY(TVN_SELCHANGED, IDC_COMMANDS, &AccelEditor::OnTvnSelchangedCommands)
 //ON_NOTIFY(LVN_ITEMCHANGED, IDC_CURRENTS, &AccelEditor::OnListItemChanged)
@@ -421,8 +422,6 @@ void AccelEditor::OnRemove()
 						delete pAccel;
 						// and update the listboxes/key editor/static text
 						m_currents.DeleteItem(indexCurrent);
-//						m_key.ResetKey();
-						m_alreadyAffected.SetWindowText("");
 						m_modified = TRUE;
 						break;
 					}
@@ -517,7 +516,7 @@ BOOL AccelEditor::CheckJammed()
 	WORD jam;
 	if (m_key.GetJamKey(jam))
 	{
-		// these go first, or the timer would be started again
+		// these go first, or the timer would be set again
 		m_key.ResetKey();
 		m_key.SetWindowText("Interrupted");
 		if (m_currents.IsWindowEnabled())
@@ -569,16 +568,12 @@ void AccelEditor::OnTvnSelchangedCommands(NMHDR *pNMHDR, LRESULT *pResult)
 			m_currents.SetItemData(index, (DWORD)pAccel);
 		}
 
-		m_currents.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
-		// trick
-//		OnTimeoutEditKillfocus();
+		m_currents.SetItemState(0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
 		GetDlgItem(IDC_ASSIGN)->EnableWindow(TRUE);
 		m_currents.EnableWindow(TRUE);
 	}
 	else
 	{
-		// trick
-//		m_timeoutValue = 0;
 		GetDlgItem(IDC_ASSIGN)->EnableWindow(FALSE);
 		m_currents.EnableWindow(FALSE);
 	}
@@ -624,13 +619,13 @@ void AccelEditor::OnListDblClick(NMHDR *pNMHDR, LRESULT *pResult)
 
 void AccelEditor::OnKeyboardEditChange()
 {
+	if (!m_key.IsDefined())
+		return;
+
 //	if (CheckJammed())
 //		return;
 
-	KillTimer(1);
-	m_timer = 0;
-	m_progress.SetPos(0);
-	m_progress.SetBarColor(RGB(128, 0, 255));
+	OnKeyboardEditKillfocus();
 	CheckAffected();
 	if (m_timeoutValue == 0)
 		return;
@@ -644,6 +639,12 @@ void AccelEditor::OnKeyboardEditKillfocus()
 	KillTimer(1);
 	m_timer = 0;
 	m_progress.SetPos(0);
+	m_progress.SetBarColor(RGB(128, 0, 255));
+}
+
+void AccelEditor::OnTimeoutEditSetfocus()
+{
+	m_timeout.PostMessage(EM_SETSEL, 0, -1);
 }
 
 void AccelEditor::OnTimeoutEditKillfocus()
