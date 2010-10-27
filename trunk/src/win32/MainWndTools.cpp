@@ -763,6 +763,19 @@ void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(VBAMovieActive() ? VBAMovieReadOnly() : theApp.movieReadOnly);
 }
 
+
+void MainWnd::OnAsscWithSaveState()
+{
+	theApp.AsscWithSaveState = !theApp.AsscWithSaveState;
+}
+
+void MainWnd::OnUpdateAsscWithSaveState(CCmdUI*pCmdUI)
+{
+	pCmdUI->Enable(TRUE); // TEMP
+	pCmdUI->SetCheck(theApp.AsscWithSaveState);
+}
+
+
 void MainWnd::OnToolsResumeRecord()
 {
 	VBAMovieSwitchToRecording();
