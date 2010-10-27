@@ -97,6 +97,7 @@ public:
 	int       fsHeight;
 	int       fsColorDepth;
 	bool      fsForceChange;
+	bool	  AsscWithSaveState;
 	int       sizeX;
 	int       sizeY;
 	int       surfaceSizeX;

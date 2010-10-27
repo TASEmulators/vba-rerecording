@@ -447,6 +447,8 @@ protected:
 	afx_msg void OnUpdateToolsPlayMovie(CCmdUI*pCmdUI);
 	afx_msg void OnToolsPlayReadOnly();
 	afx_msg void OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI);
+	afx_msg void OnAsscWithSaveState();
+	afx_msg void OnUpdateAsscWithSaveState(CCmdUI*pCmdUI);
 	afx_msg void OnToolsResumeRecord();
 	afx_msg void OnUpdateToolsResumeRecord(CCmdUI*pCmdUI);
 	afx_msg void OnToolsPlayRestart();

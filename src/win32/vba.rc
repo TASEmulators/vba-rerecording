@@ -1677,6 +1677,10 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 113
     END
+
+    IDD_RAMSEARCH, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2195,6 +2199,7 @@ BEGIN
                 MENUITEM SEPARATOR
                 MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT
             END
+            MENUITEM "Associate Movies with Savestates", ID_MOVIE_ASSC_WITH_SAVESTATE, CHECKED
         END
         MENUITEM "Pause/Resume AVI &Recording", ID_TOOLS_PAUSEAVIRECORDING
         MENUITEM "Start/Stop &AVI Recording...", ID_TOOLS_AVIRECORDING
