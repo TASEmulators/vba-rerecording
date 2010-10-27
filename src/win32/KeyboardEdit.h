@@ -45,37 +45,39 @@ class CKeyboardEdit : public CEdit
 public:
 	CKeyboardEdit();
 
-	// Attributes
-public:
-	bool m_bCtrlPressed;
-	bool m_bAltPressed;
-	bool m_bShiftPressed;
-	bool m_bKeyDefined;
-	WORD m_wVirtKey;
-	WORD m_wJamKey;
-
 	// Operations
 public:
+	void ResetKey();
+	void AllKeyUp();
 	bool GetAccelKey(WORD &wVirtKey, bool &bCtrl, bool &bAlt, bool &bShift) const;
 	bool GetJamKey(WORD &wJamKey) const;
-	void ResetKey();
-protected:
-	void DisplayKeyboardString();
+	bool IsDefined() const;
+	bool IsFinished() const;
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CKeyboardEdit)
 public:
 	virtual BOOL PreTranslateMessage(MSG *pMsg);
+	virtual ~CKeyboardEdit();
 	//}}AFX_VIRTUAL
 
-	// Implementation
-public:
-	virtual ~CKeyboardEdit();
+protected:
+	void DisplayKeyboardString();
+
+	// Attributes
+protected:
+	BYTE m_keys[256];
+	bool m_bCtrlPressed;
+	bool m_bAltPressed;
+	bool m_bShiftPressed;
+	WORD m_wVirtKey;
+	WORD m_wJamKey;
 
 	// Generated message map functions
-protected:
+public:
 	//{{AFX_MSG(CKeyboardEdit)
+	afx_msg BOOL OnEnKillfocus();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
