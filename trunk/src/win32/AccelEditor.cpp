@@ -124,7 +124,7 @@ BOOL AccelEditor::OnInitDialog()
 	m_currents.InsertColumn(0, "Keys");
 	m_currents.SetColumnWidth(0, LVSCW_AUTOSIZE_USEHEADER);
 	InitCommands();
-	m_autoMode	   = AUTO_NEW;
+	m_autoMode	   = AUTO_REPLACE;
 	m_modified	   = FALSE;
 	m_timeoutValue = 1000;
 	CString timeoutStr;
@@ -224,8 +224,8 @@ void AccelEditor::InitCommands()
 
 BOOL AccelEditor::PreTranslateMessage(MSG *pMsg)
 {
-	bool bBaseRequired = false;
-	if (GetFocus() == &m_currents)
+	CWnd *pFocus = GetFocus();
+	if (pFocus == &m_currents)
 	{
 		if (pMsg->message == WM_KEYDOWN)
 		{
@@ -270,7 +270,7 @@ BOOL AccelEditor::PreTranslateMessage(MSG *pMsg)
 			return TRUE;
 		}
 	}
-	else if (GetFocus() == &m_commands)
+	else if (pFocus == &m_commands)
 	{
 		if (pMsg->message == WM_KEYDOWN)
 		{
@@ -367,8 +367,9 @@ void AccelEditor::OnAssign()
 	CString szBuffer;
 	pAccel->GetString(szBuffer);
 
-	POSITION selected = m_currents.GetFirstSelectedItemPosition();
-	int index = selected ? m_currents.GetNextSelectedItem(selected) : 0;	// selected has to be valid
+	int index = m_currents.GetNextItem(-1, LVNI_SELECTED);
+	if (index < 0)
+		index = 0;
 	m_currents.InsertItem(index, szBuffer);
 	m_currents.SetItemData(index, reinterpret_cast<DWORD>(pAccel));
 	m_currents.SetItemState(-1, 0, LVIS_SELECTED);	// deselect other items first
@@ -438,6 +439,7 @@ void AccelEditor::OnRemove()
 			selected = m_currents.GetFirstSelectedItemPosition();
 			if (selected == NULL)	// the normal exit of this function
 			{
+				m_currents.SetItemState(m_currents.GetNextItem(-1, LVIS_FOCUSED), LVIS_SELECTED, LVIS_SELECTED);
 				if (m_currents.GetSelectedCount() == 0)
 				{
 					GetDlgItem(IDC_REMOVE)->EnableWindow(FALSE);
@@ -567,7 +569,7 @@ void AccelEditor::OnTvnSelchangedCommands(NMHDR *pNMHDR, LRESULT *pResult)
 			m_currents.SetItemData(index, (DWORD)pAccel);
 		}
 
-		m_currents.SetItemState(-1, LVIS_SELECTED, LVIS_SELECTED);
+		m_currents.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
 		// trick
 //		OnTimeoutEditKillfocus();
 		GetDlgItem(IDC_ASSIGN)->EnableWindow(TRUE);
@@ -622,8 +624,8 @@ void AccelEditor::OnListDblClick(NMHDR *pNMHDR, LRESULT *pResult)
 
 void AccelEditor::OnKeyboardEditChange()
 {
-	if (CheckJammed())
-		return;
+//	if (CheckJammed())
+//		return;
 
 	KillTimer(1);
 	m_timer = 0;
@@ -649,6 +651,7 @@ void AccelEditor::OnTimeoutEditKillfocus()
 	CString str;
 	m_timeout.GetWindowText(str);
 	m_timeoutValue = atoi(str);
+	m_autoMode	   = AUTO_REPLACE;
 }
 
 void AccelEditor::OnTimer(UINT_PTR nIDEvent)

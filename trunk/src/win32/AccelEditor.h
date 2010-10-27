@@ -47,9 +47,9 @@ public:
 	// Dialog Data
 	//{{AFX_DATA(AccelEditor)
 protected:
-	enum { IDD = IDD_ACCEL_EDITOR};
+	enum { IDD = IDD_ACCEL_EDITOR };
 	enum { KEY_COLUMN = 0 };
-	enum { AUTO_NEW = 0, AUTO_REPLACE };
+	enum { AUTO_REPLACE = 0, AUTO_NEW };
 	CListCtrl		  m_currents;
 	CStatic			  m_alreadyAffected;
 	CTreeCtrl		  m_commands;

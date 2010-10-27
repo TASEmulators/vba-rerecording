@@ -44,84 +44,92 @@ IMPLEMENT_DYNAMIC(CKeyboardEdit, CEdit)
 
 CKeyboardEdit::CKeyboardEdit()
 {
-	m_bKeyDefined = false;
 	ResetKey();
 }
 
 CKeyboardEdit::~CKeyboardEdit()
-{
-}
+{}
 
 BEGIN_MESSAGE_MAP(CKeyboardEdit, CEdit)
 //{{AFX_MSG_MAP(CKeyboardEdit)
+	ON_CONTROL_REFLECT_EX(EN_KILLFOCUS, &CKeyboardEdit::OnEnKillfocus)
 //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-#pragma warning( disable : 4706 )
 /////////////////////////////////////////////////////////////////////////////
 // CKeyboardEdit message handlers
 BOOL CKeyboardEdit::PreTranslateMessage(MSG *pMsg)
 {
-	bool bPressed = (pMsg->message == WM_KEYDOWN) || (pMsg->message == WM_SYSKEYDOWN);
-	if (bPressed || pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP)
+	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
 	{
-		bool bReset = false;
-		WORD oldVirtKey = m_wVirtKey;
-		if (bPressed && m_bKeyDefined && !((1 << 30) & pMsg->lParam))
+		int key = pMsg->wParam;
+		m_keys[key] = true;
+		switch (key)
 		{
-			ResetKey();
-			bReset = true;
-		}
-
-		bool syncShift = true, syncCtrl = true, syncAlt = true;
-		if (pMsg->wParam == VK_SHIFT && !m_bKeyDefined)
-		{
-			if (bPressed)
-				m_bShiftPressed = bPressed;
-			syncShift = false;
-		}
-		else if (pMsg->wParam == VK_CONTROL && !m_bKeyDefined)
-		{
-			if (bPressed)
-				m_bCtrlPressed = bPressed;
-			syncCtrl = false;
-		}
-		else if (pMsg->wParam == VK_MENU && !m_bKeyDefined)
-		{
-			if (bPressed)
-				m_bAltPressed = bPressed;
-			syncAlt = false;
-		}
-		else if (!m_bKeyDefined)
-		{
-			m_wVirtKey = (WORD)pMsg->wParam;
-			if (bPressed)
-				m_bKeyDefined = true;
-
-			if (syncShift)
-				m_bShiftPressed = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
-			if (syncCtrl)
-				m_bCtrlPressed = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
-			if (syncAlt)
-				m_bAltPressed = ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
-		}
-		
-		if (bReset && m_wVirtKey != oldVirtKey)
-		{
-			if ((GetAsyncKeyState(oldVirtKey) & 0x8000))
+		case VK_CONTROL:
+		case VK_MENU:
+		case VK_SHIFT:
+			m_bCtrlPressed	= m_keys[VK_CONTROL];
+			m_bAltPressed	= m_keys[VK_MENU];;
+			m_bShiftPressed = m_keys[VK_SHIFT];
+			if (!m_keys[m_wVirtKey])
 			{
-				if (m_wVirtKey == 0)
+				if (m_keys[m_wJamKey])
 				{
-					m_wVirtKey = oldVirtKey;
-					m_bKeyDefined = true;
+					m_wVirtKey = m_wJamKey;
+					m_wJamKey  = 0;
 				}
 				else
-				{
-					m_wJamKey = oldVirtKey;
-				}
+					m_wVirtKey = 0;
 			}
+			if (!m_keys[m_wJamKey])
+				m_wJamKey = 0;
+			break;
+		default:
+			m_bCtrlPressed	= m_keys[VK_CONTROL];
+			m_bAltPressed	= m_keys[VK_MENU];
+			m_bShiftPressed = m_keys[VK_SHIFT];
+			if (m_wVirtKey != key)
+			{
+				if (m_keys[m_wVirtKey])
+					m_wJamKey = m_wVirtKey;
+				else
+					m_wJamKey = 0;
+				m_wVirtKey = key;
+			}
+			else if (!m_keys[m_wJamKey])
+				m_wJamKey = 0;
+			break;
 		}
-
+		DisplayKeyboardString();
+		return TRUE;
+	}
+	else if (pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP)
+	{
+		int key = pMsg->wParam;
+		m_keys[key] = false;
+		switch (key)
+		{
+		case VK_CONTROL:
+		case VK_MENU:
+		case VK_SHIFT:
+			break;
+		default:
+			m_bCtrlPressed	= m_keys[VK_CONTROL];
+			m_bAltPressed	= m_keys[VK_MENU];
+			m_bShiftPressed = m_keys[VK_SHIFT];
+			if (m_wJamKey)
+			{
+				if (!m_keys[m_wVirtKey])
+				{
+					m_wVirtKey = m_wJamKey;
+					m_wJamKey  = 0;
+				}
+				if (!m_keys[m_wJamKey])
+					m_wJamKey = 0;
+			}
+			break;
+		}
 		DisplayKeyboardString();
 		return TRUE;
 	}
@@ -129,7 +137,12 @@ BOOL CKeyboardEdit::PreTranslateMessage(MSG *pMsg)
 	return CEdit::PreTranslateMessage(pMsg);
 }
 
-#pragma warning( default : 4706 )
+BOOL CKeyboardEdit::OnEnKillfocus()
+{
+	AllKeyUp();
+
+	return FALSE;
+}
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -180,10 +193,11 @@ void CKeyboardEdit::DisplayKeyboardString()
 //
 void CKeyboardEdit::ResetKey()
 {
+	AllKeyUp();
+
 	m_bCtrlPressed	= false;
 	m_bAltPressed	= false;
 	m_bShiftPressed = false;
-	m_bKeyDefined	= false;
 	m_wVirtKey		= 0;
 	m_wJamKey		= 0;
 
@@ -191,15 +205,18 @@ void CKeyboardEdit::ResetKey()
 		SetWindowText(_T(""));
 }
 
+void CKeyboardEdit::AllKeyUp()
+{
+	for (int i = 0; i < 256; ++i)
+		m_keys[i] = 0;
+}
+
 ////////////////////////////////////////////////////////////////////////
 //
 bool CKeyboardEdit::GetAccelKey(WORD &wVirtKey, bool &bCtrl, bool &bAlt, bool &bShift) const
 {
-	if (!m_bKeyDefined)
-	{
-		if (!m_bAltPressed && !m_bCtrlPressed && !m_bShiftPressed)
-			return false;
-	}
+	if (!IsDefined())
+		return false;
 
 	wVirtKey = m_wVirtKey;
 	bAlt	 = m_bAltPressed;
@@ -208,11 +225,25 @@ bool CKeyboardEdit::GetAccelKey(WORD &wVirtKey, bool &bCtrl, bool &bAlt, bool &b
 	return true;
 }
 
-////////////////////////////////////////////////////////////////////////
-//
 bool CKeyboardEdit::GetJamKey(WORD &wJamKey) const
 {
 	if (m_wJamKey != 0)
 		wJamKey = m_wJamKey;
 	return m_wJamKey != 0;
 }
+
+bool CKeyboardEdit::IsDefined() const
+{
+	if (!m_wVirtKey && !m_bAltPressed && !m_bCtrlPressed && !m_bShiftPressed)
+		return false;
+}
+
+bool CKeyboardEdit::IsFinished() const
+{
+	bool finished = true;
+	for (int i = 0; i < 256; ++i)
+		if (m_keys[i])
+			finished = false;
+	return finished;
+}
+

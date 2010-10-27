@@ -2191,7 +2191,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Stop Movie",                 ID_MOVIE_STOP
             MENUITEM SEPARATOR
-            POPUP "&Advanced Tools"
+            POPUP "Advanced &Tools"
             BEGIN
                 MENUITEM "Convert Current &Movie",      ID_MOVIE_TOOL_CONVERT_CURRENT
                 MENUITEM SEPARATOR
@@ -2199,7 +2199,7 @@ BEGIN
                 MENUITEM SEPARATOR
                 MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT
             END
-            MENUITEM "Associate Movies with Savestates", ID_MOVIE_ASSC_WITH_SAVESTATE, CHECKED
+            MENUITEM "&Associate With Savestates",  ID_MOVIE_ASSC_WITH_SAVESTATE
         END
         MENUITEM "Pause/Resume AVI &Recording", ID_TOOLS_PAUSEAVIRECORDING
         MENUITEM "Start/Stop &AVI Recording...", ID_TOOLS_AVIRECORDING
