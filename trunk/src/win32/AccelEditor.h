@@ -98,6 +98,7 @@ protected:
 	afx_msg void OnListDblClick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnKeyboardEditChange();
 	afx_msg void OnKeyboardEditKillfocus();
+	afx_msg void OnTimeoutEditSetfocus();
 	afx_msg void OnTimeoutEditKillfocus();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	//}}AFX_MSG
