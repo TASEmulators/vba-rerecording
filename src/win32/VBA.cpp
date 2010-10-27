@@ -1992,7 +1992,7 @@ void VBA::loadSettings(const char *path)
 	allowLeftRight		   = regQueryDwordValue("allowLeftRight", false) ? true : false;
 	autofireAccountForLag  = regQueryDwordValue("autofireAccountForLag", false) ? true : false;
 	nextframeAccountForLag = regQueryDwordValue("nextframeAccountForLag", false) ? true : false;
-	theApp.AsscWithSaveState = regQueryDwordValue("AsscWithSaveState", true) ? true : false;
+	theApp.AsscWithSaveState = regQueryDwordValue("AsscWithSaveState", false) ? true : false;
 
 	// speed
 	throttle = regQueryDwordValue("throttle", 0);
