@@ -52,7 +52,9 @@ CKeyboardEdit::~CKeyboardEdit()
 
 BEGIN_MESSAGE_MAP(CKeyboardEdit, CEdit)
 //{{AFX_MSG_MAP(CKeyboardEdit)
-	ON_CONTROL_REFLECT_EX(EN_KILLFOCUS, &CKeyboardEdit::OnEnKillfocus)
+ON_CONTROL_REFLECT_EX(EN_CHANGE, &CKeyboardEdit::OnEnChange)
+ON_CONTROL_REFLECT_EX(EN_SETFOCUS, &CKeyboardEdit::OnEnSetfocus)
+ON_CONTROL_REFLECT_EX(EN_KILLFOCUS, &CKeyboardEdit::OnEnKillfocus)
 //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -137,10 +139,22 @@ BOOL CKeyboardEdit::PreTranslateMessage(MSG *pMsg)
 	return CEdit::PreTranslateMessage(pMsg);
 }
 
+BOOL CKeyboardEdit::OnEnChange()
+{
+	return FALSE;
+}
+
+BOOL CKeyboardEdit::OnEnSetfocus()
+{
+	//SetSel(0, -1, TRUE);	// mouse click makes this in vain, so we use the method below instead
+	PostMessage(EM_SETSEL, 0, -1);
+	m_bForceUpdate = true;
+	return FALSE;
+}
+
 BOOL CKeyboardEdit::OnEnKillfocus()
 {
 	AllKeyUp();
-
 	return FALSE;
 }
 
@@ -183,10 +197,18 @@ void CKeyboardEdit::DisplayKeyboardString()
 		strKbd += ')';
 	}
 
-	CString oldString;
-	GetWindowText(oldString);
-	if (oldString.Compare(strKbd))
+	if (m_bForceUpdate)
+	{
+		m_bForceUpdate = false;
 		SetWindowText(strKbd);
+	}
+	else
+	{
+		CString oldString;
+		GetWindowText(oldString);
+		if (oldString.Compare(strKbd))
+			SetWindowText(strKbd);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -195,6 +217,7 @@ void CKeyboardEdit::ResetKey()
 {
 	AllKeyUp();
 
+	m_bForceUpdate		= true;
 	m_bCtrlPressed	= false;
 	m_bAltPressed	= false;
 	m_bShiftPressed = false;
@@ -202,7 +225,12 @@ void CKeyboardEdit::ResetKey()
 	m_wJamKey		= 0;
 
 	if (m_hWnd != NULL)
-		SetWindowText(_T(""));
+	{
+		CString oldString;
+		GetWindowText(oldString);
+		if (!oldString.IsEmpty())
+			SetWindowText(_T(""));
+	}
 }
 
 void CKeyboardEdit::AllKeyUp()
@@ -234,8 +262,7 @@ bool CKeyboardEdit::GetJamKey(WORD &wJamKey) const
 
 bool CKeyboardEdit::IsDefined() const
 {
-	if (!m_wVirtKey && !m_bAltPressed && !m_bCtrlPressed && !m_bShiftPressed)
-		return false;
+	return bool(m_wVirtKey || m_bAltPressed || m_bCtrlPressed || m_bShiftPressed);
 }
 
 bool CKeyboardEdit::IsFinished() const
@@ -246,4 +273,3 @@ bool CKeyboardEdit::IsFinished() const
 			finished = false;
 	return finished;
 }
-

@@ -68,6 +68,7 @@ protected:
 	// Attributes
 protected:
 	BYTE m_keys[256];
+	bool m_bForceUpdate;
 	bool m_bCtrlPressed;
 	bool m_bAltPressed;
 	bool m_bShiftPressed;
@@ -77,6 +78,8 @@ protected:
 	// Generated message map functions
 public:
 	//{{AFX_MSG(CKeyboardEdit)
+	afx_msg BOOL OnEnChange();
+	afx_msg BOOL OnEnSetfocus();
 	afx_msg BOOL OnEnKillfocus();
 	//}}AFX_MSG
 
