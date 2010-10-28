@@ -7,12 +7,24 @@
 #include "Reg.h"
 #include "../common/movie.h"
 
+// #undef WinDef macro garbage
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
+
+using std::max;
+using std::min;
+
 extern int emulating;
 // these could be made VBA members, but  the VBA class is already oversized too much
 
 bool winFileExists(const char *filename)
 {
-	FILE*f = fopen(filename, "rb");
+	FILE *f = fopen(filename, "rb");
 	if (f)
 	{
 		fclose(f);
@@ -78,7 +90,7 @@ CString winGetDestFilename(const CString &LogicalRomName, const CString &TargetD
 
 	int index = max(buffer.ReverseFind('/'), max(buffer.ReverseFind('\\'), buffer.ReverseFind('|')));
 	if (index != -1)
-		buffer = buffer.Right(buffer.GetLength()-index-1);
+		buffer = buffer.Right(buffer.GetLength() - index - 1);
 
 	index = buffer.ReverseFind('.');
 	if (index != -1)
@@ -102,7 +114,7 @@ CString winGetDestFilename(const CString &LogicalRomName, const CString &TargetD
 				buffer = buffer.Left(dotIndex);
 
 			if (index != -1)
-				buffer = buffer.Right(buffer.GetLength()-index-1);
+				buffer = buffer.Right(buffer.GetLength() - index - 1);
 
 			CString filename2;
 			filename2.Format("%s%s%s", targetDir, buffer, ext);
@@ -118,27 +130,28 @@ CString winGetDestFilename(const CString &LogicalRomName, const CString &TargetD
 
 CString winGetSavestateFilename(const CString &LogicalRomName, int nID)
 {
-	CString ext;
-	std::string fs;
-	size_t startindex;
-	size_t endindex;
-	if (VBAMovieActive() & theApp.AsscWithSaveState)  {
-		fs =VBAMovieGetFilename();	
-		startindex = fs.find_last_of("/\\");
-		if(startindex < fs.length())
-			startindex++;
+	CString		ext;
+//	size_t		startindex;	// forget about C89/ANSI-C
+//	size_t		endindex;
+	if (VBAMovieActive() && theApp.AsscWithSaveState)
+	{
+		std::string fs(VBAMovieGetFilename());	// RVO tip
+		size_t startindex = fs.find_last_of("/\\") ;
+		if (startindex < fs.length())
+			++startindex;	// luckily the found character can't be at the end of fs
 		else
 			startindex = 0;
-		endindex = fs.find_last_of(".");
-		if(endindex < fs.length() && endindex > startindex)
-			endindex;
+		size_t endindex = fs.find_last_of(".");
+		if (endindex < fs.length() && endindex > startindex)
+			endindex;	//??
 		else
 			endindex = fs.length();
 		fs = fs.substr(startindex, endindex - startindex);
 		ext.Format("-%s-%d.sgm", fs.c_str(), nID);
 	}
-	else {
-		ext.Format("-%d.sgm", nID);
+	else
+	{
+		ext.Format("%d.sgm", nID);
 	}
 	return winGetDestFilename(LogicalRomName, IDS_SAVE_DIR, ext);
 }
@@ -185,7 +198,7 @@ void winCorrectPath(CString &path)
 			{
 				char curDir[_MAX_PATH];
 				GetCurrentDirectory(_MAX_PATH, curDir);
-				curDir[_MAX_PATH-1] = '\0';
+				curDir[_MAX_PATH - 1] = '\0';
 				tempStr = curDir;
 			}   break;
 			case 1:
@@ -266,7 +279,7 @@ void winScreenCapture(int captureNumber)
 #include "../gba/GBACheats.h"
 #include "../gb/gbCheats.h"
 
-bool winImportGSACodeFile(CString& fileName)
+bool winImportGSACodeFile(CString &fileName)
 {
 	FILE *f = fopen(fileName, "rb");
 
@@ -392,3 +405,4 @@ bool winWriteSaveGame(const char *name)
 		return theApp.emulator.emuWriteState(name);
 	return false;
 }
+
