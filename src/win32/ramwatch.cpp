@@ -838,7 +838,7 @@ void RefreshWatchListSelectedCountControlStatus(HWND hDlg)
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH_EDIT, selCount == 1);
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH_REMOVE, selCount >= 1);
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH, WatchCount < MAX_WATCH_COUNT);
-			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH_DUPLICATE, selCount == 1);
+			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH_DUPLICATE, selCount == 1 && WatchCount < MAX_WATCH_COUNT);
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_ADDCHEAT, selCount == 1);
 			RamWatchEnableCommand(hDlg, ramwatchmenu, ID_WATCHES_UPDOWN, selCount == 1);
 		}
