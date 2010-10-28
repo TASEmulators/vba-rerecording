@@ -1157,7 +1157,7 @@ void RefreshRamListSelectedCountControlStatus(HWND hDlg)
 	{
 		if(selCount < 2 || prevSelCount < 2)
 		{
-			EnableWindow(GetDlgItem(hDlg, IDC_C_WATCH), (selCount >= 1 && WatchCount < MAX_WATCH_COUNT) ? TRUE : FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_C_WATCH), (WatchCount < MAX_WATCH_COUNT) ? TRUE : FALSE);
 			EnableWindow(GetDlgItem(hDlg, IDC_C_ADDCHEAT), (selCount >= 1) ? TRUE : FALSE);
 			EnableWindow(GetDlgItem(hDlg, IDC_C_ELIMINATE), (selCount >= 1) ? TRUE : FALSE);
 		}

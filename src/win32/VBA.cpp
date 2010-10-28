@@ -330,6 +330,9 @@ VBA theApp;
 
 VBA::VBA() : emulator(::theEmulator)
 {
+	// important
+	std::locale::global(std::locale(""));
+
 	mode320Available	 = false;
 	mode640Available	 = false;
 	mode800Available	 = false;
