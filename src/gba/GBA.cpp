@@ -1024,7 +1024,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
-	systemClearJoypads();
+	systemSetJoypad(0, ~P1 & 0x3FF);
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	#ifdef WIN32

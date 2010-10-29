@@ -2773,7 +2773,9 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
-	systemClearJoypads();
+	
+	for (int i = 0; i < 4; ++i)
+		systemSetJoypad(i, gbJoymask[i] & 0xFFFF);
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	#ifdef WIN32

@@ -253,7 +253,7 @@ static void remember_input_state()
 		if (cartridgeType == 0)
 #endif
 		{
-			initialInputs[i] = u16((0x03FF ^ P1) & 0x03FF);
+			initialInputs[i] = u16(~P1 & 0x03FF);
 		}
 		else
 		{
@@ -1031,7 +1031,7 @@ void VBAUpdateButtonPressDisplay()
 	char colorList[64];
 	memset(colorList, 1, strlen(buffer));
 
-	static int lastKeys = 0;
+	extern u32 lastKeys;	// from system.cpp
 
 	if (!eraseAll)
 	{

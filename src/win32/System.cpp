@@ -45,6 +45,7 @@ const int32 INITIAL_SENSOR_VALUE = 2047;
 int32 sensorX = INITIAL_SENSOR_VALUE;
 int32 sensorY = INITIAL_SENSOR_VALUE;
 u32	  currentButtons [4] = { 0, 0, 0, 0 };
+u32   lastKeys = 0;
 
 #define BMP_BUFFER_MAX_WIDTH (256)
 #define BMP_BUFFER_MAX_HEIGHT (224)
@@ -206,13 +207,17 @@ void systemSetJoypad(int which, u32 buttons)
 	if (which < 0 || which > 3)
 		which = theApp.joypadDefault;
 
-	// TODO
+	currentButtons[which] = buttons;
+
+	lastKeys = 0;
 }
 
 void systemClearJoypads()
 {
 	for (int i = 0; i < 3; ++i)
 		currentButtons[i] = 0;
+
+	lastKeys = 0;
 }
 
 // screen
@@ -237,11 +242,14 @@ void systemRenderFrame()
 
 	++theApp.renderedFrames;
 
+	VBAUpdateFrameCountDisplay();
+	VBAUpdateButtonPressDisplay();
+
 	// "in-game" text rendering
 	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
 	{
 		extern void DrawLuaGui();
-		DrawLuaGui();   // huh?
+		DrawLuaGui();
 
 		int copyX = 240, copyY = 160;
 		if (theApp.cartridgeType == 1)
@@ -772,8 +780,6 @@ void systemUpdateMotionSensor(int i)
 void VBAOnEnteringFrameBoundary()
 {
 	VBAMovieUpdateState();
-	VBAUpdateFrameCountDisplay();
-	VBAUpdateButtonPressDisplay();
 }
 
 void VBAOnExitingFrameBoundary()
