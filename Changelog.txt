@@ -1,6 +1,6 @@
-TODO: Repair this log.
+---VBA-rr v24---
 
----VBA-rr v23--
+---VBA-rr v23 released October 28th 2010, r270--
 09-27-2010 aquanull - Really finally fixed accelerator keys.
 09-27-2010 aquanull - Fixed several screen redraw problems.
 09-26-2010 aquanull - Added "Enable Background Input" option.
