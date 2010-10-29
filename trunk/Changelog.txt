@@ -1,6 +1,15 @@
 ---VBA-rr v24---
 
 ---VBA-rr v23 released October 28th 2010, r270--
+??-??-2010 aquanull - Added an option to leave the movie open after its playback ends.
+10-24-2010 kylethomson - Add option to bind movie savestates to movies,
+10-24-2010 kylethomson - Add default directories to VBA, if none exist, create them.
+10-22-2010 aquanull - Most of old movies in VBA format 1.0 can be converted with the new tool provided under the Movie Menu.
+10-22-2010 aquanull - New VBM format Version 1.1, which should be generally compatible with old Version 1.0.
+10-11-2010 aquanull - Improved speed display.
+10-11-2010 aquanull - Fixed input delay, which fixes things such as the warp glitch in the Smurfs.
+10-11-2010 aquanull - Fixed frame counter logic regarding lags, Account for Lag now works.
+10-07-2010 gochaism - Adapted fixes to RAM Search from Desmume (such as multiple selection of watches).
 09-27-2010 aquanull - Really finally fixed accelerator keys.
 09-27-2010 aquanull - Fixed several screen redraw problems.
 09-26-2010 aquanull - Added "Enable Background Input" option.
