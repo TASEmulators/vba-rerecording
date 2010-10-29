@@ -603,23 +603,23 @@ static void checkKeys()
 
 static bool IsKeyDownAsync (WORD KeyIdent)
 {
-	//if(KeyIdent == 0 || KeyIdent == VK_ESCAPE) // if it's the 'disabled' key, it's never pressed
+	//if (KeyIdent == 0 || KeyIdent == VK_ESCAPE) // if it's the 'disabled' key, it's never pressed
 	//	return false;
 
-	//if(!GUI.BackgroundInput && GUI.hWnd != GetForegroundWindow())
+	//if (!GUI.BackgroundInput && GUI.hWnd != GetForegroundWindow())
 	//	return false;
 
 	// the pause key is special, need this to catch all presses of it
 	// Both GetKeyState and GetAsyncKeyState cannot catch it anyway,
 	// so this should be handled in WM_KEYDOWN message.
-	if(KeyIdent == VK_PAUSE)
+	if (KeyIdent == VK_PAUSE)
 	{
 		return false;
 //		if(GetAsyncKeyState(VK_PAUSE)) // not &'ing this with 0x8000 is intentional and necessary
 //			return true;
 	}
 
-	if(KeyIdent == VK_CAPITAL || KeyIdent == VK_NUMLOCK || KeyIdent == VK_SCROLL)
+	if (KeyIdent == VK_CAPITAL || KeyIdent == VK_NUMLOCK || KeyIdent == VK_SCROLL)
 		return ((GetKeyState(KeyIdent) & 0x01) != 0);
 	else
 		return ((GetAsyncKeyState(KeyIdent) & 0x8000) != 0);

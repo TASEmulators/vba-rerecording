@@ -122,6 +122,38 @@ static inline void Write8(uint8 v, uint8 * &ptr)
 	*ptr++ = v;
 }
 
+static long file_length(FILE *fp)
+{
+	long cur_pos = ftell(fp);
+	fseek(fp, 0, SEEK_END);
+	long length = ftell(fp);
+	fseek(fp, cur_pos, SEEK_SET);
+	return length;
+}
+
+static int bytes_per_frame(SMovie &mov)
+{
+	int num_controllers = 0;
+
+	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
+		if (mov.header.controllerFlags & MOVIE_CONTROLLER(i))
+			num_controllers++;
+
+	return CONTROLLER_DATA_SIZE * num_controllers;
+}
+
+static void reserve_buffer_space(uint32 space_needed)
+{
+	if (space_needed > Movie.inputBufferSize)
+	{
+		uint32 ptr_offset	= Movie.inputBufferPtr - Movie.inputBuffer;
+		uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
+		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
+		Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
+		Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
+	}
+}
+
 static int read_movie_header(FILE *file, SMovie &movie)
 {
 	assert(file != NULL);
@@ -211,17 +243,6 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 	fwrite(headerData, 1, VBM_HEADER_SIZE, file);
 }
 
-static int bytes_per_frame(SMovie &mov)
-{
-	int num_controllers = 0;
-
-	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
-		if (mov.header.controllerFlags & MOVIE_CONTROLLER(i))
-			num_controllers++;
-
-	return CONTROLLER_DATA_SIZE * num_controllers;
-}
-
 static void flush_movie()
 {
 	if (!Movie.file)
@@ -240,6 +261,26 @@ static void flush_movie()
 	fflush(Movie.file);
 
 //	fseek(Movie.file, originalPos, SEEK_SET);
+}
+
+static void truncate_movie()
+{
+	// truncate movie to header.length_frames length
+	// NOTE: it's certain that the savestate block is never after the
+	//       controller data block, because the VBM format decrees it.
+
+	if (!Movie.file)
+		return;
+
+	assert(Movie.header.offset_to_savestate <= Movie.header.offset_to_controller_data);
+	if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
+		return;
+
+	const long truncLen = long(Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.header.length_frames);
+	if (file_length(Movie.file) != truncLen)
+	{
+		ftruncate(fileno(Movie.file), truncLen);
+	}
 }
 
 static void remember_input_state()
@@ -261,35 +302,6 @@ static void remember_input_state()
 			for (int i = 0; i < 4; ++i)
 				initialInputs[i] = u16(gbJoymask[i] & 0xFFFF);
 		}
-	}
-}
-
-static long file_length(FILE *fp)
-{
-	long cur_pos = ftell(fp);
-	fseek(fp, 0, SEEK_END);
-	long length = ftell(fp);
-	fseek(fp, cur_pos, SEEK_SET);
-	return length;
-}
-
-static void truncate_movie()
-{
-	// truncate movie to header.length_frames length
-	// NOTE: it's certain that the savestate block is never after the
-	//       controller data block, because the VBM format decrees it.
-
-	if (!Movie.file)
-		return;
-
-	assert(Movie.header.offset_to_savestate <= Movie.header.offset_to_controller_data);
-	if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
-		return;
-
-	const long truncLen = long(Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.header.length_frames);
-	if (file_length(Movie.file) != truncLen)
-	{
-		ftruncate(fileno(Movie.file), truncLen);
 	}
 }
 
@@ -337,18 +349,6 @@ static void change_state(MovieState new_state)
 	}
 
 	Movie.state = new_state;
-}
-
-static void reserve_buffer_space(uint32 space_needed)
-{
-	if (space_needed > Movie.inputBufferSize)
-	{
-		uint32 ptr_offset	= Movie.inputBufferPtr - Movie.inputBuffer;
-		uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
-		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
-		Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
-		Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
-	}
 }
 
 static void skip_controllers(int i, void (*call_back_func)(int))
