@@ -148,19 +148,8 @@ void MainWnd::OnFileExit()
 void MainWnd::OnFileClose()
 {
 	// save battery file before we change the filename...
-	if (rom != NULL || gbRom != NULL)
-	{
-		if (theApp.autoSaveLoadCheatList)
-			winSaveCheatListDefault();
-		winWriteBatteryFile();
-		soundPause();
-		theApp.emulator.emuCleanUp();
-		CloseRamWindows();
-		remoteCleanUp();
-		if (VBAMovieActive())
-			VBAMovieStop(false); // will only get here on user selecting to stop playing the ROM, canceling movie
-	}
-	emulating = 0;
+	CloseRamWindows();
+	winFileClose();
 	RedrawWindow(NULL, NULL, RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
 	systemSetTitle(VBA_NAME_AND_VERSION);
 }
@@ -985,31 +974,11 @@ void MainWnd::OnFileRamSearch()
 {
 	theApp.winCheckFullscreen();
 
-/*
-	// actually, what we don't need is this
-	// the traditional way
-	if (theApp.modelessCheatDialogIsOpen)
-	{
-		if (IsWindow(RamSearchHWnd))
-			::DestroyWindow(RamSearchHWnd);
-	}
-*/
-
 	if (!RamSearchHWnd)
 	{
 		reset_address_info();
 		LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-/*
-	if (theApp.pauseDuringCheatSearch)
-	{
-		::DialogBox(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
-	}
-	else if (!theApp.modelessCheatDialogIsOpen)
-	{
-		theApp.modelessCheatDialogIsOpen = true;
-*/
 		::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
-//	}
 	}
 	else
 		::SetForegroundWindow(RamSearchHWnd);
@@ -1017,7 +986,6 @@ void MainWnd::OnFileRamSearch()
 
 void MainWnd::OnUpdateFileRamSearch(CCmdUI*pCmdUI)
 {
-	//pCmdUI->SetCheck(RamSearchHWnd != NULL);
 	pCmdUI->Enable(TRUE);
 }
 
@@ -1036,7 +1004,6 @@ void MainWnd::OnFileRamWatch()
 
 void MainWnd::OnUpdateFileRamWatch(CCmdUI*pCmdUI)
 {
-	//pCmdUI->SetCheck(RamWatchHWnd != NULL);
 	pCmdUI->Enable(TRUE);
 }
 

@@ -1292,7 +1292,7 @@ static const char *s_romIgnoreExtensions[] = {
 	"htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
 };
 
-bool noWriteNextBatteryFile = false;
+bool reopenTheSameImage = false;
 
 #include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
@@ -1303,27 +1303,40 @@ bool noWriteNextBatteryFile = false;
 #include "../gba/Flash.h"
 #include "../gba/RTC.h"
 
-bool MainWnd::winFileRun()
+void MainWnd::winFileClose(bool reopening)
 {
-	int prevCartridgeType = theApp.cartridgeType;
-
-	// save battery file before we change the filename...
 	if (rom != NULL || gbRom != NULL)
 	{
 		if (theApp.autoSaveLoadCheatList)
 			winSaveCheatListDefault();
-		if (!noWriteNextBatteryFile)
+
+		if (!reopening)
+		{
+			// save battery file before we change the filename...
 			winWriteBatteryFile();
-		cheatSearchCleanup(&cheatSearchData);
+			cheatSearchCleanup(&cheatSearchData);
+		}
+
 		theApp.emulator.emuCleanUp();
 		remoteCleanUp();
-		if (VBAMovieActive())
-			VBAMovieStop(false);  // will only get here on user selecting to open a ROM, canceling movie
-		emulating = false;
-		theApp.frameSearching	   = false;
-		theApp.frameSearchSkipping = false;
 	}
-	noWriteNextBatteryFile = false;
+
+	if (VBAMovieActive())
+		VBAMovieStop(false);  // will only get here on user selecting to open a ROM, canceling movie
+
+	theApp.frameSearching	   = false;
+	theApp.frameSearchSkipping = false;
+	emulating = 0;
+}
+
+bool MainWnd::winFileRun()
+{
+	int prevCartridgeType = theApp.cartridgeType;
+
+	bool requiresInitRAMSearch = (rom == NULL && gbRom == NULL) || !reopenTheSameImage;
+	winFileClose(reopenTheSameImage);
+	reopenTheSameImage = false;
+
 	char tempName[2048];
 
 #if 1
@@ -1549,11 +1562,14 @@ bool MainWnd::winFileRun()
 		}
 	}
 
+	theApp.winCheckFullscreen();
 	ReopenRamWindows();
-	reset_address_info();
-
-	if (AutoRWLoad)
-		((MainWnd *)theApp.m_pMainWnd)->OnFileRamWatch();     //auto load ramwatch
+	if (requiresInitRAMSearch)
+	{
+		reset_address_info();
+//		void soft_reset_address_info (bool resetPrevValues = false);
+//		soft_reset_address_info();
+	}
 
 	systemRefreshScreen();
 
