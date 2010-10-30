@@ -1,7 +1,13 @@
 #summary VBA Sync Information for published movies on TASVideos.org
+#labels Featured
 
+These movies require manual or automatical conversion in order to be played on VBA rerecording v23:
+
+  * [http://tasvideos.org/1222M.html Castlevania: Harmony of Dissonance]
+  * [http://tasvideos.org/1607M.html Super Mario Land]
+----
 The following applies only to GB/SGB/GBC movies:
-
+----
 These movies require VBA rerecording v19, v21 or v22 (the last SVN WIP with the same timing was revision 232):
 
   * [http://tasvideos.org/1329M.html Mega Man Xtreme]
