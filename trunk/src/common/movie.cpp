@@ -578,7 +578,7 @@ static void HardResetAndSRAMClear()
 	CString filename;
 	GetBatterySaveName(filename);
 	remove(filename);     // delete the damn SRAM file
-	extern bool noWriteNextBatteryFile; noWriteNextBatteryFile = true;     // keep it from being resurrected from RAM
+	extern bool reopenTheSameImage; reopenTheSameImage = true;     // keep it from being resurrected from RAM
 	((MainWnd *)theApp.m_pMainWnd)->winFileRun();     // start running the game
 #   else
 	char fname [1024];

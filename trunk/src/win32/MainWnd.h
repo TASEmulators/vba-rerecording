@@ -47,6 +47,7 @@ private:
 	// Operations
 public:
 	afx_msg void OnOptionsEmulatorSelectbiosfile();
+	void winFileClose(bool reopening = false);
 	bool winFileRun();
 	bool winFileOpenSelect(int cartridgeType);
 	void winMouseOn();

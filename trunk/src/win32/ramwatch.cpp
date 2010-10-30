@@ -33,6 +33,7 @@ char currentWatch[1024];
 int ramw_x, ramw_y;			//Used to store ramwatch dialog window positions
 AddressWatcher rswatches[MAX_WATCH_COUNT];
 int WatchCount=0;
+static int s_prevSelCount=-1;
 
 char applicationPath[2048];
 struct InitRamWatch
@@ -829,11 +830,10 @@ void RamWatchEnableCommand(HWND hDlg, HMENU hMenu, UINT uIDEnableItem, bool enab
 
 void RefreshWatchListSelectedCountControlStatus(HWND hDlg)
 {
-	static int prevSelCount=-1;
 	int selCount = ListView_GetSelectedCount(GetDlgItem(hDlg,IDC_WATCHLIST));
-	if(selCount != prevSelCount)
+	if(selCount != s_prevSelCount)
 	{
-		if(selCount < 2 || prevSelCount < 2)
+		if(selCount < 2 || s_prevSelCount < 2)
 		{
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH_EDIT, selCount == 1);
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_WATCH_REMOVE, selCount >= 1);
@@ -842,7 +842,7 @@ void RefreshWatchListSelectedCountControlStatus(HWND hDlg)
 			RamWatchEnableCommand(hDlg, ramwatchmenu, IDC_C_ADDCHEAT, selCount == 1);
 			RamWatchEnableCommand(hDlg, ramwatchmenu, ID_WATCHES_UPDOWN, selCount == 1);
 		}
-		prevSelCount = selCount;
+		s_prevSelCount = selCount;
 	}
 }
 
@@ -927,6 +927,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 			DragAcceptFiles(hDlg, TRUE);
 
+			s_prevSelCount = -1;
 			RefreshWatchListSelectedCountControlStatus(hDlg);
 			return false;
 		}	break;
@@ -1223,11 +1224,9 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 		}	break;
 #endif
 
-//		case WM_CLOSE:
-//			RamWatchHWnd = NULL;
-//			DragAcceptFiles(hDlg, FALSE);
-//			DestroyWindow(hDlg);
-//			return false;
+		case WM_CLOSE:
+			SendMessage(RamWatchHWnd, WM_DESTROY, 0, 0);
+			break;
 
 		case WM_DESTROY:
 			// this is the correct place

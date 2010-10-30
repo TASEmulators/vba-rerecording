@@ -103,6 +103,7 @@ static MemoryRegion** s_itemIndexToRegionPointer = 0; // used for random access 
 static BOOL s_itemIndicesInvalid = true; // if true, the link from listbox items to memory regions (s_itemIndexToRegionPointer) and the link from memory regions to list box items (MemoryRegion::itemIndex) both need to be recalculated
 static BOOL s_prevValuesNeedUpdate = true; // if true, the "prev" values should be updated using the "cur" values on the next frame update signaled
 static unsigned int s_maxItemIndex = 0; // max currently valid item index, the listbox sometimes tries to update things past the end of the list so we need to know this to ignore those attempts
+static int s_prevSelCount = -1;
 
 HWND RamSearchHWnd;
 #define hWnd AfxGetMainWnd()->GetSafeHwnd()
@@ -1128,6 +1129,8 @@ void ReopenRamWindows() //Reopen them when a new Rom is loaded
 			LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 			RamSearchHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_RAMSEARCH), hWnd, (DLGPROC) RamSearchProc);
 		}
+		else
+			::SetForegroundWindow(RamSearchHWnd);
 	}
 	if (RamWatchClosed || AutoRWLoad)
 	{
@@ -1138,6 +1141,8 @@ void ReopenRamWindows() //Reopen them when a new Rom is loaded
 			LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 			RamWatchHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_RAMWATCH), hWnd, (DLGPROC) RamWatchProc);
 		}
+		else
+			::SetForegroundWindow(RamWatchHWnd);
 	}
 
 	if (hwnd == hWnd && hwnd != GetActiveWindow())
@@ -1148,20 +1153,18 @@ void ReopenRamWindows() //Reopen them when a new Rom is loaded
 
 
 
-
 void RefreshRamListSelectedCountControlStatus(HWND hDlg)
 {
-	static int prevSelCount=-1;
 	int selCount = ListView_GetSelectedCount(GetDlgItem(hDlg,IDC_RAMLIST));
-	if(selCount != prevSelCount)
+	if(selCount != s_prevSelCount)
 	{
-		if(selCount < 2 || prevSelCount < 2)
+		if(selCount < 2 || s_prevSelCount < 2)
 		{
 			EnableWindow(GetDlgItem(hDlg, IDC_C_WATCH), (WatchCount < MAX_WATCH_COUNT) ? TRUE : FALSE);
 			EnableWindow(GetDlgItem(hDlg, IDC_C_ADDCHEAT), (selCount >= 1) ? TRUE : FALSE);
 			EnableWindow(GetDlgItem(hDlg, IDC_C_ELIMINATE), (selCount >= 1) ? TRUE : FALSE);
 		}
-		prevSelCount = selCount;
+		s_prevSelCount = selCount;
 	}
 }
 
@@ -1538,6 +1541,8 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			if (!noMisalign) SendDlgItemMessage(hDlg, IDC_MISALIGN, BM_SETCHECK, BST_CHECKED, 0);
 			//if (littleEndian) SendDlgItemMessage(hDlg, IDC_ENDIAN, BM_SETCHECK, BST_CHECKED, 0);
 			last_rs_possible = -1;
+
+			s_prevSelCount = -1;
 			RefreshRamListSelectedCountControlStatus(hDlg);
 
 			// force misalign checkbox to refresh
@@ -2036,7 +2041,9 @@ invalid_field:
 			return rv;
 		}	break;
 
-//		case WM_CLOSE:
+		case WM_CLOSE:
+			SendMessage(RamSearchHWnd, WM_DESTROY, 0, 0);
+			break;
 		case WM_DESTROY:
 			RamSearchHWnd = NULL;
 //			theApp.modelessCheatDialogIsOpen = false;

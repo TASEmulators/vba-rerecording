@@ -613,24 +613,13 @@ BOOL VBA::InitInstance()
 
 	remoteSetProtocol(0);
 
-	systemVerbose = GetPrivateProfileInt("config",
-	                                     "verbose",
-	                                     0,
-	                                     "VBA.ini");
-
-	systemDebug = GetPrivateProfileInt("config",
-	                                   "debug",
-	                                   0,
-	                                   "VBA.ini");
-	ddrawDebug = GetPrivateProfileInt("config",
-	                                  "ddrawDebug",
-	                                  0,
-	                                  "VBA.ini") ? true : false;
+	systemVerbose = GetPrivateProfileInt("config", "verbose", 0, "VBA.ini");
+	systemDebug = GetPrivateProfileInt("config", "debug", 0, "VBA.ini");
+	ddrawDebug = GetPrivateProfileInt("config", "ddrawDebug", 0, "VBA.ini") ? true : false;
 
 	wndClass = AfxRegisterWndClass(0, LoadCursor(IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH), LoadIcon(IDI_ICON));
 
 	char winBuffer[2048];
-
 	GetModuleFileName(NULL, winBuffer, 2048);
 	char *p = strrchr(winBuffer, '\\');
 	if (p)
