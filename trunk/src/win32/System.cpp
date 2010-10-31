@@ -44,8 +44,11 @@ const int32 INITIAL_SENSOR_VALUE = 2047;
 
 int32 sensorX = INITIAL_SENSOR_VALUE;
 int32 sensorY = INITIAL_SENSOR_VALUE;
-u32	  currentButtons [4] = { 0, 0, 0, 0 };
-u32   lastKeys = 0;
+u16	  currentButtons [4] = { 0, 0, 0, 0 };	// constrain: never contains hacked buttons, only the lower 16 bits of each are used
+u16   lastKeys = 0;
+
+// static_assertion that BUTTON_REGULAR_RECORDING_MASK should be an u16 constant
+namespace { const void * const s_STATIC_ASSERTION_(static_cast<void *>(BUTTON_REGULAR_RECORDING_MASK & 0xFFFF0000)); }
 
 #define BMP_BUFFER_MAX_WIDTH (256)
 #define BMP_BUFFER_MAX_HEIGHT (224)
@@ -161,7 +164,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 			res ^= BUTTON_MASK_R;
 	}
 
-	currentButtons[i] = res & ~BUTTON_NONRECORDINGONLY_MASK;
+	currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
 
 	return res;
 }
@@ -171,33 +174,33 @@ u32 systemGetJoypad(int i, bool sensor)
 	if (i < 0 || i > 3)
 		i = systemGetDefaultJoypad();
 
-	// input priority: original+auto < movie < Lua < frame search, correct this if wrong
+	// input priority: original+auto < Lua < frame search < movie, correct this if wrong
+
 	// get original+auto input
-	u32 res = systemGetOriginalJoypad(i, sensor);
+	u32 hackedButtons = systemGetOriginalJoypad(i, sensor) & BUTTON_NONRECORDINGONLY_MASK;
+	u32 res = currentButtons[i];
 
-	u32 hackedButtons = res & BUTTON_NONRECORDINGONLY_MASK;
+	// since movie input has the highest priority, there's no point to read from other input
+	if (VBAMoviePlaying())
+	{
+		// VBAMovieUpdateInput() overwrites currentButtons[i]
+		VBAMovieUpdateInput(i);	// TODO: split this function
+		res = currentButtons[i];
+	}
+	else
+	{
+		// Lua input, shouldn't have any side effect within them
+		if (VBALuaUsingJoypad(i))
+			res = VBALuaReadJoypad(i);
 
-	// movie input
-	// VBAMovieUpdateInput() might overwrite currentButtons[i]
-	u32 currentButtonsBackup = currentButtons[i];
+		// override input above
+		if (theApp.frameSearchSkipping)
+			res = theApp.frameSearchOldInput[i];
 
-	VBAMovieUpdateInput(i);
-
-	res = currentButtons[i];
-
-	// we can later deal with it again, but let's just restore it for now for sake of simplicity
-	currentButtons[i] = currentButtonsBackup;
-
-	// Lua input
-	if (VBALuaUsingJoypad(i))
-		res = VBALuaReadJoypad(i);
-
-	// last input override here
-	if (theApp.frameSearchSkipping)
-		res = theApp.frameSearchOldInput[i];
-
-	// done
-	currentButtons[i] = res;
+		// flush non-hack buttons into the "current buttons" input buffer, which will be read by the movie routine
+		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
+		VBAMovieUpdateInput(i);	// TODO: split this function
+	}
 
 	return res | hackedButtons;
 }
