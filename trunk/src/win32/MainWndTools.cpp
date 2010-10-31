@@ -224,7 +224,9 @@ void MainWnd::OnDebugNextframe()
 }
 
 void MainWnd::OnUpdateDebugNextframe(CCmdUI*pCmdUI)
-{}
+{
+	pCmdUI->Enable(emulating);
+}
 
 void MainWnd::OnDebugNextframeAccountForLag()
 {

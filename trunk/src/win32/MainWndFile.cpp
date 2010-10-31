@@ -46,8 +46,6 @@
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
-extern void remoteCleanUp();
-
 void MainWnd::OnFileOpen()
 {
 	theApp.winCheckFullscreen();
@@ -97,25 +95,14 @@ void MainWnd::OnUpdateFileReset(CCmdUI*pCmdUI)
 	pCmdUI->Enable(emulating);
 }
 
+void MainWnd::OnFileRecentFreeze()
+{
+	theApp.recentFreeze = !theApp.recentFreeze;
+}
+
 void MainWnd::OnUpdateFileRecentFreeze(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.recentFreeze);
-}
-
-BOOL MainWnd::OnFileRecentFile(UINT nID)
-{
-	if (theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1].GetLength())
-	{
-		theApp.szFile = theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1];
-		if (winFileRun())
-			emulating = TRUE;
-		else
-		{
-			emulating = FALSE;
-			soundPause();
-		}
-	}
-	return TRUE;
 }
 
 void MainWnd::OnFileRecentReset()
@@ -134,9 +121,54 @@ void MainWnd::OnFileRecentReset()
 		theApp.recentFiles[i] = "";
 }
 
-void MainWnd::OnFileRecentFreeze()
+BOOL MainWnd::OnFileRecentFile(UINT nID)
 {
-	theApp.recentFreeze = !theApp.recentFreeze;
+	if (theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1].GetLength())
+	{
+		theApp.szFile = theApp.recentFiles[(nID&0xFFFF)-ID_FILE_MRU_FILE1];
+		if (winFileRun())
+			emulating = TRUE;
+		else
+		{
+			emulating = FALSE;
+			soundPause();
+		}
+	}
+	return TRUE;
+}
+
+void MainWnd::OnUpdateFileRecentFile(CCmdUI *pCmdUI)
+{
+	int fileID = pCmdUI->m_nID - ID_FILE_MRU_FILE1;
+
+	bool bExist = !theApp.recentFiles[fileID].IsEmpty();
+
+	if (pCmdUI->m_pMenu != NULL)
+	{
+		CString p = theApp.recentFiles[fileID];
+
+		int index = max(p.ReverseFind('/'), max(p.ReverseFind('\\'), p.ReverseFind('|')));
+
+		if (index != -1)
+		{
+			p.Delete(0, index + 1);
+		}
+
+		CString number("1&0 - ");
+		if (fileID < 9)
+			number.Format("&%d - ", fileID + 1);
+
+		if (p.IsEmpty())
+		{
+			p = "No Recent ROM";
+			bExist = false;
+		}
+
+		pCmdUI->SetText(number + p);
+		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
+	}
+
+	pCmdUI->Enable(bExist);
 }
 
 void MainWnd::OnFileExit()
@@ -717,37 +749,6 @@ void MainWnd::OnUpdateFileLoadgameMostrecent(CCmdUI*pCmdUI)
 	}
 
 	pCmdUI->Enable(enabled);
-}
-
-void MainWnd::OnUpdateFileRecentFile(CCmdUI *pCmdUI)
-{
-	int fileID = pCmdUI->m_nID - ID_FILE_MRU_FILE1;
-
-	bool bExist = !theApp.recentFiles[fileID].IsEmpty();
-
-	if (pCmdUI->m_pMenu != NULL)
-	{
-		CString p = theApp.recentFiles[fileID];
-
-		int index = max(p.ReverseFind('/'), max(p.ReverseFind('\\'), p.ReverseFind('|')));
-
-		if (index != -1)
-		{
-			p.Delete(0, index + 1);
-		}
-
-		bExist = !p.IsEmpty();
-
-		if (p.IsEmpty())
-		{
-			p.Format("No Recent ROM #%d", fileID + 1);
-		}
-
-		pCmdUI->SetText(p);
-		theApp.winAccelMgr.UpdateMenu(pCmdUI->m_pMenu->GetSafeHmenu());
-	}
-
-	pCmdUI->Enable(bExist);
 }
 
 void MainWnd::OnUpdateFileLoadSlot(CCmdUI *pCmdUI)
