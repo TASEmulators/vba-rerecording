@@ -236,14 +236,9 @@ void MainWnd::OnUpdateDebugNextframeAccountForLag(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.nextframeAccountForLag);
 }
 
-#if (defined(WIN32) && !defined(SDL))
-extern u32 currentButtons [4];     // from System.cpp
-#else
-u32 currentButtons [4];     /// SDL FIXME movie support NYI (the input format is quite different)
-#endif
-
 void MainWnd::OnDebugFramesearch()
 {
+	extern u16 currentButtons [4];     // from System.cpp
 	extern SMovie Movie;
 	if (!theApp.frameSearching)
 	{

@@ -52,6 +52,8 @@
 #include "vbalua.h"
 
 extern int emulating; // from system.cpp
+extern u16 currentButtons[4];     // from System.cpp
+extern u16 lastKeys;
 
 SMovie Movie;
 bool   loadingMovie		   = false;
@@ -59,12 +61,6 @@ bool8  loadedMovieSnapshot = 0;
 
 // probably bad idea to have so many global variables, but I hate to recompile almost everything after editing VBA.h
 bool autoConvertMovieWhenPlaying = false;
-
-#if (defined(WIN32) && !defined(SDL))
-extern u32 currentButtons[4];     // from System.cpp
-#else
-u32 currentButtons[4];
-#endif
 
 static u16 initialInputs[4] = {0};
 
@@ -413,7 +409,7 @@ static void write_frame_controller_data(int i)
 	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 	{
 		// get the current controller data
-		uint16 buttonData = (uint16)currentButtons[i];
+		uint16 buttonData = currentButtons[i];
 
 		// mask away the irrelevent bits
 		buttonData &= BUTTON_REGULAR_MASK;
@@ -1030,8 +1026,6 @@ void VBAUpdateButtonPressDisplay()
 
 	char colorList[64];
 	memset(colorList, 1, strlen(buffer));
-
-	extern u32 lastKeys;	// from system.cpp
 
 	if (!eraseAll)
 	{
