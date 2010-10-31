@@ -1292,7 +1292,7 @@ void VBA::addRecentFile(CString file)
 	if (recentFreeze)
 		return;
 	int i = 0;
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < 10; ++i)
 	{
 		if (recentFiles[i].GetLength() == 0)
 			break;
@@ -1302,7 +1302,7 @@ void VBA::addRecentFile(CString file)
 			if (i == 0)
 				return;
 			CString p = recentFiles[i];
-			for (int j = i; j > 0; j--)
+			for (int j = i; j > 0; --j)
 			{
 				recentFiles[j] = recentFiles[j - 1];
 			}
@@ -1311,17 +1311,17 @@ void VBA::addRecentFile(CString file)
 		}
 	}
 	int num = 0;
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < 10; ++i)
 	{
 		if (recentFiles[i].GetLength() != 0)
-			num++;
+			++num;
 	}
 	if (num == 10)
 	{
-		num--;
+		--num;
 	}
 
-	for (i = num; i >= 1; i--)
+	for (i = num; i >= 1; --i)
 	{
 		recentFiles[i] = recentFiles[i - 1];
 	}
@@ -2140,13 +2140,14 @@ void VBA::loadSettings(const char *path)
 		frameSearchMemory = (char *)malloc(3 * REWIND_SIZE);
 
 	recentFreeze = regQueryDwordValue("recentFreeze", false) ? true : false;
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0, j = 0; i < 10; ++i)
 	{
 		buffer.Format("recent%d", i);
 		const char *s = regQueryStringValue(buffer, NULL);
 		if (s == NULL)
-			break;
-		recentFiles[i] = s;
+			continue;
+		recentFiles[j] = s;
+		++j;
 	}
 
 	autoLoadMostRecent = regQueryDwordValue("autoLoadMostRecent", false) ? true : false;

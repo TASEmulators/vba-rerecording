@@ -56,8 +56,6 @@ static char THIS_FILE[] = __FILE__;
 
 #define VBA_CONFIRM_MODE WM_APP + 100
 
-extern void remoteCleanUp();
-
 /////////////////////////////////////////////////////////////////////////////
 // MainWnd
 
@@ -1318,6 +1316,8 @@ void MainWnd::winFileClose(bool reopening)
 		}
 
 		theApp.emulator.emuCleanUp();
+
+		extern void remoteCleanUp();
 		remoteCleanUp();
 	}
 
