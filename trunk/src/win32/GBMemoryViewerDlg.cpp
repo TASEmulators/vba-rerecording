@@ -343,17 +343,17 @@ void GBMemoryViewerDlg::setCurrentAddress(u32 address)
 void GBMemoryViewerDlg::OnSave()
 {
 	MemoryViewerAddressSize dlg;
-	CString buffer;
 
 	dlg.setAddress(m_viewer.getCurrentAddress());
 
 	LPCTSTR exts[] = { ".dmp", NULL };
 
-	CString filter = theApp.winResLoadFilter(IDS_FILTER_DUMP);
+	CString filter = winResLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 
 	if (dlg.DoModal() == IDOK)
 	{
+		CString buffer;
 		FileDlg file(this,
 		             buffer,
 		             filter,
@@ -392,7 +392,7 @@ void GBMemoryViewerDlg::OnLoad()
 {
 	CString buffer;
 	LPCTSTR exts[] = { ".dmp", NULL };
-	CString filter = theApp.winResLoadFilter(IDS_FILTER_DUMP);
+	CString filter = winResLoadFilter(IDS_FILTER_DUMP);
 	CString title  = winResLoadString(IDS_SELECT_DUMP_FILE);
 
 	FileDlg file(this,

@@ -6,6 +6,7 @@
 #include "VBA.h"
 #include "Reg.h"
 #include "../common/movie.h"
+#include <direct.h>
 
 // #undef WinDef macro garbage
 #ifdef max
@@ -20,7 +21,47 @@ using std::max;
 using std::min;
 
 extern int emulating;
+
+extern const char IDS_ROM_DIR[]		= "romDir";
+extern const char IDS_GBXROM_DIR[]	= "gbromDir";
+extern const char IDS_BATTERY_DIR[]	= "batteryDir";
+extern const char IDS_SAVE_DIR[]	= "saveDir";
+extern const char IDS_MOVIE_DIR[]	= "moviesDir";
+extern const char IDS_CHEAT_DIR[]	= "cheatsDir";
+extern const char IDS_LUA_DIR[]		= "luaDir";
+extern const char IDS_IPS_DIR[]		= "ipsDir";
+extern const char IDS_AVI_DIR[]		= "aviRecordDir";
+extern const char IDS_WAV_DIR[]		= "soundRecordDir";
+extern const char IDS_CAPTURE_DIR[] = "captureDir";
+extern const char IDS_WATCH_DIR[]	= "watchDir";
+
+extern const char IDS_ROM_DEFAULT_DIR[]		= "\\roms";
+extern const char IDS_GBXROM_DEFAULT_DIR[]	= "\\gbroms";
+extern const char IDS_BATTERY_DEFAULT_DIR[]	= "\\battery";
+extern const char IDS_SAVE_DEFAULT_DIR[]	= "\\save";
+extern const char IDS_MOVIE_DEFAULT_DIR[]	= "\\movies";
+extern const char IDS_CHEAT_DEFAULT_DIR[]	= "\\cheats";
+extern const char IDS_LUA_DEFAULT_DIR[]		= "\\lua";
+extern const char IDS_IPS_DEFAULT_DIR[]		= "\\ips";
+extern const char IDS_AVI_DEFAULT_DIR[]		= "\\avi";
+extern const char IDS_WAV_DEFAULT_DIR[]		= "\\wav";
+extern const char IDS_CAPTURE_DEFAULT_DIR[] = "\\screen";
+extern const char IDS_WATCH_DEFAULT_DIR[]	= "\\watches";
+
+extern const char *IDS_tbl[] = {
+	IDS_ROM_DIR,   IDS_GBXROM_DIR, IDS_BATTERY_DIR, IDS_SAVE_DIR, 
+	IDS_MOVIE_DIR, IDS_CHEAT_DIR,  IDS_LUA_DIR,     IDS_IPS_DIR, 
+	IDS_AVI_DIR,   IDS_WAV_DIR,    IDS_CAPTURE_DIR, IDS_WATCH_DIR
+};
+
+extern const char *IDS_def_tbl[] = {
+	IDS_ROM_DEFAULT_DIR,   IDS_GBXROM_DEFAULT_DIR, IDS_BATTERY_DEFAULT_DIR, IDS_SAVE_DEFAULT_DIR, 
+	IDS_MOVIE_DEFAULT_DIR, IDS_CHEAT_DEFAULT_DIR,  IDS_LUA_DEFAULT_DIR,     IDS_IPS_DEFAULT_DIR, 
+	IDS_AVI_DEFAULT_DIR,   IDS_WAV_DEFAULT_DIR,    IDS_CAPTURE_DEFAULT_DIR, IDS_WATCH_DEFAULT_DIR
+};
+
 // these could be made VBA members, but  the VBA class is already oversized too much
+//
 
 bool winFileExists(const char *filename)
 {
@@ -70,9 +111,62 @@ CString winGetDirFromFilename(const CString &file)
 CString winGetDestDir(const CString &TargetDirReg)
 {
 	CString targetDir = regQueryStringValue(TargetDirReg, NULL);
+	int pos = targetDir.ReverseFind('\\');
+	if (pos > 0 && pos == targetDir.GetLength() - 1)
+		targetDir.Delete(pos);
+
+	// it makes no sense to create rom directories
+	// see MainWnd::winFileOpenSelect for more info
+	if (!TargetDirReg.Compare(IDS_ROM_DIR) || !TargetDirReg.Compare(IDS_GBXROM_DIR))
+		return targetDir;
 
 	if (targetDir.IsEmpty())
-		targetDir = winGetDirFromFilename(theApp.filename);
+	{
+		targetDir = theApp.dir;		// reset the targetDir to the application's path
+		if (!TargetDirReg.Compare(IDS_BATTERY_DIR))
+		{
+			targetDir += IDS_BATTERY_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_SAVE_DIR))
+		{
+			targetDir += IDS_SAVE_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_MOVIE_DIR))
+		{
+			targetDir += IDS_MOVIE_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_CHEAT_DIR))
+		{
+			targetDir += IDS_CHEAT_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_LUA_DIR))
+		{
+			targetDir += IDS_LUA_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_IPS_DIR))
+		{
+			targetDir += IDS_IPS_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_AVI_DIR))
+		{
+			targetDir += IDS_AVI_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_WAV_DIR))
+		{
+			targetDir += IDS_WAV_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_CAPTURE_DIR))
+		{
+			targetDir += IDS_CAPTURE_DEFAULT_DIR;
+		}
+		else if (!TargetDirReg.Compare(IDS_WATCH_DIR))
+		{
+			targetDir += IDS_WATCH_DEFAULT_DIR;
+		}
+		regSetStringValue(TargetDirReg, targetDir);	// Add the directory to the INI file
+	}
+
+	_mkdir(targetDir);			// make the directory
 
 	return targetDir;
 }
@@ -83,8 +177,7 @@ CString winGetDestFilename(const CString &LogicalRomName, const CString &TargetD
 		return CString();
 
 	CString targetDir = winGetDestDir(TargetDirReg);
-	if (!winIsDriveRoot(targetDir))
-		targetDir += '\\';
+	targetDir += '\\';
 
 	CString buffer = LogicalRomName;
 

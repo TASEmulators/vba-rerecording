@@ -1256,11 +1256,12 @@ bool MainWnd::winFileOpenSelect(int cartridgeType)
 	CString title  = winResLoadString(IDS_SELECT_ROM);
 
 	bool	isOverrideEmpty = false;
-	CString initialDir		= regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, ".");
+	CString initialDir		= regQueryStringValue(cartridgeType == 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, NULL);
 	if (initialDir.IsEmpty())
 	{
 		isOverrideEmpty = true;
-		initialDir		= theApp.dir;
+		CString altDir	= regQueryStringValue(cartridgeType != 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, NULL);
+		initialDir		= altDir.IsEmpty() ? theApp.dir : altDir;
 	}
 
 	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
@@ -1370,8 +1371,6 @@ bool MainWnd::winFileRun()
 	const char *LogicalName	 = theApp.szFile;
 	const char *PhysicalName = theApp.szFile;
 #endif
-
-	theApp.dir = winGetDirFromFilename(LogicalName);
 
 	CString ipsname = winGetDestFilename(LogicalName, IDS_IPS_DIR, ".ips");
 
