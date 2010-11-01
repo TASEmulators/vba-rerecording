@@ -183,7 +183,9 @@ bool AVIWrite::Open(const char *filename)
 
 	strncpy(m_aviFileName, filename, MAX_PATH);
 	strncpy(m_aviBaseName, filename, MAX_PATH);
-	char*dot = strrchr(m_aviBaseName, '.');
+	m_aviFileName[MAX_PATH - 1] = '\0';
+	m_aviBaseName[MAX_PATH - 1] = '\0';
+	char *dot = strrchr(m_aviBaseName, '.');
 	if (dot && dot > strrchr(m_aviBaseName, '/') && dot > strrchr(m_aviBaseName, '\\'))
 	{
 		strcpy(m_aviExtension, dot);

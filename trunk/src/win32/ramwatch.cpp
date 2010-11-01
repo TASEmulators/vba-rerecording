@@ -277,8 +277,6 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 	// Recreate the menus
 	for(x = MAX_RECENT_WATCHES - 1; x >= 0; x--)
 	{  
-		char tmp[128 + 5];
-
 		// Skip empty strings
 		if(!strlen(rw_recent_files[x]))
 		{
@@ -287,6 +285,10 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 
 		moo.cbSize = sizeof(moo);
 		moo.fMask = MIIM_DATA | MIIM_ID | MIIM_TYPE;
+
+#if 0
+		const int TEMP_STRING_LENGTH = 128 + 5;
+		char tmp[TEMP_STRING_LENGTH];	// FIXME?
 
 		// Fill in the menu text.
 		if(strlen(rw_recent_files[x]) < 128)
@@ -297,6 +299,11 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 		{
 			sprintf(tmp, "&%d. %s", ( x + 1 ) % 10, rw_recent_files[x] + strlen( rw_recent_files[x] ) - 127);
 		}
+#endif
+		// the ATL way; it is really pain to work out a MBCS-compatible string replace function in the pure c way
+		CString atltmp(rw_recent_files[x]);
+		atltmp.Replace("&", "&&");
+		char *tmp = atltmp.GetBuffer(0);
 
 		// Insert the menu item
 		moo.cch = strlen(tmp);
@@ -304,6 +311,8 @@ void UpdateRW_RMenu(HMENU menu, unsigned int mitem, unsigned int baseid)
 		moo.wID = baseid + x;
 		moo.dwTypeData = tmp;
 		InsertMenuItem(menu, 0, 1, &moo);
+
+		// atltmp.ReleaseBuffer();
 	}
 
 	// I don't think one function shall do so many things in a row
@@ -328,12 +337,12 @@ void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU men
 				char tmp[len];
 
 				// Save pointer.
-				strncpy(tmp, rw_recent_files[x], len);
+				strncpy(tmp, rw_recent_files[x], len - 1);	// assuming rw_recent_files[n] is 0-terminated
 				
 				for(y = x; y; y--)
 				{
 					// Move items down.
-					strncpy(rw_recent_files[y],rw_recent_files[y - 1], len);
+					strncpy(rw_recent_files[y], rw_recent_files[y - 1], len);
 				}
 
 				// Put item on top.
@@ -357,6 +366,7 @@ void UpdateRWRecentArray(const char* addString, unsigned int arrayLen, HMENU men
 
 	// Add the new item.
 	strncpy(rw_recent_files[0], addString, len);
+	rw_recent_files[0][len - 1] = '\0';	// better not assume that
 
 	// Update the recent files menu
 	UpdateRW_RMenu(menu, menuItem, baseId);

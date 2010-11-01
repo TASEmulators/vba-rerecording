@@ -154,6 +154,8 @@ void MainWnd::OnUpdateFileRecentFile(CCmdUI *pCmdUI)
 			p.Delete(0, index + 1);
 		}
 
+		p.Replace("&", "&&");
+
 		CString number("1&0 - ");
 		if (fileID < 9)
 			number.Format("&%d - ", fileID + 1);
