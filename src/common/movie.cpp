@@ -1607,6 +1607,7 @@ void VBAMovieRestart()
 
 		char movieName [_MAX_PATH];
 		strncpy(movieName, Movie.filename, _MAX_PATH);
+		movieName[_MAX_PATH - 1] = '\0';
 		VBAMovieOpen(movieName, Movie.readOnly); // can't just pass in Movie.filename, since VBAMovieOpen clears out Movie's
 		                                         // variables
 
