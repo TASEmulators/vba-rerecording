@@ -1277,8 +1277,6 @@ BOOL VBA::OnIdle(LONG lCount)
 //		VBAUpdateButtonPressDisplay();
 		VBAUpdateFrameCountDisplay();
 		systemRefreshScreen();
-//		Update_RAM_Search(); // updates RAM search and RAM watch
-//		return TRUE;			// FIXME: unworthy
 	}
 
 	return FALSE;

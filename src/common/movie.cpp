@@ -746,6 +746,10 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 		strcat(messageString, "(edit)");
 	systemScreenMessage(messageString);
 
+	VBAUpdateButtonPressDisplay();
+	VBAUpdateFrameCountDisplay();
+	systemRefreshScreen();
+
 	{ loadingMovie = false; return MOVIE_SUCCESS; }
 }
 
@@ -1609,9 +1613,6 @@ void VBAMovieRestart()
 		Movie.RecordedThisSession = modified;
 
 //		systemScreenMessage("Movie replay (restart)");
-		systemClearJoypads();
-		VBAUpdateButtonPressDisplay();
-		systemRefreshScreen();
 	}
 }
 

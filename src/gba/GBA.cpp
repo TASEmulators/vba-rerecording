@@ -19,7 +19,6 @@
 #if (defined(WIN32) && !defined(SDL))
 #   include "../win32/stdafx.h"
 #   include "../win32/VBA.h"
-#   include "../win32/ram_search.h"
 #endif
 
 #include <cstdio>
@@ -145,10 +144,6 @@ char  buffer[1024];
 FILE *out = NULL;
 
 static bool8 pauseAfterFrameAdvance = false;
-
-bool  capture		  = false;
-bool  capturePrevious = false;
-int32 captureNumber	  = 0;
 
 const int32 TIMER_TICKS[4] = {
 	1,
@@ -1027,9 +1022,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	systemSetJoypad(0, ~P1 & 0x3FF);
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
-	#ifdef WIN32
-	Update_RAM_Search();     // Update_RAM_Watch() is also called.
-	#endif
+	systemRefreshScreen();
 	return true;
 
 failedLoad:
@@ -1476,11 +1469,10 @@ void CPUCleanUp()
 
 	elfCleanUp();
 
-	systemClearJoypads();
-
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
-	emulating = 0;
+	systemClearJoypads();
+	systemRefreshScreen();
 }
 
 int CPULoadRom(const char *szFile)
@@ -4045,13 +4037,7 @@ updateLoop:
 
 							systemFrame(60);
 
-							++GBASystemCounters.frameCount;
-							if (GBASystemCounters.lagged)
-							{
-								++GBASystemCounters.lagCount;
-							}
-							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
-							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+							frameBoundary = true;
 
 							++gbaFrameCount;
 							u32 currentTime = systemGetClock();
@@ -4062,23 +4048,25 @@ updateLoop:
 								gbaFrameCount = 0;
 							}
 
+							++GBASystemCounters.frameCount;
+							if (GBASystemCounters.lagged)
+							{
+								++GBASystemCounters.lagCount;
+							}
+							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
+							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+
 							if (VBALuaRunning())
 							{
 								VBALuaFrameBoundary();
 							}
 
-							frameBoundary = true;
-
 							// HACK: some special "buttons"
 							u32 ext = (joy >> 18);
+							speedup	= (ext & 1) != 0;
 
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1 ^ 0x3FF, ext);
-
-							speedup	 = (ext & 1) ? true : false;
-							capture |= (ext & 2) ? true : false;
-
-							Update_RAM_Search(); // updates RAM search and RAM watch
 
 							pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -4087,13 +4075,12 @@ updateLoop:
 								systemRenderFrame();
 								frameSkipCount = 0;
 
-								if (capture && !capturePrevious)
+								bool capturePressed = (ext & 2) != 0;
+								if (capturePressed && !capturePrevious)
 								{
-									++captureNumber;
-									systemScreenCapture(captureNumber);
+									captureNumber = systemScreenCapture(captureNumber);
 								}
-								capturePrevious = capture;
-								capture			= false;
+								capturePrevious = capturePressed && !pauseAfterFrameAdvance;
 							}
 							else
 							{
