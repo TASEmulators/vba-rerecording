@@ -16,7 +16,7 @@ extern CString winGetDestFilename(const CString &LogicalRomName, const CString &
 extern void winCorrectPath(CString &path);
 extern void winCorrectPath(char *path);
 
-void winScreenCapture(int captureNumber);
+int winScreenCapture(int captureNumber = 0);
 bool winImportGSACodeFile(CString& fileName);
 void winLoadCheatList(const char *name);
 void winSaveCheatList(const char *name);

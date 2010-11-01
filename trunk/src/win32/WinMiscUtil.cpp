@@ -256,23 +256,36 @@ void winCorrectPath(char *path)
 
 // some file I/O
 
-void winScreenCapture(int captureNumber)
+int winScreenCapture(int captureNumber)
 {
 	CString ext;
-	if (theApp.captureFormat != 0)
-		ext.Format("_%02d.bmp", captureNumber);
-	else
-		ext.Format("_%02d.png", captureNumber);
+	CString captureName;
 
-	CString captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+	do
+	{
+		if (theApp.captureFormat == 0)
+			ext.Format("_%03d.png", captureNumber);
+		else
+			ext.Format("_%03d.bmp", captureNumber);
+
+		captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+		++captureNumber;
+	} while (winFileExists(captureName) && captureNumber > 0);
+
+	if (captureNumber < 0)
+	{
+		systemMessage(0, "Too many existing files (not less than %d)! Screen capture failed!", captureNumber - 1);
+		return 0;
+	}
 
 	if (theApp.captureFormat == 0)
 		theApp.emulator.emuWritePNG(captureName);
 	else
 		theApp.emulator.emuWriteBMP(captureName);
 
-	CString msg = winResLoadString(IDS_SCREEN_CAPTURE);
-	systemScreenMessage(msg);
+	systemScreenMessage(winResLoadString(IDS_SCREEN_CAPTURE));
+
+	return captureNumber;
 }
 
 #include "GSACodeSelect.h"

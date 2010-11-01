@@ -512,11 +512,8 @@ void MainWnd::OnUpdateFileExportGamesharksnapshot(CCmdUI*pCmdUI)
 
 void MainWnd::OnFileQuickScreencapture()
 {
-	extern int32 captureNumber;   // GBA.cpp
-	extern int32 gbCaptureNumber; // GB.cpp
-
-	int vbaCaptureNumber = systemIsRunningGBA() ? captureNumber : gbCaptureNumber;
-	winScreenCapture(vbaCaptureNumber - 1);
+	extern int32 captureNumber;   // GBAGlobals.cpp
+	captureNumber = winScreenCapture(captureNumber);
 }
 
 void MainWnd::OnFileScreencapture()

@@ -1313,6 +1313,8 @@ void MainWnd::winFileClose(bool reopening)
 			// save battery file before we change the filename...
 			winWriteBatteryFile();
 			cheatSearchCleanup(&cheatSearchData);
+			capturePrevious	= 0;
+			captureNumber	= 0;
 		}
 
 		theApp.emulator.emuCleanUp();
@@ -1571,6 +1573,8 @@ bool MainWnd::winFileRun()
 //		soft_reset_address_info();
 	}
 
+	VBAUpdateButtonPressDisplay();
+	VBAUpdateFrameCountDisplay();
 	systemRefreshScreen();
 
 	return true;

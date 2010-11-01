@@ -83,10 +83,11 @@ extern struct EmulatedSystem theEmulator;
 extern void log(const char *, ...);
 
 extern void systemGbPrint(u8 *, int, int, int, int);
-extern void systemScreenCapture(int);
+extern int  systemScreenCapture(int);
 extern void systemRefreshScreen();
 extern void systemRenderFrame();
 extern void systemRedrawScreen();
+extern void systemUpdateListeners();
 // updates the joystick data
 extern void systemSetSensorX(int32);
 extern void systemSetSensorY(int32);

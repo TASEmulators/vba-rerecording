@@ -33,7 +33,6 @@
 #if (defined(WIN32) && !defined(SDL))
 #   include "../win32/stdafx.h"
 #   include "../win32/VBA.h"
-#   include "../win32/ram_search.h"
 #endif
 #include "../NLS.h"
 #include "../common/System.h"
@@ -48,6 +47,8 @@ extern soundtick_t GB_USE_TICKS_AS;
 
 u8 *		 origPix = NULL;
 extern u8 *	 pix;
+extern bool8 capturePrevious;
+extern int32 captureNumber;
 extern bool8 speedup;
 
 bool gbUpdateSizes();
@@ -170,9 +171,6 @@ int32 gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
 int32 gbDMASpeedVersion	 = 1;
 // emulator features
 int32 gbBattery			= 0;
-int32 gbCaptureNumber	= 0;
-bool  gbCapture			= false;
-bool  gbCapturePrevious = false;
 int32 gbJoymask[4]		= { 0, 0, 0, 0 };
 
 int32 gbEchoRAMFixOn = 1;
@@ -2778,9 +2776,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		systemSetJoypad(i, gbJoymask[i] & 0xFFFF);
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
-	#ifdef WIN32
-	Update_RAM_Search();     // Update_RAM_Watch() is also called.
-	#endif
+	systemRefreshScreen();
 	return true;
 
 failedLoadGB:
@@ -2895,9 +2891,10 @@ void gbCleanUp()
 		gbWram = NULL;
 	}
 
-	systemClearJoypads();
-
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
+
+	systemClearJoypads();
+	systemRefreshScreen();
 }
 
 bool gbLoadRom(const char *szFile)
@@ -3340,13 +3337,7 @@ void gbEmulate(int ticksToStop)
 
 						systemFrame(60);
 
-						++GBSystemCounters.frameCount;
-						if (GBSystemCounters.lagged)
-						{
-							++GBSystemCounters.lagCount;
-						}
-						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
-						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+						frameBoundary = true;
 
 						++gbFrameCount;
 						u32 currentTime = systemGetClock();
@@ -3357,19 +3348,22 @@ void gbEmulate(int ticksToStop)
 							gbFrameCount = 0;
 						}
 
+						++GBSystemCounters.frameCount;
+						if (GBSystemCounters.lagged)
+						{
+							++GBSystemCounters.lagCount;
+						}
+						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
+						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+
 						if (VBALuaRunning())
 						{
 							VBALuaFrameBoundary();
 						}
 
-						frameBoundary = true;
-
 						// HACK: some special "buttons"
 						u8 ext = (newmask >> 18);
-						speedup	   = (ext & 1) ? true : false;
-						gbCapture |= (ext & 2) ? true : false;
-
-						Update_RAM_Search(); // updates RAM search and RAM watch
+						speedup	= (ext & 1) != 0;
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -3381,13 +3375,12 @@ void gbEmulate(int ticksToStop)
 							systemRenderFrame();
 							gbFrameSkipCount = 0;
 
-							if (gbCapture && !gbCapturePrevious)
+							bool capturePressed = (ext & 2) != 0;
+							if (capturePressed && !capturePrevious)
 							{
-								++gbCaptureNumber;
-								systemScreenCapture(gbCaptureNumber);
+								captureNumber = systemScreenCapture(captureNumber);
 							}
-							gbCapturePrevious = gbCapture;
-							gbCapture		  = false;
+							capturePrevious = capturePressed && !pauseAfterFrameAdvance;
 						}
 						else
 						{

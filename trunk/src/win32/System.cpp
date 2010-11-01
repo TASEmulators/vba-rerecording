@@ -4,6 +4,7 @@
 #include "Sound.h"
 #include "Input.h"
 #include "IUpdate.h"
+#include "ram_search.h"
 #include "WinMiscUtil.h"
 #include "WinResUtil.h"
 #include "resource.h"
@@ -378,6 +379,16 @@ void systemRedrawScreen()
 	if (theApp.display)
 		theApp.display->render();
 
+	systemUpdateListeners();
+}
+
+void systemUpdateListeners()
+{
+	if (vbaShuttingDown)
+		return;
+
+	Update_RAM_Search(); // updates RAM search and RAM watch
+
 	// update viewers etc.
 	if (theApp.updateCount)
 	{
@@ -391,12 +402,9 @@ void systemRedrawScreen()
 	}
 }
 
-void systemScreenCapture(int captureNumber)
+int systemScreenCapture(int captureNumber)
 {
-	winScreenCapture(captureNumber);
-
-	//if (theApp.m_pMainWnd)
-	//	theApp.m_pMainWnd->PostMessage(WM_COMMAND, (WPARAM)ID_FILE_QUICKSCREENCAPTURE, (LPARAM)NULL);
+	return winScreenCapture(captureNumber);
 }
 
 void systemMessage(int number, const char *defaultMsg, ...)
@@ -672,6 +680,7 @@ void systemSetPause(bool pause)
 {
 	if (pause)
 	{
+		capturePrevious	 = false;
 		theApp.wasPaused = true;
 		theApp.paused	 = true;
 		theApp.speedupToggle = false;
