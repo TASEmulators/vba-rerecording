@@ -510,7 +510,7 @@ void MainWnd::OnToolsSoundStartrecording()
 
 	LPCTSTR exts[] = { ".wav", NULL };
 
-	CString filter = theApp.winResLoadFilter(IDS_FILTER_WAV);
+	CString filter = winResLoadFilter(IDS_FILTER_WAV);
 	CString title  = winResLoadString(IDS_SELECT_WAV_NAME);
 
 	wavName = winGetDestFilename(wavName, IDS_WAV_DIR, exts[0]);
@@ -577,7 +577,7 @@ void MainWnd::OnToolsStartAVIRecording()
 
 	LPCTSTR exts[] = { ".avi", NULL };
 
-	CString filter = theApp.winResLoadFilter(IDS_FILTER_AVI);
+	CString filter = winResLoadFilter(IDS_FILTER_AVI);
 	CString title  = winResLoadString(IDS_SELECT_AVI_NAME);
 
 	aviName = winGetDestFilename(aviName, IDS_AVI_DIR, exts[0]);

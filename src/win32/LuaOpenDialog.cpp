@@ -283,15 +283,16 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 			{
 				if(theApp.sound) theApp.sound->clearAudioBuffer();
 
-				CString filter = theApp.winResLoadFilter(IDS_FILTER_LUA);
+				CString filter = winResLoadFilter(IDS_FILTER_LUA);
 				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
 
 				CString luaName = winGetDestFilename(theApp.filename, IDS_LUA_DIR, ".lua");
 				CString luaDir = winGetDestDir(IDS_LUA_DIR);
 
-				char *p = filter.GetBuffer(0);
-				while ((p = strchr(p, '|')) != NULL)
-					*p++ = 0;
+				filter.Replace('|', '\000');
+//				char *p = filter.GetBuffer(0);
+//				while ((p = strchr(p, '|')) != NULL)
+//					*p++ = 0;
 
 				OPENFILENAME  ofn;
 				ZeroMemory( (LPVOID)&ofn, sizeof(OPENFILENAME) );

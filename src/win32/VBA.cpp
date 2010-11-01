@@ -21,7 +21,6 @@
 #include "stdafx.h"
 #include <mmsystem.h>
 #include <cassert>
-#include <direct.h>
 
 #include "resource.h"
 #include "VBA.h"
@@ -67,9 +66,6 @@ extern void remoteSetProtocol(int);
 extern void remoteCleanUp();
 extern int remoteSocket;
 
-extern const char *IDS_tbl[] = {
-	IDS_ROM_DIR, IDS_GBXROM_DIR, IDS_BATTERY_DIR, IDS_SAVE_DIR, IDS_MOVIE_DIR, IDS_CHEAT_DIR, 
-	IDS_LUA_DIR, IDS_IPS_DIR, IDS_AVI_DIR, IDS_WAV_DIR, IDS_CAPTURE_DIR, IDS_WATCH_DIR };
 void winlog(const char *msg, ...);
 
 #ifdef _DEBUG
@@ -624,10 +620,11 @@ BOOL VBA::InitInstance()
 	char *p = strrchr(winBuffer, '\\');
 	if (p)
 		*p = 0;
+	dir = winBuffer;
 
 	regInit(winBuffer);
 
-	loadSettings(winBuffer);
+	loadSettings();
 	theApp.LuaFastForward = -1;
 	if (!initInput())
 		return FALSE;
@@ -670,7 +667,7 @@ BOOL VBA::InitInstance()
 			if (argv[i][0] == '-' || gotFlag)
 			{
 				if (!gotFlag)
-					loadSettings(NULL);
+					loadSettings();
 				gotFlag = true;
 				if (_stricmp(argv[i], "-rom") == 0)
 				{
@@ -845,7 +842,7 @@ invalidArgument:
 				// assume anything else is a ROM, for backward compatibility
 				szFile	 = argv[i++];
 				filename = szFile;
-				loadSettings(NULL);
+				loadSettings();
 			}
 		}
 
@@ -1284,7 +1281,7 @@ BOOL VBA::OnIdle(LONG lCount)
 	//  return CWinApp::OnIdle(lCount);
 }
 
-void VBA::addRecentFile(CString file)
+void VBA::addRecentFile(const CString &file)
 {
 	// Do not change recent list if frozen
 	if (recentFreeze)
@@ -1894,15 +1891,7 @@ void VBA::winRemoveUpdateListener(IUpdateListener *l)
 	}
 }
 
-CString VBA::winResLoadFilter(UINT id)
-{
-	CString res = winResLoadString(id);
-	res.Replace('_', '|');
-
-	return res;
-}
-
-void VBA::loadSettings(const char *path)
+void VBA::loadSettings()
 {
 	CString	buffer;
 	// video
@@ -2179,52 +2168,6 @@ void VBA::loadSettings(const char *path)
 		if (s == NULL)
 			continue;
 		RWAddRecentFile(s);
-	}
-
-	if (path != NULL)	// Default directories, added by darkkobold.
-	{
-		CString	tempStr;
-		for (int i = 0; i < 12; ++i)
-		{
-			tempStr = regQueryStringValue(IDS_tbl[i], NULL);	// Check if the String Exists in the INI
-			if (tempStr.IsEmpty())	// If not, create the directory
-			{
-				// these name are inconsistent due to legacy problems
-				switch (i)
-				{
-				case 0:
-					tempStr = "\\Roms"; break;
-				case 1:
-					tempStr = "\\GBXroms"; break;
-				case 2:
-					tempStr = "\\Battery"; break;
-				case 3:
-					tempStr = "\\Saves"; break;
-				case 4:
-					tempStr = "\\Movies"; break;
-				case 5:
-					tempStr = "\\Cheats"; break;	// even the menu reads that
-				case 6:
-					tempStr = "\\Lua"; break;
-				case 7:
-					tempStr = "\\IPS"; break;
-				case 8:
-					tempStr = "\\AVI"; break;
-				case 9:
-					tempStr = "\\WAV"; break;
-				case 10:
-					tempStr = "\\Snaps"; break;
-				case 11:
-					tempStr = "\\Watch"; break;		// Wch would be too evil, and watches would be too long for a "new" member
-				default:
-					break;
-				}
-				CString curDir(path);	// reset the curDir to path
-				curDir += tempStr;		// add path
-				_mkdir(curDir);			// make the directory
-				regSetStringValue(IDS_tbl[i], curDir);	// Add the directory to the INI file
-			}
-		}
 	}
 }
 

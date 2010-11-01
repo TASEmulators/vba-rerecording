@@ -488,7 +488,7 @@ void OamView::OnSave()
 
 	LPCTSTR exts[] = {".png", ".bmp", NULL };
 
-	CString filter = theApp.winResLoadFilter(IDS_FILTER_PNG);
+	CString filter = winResLoadFilter(IDS_FILTER_PNG);
 	CString title  = winResLoadString(IDS_SELECT_CAPTURE_NAME);
 
 	FileDlg dlg(this,

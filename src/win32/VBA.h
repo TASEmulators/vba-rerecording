@@ -55,19 +55,6 @@ enum
 #define MAX_REWIND_SLOTS 256
 #define SCREEN_MESSAGE_SLOTS 8
 
-#define IDS_ROM_DIR             "romDir"
-#define IDS_GBXROM_DIR          "gbromDir"
-#define IDS_BATTERY_DIR         "batteryDir"
-#define IDS_SAVE_DIR            "saveDir"
-#define IDS_MOVIE_DIR           "moviesDir"
-#define IDS_CHEAT_DIR           "cheatsDir"
-#define IDS_LUA_DIR             "luaDir"
-#define IDS_IPS_DIR             "ipsDir"
-#define IDS_AVI_DIR             "aviRecordDir"
-#define IDS_WAV_DIR             "soundRecordDir"
-#define IDS_CAPTURE_DIR         "captureDir"
-#define IDS_WATCH_DIR           "watchDir"
-
 /////////////////////////////////////////////////////////////////////////////
 // forward decl
 class IUpdateListener;
@@ -256,7 +243,6 @@ public:
 	void updateMenuBar();
 	void winAddUpdateListener(IUpdateListener *l);
 	void winRemoveUpdateListener(IUpdateListener *l);
-	CString winResLoadFilter(UINT id);
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
@@ -284,8 +270,8 @@ public:
 	void updateWindowSize(int value);
 	void updateVideoSize(UINT id);
 	void updateFrameSkip();
-	void loadSettings(const char *path);
-	void addRecentFile(CString file);
+	void loadSettings();
+	void addRecentFile(const CString &file);
 	void saveRewindStateIfNecessary();
 	//{{AFX_MSG(VBA)
 	afx_msg void OnAppAbout();

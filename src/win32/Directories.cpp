@@ -24,6 +24,7 @@
 #include "resource.h"
 #include "Directories.h"
 #include "Reg.h"
+#include "WinMiscUtil.h"
 #include "WinResUtil.h"
 #include "VBA.h" // for IDS_???_DIR
 

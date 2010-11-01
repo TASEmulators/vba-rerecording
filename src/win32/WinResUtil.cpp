@@ -97,11 +97,13 @@ CString winResLoadString(UINT id)
 	HINSTANCE inst = winResGetInstance(RT_STRING, MAKEINTRESOURCE(stId));
 
 	CString res;
-	if (res.LoadString(id))
-		return res;
+	if (!res.LoadString(id))
+	{
+		// TODO: handle case where string is only in the default English
+		res = "";
+	}
 
-	// TODO: handle case where string is only in the default English
-	res = "";
+	res.Replace('_', '|');
 
 	return res;
 }

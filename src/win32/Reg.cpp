@@ -221,7 +221,7 @@ void regSetBinaryValue(const char *key, char *value, int count)
 	}
 }
 
-void regDeleteValue(char *key)
+void regDeleteValue(const char *key)
 {
 	if (regEnabled)
 	{
