@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "VBA.h"
 #include "resource.h"
+#include "WinMiscUtil.h"
 #include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
 #include "ram_search.h"
@@ -452,17 +453,17 @@ void OpenRWRecentFile(int memwRFileNumber)
 	return;
 }
 
-int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, HWND hwnd)
+int Change_File_L(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
 {
-	OPENFILENAME ofn;
-
-	SetCurrentDirectory(applicationPath);
-
 	if (!strcmp(Dest, ""))
 	{
 		strcpy(Dest, "default.");
 		strcat(Dest, Ext);
 	}
+
+	SetCurrentDirectory(winGetDestDir(IDS_WATCH_DIR));
+
+	OPENFILENAME ofn;
 
 	memset(&ofn, 0, sizeof(OPENFILENAME));
 
@@ -485,17 +486,17 @@ int Change_File_L(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, H
 	return 0;
 }
 
-int Change_File_S(char *Dest, char *Dir, char *Titre, char *Filter, char *Ext, HWND hwnd)
+int Change_File_S(char *Dest, const char *Dir, const char *Titre, const char *Filter, const char *Ext, HWND hwnd)
 {
-	OPENFILENAME ofn;
-
-	SetCurrentDirectory(applicationPath);
-
 	if (!strcmp(Dest, ""))
 	{
 		strcpy(Dest, "default.");
 		strcat(Dest, Ext);
 	}
+
+	SetCurrentDirectory(winGetDestDir(IDS_WATCH_DIR));
+
+	OPENFILENAME ofn;
 
 	memset(&ofn, 0, sizeof(OPENFILENAME));
 
@@ -523,7 +524,7 @@ bool Save_Watches()
 	char* dot = strrchr(Str_Tmp, '.');
 	if(dot) *dot = 0;
 	strcat(Str_Tmp,".wch");
-	if(Change_File_S(Str_Tmp, applicationPath, "Save Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
+	if(Change_File_S(Str_Tmp, winGetDestDir(IDS_WATCH_DIR), "Save Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
 	{
 		FILE *WatchFile = fopen(Str_Tmp,"r+b");
 		if (!WatchFile) WatchFile = fopen(Str_Tmp,"w+b");
@@ -628,7 +629,7 @@ bool Load_Watches(bool clear)
 	char* dot = strrchr(Str_Tmp, '.');
 	if(dot) *dot = 0;
 	strcat(Str_Tmp,".wch");
-	if(Change_File_L(Str_Tmp, applicationPath, "Load Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
+	if(Change_File_L(Str_Tmp, winGetDestDir(IDS_WATCH_DIR), "Load Watches", "Watchlist\0*.wch\0All Files\0*.*\0\0", "wch", RamWatchHWnd))
 	{
 		return Load_Watches(clear, Str_Tmp);
 	}
