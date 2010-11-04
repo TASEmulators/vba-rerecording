@@ -1,6 +1,24 @@
 ---VBA-rr v24---
 
----VBA-rr v23 released October 28th 2010, r270--
+---VBA-rr v23.2---
+11-04-2010 aquanull - Added a "New Folder" button to all directory browse dialogs.
+11-04-2010 aquanull - Fixed the old bug that the movie reset signal could improperly persist after loading a savestate.
+11-04-2010 aquanull - Fixed the bug that no old-timing reset would be appended after loading a movie savestate taken right after a new-timing reset occurred.
+11-01-2010 aquanull - Fixed quick screenshots. Now existing files are not overwritten.
+11-01-2010 aquanull - Taking quick screenshots frame by frame is allowed if Frame Advance is being used.
+11-01-2010 aquanull - VBA now only creates the default directories if necessary.
+11-01-2010 aquanull - Fixed RAM  Watch so that it uses the configured directory.
+
+---VBA-rr v23.1---
+10-30-2010 aquanull - Improved recent ROM list.
+10-30-2010 aquanull - Frame Advance is disabled if no game is emulated. 
+10-30-2010 aquanull - Fixed RAM Watch/Search button update.
+10-29-2010 aquanull - Input display is now updated after loading a savestate.
+10-29-2010 aquanull - Fixed the bug that RAM Search was reset when a movie was played.
+10-29-2010 aquanull - Fixed recording joypad input from Lua.
+10-29-2010 aquanull - Fixed "In Game" text option. Now it is no longer delayed.
+
+---VBA-rr v23 released October 28th 2010, r270---
 ??-??-2010 aquanull - Added an option to leave the movie open after its playback ends.
 10-24-2010 kylethomson - Add option to bind movie savestates to movies,
 10-24-2010 kylethomson - Add default directories to VBA, if none exist, create them.
