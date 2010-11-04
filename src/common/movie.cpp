@@ -443,13 +443,14 @@ static void write_frame_controller_data(int i)
 
 		// soft-reset "button" for 1 frame if the game is reset while recording
 		if (resetSignaled)
+		{
 			buttonData |= BUTTON_MASK_NEW_RESET;
+		}
 
 		// backward compatibility kludge
 		if (resetSignaledLast)
 		{
 			buttonData |= BUTTON_MASK_OLD_RESET;
-			resetSignaledLast = false;
 		}
 
 		// write it to file
@@ -1234,11 +1235,6 @@ void VBAMovieStop(bool8 suppress_message)
 
 int VBAMovieGetInfo(const char *filename, SMovie *info)
 {
-/*
-	// unnecessary
-	if (Movie.state == MOVIE_STATE_RECORD)
-		flush_movie();
-*/
 	assert(info != NULL);
 	if (info == NULL)
 		return -1;
@@ -1514,6 +1510,23 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	// FIXME: out of range
 	Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
+	// necessary!
+	resetSignaledLast = resetSignaled = false;
+
+	// necessary to check if there's a reset signal at the previous frame
+	if (current_frame > 0)
+	{
+		const u8 NEW_RESET = u8(BUTTON_MASK_NEW_RESET >> 8);
+		for (int i = 0; i < 4; ++i)
+		{
+			if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(i)) && (Movie.inputBufferPtr[1 - Movie.bytesPerFrame] & NEW_RESET))
+			{
+				resetSignaledLast = true;
+				break;
+			}
+		}
+	}
+
 	return MOVIE_SUCCESS;
 }
 
@@ -1568,6 +1581,8 @@ void VBAMovieSignalReset()
 
 void VBAMovieResetIfRequested()
 {
+	resetSignaledLast = false;
+
 	if (resetSignaled)
 	{
 		theEmulator.emuReset(false);
