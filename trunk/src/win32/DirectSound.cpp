@@ -36,14 +36,14 @@ extern void directXMessage(const char *);
 class DirectSound : public ISound
 {
 private:
-	HINSTANCE dsoundDLL;
-	LPDIRECTSOUND       pDirectSound;
+	HINSTANCE			dsoundDLL;
+	LPDIRECTSOUND		pDirectSound;
 	LPDIRECTSOUNDBUFFER dsbPrimary;
 	LPDIRECTSOUNDBUFFER dsbSecondary;
 	LPDIRECTSOUNDNOTIFY dsbNotify;
-	HANDLE       dsbEvent;
+	HANDLE		 dsbEvent;
 	WAVEFORMATEX wfx;
-	float        curRate;
+	float		 curRate;
 public:
 	DirectSound();
 	virtual ~DirectSound();
@@ -60,12 +60,12 @@ public:
 
 DirectSound::DirectSound()
 {
-	dsoundDLL    = NULL;
+	dsoundDLL	 = NULL;
 	pDirectSound = NULL;
-	dsbPrimary   = NULL;
+	dsbPrimary	 = NULL;
 	dsbSecondary = NULL;
-	dsbNotify    = NULL;
-	dsbEvent     = NULL;
+	dsbNotify	 = NULL;
+	dsbEvent	 = NULL;
 }
 
 DirectSound::~DirectSound()
@@ -73,7 +73,7 @@ DirectSound::~DirectSound()
 	if (theApp.aviRecorder != NULL)
 	{
 		delete theApp.aviRecorder;
-		theApp.aviRecorder  = NULL;
+		theApp.aviRecorder	= NULL;
 		theApp.aviRecording = false;
 	}
 
@@ -167,7 +167,7 @@ bool DirectSound::init()
 
 	DSBUFFERDESC dsbdesc;
 	ZeroMemory(&dsbdesc, sizeof(DSBUFFERDESC));
-	dsbdesc.dwSize  = sizeof(DSBUFFERDESC);
+	dsbdesc.dwSize	= sizeof(DSBUFFERDESC);
 	dsbdesc.dwFlags = DSBCAPS_PRIMARYBUFFER;
 
 	if (FAILED(hr = pDirectSound->CreateSoundBuffer(&dsbdesc, &dsbPrimary, NULL)))
@@ -186,23 +186,23 @@ bool DirectSound::init()
 	switch (soundQuality)
 	{
 	case 2:
-		wfx.nSamplesPerSec  = 22050;
-		soundBufferLen      = 736*2;
-		soundBufferTotalLen = 7360*2;
+		wfx.nSamplesPerSec	= 22050;
+		soundBufferLen		= 736 * 2;
+		soundBufferTotalLen = 7360 * 2;
 		break;
 	case 4:
-		wfx.nSamplesPerSec  = 11025;
-		soundBufferLen      = 368*2;
-		soundBufferTotalLen = 3680*2;
+		wfx.nSamplesPerSec	= 11025;
+		soundBufferLen		= 368 * 2;
+		soundBufferTotalLen = 3680 * 2;
 		break;
 	default:
-		soundQuality        = 1;
-		wfx.nSamplesPerSec  = 44100;
-		soundBufferLen      = 1470*2;
-		soundBufferTotalLen = 14700*2;
+		soundQuality		= 1;
+		wfx.nSamplesPerSec	= 44100;
+		soundBufferLen		= 1470 * 2;
+		soundBufferTotalLen = 14700 * 2;
 	}
-	wfx.wBitsPerSample  = 16;
-	wfx.nBlockAlign     = (wfx.wBitsPerSample / 8) * wfx.nChannels;
+	wfx.wBitsPerSample	= 16;
+	wfx.nBlockAlign		= (wfx.wBitsPerSample / 8) * wfx.nChannels;
 	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 
 	if (FAILED(hr = dsbPrimary->SetFormat(&wfx)))
@@ -214,10 +214,10 @@ bool DirectSound::init()
 	}
 
 	ZeroMemory(&dsbdesc, sizeof(DSBUFFERDESC));
-	dsbdesc.dwSize        = sizeof(DSBUFFERDESC);
-	dsbdesc.dwFlags       = DSBCAPS_GETCURRENTPOSITION2|DSBCAPS_CTRLPOSITIONNOTIFY|DSBCAPS_CTRLFREQUENCY|DSBCAPS_GLOBALFOCUS;
+	dsbdesc.dwSize		  = sizeof(DSBUFFERDESC);
+	dsbdesc.dwFlags		  = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GLOBALFOCUS;
 	dsbdesc.dwBufferBytes = soundBufferTotalLen;
-	dsbdesc.lpwfxFormat   = &wfx;
+	dsbdesc.lpwfxFormat	  = &wfx;
 
 	if (FAILED(hr = pDirectSound->CreateSoundBuffer(&dsbdesc, &dsbSecondary, NULL)))
 	{
@@ -259,7 +259,7 @@ bool DirectSound::init()
 
 			for (int i = 0; i < 10; i++)
 			{
-				notify[i].dwOffset     = i*soundBufferLen;
+				notify[i].dwOffset	   = i * soundBufferLen;
 				notify[i].hEventNotify = dsbEvent;
 			}
 			if (FAILED(dsbNotify->SetNotificationPositions(10, notify)))
@@ -353,12 +353,12 @@ void DirectSound::resume()
 }
 
 extern long linearFrameCount;
-long        linearSoundByteCount  = 0;
-long        linearSoundFrameCount = 0;
+long		linearSoundByteCount  = 0;
+long		linearSoundFrameCount = 0;
 
 void DirectSound::write()
 {
-	int    len = soundBufferLen;
+	int	   len = soundBufferLen;
 	LPVOID lpvPtr1;
 	DWORD  dwBytes1;
 	LPVOID lpvPtr2;
@@ -394,8 +394,8 @@ void DirectSound::write()
 
 			if (theApp.nvAudioLog)
 			{
-				NESVideoLoggingAudio((u8 *)soundFinalWave, wfx.nSamplesPerSec, wfx.wBitsPerSample, wfx.nChannels, len/
-				                     (wfx.nChannels*(wfx.wBitsPerSample/8)));
+				NESVideoLoggingAudio((u8 *)soundFinalWave, wfx.nSamplesPerSec, wfx.wBitsPerSample, wfx.nChannels, len /
+				                     (wfx.nChannels * (wfx.wBitsPerSample / 8)));
 			}
 
 			// alternate avi record routine has been added in VBA.cpp
@@ -423,8 +423,8 @@ void DirectSound::write()
 	// arbitrarily wrap counters at 10000 frames to avoid mismatching wrap-around freeze
 	if (linearSoundFrameCount > 10000 && linearFrameCount > 10000)
 	{
-		linearFrameCount     -= 10000;
-		linearSoundByteCount -= wfx.nAvgBytesPerSec*10000/60;
+		linearFrameCount	 -= 10000;
+		linearSoundByteCount -= wfx.nAvgBytesPerSec * 10000 / 60;
 		linearSoundFrameCount = 60 * linearSoundByteCount / wfx.nAvgBytesPerSec;
 	}
 
@@ -439,7 +439,8 @@ void DirectSound::write()
 #endif
 
 	// slows down emulator to match up with the sound speed
-	if (!fastForward && synchronize && !(theApp.throttle > 100 && theApp.accuratePitchThrottle) && theApp.throttle >= 6)
+	if (!fastForward && synchronize && !(theApp.throttle > 100 && theApp.accuratePitchThrottle)
+		&& theApp.throttle >= 6 && theApp.throttle <= 400)
 	{
 		DWORD status = 0;
 		hr = dsbSecondary->GetStatus(&status);
@@ -508,7 +509,7 @@ void DirectSound::write()
 		if (NULL != lpvPtr1)
 			CopyMemory(lpvPtr1, soundFinalWave, dwBytes1);
 		if (NULL != lpvPtr2)
-			CopyMemory(lpvPtr2, soundFinalWave+dwBytes1, dwBytes2);
+			CopyMemory(lpvPtr2, soundFinalWave + dwBytes1, dwBytes2);
 
 		// Release the data back to DirectSound.
 		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2,
@@ -518,16 +519,16 @@ void DirectSound::write()
 
 void DirectSound::clearAudioBuffer()
 {
-	LPVOID lpvPtr1;
-	DWORD  dwBytes1;
-	LPVOID lpvPtr2;
-	DWORD  dwBytes2;
+	LPVOID	lpvPtr1;
+	DWORD	dwBytes1;
+	LPVOID	lpvPtr2;
+	DWORD	dwBytes2;
 	HRESULT hr = dsbSecondary->Lock(0, soundBufferTotalLen, &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2, 0);
-	if(!FAILED(hr))
+	if (!FAILED(hr))
 	{
-		if(lpvPtr1)
+		if (lpvPtr1)
 			memset(lpvPtr1, 0, dwBytes1);
-		if(lpvPtr2)
+		if (lpvPtr2)
 			memset(lpvPtr2, 0, dwBytes2);
 		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2, dwBytes2);
 	}
@@ -537,3 +538,4 @@ ISound *newDirectSound()
 {
 	return new DirectSound();
 }
+

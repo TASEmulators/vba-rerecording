@@ -454,9 +454,9 @@ void systemShowSpeed(int speed)
 	{
 		CString buffer;
 		if (theApp.showSpeed == 1)
-			buffer.Format(VBA_NAME_AND_VERSION "-%3d%%", systemSpeed);
+			buffer.Format(VBA_NAME_AND_VERSION " %3d%%", systemSpeed);
 		else
-			buffer.Format(VBA_NAME_AND_VERSION "-%3d%% (%d fps | %d skipped)",
+			buffer.Format(VBA_NAME_AND_VERSION " %3d%% (%d fps | %d skipped)",
 			              systemSpeed,
 			              theApp.showRenderedFrames,
 			              systemFrameSkip);
@@ -515,28 +515,27 @@ void systemFrame(int rate)
 		AfxPostQuitMessage(0);
 	}
 
-	u32 time = systemGetClock();
-
 	// change the sound speed, or set it to normal - must always do this or it won't get reset after a change, but that's OK
 	// because it's inexpensive
 	if (theApp.sound)
+	{
 		theApp.sound->setSpeed(
-		    theApp.throttle != 100 && !speedup && !theApp.winPauseNextFrame && synchronize && !theApp.accuratePitchThrottle &&
-		    !theApp.useOldSync ? (float)theApp.throttle / 100.0f : 1.0f);
+		    speedup || theApp.winPauseNextFrame || !synchronize || theApp.accuratePitchThrottle || theApp.useOldSync
+			? 1.0f : (float)theApp.throttle / 100.0f);
+	}
 
 	// if a throttle speed is set and we're not allowed to change the sound frequency to achieve it,
 	// sleep for a certain amount each time we get here to approximate the necessary slowdown
-	if (((theApp.accuratePitchThrottle || !theApp.sound || !synchronize)
-	     && (theApp.throttle != 100 || !synchronize))
-	    || theApp.throttle < 6 && !theApp.winPauseNextFrame)
+	if (synchronize && (theApp.accuratePitchThrottle || !theApp.sound) || theApp.throttle < 6/* && !theApp.winPauseNextFrame*/)
 	{
 		/// FIXME: this is still a horrible way of achieving a certain frame time
 		///        (look at what Snes9x does - it's complicated but much much better)
 
 		static float sleepAmt = 0.0f; // variable to smooth out the sleeping amount so it doesn't oscillate so fast
-//	  if(!theApp.wasPaused) {
+//		if(!theApp.wasPaused) {
 		if (!speedup)
 		{
+			u32 time = systemGetClock();
 			u32 diff = time - theApp.throttleLastTime;
 			if (theApp.wasPaused)
 				diff = 0;
