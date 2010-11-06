@@ -526,7 +526,7 @@ void systemFrame(int rate)
 
 	// if a throttle speed is set and we're not allowed to change the sound frequency to achieve it,
 	// sleep for a certain amount each time we get here to approximate the necessary slowdown
-	if (synchronize && (theApp.accuratePitchThrottle || !theApp.sound) || theApp.throttle < 6/* && !theApp.winPauseNextFrame*/)
+	if (synchronize && (theApp.accuratePitchThrottle || !theApp.sound || theApp.throttle < 6) /*&& !theApp.winPauseNextFrame*/)
 	{
 		/// FIXME: this is still a horrible way of achieving a certain frame time
 		///        (look at what Snes9x does - it's complicated but much much better)
@@ -689,7 +689,6 @@ void systemSetPause(bool pause)
 	}
 	else
 	{
-		theApp.wasPaused = false;
 		theApp.paused	 = false;
 		soundResume();
 	}
