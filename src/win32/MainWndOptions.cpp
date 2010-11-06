@@ -52,6 +52,10 @@ extern int emulating;
 
 extern void CPUUpdateRenderBuffers(bool force);
 
+static int s_stockThrottleValues[] = {
+	6, 15, 25, 25, 37, 50, 75, 87, 100, 112, 125, 150, 200, 300, 400, 600, 800, 1000
+};
+
 void MainWnd::OnOptionsFrameskipThrottleNothrottle()
 {
 	theApp.throttle = 0;
@@ -92,16 +96,6 @@ void MainWnd::OnUpdateOptionsFrameskipThrottle25(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.throttle == 25);
 }
 
-void MainWnd::OnOptionsFrameskipThrottle37()
-{
-	theApp.throttle = 37;
-}
-
-void MainWnd::OnUpdateOptionsFrameskipThrottle37(CCmdUI*pCmdUI)
-{
-	pCmdUI->SetCheck(theApp.throttle == 37);
-}
-
 void MainWnd::OnOptionsFrameskipThrottle50()
 {
 	theApp.throttle = 50;
@@ -122,16 +116,6 @@ void MainWnd::OnUpdateOptionsFrameskipThrottle75(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.throttle == 75);
 }
 
-void MainWnd::OnOptionsFrameskipThrottle87()
-{
-	theApp.throttle = 87;
-}
-
-void MainWnd::OnUpdateOptionsFrameskipThrottle87(CCmdUI*pCmdUI)
-{
-	pCmdUI->SetCheck(theApp.throttle == 87);
-}
-
 void MainWnd::OnOptionsFrameskipThrottle100()
 {
 	theApp.throttle = 100;
@@ -140,16 +124,6 @@ void MainWnd::OnOptionsFrameskipThrottle100()
 void MainWnd::OnUpdateOptionsFrameskipThrottle100(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.throttle == 100);
-}
-
-void MainWnd::OnOptionsFrameskipThrottle112()
-{
-	theApp.throttle = 112;
-}
-
-void MainWnd::OnUpdateOptionsFrameskipThrottle112(CCmdUI*pCmdUI)
-{
-	pCmdUI->SetCheck(theApp.throttle == 112);
 }
 
 void MainWnd::OnOptionsFrameskipThrottle125()
@@ -192,11 +166,34 @@ void MainWnd::OnUpdateOptionsFrameskipThrottle300(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.throttle == 300);
 }
 
-static bool isMenuItemThrottleValue(int throttle)
+void MainWnd::OnOptionsFrameskipThrottle400()
 {
-	return throttle == 6 || throttle == 15 || throttle == 25 || throttle == 37 ||
-	       throttle == 50 || throttle == 75 || throttle == 87 || throttle == 100 || throttle == 112 ||
-	       throttle == 125 || throttle == 150 || throttle == 200 || throttle == 300;
+	theApp.throttle = 400;
+}
+
+void MainWnd::OnUpdateOptionsFrameskipThrottle400(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.throttle == 400);
+}
+
+void MainWnd::OnOptionsFrameskipThrottle600()
+{
+	theApp.throttle = 600;
+}
+
+void MainWnd::OnUpdateOptionsFrameskipThrottle600(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.throttle == 600);
+}
+
+void MainWnd::OnOptionsFrameskipThrottle1000()
+{
+	theApp.throttle = 1000;
+}
+
+void MainWnd::OnUpdateOptionsFrameskipThrottle1000(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.throttle == 1000);
 }
 
 void MainWnd::OnOptionsFrameskipThrottleOther()
@@ -205,52 +202,58 @@ void MainWnd::OnOptionsFrameskipThrottleOther()
 	int      v = dlg.DoModal();
 	if (v)
 		theApp.throttle = v;
+	char str[256];
+	sprintf(str, "%d%% throttle speed", theApp.throttle);
+	systemScreenMessage(str);
 }
 
 void MainWnd::OnUpdateOptionsFrameskipThrottleOther(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(!isMenuItemThrottleValue(theApp.throttle));
 }
 
 void MainWnd::OnOptionsFrameskipThrottleIncrease()
 {
 	if (theApp.throttle < 6)
-		theApp.throttle++;
-	else if (theApp.throttle < 300)
+		++theApp.throttle;
+	else if (theApp.throttle < s_stockThrottleValues[_countof(s_stockThrottleValues) - 1])
 	{
-		do
+		int i = 0;
+		while (theApp.throttle >= s_stockThrottleValues[i])
 		{
-			theApp.throttle++;
+			++i;
 		}
-		while (!isMenuItemThrottleValue(theApp.throttle));
+		theApp.throttle = s_stockThrottleValues[i];
 	}
-	char str [256];
+	char str[256];
 	sprintf(str, "%d%% throttle speed", theApp.throttle);
 	systemScreenMessage(str);
 }
 
 void MainWnd::OnUpdateOptionsFrameskipThrottleIncrease(CCmdUI*pCmdUI)
-{}
+{
+}
 
 void MainWnd::OnOptionsFrameskipThrottleDecrease()
 {
 	if (theApp.throttle > 6)
 	{
-		do
+		int i = _countof(s_stockThrottleValues) - 1;
+		while (theApp.throttle <= s_stockThrottleValues[i])
 		{
-			theApp.throttle--;
+			--i;
 		}
-		while (!isMenuItemThrottleValue(theApp.throttle));
+		theApp.throttle = s_stockThrottleValues[i];
 	}
 	else if (theApp.throttle > 1)
-		theApp.throttle--;
-	char str [256];
+		--theApp.throttle;
+	char str[256];
 	sprintf(str, "%d%% throttle speed", theApp.throttle);
 	systemScreenMessage(str);
 }
 
 void MainWnd::OnUpdateOptionsFrameskipThrottleDecrease(CCmdUI*pCmdUI)
-{}
+{
+}
 
 /*
    void MainWnd::OnOptionsFrameskipAutomatic()
@@ -273,7 +276,7 @@ void MainWnd::OnOptionsFrameskipAccuratePitch()
 
 void MainWnd::OnUpdateOptionsFrameskipAccuratePitch(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.accuratePitchThrottle || soundOffFlag || !synchronize);
+	pCmdUI->SetCheck(theApp.accuratePitchThrottle);
 	pCmdUI->Enable(!soundOffFlag && synchronize);
 }
 
@@ -284,7 +287,7 @@ void MainWnd::OnOptionsFrameskipAccurateSpeed()
 
 void MainWnd::OnUpdateOptionsFrameskipAccurateSpeed(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(!theApp.accuratePitchThrottle && !soundOffFlag && synchronize);
+	pCmdUI->SetCheck(!theApp.accuratePitchThrottle);
 	pCmdUI->Enable(!soundOffFlag && synchronize);
 }
 

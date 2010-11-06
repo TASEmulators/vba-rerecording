@@ -17,11 +17,11 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define VBA_NAME "VBA rerecording"
+#define VBA_NAME "VBA-RR"
 #define VBA_FEATURE_STRING ""
 
 #ifdef DEBUG
-#define VBA_SUBVERSION_STRING " debug"
+#define VBA_SUBVERSION_STRING " DEBUG"
 #elif defined(PUBLIC_RELEASE)
 #define VBA_SUBVERSION_STRING ""
 #else

@@ -846,15 +846,15 @@ BEGIN
     LTEXT           "Available drivers:",IDC_STATIC,7,7,194,8
 END
 
-IDD_THROTTLE DIALOG 0, 0, 186, 63
+IDD_THROTTLE DIALOGEX 0, 0, 186, 63
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Throttle"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_THROTTLE,7,20,172,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",ID_OK,37,42,50,14
     PUSHBUTTON      "Cancel",ID_CANCEL,99,42,50,14
-    LTEXT           "Enter desired throttle (5%...1000%):",IDC_STATIC,7,7,172,8
+    LTEXT           "Enter desired throttle (1%...1000%):",IDC_STATIC,7,7,172,8
 END
 
 IDD_GB_DISASSEMBLE DIALOG 0, 0, 344, 225
@@ -1854,13 +1854,17 @@ BEGIN
             POPUP "Set &Speed"
             BEGIN
                 MENUITEM "6% (Very Slow)",              ID_OPTIONS_FRAMESKIP_THROTTLE_6
+                MENUITEM "15%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_15
                 MENUITEM "25%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_25
                 MENUITEM "50% (Half Speed)",            ID_OPTIONS_FRAMESKIP_THROTTLE_50
                 MENUITEM "75%",                         ID_OPTIONS_FRAMESKIP_THROTTLE_75
                 MENUITEM "100% (Normal Speed)",         ID_OPTIONS_FRAMESKIP_THROTTLE_100
                 MENUITEM "150%",                        ID_OPTIONS_FRAMESKIP_THROTTLE_150
                 MENUITEM "200% (Double Speed)",         ID_OPTIONS_FRAMESKIP_THROTTLE_200
-                MENUITEM "Other...",                    ID_OPTIONS_FRAMESKIP_THROTTLE_OTHER
+                MENUITEM "300%",                        ID_OPTIONS_FRAMESKIP_THROTTLE_300
+                MENUITEM "400%",                        ID_OPTIONS_FRAMESKIP_THROTTLE_400
+                MENUITEM "600% (Very Fast)",            ID_OPTIONS_FRAMESKIP_THROTTLE_600
+                MENUITEM "&Other...",                   ID_OPTIONS_FRAMESKIP_THROTTLE_OTHER
                 MENUITEM SEPARATOR
                 MENUITEM "&Increase",                   ID_OPTIONS_FRAMESKIP_THROTTLE_INCREASE
                 MENUITEM "&Decrease",                   ID_OPTIONS_FRAMESKIP_THROTTLE_DECREASE
