@@ -74,12 +74,21 @@ MainWnd::~MainWnd()
 
 BEGIN_MESSAGE_MAP(MainWnd, CWnd)
 //{{AFX_MSG_MAP(MainWnd)
+ON_WM_MOVE()
+ON_WM_SIZE()
 ON_WM_CLOSE()
+ON_WM_INITMENUPOPUP()
+ON_WM_INITMENU()
+ON_WM_CONTEXTMENU()
+ON_WM_MOUSEMOVE()
+ON_WM_ACTIVATE()
+ON_WM_ACTIVATEAPP()
+ON_WM_DROPFILES()
+
 ON_COMMAND(ID_HELP_ABOUT, OnHelpAbout)
 ON_COMMAND(ID_HELP_FAQ, OnHelpFaq)
 ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 ON_COMMAND(ID_FILE_OPENGAMEBOY, OnFileOpenGBx)
-ON_WM_INITMENUPOPUP()
 ON_COMMAND(ID_FILE_PAUSE, OnFilePause)
 ON_UPDATE_COMMAND_UI(ID_FILE_PAUSE, OnUpdateFilePause)
 ON_COMMAND(ID_FILE_RESET, OnFileReset)
@@ -171,8 +180,6 @@ ON_COMMAND(ID_OPTIONS_VIDEO_FULLSCREEN640X480, OnOptionsVideoFullscreen640x480)
 ON_COMMAND(ID_OPTIONS_VIDEO_FULLSCREEN800X600, OnOptionsVideoFullscreen800x600)
 ON_COMMAND(ID_OPTIONS_VIDEO_FULLSCREEN, OnOptionsVideoFullscreen)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_FULLSCREEN, OnUpdateOptionsVideoFullscreen)
-ON_WM_MOVE()
-ON_WM_SIZE()
 ON_COMMAND(ID_OPTIONS_VIDEO_DISABLESFX, OnOptionsVideoDisablesfx)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_DISABLESFX, OnUpdateOptionsVideoDisablesfx)
 ON_COMMAND(ID_OPTIONS_VIDEO_FULLSCREENSTRETCHTOFIT, OnOptionsVideoFullscreenstretchtofit)
@@ -207,7 +214,6 @@ ON_COMMAND(ID_OPTIONS_VIDEO_RENDEROPTIONS_SELECTSKIN, OnOptionsVideoRenderoption
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_RENDEROPTIONS_SELECTSKIN, OnUpdateOptionsVideoRenderoptionsSelectskin)
 ON_COMMAND(ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN, OnOptionsVideoRenderoptionsSkin)
 ON_UPDATE_COMMAND_UI(ID_OPTIONS_VIDEO_RENDEROPTIONS_SKIN, OnUpdateOptionsVideoRenderoptionsSkin)
-ON_WM_CONTEXTMENU()
 ON_COMMAND(ID_OPTIONS_EMULATOR_ASSOCIATE, OnOptionsEmulatorAssociate)
 ON_COMMAND(ID_OPTIONS_EMULATOR_DIRECTORIES, OnOptionsEmulatorDirectories)
 ON_COMMAND_RANGE(ID_OPTIONS_PREFER_ARCHIVE_NAME, ID_OPTIONS_PREFER_ROM_NAME, OnOptionsEmulatorFilenamePreference)
@@ -440,7 +446,6 @@ ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_AUTO_CONVERT, OnUpdateToolsMovieAutoConvert)
 ON_COMMAND(ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, OnToolsMovieExtractFromSnapshot)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, OnUpdateToolsMovieExtractFromSnapshot)
 
-
 ON_COMMAND(ID_TOOLS_REWIND, OnToolsRewind)
 ON_UPDATE_COMMAND_UI(ID_TOOLS_REWIND, OnUpdateToolsRewind)
 ON_COMMAND(ID_TOOLS_CUSTOMIZE, OnToolsCustomize)
@@ -448,11 +453,6 @@ ON_UPDATE_COMMAND_UI(ID_TOOLS_CUSTOMIZE, OnUpdateToolsCustomize)
 // ON_COMMAND(ID_TOOLS_CUSTOMIZE_COMMON, OnToolsCustomizeCommon)
 // ON_UPDATE_COMMAND_UI(ID_TOOLS_CUSTOMIZE_COMMON, OnUpdateToolsCustomizeCommon)
 ON_COMMAND(ID_HELP_BUGREPORT, OnHelpBugreport)
-ON_WM_MOUSEMOVE()
-ON_WM_INITMENU()
-ON_WM_ACTIVATE()
-ON_WM_ACTIVATEAPP()
-ON_WM_DROPFILES()
 
 ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE10, OnFileRecentFile)
 ON_COMMAND_EX_RANGE(ID_FILE_LOADGAME_SLOT1, ID_FILE_LOADGAME_SLOT10, OnFileLoadSlot)
@@ -591,15 +591,13 @@ void MainWnd::OnMove(int x, int y)
 	}
 }
 
-static bool wasPaused = false;
-
 void MainWnd::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
 
 	static int lastType = -1;
 
-	// hack to re-maximize window after it auto-unmaximizes while loading a ROM
+	// FIXME: hack to re-maximize window after it auto-unmaximizes while loading a ROM
 	if (nType == SIZE_MAXIMIZED && lastType == SIZE_MAXIMIZED)
 	{
 		lastType = -1;
@@ -607,48 +605,32 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 		MoveWindow(0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 		return;
 	}
-	else
-		lastType = nType;
+
+	lastType = nType;
+
+	if (IsIconic())
+	{
+		theApp.iconic = true;
+		return;
+	}
+	else if (theApp.iconic)
+	{
+		theApp.iconic = false;
+	}
+
 
 	if (!theApp.changingVideoSize)
 	{
 		if (this)
 		{
-			if (!IsIconic())
+			if (theApp.videoOption <= VIDEO_4X)
 			{
-				if (theApp.iconic)
-				{
-					if (emulating)
-					{
-						if (!wasPaused)
-						{
-							soundResume();
-							theApp.paused = false;
-						}
-					}
-				}
-				if (theApp.videoOption <= VIDEO_4X)
-				{
-					theApp.surfaceSizeX = cx;
-					theApp.surfaceSizeY = cy;
-					theApp.adjustDestRect();
-					if (theApp.display)
-						theApp.display->resize(theApp.dest.right - theApp.dest.left, theApp.dest.bottom - theApp.dest.top);
-					systemRefreshScreen();  // useful when shrinking
-				}
-			}
-			else
-			{
-				if (emulating)
-				{
-					if (!theApp.paused)
-					{
-						wasPaused	  = false;
-						theApp.paused = true;
-						soundPause();
-					}
-				}
-				theApp.iconic = true;
+				theApp.surfaceSizeX = cx;
+				theApp.surfaceSizeY = cy;
+				theApp.adjustDestRect();
+				if (theApp.display)
+					theApp.display->resize(theApp.dest.right - theApp.dest.left, theApp.dest.bottom - theApp.dest.top);
+				systemRefreshScreen();  // useful when shrinking
 			}
 		}
 	}
@@ -912,45 +894,32 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 {
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
-	bool activated = (nState == WA_ACTIVE) || (nState == WA_CLICKACTIVE)
-/*
-        // FIXME: this might be a logical error, which causes the emulator fail to pause when the focus is lost
-        //   see what theApp.pauseDuringCheatSearch is supposed to be used for: MainWndCheats.cpp
-        //   it would be problematic to use, as long as the old cheat search is still using it
- || (RamSearchHWnd && pWndOther->GetSafeHwnd() == RamSearchHWnd && !theApp.pauseDuringCheatSearch)
- || (RamWatchHWnd && pWndOther->GetSafeHwnd() == RamWatchHWnd && !theApp.pauseDuringCheatSearch)
- */
-	;
+	bool activated = (nState == WA_ACTIVE || nState == WA_CLICKACTIVE) && !theApp.iconic;
+
+	theApp.active = activated || !theApp.pauseWhenInactive;
 
 	extern bool inputActive;
-	inputActive = !theApp.pauseWhenInactive && theApp.enableBackgroundInput || activated;
+	inputActive = activated || (!theApp.pauseWhenInactive && theApp.enableBackgroundInput);
 
-	theApp.active = !theApp.pauseWhenInactive || activated;
-	if (activated)
+	if (theApp.active)
 	{
 		if (theApp.input)
 		{
 			theApp.input->activate();
 		}
 
-		if (!theApp.paused)
+		if (!theApp.paused && emulating)
 		{
-			if (emulating)
-			{
-				soundResume();
-			}
+			soundResume();
 		}
 	}
 	else
 	{
-		wasPaused		 = theApp.paused;
 		theApp.wasPaused = true;
-		if (theApp.pauseWhenInactive)
+
+		if (!theApp.paused && emulating)
 		{
-			if (emulating)
-			{
-				soundPause();
-			}
+			soundPause();
 		}
 
 		memset(theApp.delta, 255, sizeof(theApp.delta));
