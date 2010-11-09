@@ -1174,7 +1174,7 @@ void VBA::saveRewindStateIfNecessary()
 	if (frameSearching)
 	{
 		extern SMovie Movie;
-		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? GBASystemCounters.frameCount : Movie.currentFrame;
+		int curFrame = (Movie.state == MOVIE_STATE_NONE) ? systemCounters.frameCount : Movie.currentFrame;
 		int endFrame = theApp.frameSearchStart + theApp.frameSearchLength;
 		frameSearchSkipping	 = (curFrame < endFrame);
 		frameSearchFirstStep = false;
@@ -2105,7 +2105,7 @@ void VBA::loadSettings()
 	loadMakesCurrent   = regQueryDwordValue("loadMakesCurrent", false) ? true : false;
 	saveMakesCurrent   = regQueryDwordValue("saveMakesCurrent", false) ? true : false;
 	currentSlot		   = regQueryDwordValue("currentSlot", 0);
-	showSlotTime	   = regQueryDwordValue("showSlotTime", 0);
+	showSlotTime	   = regQueryDwordValue("showSlotTime", 0) ? true : false;
 
 	cheatsEnabled = regQueryDwordValue("cheatsEnabled", true) ? true : false;
 	autoSaveLoadCheatList  = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;

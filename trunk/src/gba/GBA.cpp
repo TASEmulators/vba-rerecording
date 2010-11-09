@@ -4609,6 +4609,10 @@ struct EmulatedSystem GBASystem =
 #endif
 };
 
+// is there a reason to use more than one set of counters?
+EmulatedSystemCounters &GBASystemCounters = systemCounters;
+
+/*
 EmulatedSystemCounters GBASystemCounters =
 {
 	// frameCount
@@ -4620,3 +4624,4 @@ EmulatedSystemCounters GBASystemCounters =
 	// laggedLast
 	true,
 };
+*/
