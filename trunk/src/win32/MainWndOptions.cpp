@@ -305,7 +305,7 @@ BOOL MainWnd::OnOptionsFrameskip(UINT nID)
 	case ID_OPTIONS_VIDEO_FRAMESKIP_7:
 	case ID_OPTIONS_VIDEO_FRAMESKIP_8:
 	case ID_OPTIONS_VIDEO_FRAMESKIP_9:
-		if (theApp.cartridgeType == 0)
+		if (systemCartridgeType == 0)
 		{
 			frameSkip = nID - ID_OPTIONS_VIDEO_FRAMESKIP_0;
 		}
@@ -323,52 +323,52 @@ BOOL MainWnd::OnOptionsFrameskip(UINT nID)
 
 void MainWnd::OnUpdateOptionsVideoFrameskip0(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 0 : gbFrameSkip == 0);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 0 : gbFrameSkip == 0);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip1(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 1 : gbFrameSkip == 1);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 1 : gbFrameSkip == 1);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip2(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 2 : gbFrameSkip == 2);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 2 : gbFrameSkip == 2);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip3(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 3 : gbFrameSkip == 3);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 3 : gbFrameSkip == 3);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip4(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 4 : gbFrameSkip == 4);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 4 : gbFrameSkip == 4);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip5(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 5 : gbFrameSkip == 5);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 5 : gbFrameSkip == 5);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip6(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 6 : gbFrameSkip == 6);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 6 : gbFrameSkip == 6);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip7(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 7 : gbFrameSkip == 7);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 7 : gbFrameSkip == 7);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip8(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 8 : gbFrameSkip == 8);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 8 : gbFrameSkip == 8);
 }
 
 void MainWnd::OnUpdateOptionsVideoFrameskip9(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.cartridgeType == 0 ? frameSkip == 9 : gbFrameSkip == 9);
+	pCmdUI->SetCheck(systemCartridgeType == 0 ? frameSkip == 9 : gbFrameSkip == 9);
 }
 
 void MainWnd::OnOptionsVideoVsync()
@@ -487,7 +487,7 @@ void MainWnd::OnUpdateOptionsVideoFullscreen(CCmdUI*pCmdUI)
 void MainWnd::OnOptionsVideoDisablesfx()
 {
 	cpuDisableSfx = !cpuDisableSfx;
-	if (emulating && theApp.cartridgeType == 0)
+	if (emulating && systemCartridgeType == 0)
 		CPUUpdateRender();
 }
 
@@ -528,7 +528,7 @@ void MainWnd::OnUpdateVideoLayer(CCmdUI *pCmdUI)
 	case ID_OPTIONS_VIDEO_LAYERS_BG3:
 	case ID_OPTIONS_VIDEO_LAYERS_WIN1:
 	case ID_OPTIONS_VIDEO_LAYERS_OBJWIN:
-		pCmdUI->Enable(theApp.cartridgeType == 0);
+		pCmdUI->Enable(systemCartridgeType == 0);
 		break;
 	}
 }
@@ -1246,7 +1246,7 @@ void MainWnd::OnUpdateOptionsSoundMuteWhenInactive(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSound11khz()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 		soundSetQuality(4);
 	else
 		gbSoundSetQuality(4);
@@ -1261,7 +1261,7 @@ void MainWnd::OnUpdateOptionsSound11khz(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSound22khz()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 		soundSetQuality(2);
 	else
 		gbSoundSetQuality(2);
@@ -1364,7 +1364,7 @@ void MainWnd::OnOptionsSoundDirectsounda()
 void MainWnd::OnUpdateOptionsSoundDirectsounda(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundGetEnable() & 256);
-	pCmdUI->Enable(theApp.cartridgeType == 0);
+	pCmdUI->Enable(systemCartridgeType == 0);
 }
 
 void MainWnd::OnOptionsSoundDirectsoundb()
@@ -1375,14 +1375,14 @@ void MainWnd::OnOptionsSoundDirectsoundb()
 void MainWnd::OnUpdateOptionsSoundDirectsoundb(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundGetEnable() & 512);
-	pCmdUI->Enable(theApp.cartridgeType == 0);
+	pCmdUI->Enable(systemCartridgeType == 0);
 }
 
 void MainWnd::OnOptionsGameboyBorder()
 {
 	theApp.winGbBorderOn = !theApp.winGbBorderOn;
 	gbBorderOn = theApp.winGbBorderOn;
-	if (emulating && theApp.cartridgeType == 1 && gbBorderOn)
+	if (emulating && systemCartridgeType == 1 && gbBorderOn)
 	{
 		gbSgbRenderBorder();
 	}
@@ -1411,7 +1411,7 @@ void MainWnd::OnUpdateOptionsGameboyPrinter(CCmdUI*pCmdUI)
 void MainWnd::OnOptionsGameboyBorderAutomatic()
 {
 	gbBorderAutomatic = !gbBorderAutomatic;
-	if (emulating && theApp.cartridgeType == 1 && gbBorderOn)
+	if (emulating && systemCartridgeType == 1 && gbBorderOn)
 	{
 		gbSgbRenderBorder();
 		theApp.updateWindowSize(theApp.videoOption);
@@ -1517,7 +1517,7 @@ void MainWnd::OnOptionsGameboyColors()
 	{
 		gbPaletteOption = dlg.getWhich();
 		memcpy(systemGbPalette, dlg.getColors(), 24*sizeof(u16));
-		if (emulating && theApp.cartridgeType == 1)
+		if (emulating && systemCartridgeType == 1)
 		{
 			memcpy(gbPalette, &systemGbPalette[dlg.getWhich()*8], 8*sizeof(u16));
 		}
@@ -2030,14 +2030,14 @@ void MainWnd::OnUpdateOptionsJoypadAutofire(CCmdUI *pCmdUI)
 	case ID_OPTIONS_JOYPAD_AUTOFIRE_L:
 		check = (autoFires & BUTTON_MASK_L) != 0;
 ///	extern int gbSgbMode; // from gbSGB.cpp
-///	if(emulating && theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L button
+///	if(emulating && systemCartridgeType != 0 && !gbSgbMode) // regular GB has no L button
 ///      pCmdUI->Enable(false); // FIXME: this is right, but disabling menu items screws up accelerators until you view the
 // menu!
 		break;
 	case ID_OPTIONS_JOYPAD_AUTOFIRE_R:
 		check = (autoFires & BUTTON_MASK_R) != 0;
 ///	extern int gbSgbMode; // from gbSGB.cpp
-///	if(emulating && theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no R button
+///	if(emulating && systemCartridgeType != 0 && !gbSgbMode) // regular GB has no R button
 ///      pCmdUI->Enable(false); // FIXME: this is right, but disabling menu items screws up accelerators until you view the
 // menu!
 		break;
@@ -2258,14 +2258,14 @@ void MainWnd::OnUpdateOptionsJoypadSticky(CCmdUI *pCmdUI)
 	case ID_STICKY_L:
 		check = (theApp.autoHold & BUTTON_MASK_L) != 0;
 ///	extern int gbSgbMode; // from gbSGB.cpp
-///	if(emulating && theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L button
+///	if(emulating && systemCartridgeType != 0 && !gbSgbMode) // regular GB has no L button
 ///      pCmdUI->Enable(false); // FIXME: this is right, but disabling menu items screws up accelerators until you view the
 // menu!
 		break;
 	case ID_STICKY_R:
 		check = (theApp.autoHold & BUTTON_MASK_R) != 0;
 ///	extern int gbSgbMode; // from gbSGB.cpp
-///	if(emulating && theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no R button
+///	if(emulating && systemCartridgeType != 0 && !gbSgbMode) // regular GB has no R button
 ///      pCmdUI->Enable(false); // FIXME: this is right, but disabling menu items screws up accelerators until you view the
 // menu!
 		break;

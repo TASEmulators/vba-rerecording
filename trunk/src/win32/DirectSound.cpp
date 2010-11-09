@@ -26,7 +26,6 @@
 #include "WavWriter.h"
 #include "VBA.h"
 
-//#include "../common/System.h"
 #include "../gba/GBAGlobals.h"
 #include "../gba/GBASound.h"
 #include "../common/nesvideos-piece.h"
@@ -352,9 +351,9 @@ void DirectSound::resume()
 	}
 }
 
-extern long linearFrameCount;
-long		linearSoundByteCount  = 0;
-long		linearSoundFrameCount = 0;
+long linearFrameCount	   = 0;
+long linearSoundByteCount  = 0;
+long linearSoundFrameCount = 0;
 
 void DirectSound::write()
 {

@@ -125,6 +125,7 @@ extern bool systemIsPaused();
 extern void systemSetPause(bool pause);
 extern bool systemPauseOnFrame();
 
+extern int	systemCartridgeType;
 extern int  systemSpeed;
 extern bool systemSoundOn;
 extern u16  systemColorMap16[0x10000];

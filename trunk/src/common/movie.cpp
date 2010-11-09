@@ -1,4 +1,3 @@
-#include "../Port.h"
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
@@ -31,14 +30,6 @@
 #endif
 
 #include "movie.h"
-
-#if (defined(WIN32) && !defined(SDL))
-#   include "../win32/stdafx.h"
-#   include "../win32/MainWnd.h"
-#   include "../win32/VBA.h"
-#   include "../win32/WinMiscUtil.h"
-#endif
-
 #include "System.h"
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
@@ -51,13 +42,19 @@
 
 #include "vbalua.h"
 
+#if (defined(WIN32) && !defined(SDL))
+#   include "../win32/stdafx.h"
+#   include "../win32/MainWnd.h"
+#   include "../win32/VBA.h"
+#   include "../win32/WinMiscUtil.h"
+#endif
+
 extern int emulating; // from system.cpp
 extern u16 currentButtons[4];     // from System.cpp
 extern u16 lastKeys;
 
 SMovie Movie;
 bool   loadingMovie		   = false;
-bool8  loadedMovieSnapshot = 0;
 
 // probably bad idea to have so many global variables, but I hate to recompile almost everything after editing VBA.h
 bool autoConvertMovieWhenPlaying = false;
@@ -283,12 +280,7 @@ static void remember_input_state()
 {
 	for (int i = 0; i < 4; ++i)
 	{
-#if (defined(WIN32) && !defined(SDL))
-		if (theApp.cartridgeType == 0)
-#else
-		extern int cartridgeType;     // from SDL.cpp
-		if (cartridgeType == 0)
-#endif
+		if (systemCartridgeType == 0)
 		{
 			initialInputs[i] = u16(~P1 & 0x03FF);
 		}
@@ -414,7 +406,7 @@ static void write_frame_controller_data(int i)
 		// mask away the irrelevent bits
 		buttonData &= BUTTON_REGULAR_MASK;
 
-#       if (defined(WIN32) && !defined(SDL))
+#if (defined(WIN32) && !defined(SDL))
 		// add in the motion sensor bits
 		extern BOOL	  checkKey(LONG_PTR key);   // from Input.cpp
 		extern USHORT motion[4];     // from DirectInput.cpp
@@ -426,8 +418,7 @@ static void write_frame_controller_data(int i)
 			buttonData |= BUTTON_MASK_DOWN_MOTION;
 		if (checkKey(motion[KEY_UP]))
 			buttonData |= BUTTON_MASK_UP_MOTION;
-#       else
-#           ifdef SDL
+#elif SDL
 		extern bool sdlCheckJoyKey(int key);         // from SDL.cpp
 		extern u16	motion[4];        // from SDL.cpp
 		if (sdlCheckJoyKey(motion[KEY_LEFT]))
@@ -438,8 +429,7 @@ static void write_frame_controller_data(int i)
 			buttonData |= BUTTON_MASK_DOWN_MOTION;
 		if (sdlCheckJoyKey(motion[KEY_UP]))
 			buttonData |= BUTTON_MASK_UP_MOTION;
-#           endif
-#       endif
+#endif
 
 		// soft-reset "button" for 1 frame if the game is reset while recording
 		if (resetSignaled)
@@ -476,15 +466,7 @@ void VBAMovieInit()
 		currentButtons[i] = 0;
 }
 
-#if (defined(WIN32) && !defined(SDL))
-
-static void GetBatterySaveName(CString &filename)
-{
-	filename = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
-}
-
-#else
-#   ifdef SDL
+#ifdef SDL
 static void GetBatterySaveName(char *buffer)
 {
 	extern char batteryDir[2048], filename[2048];     // from SDL.cpp
@@ -494,16 +476,14 @@ static void GetBatterySaveName(char *buffer)
 	else
 		sprintf(buffer, "%s.sav", filename);
 }
-
-#   endif
 #endif
 
 static void SetPlayEmuSettings()
 {
 	gbEmulatorType = Movie.header.gbEmulatorType;
 	extern void SetPrefetchHack(bool);
-#   if (defined(WIN32) && !defined(SDL))
-	if (theApp.cartridgeType == 0)    // lag disablement applies only to GBA
+#if (defined(WIN32) && !defined(SDL))
+	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 
 	// some GB/GBC games depend on the sound rate, so just use the highest one
@@ -553,7 +533,7 @@ static void SetPlayEmuSettings()
 		}
 	}
 
-#   else
+#else
 	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
 	extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
 	useBios		 = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
@@ -563,21 +543,19 @@ static void SetPlayEmuSettings()
 	saveType	 = Movie.header.saveType;
 	sdlFlashSize = Movie.header.flashSize;
 
-	extern int cartridgeType;     // from SDL.cpp
-	if (cartridgeType == 0)    // lag disablement applies only to GBA
+	extern int systemCartridgeType;     // from SDL.cpp
+	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
-#   endif
+#endif
 }
 
 static void HardResetAndSRAMClear()
 {
-#   if (defined(WIN32) && !defined(SDL))
-	CString filename;
-	GetBatterySaveName(filename);
-	remove(filename);     // delete the damn SRAM file
+#if (defined(WIN32) && !defined(SDL))
+	winEraseBatteryFile(); // delete the damn SRAM file
 	extern bool reopenTheSameImage; reopenTheSameImage = true;     // keep it from being resurrected from RAM
 	((MainWnd *)theApp.m_pMainWnd)->winFileRun();     // start running the game
-#   else
+#else
 	char fname [1024];
 	GetBatterySaveName(fname);
 	remove(fname);     // delete the damn SRAM file
@@ -587,7 +565,7 @@ static void HardResetAndSRAMClear()
 
 	/// FIXME the correct SDL code to call for a full restart isn't in a function yet
 	theEmulator.emuReset(false);
-#   endif
+#endif
 }
 
 int VBAMovieOpen(const char *filename, bool8 read_only)
@@ -757,10 +735,10 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 static void CalcROMInfo()
 {
 #if (defined(WIN32) && !defined(SDL))
-	if (theApp.cartridgeType == 0) // GBA
+	if (systemCartridgeType == 0) // GBA
 #else
-	extern int cartridgeType; // from SDL.cpp
-	if (cartridgeType == 0) // GBA
+	extern int systemCartridgeType; // from SDL.cpp
+	if (systemCartridgeType == 0) // GBA
 #endif
 	{
 		extern u8 *bios, *rom;
@@ -785,7 +763,7 @@ static void CalcROMInfo()
 static void SetRecordEmuSettings()
 {
 	Movie.header.optionFlags = 0;
-#   if (defined(WIN32) && !defined(SDL))
+#if (defined(WIN32) && !defined(SDL))
 	if (theApp.useBiosFile)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
 	if (theApp.skipBiosFile)
@@ -794,7 +772,7 @@ static void SetRecordEmuSettings()
 		Movie.header.optionFlags |= MOVIE_SETTING_RTCENABLE;
 	Movie.header.saveType  = theApp.winSaveType;
 	Movie.header.flashSize = theApp.winFlashSize;
-#   else
+#else
 	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
 	extern bool8 useBios, skipBios;     // from SDL.cpp
 	if (useBios)
@@ -805,12 +783,7 @@ static void SetRecordEmuSettings()
 		Movie.header.optionFlags |= MOVIE_SETTING_RTCENABLE;
 	Movie.header.saveType  = saveType;
 	Movie.header.flashSize = sdlFlashSize;
-#   endif
-/* // This piece caused THE mysterious desync in GBA movie recording
-   #if (defined(WIN32) && !defined(SDL))
-        if(GetAsyncKeyState(VK_CONTROL) == 0)
-   #endif
- */
+#endif
 	if (!memLagTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
 	Movie.header.gbEmulatorType = gbEmulatorType;
@@ -823,7 +796,7 @@ static void SetRecordEmuSettings()
 	extern int32 gbEchoRAMFixOn;
 	gbEchoRAMFixOn = 1;
 
-#   if (defined(WIN32) && !defined(SDL))
+#if (defined(WIN32) && !defined(SDL))
 	// some GB/GBC games depend on the sound rate, so just use the highest one
 	systemSetSoundQuality(1);
 
@@ -848,9 +821,9 @@ static void SetRecordEmuSettings()
 		theApp.updateWindowSize(theApp.videoOption);
 	}
 
-#   else
-	/// FIXME
-#   endif
+#else
+	/// SDLFIXME
+#endif
 }
 
 uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly)
@@ -1511,7 +1484,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
 	// necessary!
-	resetSignaledLast = resetSignaled = false;
+	resetSignaled	  = false;
+	resetSignaledLast = false;
 
 	// necessary to check if there's a reset signal at the previous frame
 	if (current_frame > 0)
@@ -1581,13 +1555,15 @@ void VBAMovieSignalReset()
 
 void VBAMovieResetIfRequested()
 {
-	resetSignaledLast = false;
-
 	if (resetSignaled)
 	{
 		theEmulator.emuReset(false);
 		resetSignaled	  = false;
 		resetSignaledLast = true;
+	}
+	else
+	{
+		resetSignaledLast = false;
 	}
 }
 

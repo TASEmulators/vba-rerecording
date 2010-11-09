@@ -68,7 +68,7 @@ extern void toolsLogging();
 
 void MainWnd::OnToolsDisassemble()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		Disassemble *dlg = new Disassemble();
 		dlg->Create(IDD_DISASSEMBLE, this);
@@ -106,12 +106,12 @@ void MainWnd::OnToolsIoviewer()
 
 void MainWnd::OnUpdateToolsIoviewer(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && theApp.cartridgeType == 0);
+	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && systemCartridgeType == 0);
 }
 
 void MainWnd::OnToolsMapview()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		MapView *dlg = new MapView;
 		dlg->Create(IDD_MAP_VIEW, this);
@@ -132,7 +132,7 @@ void MainWnd::OnUpdateToolsMapview(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsMemoryviewer()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		MemoryViewerDlg *dlg = new MemoryViewerDlg;
 		dlg->Create(IDD_MEM_VIEWER, this);
@@ -153,7 +153,7 @@ void MainWnd::OnUpdateToolsMemoryviewer(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsOamviewer()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		OamView *dlg = new OamView;
 		dlg->Create(IDD_OAM_VIEW, this);
@@ -174,7 +174,7 @@ void MainWnd::OnUpdateToolsOamviewer(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsPaletteview()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		PaletteView *dlg = new PaletteView;
 		dlg->Create(IDD_PALETTE_VIEW, this);
@@ -195,7 +195,7 @@ void MainWnd::OnUpdateToolsPaletteview(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsTileviewer()
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		TileView *dlg = new TileView;
 		dlg->Create(IDD_TILE_VIEWER, this);
@@ -395,8 +395,8 @@ void MainWnd::OnToolsDebugGdb()
 			remoteSetSockets(wait.getListenSocket(), wait.getSocket());
 			debugger  = true;
 			emulating = 1;
-			theApp.cartridgeType = 0;
-			theApp.filename      = "\\gnu_stub";
+			systemCartridgeType = 0;
+			theApp.gameFilename = "\\gnu_stub";
 			rom         = (u8 *)malloc(0x2000000 + 4);
 			workRAM     = (u8 *)calloc(1, 0x40000 + 4);
 			bios        = (u8 *)calloc(1, 0x4000 + 4);
@@ -427,7 +427,7 @@ void MainWnd::OnToolsDebugLoadandwait()
 	{
 		if (winFileRun())
 		{
-			if (theApp.cartridgeType != 0)
+			if (systemCartridgeType != 0)
 			{
 				systemMessage(IDS_ERROR_NOT_GBA_IMAGE, "Error: not a GBA image");
 				OnFileClose();
@@ -497,7 +497,7 @@ void MainWnd::OnToolsSoundStartrecording()
 {
 	theApp.winCheckFullscreen();
 
-	CString wavName = theApp.filename;
+	CString wavName = theApp.gameFilename;
 
 	if (VBAMovieActive())
 	{
@@ -564,7 +564,7 @@ void MainWnd::OnToolsStartAVIRecording()
 {
 	theApp.winCheckFullscreen();
 
-	CString aviName = theApp.filename;
+	CString aviName = theApp.gameFilename;
 
 	if (VBAMovieActive())
 	{
@@ -600,7 +600,7 @@ void MainWnd::OnToolsStartAVIRecording()
 	{
 		int width  = 240;
 		int height = 160;
-		switch (theApp.cartridgeType)
+		switch (systemCartridgeType)
 		{
 		case 0:
 			width  = 240;
@@ -938,7 +938,9 @@ void MainWnd::OnUpdateToolsRewind(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsCustomize()
 {
-	AccelEditor dlg(this, &theApp.winAccelMgr);
+	theApp.recreateMenuBar();
+
+	AccelEditor dlg(this, &theApp.m_menu, &theApp.winAccelMgr);
 	dlg.DoModal();
 	if (dlg.IsModified())
 	{

@@ -25,8 +25,6 @@
 #include "CmdAccelOb.h"
 #include "VBA.h"
 
-//#include "../common/System.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -36,8 +34,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // AccelEditor dialog
 
-AccelEditor::AccelEditor(CWnd *pParent, CAcceleratorManager *pExtMgr)
-	: ResizeDlg(AccelEditor::IDD, pParent), m_extMgr(pExtMgr)
+AccelEditor::AccelEditor(CWnd *pParent, CMenu *pMenu, CAcceleratorManager *pExtMgr)
+	: ResizeDlg(AccelEditor::IDD, pParent), m_pMenuSrc(pMenu), m_pExtMgr(pExtMgr)
 {
 	//{{AFX_DATA_INIT(AccelEditor)
 	// NOTE: the ClassWizard will add member initialization here
@@ -118,8 +116,8 @@ BOOL AccelEditor::OnInitDialog()
 	        "Software\\Emulators\\VisualBoyAdvance\\Viewer\\AccelEditor",
 	        NULL);
 
-	if (m_extMgr)
-		m_result = m_mgr = *m_extMgr;
+	if (m_pExtMgr)
+		m_result = m_mgr = *m_pExtMgr;
 
 	m_currents.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 	m_currents.InsertColumn(0, "Keys");
@@ -218,8 +216,7 @@ void AccelEditor::InitCommands()
 	m_hItems.RemoveAll();
 	m_alreadyAffected.SetWindowText("");
 
-	theApp.recreateMenuBar();
-	AddCommandsFromMenu(&theApp.m_menu, TVI_ROOT);
+	AddCommandsFromMenu(m_pMenuSrc, TVI_ROOT);
 	AddCommandsFromTable();
 }
 

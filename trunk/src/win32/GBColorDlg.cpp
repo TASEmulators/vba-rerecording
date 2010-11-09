@@ -26,7 +26,7 @@
 
 extern int32 gbPaletteOption;
 extern int   emulating;
-extern int   cartridgeType;
+extern int   systemCartridgeType;
 extern u16   gbPalette[128];
 extern u16   systemGbPalette[24];
 

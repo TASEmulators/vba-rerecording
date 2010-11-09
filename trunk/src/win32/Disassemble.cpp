@@ -307,7 +307,7 @@ void Disassemble::refresh()
 	count = (r.bottom - r.top+1)/h;
 
 	m_list.ResetContent();
-	if (!systemIsEmulating() && theApp.cartridgeType == 0)
+	if (!systemIsEmulating() && systemCartridgeType == 0)
 		return;
 
 	char buffer[80];

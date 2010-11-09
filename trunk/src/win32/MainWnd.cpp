@@ -894,7 +894,7 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 {
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
-	bool activated = (nState == WA_ACTIVE || nState == WA_CLICKACTIVE) && !theApp.iconic;
+	bool activated = (nState == WA_ACTIVE || nState == WA_CLICKACTIVE) && !bMinimized;
 
 	theApp.active = activated || !theApp.pauseWhenInactive;
 
@@ -1052,7 +1052,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 							"GBC" : (movieInfo.header.typeFlags & MOVIE_TYPE_SGB) ? "SGB" : "GB");
 					strcat(warning1, buffer);
 
-					sprintf(buffer, "type=%s  ", theApp.cartridgeType ==
+					sprintf(buffer, "type=%s  ", systemCartridgeType ==
 					        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
 					strcat(warning2, buffer);
 				}
@@ -1073,7 +1073,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 						strcat(warning1, buffer);
 					}
 
-					if (theApp.cartridgeType == 0)
+					if (systemCartridgeType == 0)
 					{
 						memcpy(code, &romGameCode, 4);
 						code[4] = '\0';
@@ -1090,7 +1090,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					strcat(warning1, buffer);
 
 					sprintf(buffer,
-					        checksum == 0 ? "(bios=none)  " : theApp.cartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
+					        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
 					        checksum);
 					strcat(warning2, buffer);
 				}
@@ -1169,16 +1169,10 @@ romcheck_exit:
 		}
 		else
 		{
-			theApp.szFile = szFile;
+			theApp.romFilename = szFile;
 			if (winFileRun())
 			{
 				SetForegroundWindow();
-				emulating = TRUE;
-			}
-			else
-			{
-				emulating = FALSE;
-				soundPause();
 			}
 		}
 	}
@@ -1230,7 +1224,7 @@ bool MainWnd::winFileOpenSelect(int cartridgeType)
 	{
 		isOverrideEmpty = true;
 		CString altDir	= regQueryStringValue(cartridgeType != 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, NULL);
-		initialDir		= altDir.IsEmpty() ? theApp.dir : altDir;
+		initialDir		= altDir.IsEmpty() ? theApp.exeDir : altDir;
 	}
 
 	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
@@ -1238,8 +1232,8 @@ bool MainWnd::winFileOpenSelect(int cartridgeType)
 	if (dlg.DoModal() == IDOK)
 	{
 		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
-		theApp.szFile = dlg.GetPathName();
-		initialDir	  = winGetDirFromFilename(theApp.szFile);
+		theApp.romFilename = dlg.GetPathName();
+		initialDir	  = winGetDirFromFilename(theApp.romFilename);
 
 		// we have directory override for that purpose
 		// but this can be...desirable
@@ -1303,65 +1297,50 @@ void MainWnd::winFileClose(bool reopening)
 
 bool MainWnd::winFileRun()
 {
-	int prevCartridgeType = theApp.cartridgeType;
+	int prevCartridgeType = systemCartridgeType;
 
 	bool requiresInitRAMSearch = (rom == NULL && gbRom == NULL) || !reopenTheSameImage;
 	winFileClose(reopenTheSameImage);
 	reopenTheSameImage = false;
 
-	char tempName[2048];
-
-#if 1
 	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
+	if (theApp.romFilename.GetLength() > 2048) theApp.romFilename.Truncate(2048);
 
-	if (theApp.szFile.GetLength() > 2048) theApp.szFile.Truncate(2048);
+	char logicalName[2048], physicalName[2048];
 
-	char LogicalName[2048], PhysicalName[2048];
 	// FIXME: assertion failure in fopen.c if canceled
-	if (ObtainFile(theApp.szFile, LogicalName, PhysicalName, "rom", s_romIgnoreExtensions,
+	if (ObtainFile(theApp.romFilename, logicalName, physicalName, "rom", s_romIgnoreExtensions,
 		sizeof(s_romIgnoreExtensions) / sizeof(*s_romIgnoreExtensions)))
 	{
-		// theApp.szFile is exactly the filename used for opening, while theApp.filename is always the logical name
-		theApp.szFile = theApp.filename = LogicalName;
-		ReleaseTempFileCategory("rom", PhysicalName);
+		// theApp.romFilename is exactly the filename used for opening, while theApp.gameFilename is always the logical name
+		theApp.romFilename = theApp.gameFilename = logicalName;
+		ReleaseTempFileCategory("rom", physicalName);
 	}
 	else
 	{
 		return false;
 	}
-#else
-	// old version that only supports uncompressed, zip, and gzip formats, and doesn't handle multi-file archives well
-	char file[2048];
-	utilGetBaseName(theApp.szFile, tempName);
 
-	_fullpath(file, tempName, 1024);
-	theApp.filename = file;
-
-	const char *LogicalName	 = theApp.szFile;
-	const char *PhysicalName = theApp.szFile;
-#endif
-
-	CString ipsname = winGetDestFilename(LogicalName, IDS_IPS_DIR, ".ips");
-
-	IMAGE_TYPE type = utilFindType(PhysicalName);
+	IMAGE_TYPE type = utilFindType(physicalName);
 
 	if (type == IMAGE_UNKNOWN)
 	{
 		systemMessage(IDS_UNSUPPORTED_FILE_TYPE,
-		              "The file \"%s\" is an unsupported type.", LogicalName);
+		              "The file \"%s\" is an unsupported type.", logicalName);
 		return false;
 	}
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-	theApp.cartridgeType	= (int)type;
+	systemCartridgeType	= (int)type;
 	if (type == IMAGE_GB)
 	{
-		if (!gbLoadRom(PhysicalName))
+		if (!gbLoadRom(physicalName))
 			return false;
 		theApp.emulator = GBSystem;
 		gbBorderOn		= theApp.winGbBorderOn;
 		theApp.romSize	= gbRomSize;
 		if (theApp.autoIPS)
 		{
+			CString ipsname = winGetDestFilename(logicalName, IDS_IPS_DIR, ".ips");
 			int size = gbRomSize;
 			utilApplyIPS(ipsname, &gbRom, &size);
 			if (size != gbRomSize)
@@ -1375,7 +1354,7 @@ bool MainWnd::winFileRun()
 	}
 	else
 	{
-		int size = CPULoadRom(PhysicalName);
+		int size = CPULoadRom(physicalName);
 		if (!size)
 			return false;
 
@@ -1389,36 +1368,23 @@ bool MainWnd::winFileRun()
 		//      utilGBAFindSave(rom, size);
 		//    }
 
-		GetModuleFileName(NULL, tempName, 2048);
-
-		char *p = strrchr(tempName, '\\');
-		if (p)
-			*p = 0;
-
 		char buffer[5];
 		strncpy(buffer, (const char *)&rom[0xac], 4);
 		buffer[4] = 0;
 
-		strcat(tempName, "\\vba-over.ini");
+		// vba-over.ini
+		CString vbaOverINI = theApp.exeDir;
+		vbaOverINI += "\\vba-over.ini";
 
-		UINT i = GetPrivateProfileInt(buffer,
-		                              "rtcEnabled",
-		                              -1,
-		                              tempName);
+		UINT i = GetPrivateProfileInt(buffer, "rtcEnabled", -1, vbaOverINI);
 		if (i != (UINT)-1)
 			rtcEnable(i == 0 ? false : true);
 
-		i = GetPrivateProfileInt(buffer,
-		                         "flashSize",
-		                         -1,
-		                         tempName);
+		i = GetPrivateProfileInt(buffer, "flashSize", -1, vbaOverINI);
 		if (i != (UINT)-1 && (i == 0x10000 || i == 0x20000))
 			flashSetSize((int)i);
 
-		i = GetPrivateProfileInt(buffer,
-		                         "saveType",
-		                         -1,
-		                         tempName);
+		i = GetPrivateProfileInt(buffer, "saveType", -1, vbaOverINI);
 		if (i != (UINT)-1 && (i <= 5))
 			cpuSaveType = (int)i;
 
@@ -1431,6 +1397,7 @@ bool MainWnd::winFileRun()
 
 		if (theApp.autoIPS)
 		{
+			CString ipsname = winGetDestFilename(logicalName, IDS_IPS_DIR, ".ips");
 			int size = 0x2000000;
 			utilApplyIPS(ipsname, &rom, &size);
 			if (size != 0x2000000)
@@ -1442,7 +1409,7 @@ bool MainWnd::winFileRun()
 
 	if (theApp.soundInitialized)
 	{
-		if (theApp.cartridgeType == 1)
+		if (systemCartridgeType == 1)
 			gbSoundReset();
 		else
 			soundReset();
@@ -1467,9 +1434,9 @@ bool MainWnd::winFileRun()
 		winLoadCheatListDefault();
 
 	if (theApp.filenamePreference == 0)
-		theApp.addRecentFile(winGetOriginalFilename(LogicalName));
+		theApp.addRecentFile(winGetOriginalFilename(logicalName));
 	else
-		theApp.addRecentFile(LogicalName);
+		theApp.addRecentFile(logicalName);
 
 	theApp.updateWindowSize(theApp.videoOption);
 
@@ -1491,7 +1458,7 @@ bool MainWnd::winFileRun()
 
 	{
 		extern bool playMovieFile, playMovieFileReadOnly, outputWavFile, outputAVIFile, flagHideMenu; // from VBA.cpp
-		extern char movieFileToPlay [1024], wavFileToOutput [1024]; // from VBA.cpp
+		extern char movieFileToPlay[1024], wavFileToOutput[1024]; // from VBA.cpp
 		extern int	pauseAfterTime; // from VBA.cpp
 		if (playMovieFile)
 		{
@@ -1520,7 +1487,7 @@ bool MainWnd::winFileRun()
 		}
 	}
 
-	if (theApp.cartridgeType != prevCartridgeType)
+	if (systemCartridgeType != prevCartridgeType)
 	{
 		extern GBACheatSearch gbaDlg;
 		extern GBCheatSearch  gbDlg;

@@ -27,7 +27,6 @@
 #include "Input.h"
 #include "Reg.h"
 #include "WinResUtil.h"
-//#include "VBA.h"
 
 // master keyboard translation table
 static const struct {

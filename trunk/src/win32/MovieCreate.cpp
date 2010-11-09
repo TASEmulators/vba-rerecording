@@ -29,8 +29,8 @@ MovieCreate::MovieCreate(CWnd *pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(MovieCreate)
 	m_startOption  = 2; // "from start" as default
-	m_systemOption = theApp.cartridgeType == 0 ? 0 : (GBC_CAPABLE ? 1 : (SGB_CAPABLE ? 2 : 3)); // GBA, GBC, SGB, or GB
-	m_biosOption   = theApp.cartridgeType == 0 ? (useBios ? 2 : 1) : 0; // none for non-GBA, or introless and based on settings
+	m_systemOption = systemCartridgeType == 0 ? 0 : (GBC_CAPABLE ? 1 : (SGB_CAPABLE ? 2 : 3)); // GBA, GBC, SGB, or GB
+	m_biosOption   = systemCartridgeType == 0 ? (useBios ? 2 : 1) : 0; // none for non-GBA, or introless and based on settings
 	//}}AFX_DATA_INIT
 }
 
@@ -41,15 +41,15 @@ BOOL MovieCreate::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	GetDlgItem(IDC_REC_GBA)->EnableWindow(theApp.cartridgeType == 0);
-	GetDlgItem(IDC_REC_GBC)->EnableWindow(theApp.cartridgeType != 0 && GBC_CAPABLE);
-	GetDlgItem(IDC_REC_SGB)->EnableWindow(theApp.cartridgeType != 0 && SGB_CAPABLE);
-	GetDlgItem(IDC_REC_GB)->EnableWindow(theApp.cartridgeType != 0);
+	GetDlgItem(IDC_REC_GBA)->EnableWindow(systemCartridgeType == 0);
+	GetDlgItem(IDC_REC_GBC)->EnableWindow(systemCartridgeType != 0 && GBC_CAPABLE);
+	GetDlgItem(IDC_REC_SGB)->EnableWindow(systemCartridgeType != 0 && SGB_CAPABLE);
+	GetDlgItem(IDC_REC_GB)->EnableWindow(systemCartridgeType != 0);
 
-	GetDlgItem(IDC_REC_NOBIOS)->EnableWindow(theApp.cartridgeType != 0);
-	GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(theApp.cartridgeType == 0);
-	GetDlgItem(IDC_REC_GBABIOS)->EnableWindow(theApp.cartridgeType == 0);
-	GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(theApp.cartridgeType == 0);
+	GetDlgItem(IDC_REC_NOBIOS)->EnableWindow(systemCartridgeType != 0);
+	GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(systemCartridgeType == 0);
+	GetDlgItem(IDC_REC_GBABIOS)->EnableWindow(systemCartridgeType == 0);
+	GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(systemCartridgeType == 0);
 
 	CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_NOBIOS + m_biosOption);
 
@@ -58,7 +58,7 @@ BOOL MovieCreate::OnInitDialog()
 	m_editDescription.LimitText(MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 
 	// convert the ROM filename into a default movie name
-	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, ".vbm");
+	CString movieName = winGetDestFilename(theApp.gameFilename, IDS_MOVIE_DIR, ".vbm");
 
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
@@ -110,7 +110,7 @@ void MovieCreate::OnBnClickedBrowse()
 	CString filter = winResLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
+	CString movieName = winGetDestFilename(theApp.gameFilename, IDS_MOVIE_DIR, exts[0]);
 	CString movieDir  = winGetDestDir(IDS_MOVIE_DIR);
 
 	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, true);
@@ -223,7 +223,7 @@ void MovieCreate::OnBnClickedOk()
 	strncpy(info + MOVIE_METADATA_AUTHOR_SIZE, buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 	info[MOVIE_METADATA_SIZE - 1] = '\0';
 
-	if (memLagTempEnabled && theApp.cartridgeType == 0)
+	if (memLagTempEnabled && systemCartridgeType == 0)
 	{
 		// lag reduction is off -- if the user didn't turn it off, silently turn it back on, otherwise ask
 		int ans = !memLagEnabled ? IDYES : AfxGetApp()->m_pMainWnd->MessageBox(
@@ -267,7 +267,7 @@ void MovieCreate::OnBnClickedCancel()
 void MovieCreate::OnBnClickedRecstart()
 {
 	m_startOption = 2;
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(TRUE);
 		GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(TRUE);
@@ -283,7 +283,7 @@ void MovieCreate::OnBnClickedRecstart()
 void MovieCreate::OnBnClickedRecreset()
 {
 	m_startOption = 1;
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(TRUE);
 		GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(TRUE);
@@ -301,7 +301,7 @@ void MovieCreate::OnBnClickedRecnow()
 	m_startOption = 0;
 
 	// starting from emulator bios file from a snapshot made while playing with GBA bios file won't work
-	if (theApp.cartridgeType == 0 && useBios)
+	if (systemCartridgeType == 0 && useBios)
 	{
 		if (m_biosOption == 1)
 		{
@@ -312,7 +312,7 @@ void MovieCreate::OnBnClickedRecnow()
 	}
 
 	// "with intro" distinction makes no sense when continuing from snapshot
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		if (m_biosOption == 3)
 		{
@@ -323,7 +323,7 @@ void MovieCreate::OnBnClickedRecnow()
 	}
 
 	// can't switch systems while recording from snapshot!
-	if (theApp.cartridgeType != 0)
+	if (systemCartridgeType != 0)
 	{
 		int curSystemOption = (gbCgbMode == 1 ? 1 : (gbSgbMode == 1 ? 2 : 3)); // GBC, SGB, or GB
 		GetDlgItem(IDC_REC_GBC)->EnableWindow(curSystemOption == 1);

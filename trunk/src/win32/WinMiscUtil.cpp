@@ -63,7 +63,7 @@ extern const char *IDS_def_tbl[] = {
 // these could be made VBA members, but  the VBA class is already oversized too much
 //
 
-bool winFileExists(const char *filename)
+bool winFileExists(const CString &filename)
 {
 	FILE *f = fopen(filename, "rb");
 	if (f)
@@ -122,7 +122,7 @@ CString winGetDestDir(const CString &TargetDirReg)
 
 	if (targetDir.IsEmpty())
 	{
-		targetDir = theApp.dir;		// reset the targetDir to the application's path
+		targetDir = theApp.exeDir;		// reset the targetDir to the application's path
 		if (!TargetDirReg.Compare(IDS_BATTERY_DIR))
 		{
 			targetDir += IDS_BATTERY_DEFAULT_DIR;
@@ -255,7 +255,7 @@ CString winGetSavestateMenuString(const CString &LogicalRomName, int nID)
 	if (theApp.showSlotTime)
 	{
 		CFileStatus status;
-		if (emulating && CFile::GetStatus(winGetSavestateFilename(theApp.filename, nID), status))
+		if (emulating && CFile::GetStatus(winGetSavestateFilename(LogicalRomName, nID), status))
 		{
 			str.Format("#&%d %s", nID, status.m_mtime.Format("%Y/%m/%d %H:%M:%S"));
 		}
@@ -274,68 +274,31 @@ CString winGetSavestateMenuString(const CString &LogicalRomName, int nID)
 
 void winCorrectPath(CString &path)
 {
-	CString tempStr;
-	FILE *	tempFile;
-
-	if (tempFile = fopen(path, "rb"))
+	if (winFileExists(path))
 	{
-		fclose(tempFile);
+		return;
 	}
-	else
-	{
-		for (int i = 0; i < 11; i++)
-		{
-			switch (i)
-			{
-			case 0:
-			{
-				char curDir[_MAX_PATH];
-				GetCurrentDirectory(_MAX_PATH, curDir);
-				curDir[_MAX_PATH - 1] = '\0';
-				tempStr = curDir;
-			}   break;
-			case 1:
-				tempStr = regQueryStringValue(IDS_ROM_DIR, "."); break;
-			case 2:
-				tempStr = regQueryStringValue(IDS_GBXROM_DIR, "."); break;
-			case 3:
-				tempStr = regQueryStringValue(IDS_BATTERY_DIR, "."); break;
-			case 4:
-				tempStr = regQueryStringValue(IDS_SAVE_DIR, "."); break;
-			case 5:
-				tempStr = regQueryStringValue(IDS_MOVIE_DIR, "."); break;
-			case 6:
-				tempStr = regQueryStringValue(IDS_CHEAT_DIR, "."); break;
-			case 7:
-				tempStr = regQueryStringValue(IDS_IPS_DIR, "."); break;
-			case 8:
-				tempStr = regQueryStringValue(IDS_AVI_DIR, "."); break;
-			case 9:
-				tempStr = regQueryStringValue(IDS_WAV_DIR, "."); break;
-			case 10:
-				tempStr = regQueryStringValue(IDS_CAPTURE_DIR, "."); break;
-			/*
-			                // what do these do?
-			                case 11: tempStr = "C:";
-			                case 12: {
-			                    tempStr = regQueryStringValue(IDS_ROM_DIR,".");
-			                    char * slash = (char*)strrchr(tempStr, '\\'); // should use member func intstead
-			                    if(slash)
-			                        slash[0] = '\0';
-			                }	break;
-			 */
-			default:
-				break;
-			}
-			tempStr += "\\";
-			tempStr += path;
 
-			if (tempFile = fopen(tempStr, "rb"))
-			{
-				fclose(tempFile);
-				path = tempStr;
-				break;
-			}
+	CString tempStr = theApp.exeDir;
+	tempStr += "\\";
+	tempStr += path;
+
+	if (winFileExists(tempStr))
+	{
+		path = tempStr;
+		return;
+	}
+
+	for (int i = 0; i < _countof(IDS_tbl); ++i)
+	{
+		tempStr = winGetDestDir(IDS_tbl[i]);
+		tempStr += "\\";
+		tempStr += path;
+
+		if (winFileExists(tempStr))
+		{
+			path = tempStr;
+			return;
 		}
 	}
 }
@@ -361,7 +324,7 @@ int winScreenCapture(int captureNumber)
 		else
 			ext.Format("_%03d.bmp", captureNumber);
 
-		captureName = winGetDestFilename(theApp.filename, IDS_CAPTURE_DIR, ext);
+		captureName = winGetDestFilename(theApp.gameFilename, IDS_CAPTURE_DIR, ext);
 		++captureNumber;
 	} while (winFileExists(captureName) && captureNumber > 0);
 
@@ -446,7 +409,7 @@ void winLoadCheatList(const char *name)
 {
 	bool res = false;
 
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 		res = cheatsLoadCheatList(name);
 	else
 		res = gbCheatsLoadCheatList(name);
@@ -457,7 +420,7 @@ void winLoadCheatList(const char *name)
 
 void winSaveCheatList(const char *name)
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 		cheatsSaveCheatList(name);
 	else
 		gbCheatsSaveCheatList(name);
@@ -465,21 +428,21 @@ void winSaveCheatList(const char *name)
 
 void winLoadCheatListDefault()
 {
-	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
+	CString cheatName = winGetDestFilename(theApp.gameFilename, IDS_CHEAT_DIR, ".clt");
 
 	winLoadCheatList(cheatName);
 }
 
 void winSaveCheatListDefault()
 {
-	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, ".clt");
+	CString cheatName = winGetDestFilename(theApp.gameFilename, IDS_CHEAT_DIR, ".clt");
 
 	winSaveCheatList(cheatName);
 }
 
-void winReadBatteryFile()
+bool winReadBatteryFile()
 {
-	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+	CString batteryName = winGetDestFilename(theApp.gameFilename, IDS_BATTERY_DIR, ".sav");
 
 	bool res = false;
 
@@ -488,14 +451,24 @@ void winReadBatteryFile()
 
 	if (res)
 		systemScreenMessage(winResLoadString(IDS_LOADED_BATTERY));
+
+	return res;
 }
 
-void winWriteBatteryFile()
+bool winWriteBatteryFile()
 {
-	CString batteryName = winGetDestFilename(theApp.filename, IDS_BATTERY_DIR, ".sav");
+	CString batteryName = winGetDestFilename(theApp.gameFilename, IDS_BATTERY_DIR, ".sav");
 
 	if (theApp.emulator.emuWriteBattery)
-		theApp.emulator.emuWriteBattery(batteryName);
+		return theApp.emulator.emuWriteBattery(batteryName);
+
+	return false;
+}
+
+bool winEraseBatteryFile()
+{
+	CString batteryName = winGetDestFilename(theApp.gameFilename, IDS_BATTERY_DIR, ".sav");
+	return !remove(batteryName);
 }
 
 bool winReadSaveGame(const char *name)
@@ -512,3 +485,7 @@ bool winWriteSaveGame(const char *name)
 	return false;
 }
 
+bool winEraseSaveGame(const char *name)
+{
+	return !remove(name);
+}

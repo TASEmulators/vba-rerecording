@@ -36,17 +36,8 @@ AddressWatcher rswatches[MAX_WATCH_COUNT];
 int WatchCount=0;
 static int s_prevSelCount=-1;
 
-char applicationPath[2048];
-struct InitRamWatch
-{
-	InitRamWatch()
-	{
-		GetModuleFileName(NULL, applicationPath, 2048);
-	}
-} initRamWatch;
-
 HWND RamWatchHWnd;
-#define gamefilename theApp.filename
+#define gamefilename theApp.gameFilename
 #define hWnd AfxGetMainWnd()->GetSafeHwnd()
 #define hInst AfxGetInstanceHandle()
 static char Str_Tmp [1024];
@@ -1189,7 +1180,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 						else if(rswatches[watchIndex].Type == 'h')
 							numberType = 2;
 
-						if(theApp.cartridgeType == 0)
+						if(systemCartridgeType == 0)
 						{
 							AddCheat dlg (address/*, hDlg*/);
 							if(sizeType != -1) dlg.sizeType = sizeType;

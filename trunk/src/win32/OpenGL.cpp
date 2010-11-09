@@ -284,7 +284,7 @@ void OpenGLDisplay::render()
     if(textMethod == 1)
     {
         int copyX = 240, copyY = 160;
-        if(theApp.cartridgeType == 1)
+        if(systemCartridgeType == 1)
             if(gbBorderOn) copyX = 256, copyY = 224;
             else           copyX = 160, copyY = 144;
 

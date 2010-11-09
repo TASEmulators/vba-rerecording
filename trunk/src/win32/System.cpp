@@ -25,10 +25,11 @@
 
 struct EmulatedSystem theEmulator;
 
-u32	 RGB_LOW_BITS_MASK = 0;
-int	 emulating		   = 0;
-int	 systemSpeed	   = 0;
-bool systemSoundOn	   = false;
+u32	 RGB_LOW_BITS_MASK		 = 0;
+int	 emulating				 = 0;
+int	 systemCartridgeType	 = 0;
+int	 systemSpeed			 = 0;
+bool systemSoundOn			 = false;
 u32	 systemColorMap32[0x10000];
 u16	 systemColorMap16[0x10000];
 u16	 systemGbPalette[24];
@@ -156,8 +157,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 			res ^= BUTTON_MASK_DOWN_MOTION;
 	}
 
-	extern int32 gbSgbMode; // from gbSGB.cpp
-	if (theApp.cartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
+	if (systemCartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
 	{
 		if (res & BUTTON_MASK_L)
 			res ^= BUTTON_MASK_L;
@@ -236,11 +236,12 @@ void systemRefreshScreen()
 }
 
 extern bool vbaShuttingDown;
-extern long linearSoundFrameCount;
-long		linearFrameCount = 0;
 
 void systemRenderFrame()
 {
+	extern long linearSoundFrameCount;
+	extern long linearFrameCount;
+
 	if (vbaShuttingDown)
 		return;
 
@@ -256,7 +257,7 @@ void systemRenderFrame()
 		DrawLuaGui();
 
 		int copyX = 240, copyY = 160;
-		if (theApp.cartridgeType == 1)
+		if (systemCartridgeType == 1)
 			if (gbBorderOn)
 				copyX = 256, copyY = 224;
 			else
@@ -277,7 +278,7 @@ void systemRenderFrame()
 	// record avi
 	int width  = 240;
 	int height = 160;
-	switch (theApp.cartridgeType)
+	switch (systemCartridgeType)
 	{
 	case 0:
 		width  = 240;
@@ -637,7 +638,7 @@ bool systemCanChangeSoundQuality()
 
 bool systemSetSoundQuality(int quality)
 {
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 		soundSetQuality(quality);
 	else
 		gbSoundSetQuality(quality);
@@ -654,7 +655,7 @@ bool systemIsEmulating()
 
 void systemGbBorderOn()
 {
-	if (emulating && theApp.cartridgeType == 1 && gbBorderOn)
+	if (emulating && systemCartridgeType == 1 && gbBorderOn)
 	{
 		theApp.updateWindowSize(theApp.videoOption);
 	}
@@ -662,7 +663,7 @@ void systemGbBorderOn()
 
 bool systemIsRunningGBA()
 {
-	return(theApp.cartridgeType == 0);
+	return(systemCartridgeType == 0);
 }
 
 bool systemIsSpedUp()
@@ -784,8 +785,7 @@ void systemUpdateMotionSensor(int i)
 	}
 }
 
-// VBAxyz stuff are not part of the core. Util.cpp might be a suitable place
-#include "ram_search.h"
+// VBAxyz stuff are not part of the core.
 
 void VBAOnEnteringFrameBoundary()
 {

@@ -2717,8 +2717,6 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 			goto failedLoadGB;
 		}
 
-		loadedMovieSnapshot = movieSnapshot;
-
 		if (movieSnapshot) // even if a movie isn't active we still want to parse through this in case other stuff is added
 		                   // later on in the save format
 		{
