@@ -1762,7 +1762,7 @@ defcase: default:
 				        {
 				            // Find an appropriate filename. This is OS specific, unfortunately.
 #if (defined(WIN32) && !defined(SDL))
-				            CString stateName = winGetSavestateFilename(theApp.filename, which);
+							CString stateName = winGetSavestateFilename(theApp.gameFilename, which);
 #else
 				            extern char saveDir[2048];
 				            extern char filename[2048];

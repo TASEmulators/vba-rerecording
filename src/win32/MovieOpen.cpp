@@ -52,7 +52,7 @@ BOOL MovieOpen::OnInitDialog()
 	m_editPauseFrame.LimitText(8);
 
 	// convert the ROM filename into a default movie name
-	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, ".vbm");
+	CString movieName = winGetDestFilename(theApp.gameFilename, IDS_MOVIE_DIR, ".vbm");
 
 	GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
 
@@ -101,7 +101,7 @@ void MovieOpen::OnBnClickedBrowse()
 	CString filter = winResLoadFilter(IDS_FILTER_MOVIE);
 	CString title  = winResLoadString(IDS_SELECT_MOVIE_NAME);
 
-	CString movieName = winGetDestFilename(theApp.filename, IDS_MOVIE_DIR, exts[0]);
+	CString movieName = winGetDestFilename(theApp.gameFilename, IDS_MOVIE_DIR, exts[0]);
 	CString movieDir  = winGetDestDir(IDS_MOVIE_DIR);
 
 	FileDlg dlg(this, movieName, filter, 1, "VBM", exts, movieDir, title, false, true);
@@ -161,7 +161,7 @@ u16 checksumBIOS()
 
 void fillRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
 {
-	if (theApp.cartridgeType == 0) // GBA
+	if (systemCartridgeType == 0) // GBA
 	{
 		extern u8 *bios, *rom;
 		memcpy(romTitle, (const char *)&rom[0xa0], 12); // GBA TITLE
@@ -343,7 +343,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				sprintf(buffer, "title=%s  ", str);
 				strcat(warning2, buffer);
 			}
-///			if (((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (theApp.cartridgeType == 0))
+///			if (((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (systemCartridgeType == 0))
 			{
 				sprintf(buffer, "type=%s  ",
 				        (movieInfo.header.typeFlags & MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags &
@@ -352,7 +352,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				                                                                                            MOVIE_TYPE_SGB) ? "SGB" : "GB");
 				strcat(warning1, buffer);
 
-				sprintf(buffer, "type=%s  ", theApp.cartridgeType ==
+				sprintf(buffer, "type=%s  ", systemCartridgeType ==
 				        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
 				strcat(warning2, buffer);
 			}
@@ -375,7 +375,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 					strcat(warning1, buffer);
 				}
 
-				if (theApp.cartridgeType == 0)
+				if (systemCartridgeType == 0)
 				{
 					memcpy(code, &romGameCode, 4);
 					code[4] = '\0';
@@ -395,7 +395,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				strcat(warning1, buffer);
 
 				sprintf(buffer,
-				        checksum == 0 ? "(bios=none)  " : theApp.cartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
+				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
 				        checksum);
 				strcat(warning2, buffer);
 			}

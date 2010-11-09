@@ -1,6 +1,7 @@
 #include "../stdafx.h"
-#include "../MainWnd.h"
+#include "../resource.h"
 #include <windows.h>
+#include <mmsystem.h>
 #include <cstdio>
 #include <cerrno>
 #include <cassert>
@@ -11,10 +12,6 @@
 #include "7zip.h"
 //#include "G_main.h"
 //#include "G_dsound.h"
-#include "../Sound.h"
-#include "../VBA.h"
-#include <mmsystem.h>
-#include "../resource.h"
 #include "OpenArchive.h"
 
 LRESULT CALLBACK ArchiveFileChooser(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -395,7 +392,6 @@ void ReleaseTempFileCategory(const char* cat, const char* exceptionFilename)
 // assumes arguments are character buffers with 2048 bytes each
 bool ObtainFile(const char* Name, char *const & LogicalName, char *const & PhysicalName, const char* category, const char** ignoreExtensions, int numIgnoreExtensions)
 {
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
 restart:
 	char ArchivePaths [2048];
 	strcpy(LogicalName, Name);

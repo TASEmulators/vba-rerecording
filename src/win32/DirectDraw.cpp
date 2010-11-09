@@ -686,7 +686,7 @@ void DirectDrawDisplay::render()
 			int copyX = 240;
 			int copyY = 160;
 
-			if (theApp.cartridgeType == 1)
+			if (systemCartridgeType == 1)
 			{
 				if (gbBorderOn)
 				{

@@ -286,7 +286,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 				CString filter = winResLoadFilter(IDS_FILTER_LUA);
 				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);
 
-				CString luaName = winGetDestFilename(theApp.filename, IDS_LUA_DIR, ".lua");
+				CString luaName = winGetDestFilename(theApp.gameFilename, IDS_LUA_DIR, ".lua");
 				CString luaDir = winGetDestDir(IDS_LUA_DIR);
 
 				filter.Replace('|', '\000');

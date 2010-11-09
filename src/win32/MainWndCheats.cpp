@@ -46,7 +46,7 @@ void MainWnd::OnCheatsSearchforcheats()
 		theApp.modelessCheatDialogIsOpen = false;
 	}
 
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		if (theApp.pauseDuringCheatSearch)
 		{
@@ -86,7 +86,7 @@ void MainWnd::OnUpdateCheatsSearchforcheats(CCmdUI*pCmdUI)
 void MainWnd::OnCheatsCheatlist()
 {
 	theApp.winCheckFullscreen();
-	if (theApp.cartridgeType == 0)
+	if (systemCartridgeType == 0)
 	{
 		GBACheatList dlg;
 		dlg.DoModal();
@@ -131,7 +131,7 @@ void MainWnd::OnCheatsLoadcheatlist()
 	CString filter = winResLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
+	CString cheatName = winGetDestFilename(theApp.gameFilename, IDS_CHEAT_DIR, exts[0]);
 	CString cheatDir = winGetDestDir(IDS_CHEAT_DIR);
 
 	FileDlg dlg(this, cheatName, filter, 0, "CLT", exts, cheatDir, title, false);
@@ -155,7 +155,7 @@ void MainWnd::OnCheatsSavecheatlist()
 	CString filter = winResLoadFilter(IDS_FILTER_CHEAT_LIST);
 	CString title  = winResLoadString(IDS_SELECT_CHEAT_LIST_NAME);
 
-	CString cheatName = winGetDestFilename(theApp.filename, IDS_CHEAT_DIR, exts[0]);
+	CString cheatName = winGetDestFilename(theApp.gameFilename, IDS_CHEAT_DIR, exts[0]);
 	CString cheatDir = winGetDestDir(IDS_CHEAT_DIR);
 
 	FileDlg dlg(this, cheatName, filter, 0, "CLT", exts, cheatDir, title, true);

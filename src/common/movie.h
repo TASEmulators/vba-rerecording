@@ -6,8 +6,8 @@
 #endif // _MSC_VER > 1000
 
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
-#include <stdlib.h>
 #include <string>
 
 #include "../Port.h"
@@ -176,7 +176,5 @@ bool8 VBAMovieSwitchToRecording();
 void VBAMovieSetPauseAt();
 void VBAMovieSetPauseAt(int at);
 int VBAMovieConvertCurrent();
-
-extern bool8 loadedMovieSnapshot;
 
 #endif // VBA_MOVIE_H

@@ -26,7 +26,6 @@
 #include "Reg.h"
 #include "WinMiscUtil.h"
 #include "WinResUtil.h"
-#include "VBA.h" // for IDS_???_DIR
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

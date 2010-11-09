@@ -154,10 +154,10 @@ CString BugReport::createReport()
 
 	if (systemIsEmulating())
 	{
-		AppendFormat(report, "File         : %s\r\n", theApp.szFile);
+		AppendFormat(report, "Game         : %s\r\n", theApp.gameFilename);
 
 		char buffer[20];
-		if (theApp.cartridgeType == 0)
+		if (systemCartridgeType == 0)
 		{
 			u32 check = 0;
 			for (int i = 0; i < 0x4000; i += 4)
@@ -223,7 +223,7 @@ CString BugReport::createReport()
 			if (res.GetLength() > 0)
 				AppendFormat(report, "Cart Save    : %s\r\n", res);
 		}
-		else if (theApp.cartridgeType == 1)
+		else if (systemCartridgeType == 1)
 		{
 			strncpy(buffer, (const char *)&gbRom[0x134], 15);
 			buffer[15] = 0;

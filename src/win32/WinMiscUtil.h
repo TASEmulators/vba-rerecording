@@ -18,7 +18,7 @@ extern const char IDS_WAV_DIR[];
 extern const char IDS_CAPTURE_DIR[];
 extern const char IDS_WATCH_DIR[];
 
-extern bool winFileExists(const char *filename);
+extern bool winFileExists(const CString &filename);
 extern bool winIsDriveRoot(const CString &file);
 extern CString winGetOriginalFilename(const CString &file);
 extern CString winGetDirFromFilename(const CString &file);
@@ -35,9 +35,11 @@ void winLoadCheatList(const char *name);
 void winSaveCheatList(const char *name);
 void winLoadCheatListDefault();
 void winSaveCheatListDefault();
-void winReadBatteryFile();
-void winWriteBatteryFile();
+bool winReadBatteryFile();
+bool winWriteBatteryFile();
+bool winEraseBatteryFile();
 bool winReadSaveGame(const char *name);
 bool winWriteSaveGame(const char *name);
+bool winEraseSaveGame(const char *name);
 
 #endif // VBA_WIN32_WINMISCUTIL_H

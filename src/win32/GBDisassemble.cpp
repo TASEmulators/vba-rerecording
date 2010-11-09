@@ -212,7 +212,7 @@ void GBDisassemble::refresh()
 	count = (r.bottom - r.top+1)/h;
 
 	m_list.ResetContent();
-	if (!emulating || theApp.cartridgeType != 1)
+	if (!emulating || systemCartridgeType != 1)
 		return;
 
 	char buffer[80];

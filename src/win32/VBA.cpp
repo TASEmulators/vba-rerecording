@@ -129,7 +129,7 @@ void DrawLuaGui()
 	int copyX		= 240, copyY       = 160;
 	int screenX		= 240, screenY     = 160;
 	int copyOffsetX = 0,   copyOffsetY = 0;
-	if (theApp.cartridgeType == 1)
+	if (systemCartridgeType == 1)
 	{
 		if (gbBorderOn)
 		{
@@ -377,7 +377,6 @@ VBA::VBA() : emulator(::theEmulator)
 	display			 = NULL;
 	menu			 = NULL;
 	popup			 = NULL;
-	cartridgeType	 = 0;
 	soundInitialized = false;
 	useBiosFile		 = false;
 	skipBiosFile	 = false;
@@ -517,33 +516,10 @@ VBA::~VBA()
 	InterframeCleanup();
 
 	saveSettings();
-/*
-   if(moviePlaying) {
-    if(movieFile != NULL) {
-      fclose(movieFile);
-      movieFile = NULL;
-    }
-    moviePlaying = false;
-    movieLastJoypad = 0;
-   }
- */
+
 	if (VBAMovieActive())
 		VBAMovieStop(true);
-/*
-   if(movieRecording) {
-    if(movieFile != NULL) {
-      // record the last joypad change so that the correct time can be
-      // recorded
-      fwrite(&movieFrame, 1, sizeof(int32), movieFile);
-      fwrite(&movieLastJoypad, 1, sizeof(u32), movieFile);
-      fclose(movieFile);
-      movieFile = NULL;
-    }
-    movieRecording = false;
-    moviePlaying = false;
-    movieLastJoypad = 0;
-   }
- */
+
 	if (aviRecorder)
 	{
 		delete aviRecorder;
@@ -560,17 +536,7 @@ VBA::~VBA()
 	soundPause();
 	soundShutdown();
 
-	if (gbRom != NULL || rom != NULL)
-	{
-		if (autoSaveLoadCheatList)
-			winSaveCheatListDefault();
-		winWriteBatteryFile();
-		cheatSearchCleanup(&cheatSearchData);
-		emulator.emuCleanUp();
-
-		if (VBAMovieActive())
-			VBAMovieStop(false);
-	}
+	((MainWnd *)(m_pMainWnd))->winFileClose();
 
 	if (input)
 		delete input;
@@ -620,7 +586,7 @@ BOOL VBA::InitInstance()
 	char *p = strrchr(winBuffer, '\\');
 	if (p)
 		*p = 0;
-	dir = winBuffer;
+	exeDir = winBuffer;
 
 	regInit(winBuffer);
 
@@ -673,9 +639,9 @@ BOOL VBA::InitInstance()
 				{
 					if (i + 1 >= argc || argv[i + 1][0] == '-')
 						goto invalidArgument;
-					szFile = argv[++i];
-					winCorrectPath(szFile);
-					filename = szFile;
+					romFilename = argv[++i];
+					winCorrectPath(romFilename);
+					gameFilename = romFilename;
 				}
 				else if (_stricmp(argv[i], "-bios") == 0)
 				{
@@ -840,8 +806,8 @@ invalidArgument:
 			else
 			{
 				// assume anything else is a ROM, for backward compatibility
-				szFile	 = argv[i++];
-				filename = szFile;
+				romFilename	 = argv[i++];
+				gameFilename = romFilename;
 				loadSettings();
 			}
 		}
@@ -852,12 +818,9 @@ invalidArgument:
         if (index != -1)
             filename = filename.Left(index);
  */
-		if (szFile.GetLength() > 0)
+		if (romFilename.GetLength() > 0)
 		{
-			if (((MainWnd *)theApp.m_pMainWnd)->winFileRun())
-				emulating = true;
-			else
-				emulating = false;
+			((MainWnd *)theApp.m_pMainWnd)->winFileRun();
 		}
 		free(argv);
 	}
@@ -1325,7 +1288,7 @@ void VBA::addRecentFile(const CString &file)
 
 void VBA::updateFrameSkip()
 {
-	switch (cartridgeType)
+	switch (systemCartridgeType)
 	{
 	case 0:
 		systemFrameSkip = frameSkip;
@@ -1409,7 +1372,7 @@ void VBA::updateWindowSize(int value)
 
 	videoOption = value;
 
-	if (cartridgeType == 1)
+	if (systemCartridgeType == 1)
 	{
 		if (gbBorderOn)
 		{

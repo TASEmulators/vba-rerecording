@@ -41,7 +41,7 @@ public:
 	void AddCommandsFromMenu(CMenu *pMenu, HTREEITEM hParent);
 	BOOL IsModified() const;
 	const CAcceleratorManager &GetResultMangager() const;
-	AccelEditor(CWnd *pParent, CAcceleratorManager *pExtMgr = NULL);  // non-standard constructor
+	AccelEditor(CWnd *pParent, CMenu *pMenu, CAcceleratorManager *pExtMgr = NULL);  // non-standard constructor
 	virtual BOOL PreTranslateMessage(MSG *pMsg);
 
 	// Dialog Data
@@ -63,7 +63,8 @@ protected:
 	int m_autoMode;
 	BOOL m_modified;
 	CAcceleratorManager m_mgr, m_result;
-	CAcceleratorManager *m_extMgr;
+	CAcceleratorManager *m_pExtMgr;
+	CMenu *m_pMenuSrc;
 	//}}AFX_DATA
 
 	// Overrides
