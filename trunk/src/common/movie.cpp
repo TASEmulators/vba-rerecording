@@ -543,7 +543,6 @@ static void SetPlayEmuSettings()
 	saveType	 = Movie.header.saveType;
 	sdlFlashSize = Movie.header.flashSize;
 
-	extern int systemCartridgeType;     // from SDL.cpp
 	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 #endif
@@ -734,12 +733,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 static void CalcROMInfo()
 {
-#if (defined(WIN32) && !defined(SDL))
 	if (systemCartridgeType == 0) // GBA
-#else
-	extern int systemCartridgeType; // from SDL.cpp
-	if (systemCartridgeType == 0) // GBA
-#endif
 	{
 		extern u8 *bios, *rom;
 		memcpy(Movie.header.romTitle, (const char *)&rom[0xa0], 12); // GBA TITLE
@@ -1068,7 +1062,7 @@ void VBAUpdateFrameCountDisplay()
 		}
 		default:
 		{
-			sprintf(frameDisplayString, "%d (no movie)", GBASystemCounters.frameCount);
+			sprintf(frameDisplayString, "%d (no movie)", systemCounters.frameCount);
 			break;
 		}
 		}
@@ -1079,8 +1073,8 @@ void VBAUpdateFrameCountDisplay()
 	/// SDL FIXME
 #endif
 		{
-//			sprintf(lagFrameDisplayString, " %c %d", GBASystemCounters.laggedLast ? '*' : '|', GBASystemCounters.lagCount);
-			sprintf(lagFrameDisplayString, " | %d%s", GBASystemCounters.lagCount, GBASystemCounters.laggedLast ? " *" : "");
+//			sprintf(lagFrameDisplayString, " %c %d", systemCounters.laggedLast ? '*' : '|', systemCounters.lagCount);
+			sprintf(lagFrameDisplayString, " | %d%s", systemCounters.lagCount, systemCounters.laggedLast ? " *" : "");
 			strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
 		}
 	}

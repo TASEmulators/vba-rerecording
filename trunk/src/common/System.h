@@ -79,6 +79,7 @@ struct EmulatedSystemCounters
 };
 
 extern struct EmulatedSystem theEmulator;
+extern struct EmulatedSystemCounters systemCounters;
 
 extern void log(const char *, ...);
 
