@@ -358,6 +358,12 @@ bool winImportGSACodeFile(CString &fileName)
 		return false;
 	}
 
+	if (systemCartridgeType == 1)
+	{
+		fclose(f);
+		return gbCheatReadGSCodeFile(fileName);
+	}
+
 	u32 len;
 	fread(&len, 1, 4, f);
 	if (len != 14)

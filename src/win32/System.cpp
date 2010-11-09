@@ -124,7 +124,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 	if (theApp.autoFire || theApp.autoFire2)
 	{
 		res ^= (theApp.autoFireToggle ? theApp.autoFire : theApp.autoFire2);
-		if (!theApp.autofireAccountForLag || !GBASystemCounters.laggedLast)
+		if (!theApp.autofireAccountForLag || !systemCounters.laggedLast)
 		{
 			theApp.autoFireToggle = !theApp.autoFireToggle;
 		}
@@ -510,7 +510,7 @@ void systemFrame(int rate)
 
 	extern int quitAfterTime;                   // from VBA.cpp
 	void	   VBAMovieStop(bool8 suppress_message); // from ../movie.cpp
-	if (quitAfterTime >= 0 && GBASystemCounters.frameCount == quitAfterTime)
+	if (quitAfterTime >= 0 && systemCounters.frameCount == quitAfterTime)
 	{
 		VBAMovieStop(true);
 		AfxPostQuitMessage(0);
@@ -564,7 +564,7 @@ void systemFrame(int rate)
 		//}
 	}
 
-	if (GBASystemCounters.frameCount % 10 == 0)
+	if (systemCounters.frameCount % 10 == 0)
 	{
 		if (theApp.rewindMemory)
 		{
@@ -705,7 +705,7 @@ bool systemPauseOnFrame()
 {
 	if (theApp.winPauseNextFrame)
 	{
-		if (!theApp.nextframeAccountForLag || !GBASystemCounters.laggedLast)
+		if (!theApp.nextframeAccountForLag || !systemCounters.laggedLast)
 		{
 			theApp.winPauseNextFrame = false;
 			return true;
@@ -718,6 +718,18 @@ bool systemPauseOnFrame()
 // FIXME: now platform-independant stuff
 // it should be admitted that the naming schema/code organization is a whole mess
 // these things should be moved somewhere else
+
+EmulatedSystemCounters systemCounters =
+{
+	// frameCount
+	0,
+	// lagCount
+	0,
+	// lagged
+	true,
+	// laggedLast
+	true,
+};
 
 // since this is supposed to be part of the core emulation, it shouldn't be moved to such a place as Util.cpp
 // currently unused

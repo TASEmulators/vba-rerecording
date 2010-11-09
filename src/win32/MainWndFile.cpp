@@ -37,11 +37,9 @@
 #include "../version.h"
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
-#include "../gba/GBACheats.h"
 #include "../gba/EEprom.h"
 #include "../gba/GBASound.h"
 #include "../gb/GB.h"
-#include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
@@ -178,8 +176,6 @@ void MainWnd::OnFileClose()
 	// save battery file before we change the filename...
 	CloseRamWindows();
 	winFileClose();
-	RedrawWindow(NULL, NULL, RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN);
-	systemSetTitle(VBA_NAME_AND_VERSION);
 }
 
 void MainWnd::OnUpdateFileClose(CCmdUI*pCmdUI)
@@ -395,14 +391,8 @@ void MainWnd::OnFileImportGamesharkcodefile()
 	               MB_OKCANCEL) == IDCANCEL)
 		return;
 
-	bool    res  = false;
 	CString file = dlg.GetPathName();
-	if (systemCartridgeType == 1)
-		res = gbCheatReadGSCodeFile(file);
-	else
-	{
-		res = winImportGSACodeFile(file);
-	}
+	bool    res  = winImportGSACodeFile(file);
 }
 
 void MainWnd::OnUpdateFileImportGamesharkcodefile(CCmdUI*pCmdUI)

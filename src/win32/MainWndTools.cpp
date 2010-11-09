@@ -246,7 +246,7 @@ void MainWnd::OnDebugFramesearch()
 	{
 		// starting a new search
 		theApp.frameSearching       = true;
-		theApp.frameSearchStart     = (Movie.state == MOVIE_STATE_NONE) ? GBASystemCounters.frameCount : Movie.currentFrame;
+		theApp.frameSearchStart     = (Movie.state == MOVIE_STATE_NONE) ? systemCounters.frameCount : Movie.currentFrame;
 		theApp.frameSearchLength    = 0;
 		theApp.frameSearchLoadValid = false;
 		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE*0], REWIND_SIZE); // 0 is start state, 1 is
@@ -367,7 +367,7 @@ void MainWnd::OnUpdateToolsLagCounter(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsLagCounterReset()
 {
-	GBASystemCounters.lagCount = 0;
+	systemCounters.lagCount = 0;
 }
 
 void MainWnd::OnToolsInputDisplay()

@@ -558,6 +558,7 @@ END_MESSAGE_MAP()
 // MainWnd message handlers
 
 bool vbaShuttingDown = false;
+bool reopenTheSameImage = false;
 
 void MainWnd::OnClose()
 {
@@ -653,8 +654,7 @@ void MainWnd::OnSystemMaximize()
 
 void MainWnd::OnPaint()
 {
-	CPaintDC dc(this); // device context for painting
-
+	CPaintDC dc(this); // device context for painting, calling BeginPaint/EndPaint internally
 	if (emulating && (!theApp.active || theApp.paused))
 	{
 		systemRedrawScreen();
@@ -1254,8 +1254,6 @@ static const char *s_romIgnoreExtensions[] = {
 	"htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
 };
 
-bool reopenTheSameImage = false;
-
 #include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
 
@@ -1293,6 +1291,10 @@ void MainWnd::winFileClose(bool reopening)
 	theApp.frameSearching	   = false;
 	theApp.frameSearchSkipping = false;
 	emulating = 0;
+
+	if (this)
+		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
+	systemSetTitle(VBA_NAME_AND_VERSION);
 }
 
 bool MainWnd::winFileRun()

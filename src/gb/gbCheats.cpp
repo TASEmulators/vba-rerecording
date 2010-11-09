@@ -424,10 +424,7 @@ bool gbCheatReadGSCodeFile(const char *fileName)
 	FILE *file = fopen(fileName, "rb");
 
 	if (!file)
-	{
-		systemMessage(MSG_CANNOT_OPEN_FILE, N_("Cannot open file %s"), fileName);
 		return false;
-	}
 
 	fseek(file, 0x18, SEEK_SET);
 	int count = 0;
