@@ -3884,8 +3884,7 @@ struct EmulatedSystem GBSystem =
 };
 
 // is there a reason to use more than one set of counters?
-extern EmulatedSystemCounters GBASystemCounters;
-EmulatedSystemCounters &GBSystemCounters = GBASystemCounters;
+EmulatedSystemCounters &GBSystemCounters = systemCounters;
 
 /*
    EmulatedSystemCounters GBSystemCounters =
