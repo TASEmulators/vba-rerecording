@@ -47,8 +47,6 @@ soundtick_t GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/7
 
 extern int32 speed;
 
-extern void soundResume();
-
 extern u8 soundWavePattern[4][32];
 
 extern u32		   soundBufferLen;
@@ -739,16 +737,9 @@ void gbSoundMix()
 	if (res < -32768)
 		res = -32768;
 
-	extern bool soundQuiet;	// from GBASound.cpp
-	int resFinal = soundQuiet ? 0 : res;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.frameAdvanceMuteNow)
-		resFinal = 0;
-#endif
-
 	if (soundReverse && !noSpecialEffects)
 	{
-		soundFinalWave[++soundBufferIndex] = resFinal;
+		soundFinalWave[++soundBufferIndex] = res;
 		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -756,7 +747,7 @@ void gbSoundMix()
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++] = resFinal;
+		soundFinalWave[soundBufferIndex++] = res;
 		if (soundFrameSoundWritten >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -833,15 +824,9 @@ void gbSoundMix()
 	if (res < -32768)
 		res = -32768;
 
-	resFinal = soundQuiet ? 0 : res;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.frameAdvanceMuteNow)
-		resFinal = 0;
-#endif
-
 	if (soundReverse && !noSpecialEffects)
 	{
-		soundFinalWave[-1 + soundBufferIndex++]		   = resFinal;
+		soundFinalWave[-1 + soundBufferIndex++]		   = res;
 		if ((soundFrameSoundWritten) >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -849,7 +834,7 @@ void gbSoundMix()
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++]			  = resFinal;
+		soundFinalWave[soundBufferIndex++]			  = res;
 		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -891,6 +876,7 @@ void gbSoundTick()
 			{
 				if (soundPaused)
 				{
+					extern void soundResume();
 					soundResume();
 				}
 
@@ -938,7 +924,7 @@ void gbSoundReset()
 	sound2Skip = 0;
 	sound2Index = 0;
 	sound2Continue = 0;
-	sound2EnvelopeVolume	=  0;
+	sound2EnvelopeVolume	= 0;
 	sound2EnvelopeATL		= 0;
 	sound2EnvelopeUpDown	= 0;
 	sound2EnvelopeATLReload = 0;
@@ -960,7 +946,7 @@ void gbSoundReset()
 	sound4NSteps			= 0;
 	sound4CountDown			= 0;
 	sound4Continue			= 0;
-	sound4EnvelopeVolume	=  0;
+	sound4EnvelopeVolume	= 0;
 	sound4EnvelopeATL		= 0;
 	sound4EnvelopeUpDown	= 0;
 	sound4EnvelopeATLReload = 0;

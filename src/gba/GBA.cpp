@@ -4089,12 +4089,6 @@ updateLoop:
 							{
 								systemSetPause(true);
 							}
-							else
-							{
-				#if (defined(WIN32) && !defined(SDL))
-								theApp.frameAdvanceMuteNow = false;
-				#endif
-							}
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);

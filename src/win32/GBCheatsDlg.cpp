@@ -173,8 +173,7 @@ static void dlgSystemMessage(CWnd *hWnd, int number, const char *defaultMsg, ...
 	buffer.FormatV(msg, valist);
 
 	theApp.winCheckFullscreen();
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
-
+	systemSoundClearBuffer();
 	hWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK|MB_ICONERROR);
 
 	va_end(valist);

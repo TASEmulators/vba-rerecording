@@ -209,8 +209,7 @@ int FileDlg::getFilterIndex()
 
 int FileDlg::DoModal()
 {
-	if (theApp.sound) theApp.sound->clearAudioBuffer();
-
+	systemSoundClearBuffer();
 	BOOL res = isSave ? GetSaveFileName(&m_ofn) :
 	           GetOpenFileName(&m_ofn);
 

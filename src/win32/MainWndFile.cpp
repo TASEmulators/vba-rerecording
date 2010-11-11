@@ -108,7 +108,7 @@ void MainWnd::OnFileRecentReset()
 	CString str1 = "Really clear your recent ROMs list?"; //winResLoadString(IDS_REALLY_CLEAR);
 	CString str2 = winResLoadString(IDS_CONFIRM_ACTION);
 
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 	if (MessageBox(str1,
 	               str2,
 	               MB_YESNO|MB_DEFBUTTON2) == IDNO)
@@ -345,7 +345,7 @@ void MainWnd::OnFileImportBatteryfile()
 	CString str1 = winResLoadString(IDS_SAVE_WILL_BE_LOST);
 	CString str2 = winResLoadString(IDS_CONFIRM_ACTION);
 
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 	if (MessageBox(str1,
 	               str2,
 	               MB_OKCANCEL) == IDCANCEL)
@@ -385,7 +385,7 @@ void MainWnd::OnFileImportGamesharkcodefile()
 	CString str1 = winResLoadString(IDS_CODES_WILL_BE_LOST);
 	CString str2 = winResLoadString(IDS_CONFIRM_ACTION);
 
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 	if (MessageBox(str1,
 	               str2,
 	               MB_OKCANCEL) == IDCANCEL)
@@ -416,7 +416,7 @@ void MainWnd::OnFileImportGamesharksnapshot()
 	CString str1 = winResLoadString(IDS_SAVE_WILL_BE_LOST);
 	CString str2 = winResLoadString(IDS_CONFIRM_ACTION);
 
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 	if (MessageBox(str1,
 	               str2,
 	               MB_OKCANCEL) == IDCANCEL)

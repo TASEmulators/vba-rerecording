@@ -113,7 +113,7 @@ struct SMovieFileHeader
 struct SMovie
 {
 	enum MovieState state;
-	char  filename [/*_MAX_PATH*/ 260]; // FIXME: should use a string instead
+	char  filename[/*_MAX_PATH*/ 260]; // FIXME: should use a string instead
 	FILE* file;
 	uint8 readOnly;
 	int   pauseFrame;

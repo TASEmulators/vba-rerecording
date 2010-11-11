@@ -137,7 +137,7 @@ int32 sound1ATL = 0;
 int32 sound1Skip = 0;
 int32 sound1Index = 0;
 int32 sound1Continue = 0;
-int32 sound1EnvelopeVolume	  =  0;
+int32 sound1EnvelopeVolume	  = 0;
 int32 sound1EnvelopeATL		  = 0;
 int32 sound1EnvelopeUpDown	  = 0;
 int32 sound1EnvelopeATLReload = 0;
@@ -153,7 +153,7 @@ int32 sound2ATL = 0;
 int32 sound2Skip = 0;
 int32 sound2Index = 0;
 int32 sound2Continue = 0;
-int32 sound2EnvelopeVolume	  =  0;
+int32 sound2EnvelopeVolume	  = 0;
 int32 sound2EnvelopeATL		  = 0;
 int32 sound2EnvelopeUpDown	  = 0;
 int32 sound2EnvelopeATLReload = 0;
@@ -182,7 +182,7 @@ int32 sound4ShiftIndex		  = 0;
 int32 sound4NSteps			  = 0;
 int32 sound4CountDown		  = 0;
 int32 sound4Continue		  = 0;
-int32 sound4EnvelopeVolume	  =  0;
+int32 sound4EnvelopeVolume	  = 0;
 int32 sound4EnvelopeATL		  = 0;
 int32 sound4EnvelopeUpDown	  = 0;
 int32 sound4EnvelopeATLReload = 0;
@@ -207,8 +207,6 @@ u8	  soundDSBValue = 0;
 
 int32 soundEnableFlag = 0x3ff;
 int32 soundMutedFlag  = 0;
-
-bool soundQuiet	= 0;
 
 s16	  soundFilter[4000];
 s16	  soundRight[5] = { 0, 0, 0, 0, 0 };
@@ -1143,15 +1141,9 @@ void soundMix()
 	if (res < -32768)
 		res = -32768;
 
-	int resFinal = soundQuiet ? 0 : res;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.frameAdvanceMuteNow)
-		resFinal = 0;
-#endif
-
 	if (soundReverse && !noSpecialEffects)
 	{
-		soundFinalWave[++soundBufferIndex] = resFinal;
+		soundFinalWave[++soundBufferIndex] = res;
 		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -1159,7 +1151,7 @@ void soundMix()
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++] = resFinal;
+		soundFinalWave[soundBufferIndex++] = res;
 		if (soundFrameSoundWritten >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -1266,15 +1258,9 @@ void soundMix()
 	if (res < -32768)
 		res = -32768;
 
-	resFinal = soundQuiet ? 0 : res;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.frameAdvanceMuteNow)
-		resFinal = 0;
-#endif
-
 	if (soundReverse && !noSpecialEffects)
 	{
-		soundFinalWave[-1 + soundBufferIndex++]		   = resFinal;
+		soundFinalWave[-1 + soundBufferIndex++]		   = res;
 		if ((soundFrameSoundWritten) >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -1282,7 +1268,7 @@ void soundMix()
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++]			  = resFinal;
+		soundFinalWave[soundBufferIndex++]			  = res;
 		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
 			/*assert(false)*/;
 		else
@@ -1344,13 +1330,11 @@ void soundShutdown()
 void soundPause()
 {
 	systemSoundPause();
-	soundPaused = 1;
 }
 
 void soundResume()
 {
 	systemSoundResume();
-	soundPaused = 0;
 }
 
 void soundToggle(int channels)
@@ -1392,16 +1376,6 @@ int soundGetEnable()
 	return (soundEnableFlag & 0x30f);
 }
 
-void soundSetQuiet(bool isQuiet)
-{
-	soundQuiet = isQuiet;
-}
-
-bool soundGetQuiet()
-{
-	return soundQuiet;
-}
-
 void soundSetMuted(bool isMuted)
 {
 	int32 old = soundMutedFlag;
@@ -1441,7 +1415,7 @@ void soundReset()
 	sound1Skip = 0;
 	sound1Index = 0;
 	sound1Continue = 0;
-	sound1EnvelopeVolume	=  0;
+	sound1EnvelopeVolume	= 0;
 	sound1EnvelopeATL		= 0;
 	sound1EnvelopeUpDown	= 0;
 	sound1EnvelopeATLReload = 0;
@@ -1457,7 +1431,7 @@ void soundReset()
 	sound2Skip = 0;
 	sound2Index = 0;
 	sound2Continue = 0;
-	sound2EnvelopeVolume	=  0;
+	sound2EnvelopeVolume	= 0;
 	sound2EnvelopeATL		= 0;
 	sound2EnvelopeUpDown	= 0;
 	sound2EnvelopeATLReload = 0;
@@ -1483,7 +1457,7 @@ void soundReset()
 	sound4NSteps			= 0;
 	sound4CountDown			= 0;
 	sound4Continue			= 0;
-	sound4EnvelopeVolume	=  0;
+	sound4EnvelopeVolume	= 0;
 	sound4EnvelopeATL		= 0;
 	sound4EnvelopeUpDown	= 0;
 	sound4EnvelopeATLReload = 0;
