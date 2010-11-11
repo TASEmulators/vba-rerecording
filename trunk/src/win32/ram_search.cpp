@@ -48,13 +48,6 @@
 #include "../gb/gbGlobals.h"
 #include "../common/vbalua.h"
 
-#ifdef _WIN32
-#include "../win32/Sound.h"
-static void Clear_Sound_Buffer() { if(theApp.sound) theApp.sound->clearAudioBuffer(); }
-#else
-static void Clear_Sound_Buffer() {}
-#endif
-
 static inline u8* HardwareToSoftwareAddress(HWAddressType address)
 {
 	if(!emulating)
@@ -135,7 +128,7 @@ static const int tooManyRegionsForUndo = 10000;
 
 void ResetMemoryRegions()
 {
-	Clear_Sound_Buffer();
+	systemSoundClearBuffer();
 	EnterCriticalSection(&s_activeMemoryRegionsCS);
 
 	s_activeMemoryRegions.clear();
@@ -1198,7 +1191,7 @@ void signal_new_size ()
 	{
 		// store selection ranges
 		// unfortunately this can take a while if the user has a huge range of items selected
-		Clear_Sound_Buffer();
+		systemSoundClearBuffer();
 		int selCount = ListView_GetSelectedCount(lv);
 		int size = (rs_last_type_size=='b' || !rs_last_no_misalign) ? 1 : 2;
 		int watchIndex = -1;
@@ -1310,7 +1303,7 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 	{
 		if(!AutoSearchAutoRetry)
 		{
-			Clear_Sound_Buffer();
+			systemSoundClearBuffer();
 			int answer = MessageBox(RamSearchHWnd,"Choosing Retry will reset the search once and continue autosearching.\nChoose Ignore will reset the search whenever necessary and continue autosearching.\nChoosing Abort will reset the search once and stop autosearching.","Autosearch - out of results.",MB_ABORTRETRYIGNORE|MB_DEFBUTTON2|MB_ICONINFORMATION);
 			if(answer == IDABORT)
 			{
@@ -1332,7 +1325,7 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 
 	if (AutoSearch && ResultCount)
 	{
-		Clear_Sound_Buffer();
+		systemSoundClearBuffer();
 		if(!rs_val_valid)
 			rs_val_valid = Set_RS_Val();
 		if(rs_val_valid)
@@ -1839,7 +1832,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_C_UNDO:
 					if(s_undoType>0)
 					{
-						Clear_Sound_Buffer();
+						systemSoundClearBuffer();
 						EnterCriticalSection(&s_activeMemoryRegionsCS);
 						if(s_activeMemoryRegions.size() < tooManyRegionsForUndo)
 						{
@@ -1867,7 +1860,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					if (!AutoSearch) {rv = true; break;}
 				case IDC_C_SEARCH:
 				{
-					Clear_Sound_Buffer();
+					systemSoundClearBuffer();
 
 					if(!rs_val_valid && !(rs_val_valid = Set_RS_Val()))
 						goto invalid_field;

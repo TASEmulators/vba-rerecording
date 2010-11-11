@@ -1,6 +1,5 @@
 #pragma once
 
-
 // TextOptions dialog
 
 class TextOptions : public CDialog

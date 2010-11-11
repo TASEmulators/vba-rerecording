@@ -886,7 +886,7 @@ void MainWnd::OnInitMenu(CMenu *pMenu)
 		// HACK: we only want to call this if the user is pulling down the menu,
 		// but TranslateAccelerator also causes OnInitMenu to be called, so ignore that
 
-		soundPause();
+		systemSoundPause();
 	}
 }
 
@@ -910,7 +910,7 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 		if (!theApp.paused && emulating)
 		{
-			soundResume();
+			systemSoundResume();
 		}
 	}
 	else
@@ -919,7 +919,7 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 		if (!theApp.paused && emulating)
 		{
-			soundPause();
+			systemSoundPause();
 		}
 
 		memset(theApp.delta, 255, sizeof(theApp.delta));
@@ -927,7 +927,7 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 	if (theApp.muteWhenInactive)
 	{
-		soundSetQuiet(!activated);
+		theApp.winMuteForNow = !activated;
 	}
 
 	if (theApp.paused && emulating)
@@ -969,7 +969,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 	// FIXME: required for the accel key fix
 	fullUpdated = false;
 
-	if (theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 
 	char szFile[1024];
 	char ext[1024];

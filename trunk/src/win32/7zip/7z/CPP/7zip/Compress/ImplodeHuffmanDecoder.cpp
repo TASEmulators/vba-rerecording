@@ -34,7 +34,7 @@ bool CDecoder::SetCodeLengths(const Byte *codeLengths)
   // tmpPositions[0] = m_Positions[0] = m_Limitits[0] = 0;
   m_Limitits[kNumBitsInLongestCode + 1] = 0;
   m_Positions[kNumBitsInLongestCode + 1] = 0;
-  lenCounts[kNumBitsInLongestCode + 1] =  0;
+  lenCounts[kNumBitsInLongestCode + 1] = 0;
 
 
   UInt32 startPos = 0;

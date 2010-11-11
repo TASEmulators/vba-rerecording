@@ -281,7 +281,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			case IDC_BUTTON_LUABROWSE:
 			{
-				if(theApp.sound) theApp.sound->clearAudioBuffer();
+				systemSoundClearBuffer();
 
 				CString filter = winResLoadFilter(IDS_FILTER_LUA);
 				CString title  = winResLoadString(IDS_SELECT_LUA_NAME);

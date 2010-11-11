@@ -57,6 +57,10 @@ namespace { const void * const s_STATIC_ASSERTION_(static_cast<void *>(BUTTON_RE
 #define BMP_BUFFER_MAX_DEPTH (4)
 static u8 bmpBuffer[BMP_BUFFER_MAX_WIDTH * BMP_BUFFER_MAX_HEIGHT * BMP_BUFFER_MAX_DEPTH];
 
+static int s_stockThrottleValues[] = {
+	6, 15, 25, 25, 37, 50, 75, 87, 100, 112, 125, 150, 200, 300, 400, 600, 800, 1000
+};
+
 // systemXYZ: Win32 stuff
 
 // input
@@ -420,8 +424,7 @@ void systemMessage(int number, const char *defaultMsg, ...)
 	buffer.FormatV(msg, valist);
 
 	theApp.winCheckFullscreen();
-	if (theApp.sound) theApp.sound->clearAudioBuffer();
-
+	systemSoundClearBuffer();
 	AfxGetApp()->m_pMainWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK | MB_ICONERROR);
 
 	va_end(valist);
@@ -474,11 +477,62 @@ void systemSetTitle(const char *title)
 	}
 }
 
-// time
+// timing/speed
 
 u32 systemGetClock()
 {
 	return timeGetTime();
+}
+
+void systemIncreaseThrottle()
+{
+	int throttle = theApp.throttle;
+
+	if (throttle < 6)
+		++throttle;
+	else if (throttle < s_stockThrottleValues[_countof(s_stockThrottleValues) - 1])
+	{
+		int i = 0;
+		while (throttle >= s_stockThrottleValues[i])
+		{
+			++i;
+		}
+		throttle = s_stockThrottleValues[i];
+	}
+
+	systemSetThrottle(throttle);
+}
+
+void systemDecreaseThrottle()
+{
+	int throttle = theApp.throttle;
+
+	if (throttle > 6)
+	{
+		int i = _countof(s_stockThrottleValues) - 1;
+		while (throttle <= s_stockThrottleValues[i])
+		{
+			--i;
+		}
+		throttle = s_stockThrottleValues[i];
+	}
+	else if (throttle > 1)
+		--throttle;
+
+	systemSetThrottle(throttle);
+}
+
+void systemSetThrottle(int throttle)
+{
+	theApp.throttle = throttle;
+	char str[256];
+	sprintf(str, "%d%% throttle speed", theApp.throttle);
+	systemScreenMessage(str);
+}
+
+int systemGetThrottle()
+{
+	return theApp.throttle;
 }
 
 void systemFrame(int rate)
@@ -611,12 +665,26 @@ void systemSoundPause()
 {
 	if (theApp.sound)
 		theApp.sound->pause();
+	soundPaused = 1;
 }
 
 void systemSoundResume()
 {
 	if (theApp.sound)
 		theApp.sound->resume();
+	soundPaused = 0;
+}
+
+bool systemSoundIsPaused()
+{
+//	return soundPaused;
+	return !(theApp.sound && theApp.sound->isPlaying());
+}
+
+void systemSoundClearBuffer()
+{
+	if (theApp.sound)
+		theApp.sound->clearAudioBuffer();
 }
 
 void systemSoundReset()
@@ -685,19 +753,14 @@ void systemSetPause(bool pause)
 		theApp.paused	 = true;
 		theApp.speedupToggle = false;
 		theApp.winPauseNextFrame = false;
-		soundPause();
+		systemSoundPause();
 		systemRefreshScreen();;
 	}
 	else
 	{
 		theApp.paused	 = false;
-		soundResume();
+		systemSoundResume();
 	}
-}
-
-void systemPauseEmulator(bool /*forced*/)
-{
-	theApp.winPauseNextFrame = true;
 }
 
 // aka. frame advance
@@ -707,7 +770,7 @@ bool systemPauseOnFrame()
 	{
 		if (!theApp.nextframeAccountForLag || !systemCounters.laggedLast)
 		{
-			theApp.winPauseNextFrame = false;
+			theApp.winPauseNextFrame   = false;
 			return true;
 		}
 	}

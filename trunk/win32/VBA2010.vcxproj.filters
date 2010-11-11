@@ -1104,9 +1104,6 @@
     <ClInclude Include="..\src\win32\IUpdate.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\Joypad.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\LangSelect.h">
       <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
@@ -1220,6 +1217,9 @@
     </ClInclude>
     <ClInclude Include="..\src\win32\KeyboardEdit.h">
       <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Joypad.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

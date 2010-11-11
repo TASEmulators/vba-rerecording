@@ -218,8 +218,6 @@ void MainWnd::OnDebugNextframe()
 {
 	if (theApp.paused)
 		theApp.paused = false;
-	if (theApp.muteFrameAdvance)
-		theApp.frameAdvanceMuteNow = true;
 	theApp.winPauseNextFrame = true;
 }
 
@@ -775,7 +773,8 @@ void MainWnd::OnUpdateAsscWithSaveState(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsResumeRecord()
 {
-	VBAMovieSwitchToRecording();
+	if (!VBAMovieSwitchToRecording())
+		systemScreenMessage("Cannot resume recording for now");
 }
 
 void MainWnd::OnUpdateToolsResumeRecord(CCmdUI*pCmdUI)

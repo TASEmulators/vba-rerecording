@@ -192,7 +192,7 @@ public:
 	bool		 nvAudioLog;
 	bool		 painting;  // for systemDrawScreen()
 	int			 mouseCounter;
-	bool		 frameAdvanceMuteNow;
+	bool		 winMuteForNow;
 	bool		 winPauseNextFrame;
 	bool		 wasPaused;
 	int			 fsMaxScale;

@@ -477,10 +477,11 @@ void DirectSound::write()
 			soundPaused = 1;
 		}
 	}
+
 	// Obtain memory address of write block. This will be in two parts
 	// if the block wraps around.
-	hr = dsbSecondary->Lock(soundNextPosition, soundBufferLen, &lpvPtr1,
-	                        &dwBytes1, &lpvPtr2, &dwBytes2,
+	hr = dsbSecondary->Lock(soundNextPosition, soundBufferLen,
+	                        &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2,
 	                        0);
 
 	if (FAILED(hr))
@@ -494,26 +495,37 @@ void DirectSound::write()
 	if (DSERR_BUFFERLOST == hr)
 	{
 		dsbSecondary->Restore();
-		hr = dsbSecondary->Lock(soundNextPosition, soundBufferLen, &lpvPtr1,
-		                        &dwBytes1, &lpvPtr2, &dwBytes2,
+		hr = dsbSecondary->Lock(soundNextPosition, soundBufferLen,
+		                        &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2,
 		                        0);
 	}
 
-	soundNextPosition += soundBufferLen;
-	soundNextPosition  = soundNextPosition % soundBufferTotalLen;
-
 	if (SUCCEEDED(hr))
 	{
-		// Write to pointers.
-		if (NULL != lpvPtr1)
-			CopyMemory(lpvPtr1, soundFinalWave, dwBytes1);
-		if (NULL != lpvPtr2)
-			CopyMemory(lpvPtr2, soundFinalWave + dwBytes1, dwBytes2);
+		if (theApp.muteFrameAdvance && theApp.winPauseNextFrame || theApp.winMuteForNow)
+		{
+			// Write 0 to pointers.
+			if (NULL != lpvPtr1)
+				ZeroMemory(lpvPtr1, dwBytes1);
+			if (NULL != lpvPtr2)
+				ZeroMemory(lpvPtr2, dwBytes2);
+		}
+		else
+		{
+			// Write to pointers.
+			if (NULL != lpvPtr1)
+				CopyMemory(lpvPtr1, soundFinalWave, dwBytes1);
+			if (NULL != lpvPtr2)
+				CopyMemory(lpvPtr2, soundFinalWave + dwBytes1, dwBytes2);
+		}
 
 		// Release the data back to DirectSound.
 		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2,
 		                          dwBytes2);
 	}
+
+	soundNextPosition += soundBufferLen;
+	soundNextPosition %= soundBufferTotalLen;
 }
 
 void DirectSound::clearAudioBuffer()

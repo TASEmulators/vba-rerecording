@@ -44,9 +44,7 @@ using namespace std;
 #include "../win32/Sound.h"
 //#include "../win32/WinMiscUtil.h"
 extern CString winGetSavestateFilename(const CString &LogicalRomName, int nID);
-static void Clear_Sound_Buffer() { if (theApp.sound) theApp.sound->clearAudioBuffer(); }
 #else
-static void Clear_Sound_Buffer() {}
 #endif
 
 extern "C"
@@ -3323,7 +3321,7 @@ draw_outline:
 				        else
 							return luaL_error(L, "invalid popup type \"%s\"", type);
 
-				        Clear_Sound_Buffer();
+				        systemSoundClearBuffer();
 				        int result = AfxGetApp()->m_pMainWnd->MessageBox(message, "Lua Script Pop-up", t);
 
 				        lua_settop(L, 1);
@@ -4016,7 +4014,7 @@ use_console:
 
 #if (defined(WIN32) && !defined(SDL))
 				            // Uh oh
-				            Clear_Sound_Buffer();
+				            systemSoundClearBuffer();
 				            int ret = AfxGetApp()->m_pMainWnd->MessageBox(
 				                "The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)",
 				                "Lua Script Gone Nuts?",

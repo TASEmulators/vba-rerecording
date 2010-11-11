@@ -87,7 +87,7 @@ void AssertFailed(char *file, int line, char *exp)
 
 	sprintf(buffer, "File %s\nLine %d\nExpression %s\nPress Retry to debug",
 	        file, line, exp);
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 	int res = MessageBox(*theApp.m_pMainWnd, buffer, "Assertion failed!",
 	                     MB_ICONHAND | MB_SETFOREGROUND | MB_TASKMODAL |
 	                     MB_ABORTRETRYIGNORE);
@@ -140,7 +140,7 @@ void ApiFailure(char *pcszFilename, int nLine, char *pcszExpression)
 	(void)LocalFree((LPVOID)lpMsgBuf);
 	HWND hwndParent = ::GetActiveWindow();
 	hwndParent = ::GetLastActivePopup(hwndParent);
-	if(theApp.sound) theApp.sound->clearAudioBuffer();
+	systemSoundClearBuffer();
 	int nCode = ::MessageBoxA(hwndParent,
 	                          szMessage,
 	                          "Debug Helper",

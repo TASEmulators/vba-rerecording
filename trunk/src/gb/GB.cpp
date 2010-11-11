@@ -3389,12 +3389,6 @@ void gbEmulate(int ticksToStop)
 						{
 							systemSetPause(true);
 						}
-						else
-						{
-#if (defined(WIN32) && !defined(SDL))
-							theApp.frameAdvanceMuteNow = false;
-#endif
-						}
 					}
 					else
 					{

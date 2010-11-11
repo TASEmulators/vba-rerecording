@@ -438,7 +438,7 @@ VBA::VBA() : emulator(::theEmulator)
 	nextframeAccountForLag	= false;
 	muteFrameAdvance		= false;
 	muteWhenInactive		= false;
-	frameAdvanceMuteNow		= false;
+	winMuteForNow		= false;
 	winGbPrinterEnabled		= false;
 	threadPriority			= 2;
 	disableMMX				= false;
