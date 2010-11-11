@@ -773,13 +773,22 @@ void MainWnd::OnUpdateAsscWithSaveState(CCmdUI*pCmdUI)
 
 void MainWnd::OnToolsResumeRecord()
 {
-	if (!VBAMovieSwitchToRecording())
-		systemScreenMessage("Cannot resume recording for now");
+	// toggle playing/recording
+	if (VBAMovieRecording())
+	{
+		if (!VBAMovieSwitchToPlaying())
+			systemScreenMessage("Cannot continue playing");
+	}
+	else
+	{
+		if (!VBAMovieSwitchToRecording())
+			systemScreenMessage("Cannot resume recording now");
+	}
 }
 
 void MainWnd::OnUpdateToolsResumeRecord(CCmdUI*pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieAllowsRerecording());
+	pCmdUI->Enable(VBAMovieActive());
 }
 
 void MainWnd::OnToolsPlayRestart()

@@ -460,8 +460,8 @@ static void write_frame_controller_data(int i)
 void VBAMovieInit()
 {
 	memset(&Movie, 0, sizeof(Movie));
-	Movie.state		 = MOVIE_STATE_NONE;
-	Movie.pauseFrame = -1;
+	Movie.state		  = MOVIE_STATE_NONE;
+	Movie.pauseFrame  = -1;
 	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
 		currentButtons[i] = 0;
 }
@@ -1100,7 +1100,13 @@ void VBAMovieUpdateState()
 			// the movie ends anyway; what to do next depends on the settings
 			change_state(MOVIE_STATE_END);
 			systemScreenMessage("Movie end");
-
+		}
+	}
+	
+	if (Movie.state == MOVIE_STATE_END)
+	{
+		if (Movie.currentFrame == Movie.header.length_frames)
+		{
 #if (defined(WIN32) && !defined(SDL))
 			willPause = theApp.movieOnEndPause;
 #else
@@ -1110,12 +1116,13 @@ void VBAMovieUpdateState()
 #if (defined(WIN32) && !defined(SDL))
 			if (theApp.movieOnEndBehavior == 1)
 			{
-				// do nothing until next frame
+				// the old behavior
+				VBAMovieRestart();
 			}
 			else if (theApp.movieOnEndBehavior == 2)
 			{
 #else
-			// SDL FIXME
+		// SDL FIXME
 #endif
 				if (Movie.RecordedThisSession)
 				{
@@ -1123,6 +1130,7 @@ void VBAMovieUpdateState()
 					// they probably don't want the movie to end now during playback,
 					// so switch back to recording when it reaches the end
 					VBAMovieSwitchToRecording();
+					systemScreenMessage("Recording resumed");
 					willPause = true;
 				}
 #if (defined(WIN32) && !defined(SDL))
@@ -1138,21 +1146,17 @@ void VBAMovieUpdateState()
 				change_state(MOVIE_STATE_NONE);
 			}
 		}
-	}
-	else if (Movie.state == MOVIE_STATE_END)
-	{
-#if (defined(WIN32) && !defined(SDL))
-		if (theApp.movieOnEndBehavior == 1 && Movie.currentFrame == Movie.header.length_frames + 1)
-		{
-			VBAMovieRestart();
-		}
-#endif
-	}
+	} // end if (Movie.state == MOVIE_STATE_END)
 
 	// if the movie's been set to pause at a certain frame
-	if (willPause || (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame))
+	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
 	{
 		Movie.pauseFrame = -1;
+		willPause = true;
+	}
+
+	if (willPause)
+	{
 		systemSetPause(true);
 	}
 }
@@ -1434,7 +1438,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		// by loading another savestate or playing the movie from the beginning
 
 		// don't allow loading a state inconsistent with the current movie
-		if (end_frame < Movie.header.length_frames && end_frame < current_frame)
+		if (end_frame < current_frame && end_frame < Movie.header.length_frames)
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		uint32 length_history = min(current_frame, end_frame);
@@ -1446,14 +1450,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame = current_frame;
 
-		if (current_frame >= Movie.header.length_frames)
-		{
-			change_state(MOVIE_STATE_END);
-		}
-		else
-		{
-			change_state(MOVIE_STATE_PLAY);
-		}
+		change_state(MOVIE_STATE_PLAY);
 	}
 	else
 	{
@@ -1465,8 +1462,11 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		if (!VBALuaRerecordCountSkip())
 			++Movie.header.rerecord_count;
 
+		Movie.RecordedThisSession = true;
+
 		reserve_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
+
 		// for consistency, no auto movie conversion here since we don't auto convert the corresponding savestate
 		flush_movie();
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
@@ -1495,22 +1495,45 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		}
 	}
 
+	VBAMovieUpdateState();
+
 	return MOVIE_SUCCESS;
 }
 
-// bool8 doesn't make much sense if it is meant to solve any portability problem,
-//   because there's no guarantee that true == 1 and false == 0 (or TRUE == 1 and FALSE == 0) on all platforms.
-//   while using user-defined boolean types might impact on performance.
-//   the more reliable (and faster!) way to maintain cross-platform I/O compatibility is
-//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
-//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
-bool VBAMovieAllowsRerecording()
+bool VBAMovieEnded()
 {
-	bool allows = /*!VBAMovieReadOnly() &&*/ (Movie.currentFrame <= Movie.header.length_frames) && (Movie.state != MOVIE_STATE_NONE);
-	return allows;
+	return (Movie.state == MOVIE_STATE_END);
+//	return (Movie.state != MOVIE_STATE_NONE && Movie.currentFrame >= Movie.header.length_frames);
 }
 
-bool8 VBAMovieSwitchToRecording()
+bool VBAMovieAllowsRerecording()
+{
+	bool allows = (Movie.state != MOVIE_STATE_NONE) && (Movie.currentFrame <= Movie.header.length_frames);
+	return /*!VBAMovieReadOnly() &&*/ allows;
+}
+
+bool VBAMovieSwitchToPlaying()
+{
+	if (!VBAMovieActive())
+		return false;
+
+	if (!Movie.readOnly)
+	{
+		VBAMovieToggleReadOnly();
+	}
+
+	change_state(MOVIE_STATE_PLAY);
+	systemScreenMessage("Movie replay (continue)");
+
+	bool8 recorded = Movie.RecordedThisSession;
+	Movie.RecordedThisSession = false;
+	VBAMovieUpdateState();
+	Movie.RecordedThisSession = recorded;
+
+	return true;
+}
+
+bool VBAMovieSwitchToRecording()
 {
 	if (!VBAMovieAllowsRerecording())
 		return false;
@@ -1527,7 +1550,7 @@ bool8 VBAMovieSwitchToRecording()
 	if (!VBALuaRerecordCountSkip())
 		++Movie.header.rerecord_count;
 
-	flush_movie(); // necessary
+	flush_movie(); // necessary?
 
 	return true;
 }
@@ -1586,6 +1609,8 @@ void VBAMovieRestart()
 {
 	if (VBAMovieActive())
 	{
+		systemSoundClearBuffer();
+
 		bool8 modified = Movie.RecordedThisSession;
 
 		VBAMovieStop(true);

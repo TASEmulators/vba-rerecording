@@ -2180,7 +2180,7 @@ BEGIN
             MENUITEM "&Watch From Beginning",       ID_MOVIE_RESTART_PLAY
             MENUITEM SEPARATOR
             MENUITEM "Record &New Movie...",        ID_MOVIE_RECORD
-            MENUITEM "&Resume Record From Now",     ID_MOVIE_RESUME_RECORD
+            MENUITEM "&Resume/Exit Recording",      ID_MOVIE_RESUME_RECORD
             MENUITEM SEPARATOR
             MENUITEM "Read-&Only Mode",             ID_MOVIE_READONLY
             POPUP "When Movie &Ends"
