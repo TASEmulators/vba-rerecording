@@ -127,6 +127,12 @@ struct SMovie
 	uint32 inputBufferSize;
 	uint8* inputBufferPtr;
 
+	// bool8 doesn't make much sense if it is meant to solve any portability problem,
+	//   because there's no guarantee that true == 1 and false == 0 (or TRUE == 1 and FALSE == 0) on all platforms.
+	//   while using user-defined boolean types might impact on performance.
+	//   the more reliable (and faster!) way to maintain cross-platform I/O compatibility is
+	//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
+	//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
 	bool8 RecordedThisSession;
 };
 
@@ -171,9 +177,10 @@ void VBAMovieSignalReset();
 void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
 void VBAMovieToggleReadOnly();
+bool VBAMovieEnded();
 bool VBAMovieAllowsRerecording();
-bool8 VBAMovieSwitchToRecording();
-void VBAMovieSetPauseAt();
+bool VBAMovieSwitchToPlaying();
+bool VBAMovieSwitchToRecording();
 void VBAMovieSetPauseAt(int at);
 int VBAMovieConvertCurrent();
 
