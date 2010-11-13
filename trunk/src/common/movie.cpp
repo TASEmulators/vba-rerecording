@@ -1107,6 +1107,7 @@ void VBAMovieUpdateState()
 	
 	if (Movie.state == MOVIE_STATE_END)
 	{
+		// might be better to move some of these into change_state()
 		if (Movie.currentFrame == Movie.header.length_frames)
 		{
 #if (defined(WIN32) && !defined(SDL))
@@ -1478,8 +1479,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame = current_frame;
 
-		// this would cause problems if not dealt with
-		if (current_frame >= end_frame)
+		// this checking might be unnecessary
+		if (current_frame >= Movie.header.length_frames)
 		{
 			change_state(MOVIE_STATE_END);
 		}
