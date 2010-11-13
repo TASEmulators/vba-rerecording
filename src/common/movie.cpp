@@ -1053,6 +1053,8 @@ void VBAUpdateFrameCountDisplay()
 		case MOVIE_STATE_END:
 		{
 			sprintf(frameDisplayString, "%d / %d", Movie.currentFrame, Movie.header.length_frames);
+			if (!Movie.readOnly)
+				strcat(frameDisplayString, " (edit)");
 			break;
 		}
 		case MOVIE_STATE_RECORD:
@@ -1075,7 +1077,7 @@ void VBAUpdateFrameCountDisplay()
 		{
 //			sprintf(lagFrameDisplayString, " %c %d", systemCounters.laggedLast ? '*' : '|', systemCounters.lagCount);
 			sprintf(lagFrameDisplayString, " | %d%s", systemCounters.lagCount, systemCounters.laggedLast ? " *" : "");
-			strncat(frameDisplayString, lagFrameDisplayString, MAGICAL_NUMBER);
+			strcat(frameDisplayString, lagFrameDisplayString);
 		}
 	}
 #if (defined(WIN32) && !defined(SDL))
@@ -1114,15 +1116,15 @@ void VBAMovieUpdateState()
 #endif
 
 #if (defined(WIN32) && !defined(SDL))
-			if (theApp.movieOnEndBehavior == 1)
+			switch (theApp.movieOnEndBehavior)
 			{
+			case 1:
 				// the old behavior
 				VBAMovieRestart();
-			}
-			else if (theApp.movieOnEndBehavior == 2)
-			{
+				break;
+			case 2:
 #else
-		// SDL FIXME
+			// SDL FIXME
 #endif
 				if (Movie.RecordedThisSession)
 				{
@@ -1134,18 +1136,44 @@ void VBAMovieUpdateState()
 					willPause = true;
 				}
 #if (defined(WIN32) && !defined(SDL))
-			}
-			else if (theApp.movieOnEndBehavior == 3)
-			{
+				break;
+			case 3:
 				// keep open
-			}
-#endif
-			else
-			{
+				break;
+			default:
 				// close movie
-				change_state(MOVIE_STATE_NONE);
+				VBAMovieStop(false);
+				break;
 			}
+#else
+		// SDL FIXME
+#endif
 		}
+#if 0
+		else if (Movie.currentFrame > Movie.header.length_frames)
+		{
+#if (defined(WIN32) && !defined(SDL))
+			switch (theApp.movieOnEndBehavior)
+			{
+			case 1:
+				//VBAMovieRestart();
+				break;
+			case 2:
+				// nothing
+				break;
+			case 3:
+				// keep open
+				break;
+			default:
+				// close movie
+				//VBAMovieStop(false);
+				break;
+			}
+#else
+			// SDLFIXME
+#endif
+		}
+#endif
 	} // end if (Movie.state == MOVIE_STATE_END)
 
 	// if the movie's been set to pause at a certain frame
@@ -1450,7 +1478,15 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame = current_frame;
 
-		change_state(MOVIE_STATE_PLAY);
+		// this would cause problems if not dealt with
+		if (current_frame >= end_frame)
+		{
+			change_state(MOVIE_STATE_END);
+		}
+		else
+		{
+			change_state(MOVIE_STATE_PLAY);
+		}
 	}
 	else
 	{
@@ -1471,7 +1507,15 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		flush_movie();
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
 
-		change_state(MOVIE_STATE_RECORD);
+		// this would cause problems if not dealt with
+		if (current_frame > end_frame)
+		{
+			change_state(MOVIE_STATE_END);
+		}
+		else
+		{
+			change_state(MOVIE_STATE_RECORD);
+		}
 	}
 
 	// FIXME: out of range
@@ -1495,7 +1539,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		}
 	}
 
-	VBAMovieUpdateState();
+	// VBAMovieUpdateState();
 
 	return MOVIE_SUCCESS;
 }
