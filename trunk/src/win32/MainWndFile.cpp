@@ -231,10 +231,12 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 	{
 		CString format;
 		if (VBAMovieActive())
+		{
 			if (VBAMovieReadOnly())
 				format = winResLoadString(IDS_REPLAYED_STATE_N);
 			else
 				format = winResLoadString(IDS_RERECORDED_STATE_N);
+		}
 		else
 			format = winResLoadString(IDS_LOADED_STATE_N);
 		CString buffer;
