@@ -90,6 +90,71 @@ int32 systemGetSensorY()
 	return sensorY;
 }
 
+// handles motion sensor input
+void systemUpdateMotionSensor(int i)
+{
+	if (i < 0 || i > 3)
+		i = 0;
+
+	if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
+	{
+		sensorX += 3;
+		if (sensorX > 2197)
+			sensorX = 2197;
+		if (sensorX < 2047)
+			sensorX = 2057;
+	}
+	else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
+	{
+		sensorX -= 3;
+		if (sensorX < 1897)
+			sensorX = 1897;
+		if (sensorX > 2047)
+			sensorX = 2037;
+	}
+	else if (sensorX > 2047)
+	{
+		sensorX -= 2;
+		if (sensorX < 2047)
+			sensorX = 2047;
+	}
+	else
+	{
+		sensorX += 2;
+		if (sensorX > 2047)
+			sensorX = 2047;
+	}
+
+	if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
+	{
+		sensorY += 3;
+		if (sensorY > 2197)
+			sensorY = 2197;
+		if (sensorY < 2047)
+			sensorY = 2057;
+	}
+	else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
+	{
+		sensorY -= 3;
+		if (sensorY < 1897)
+			sensorY = 1897;
+		if (sensorY > 2047)
+			sensorY = 2037;
+	}
+	else if (sensorY > 2047)
+	{
+		sensorY -= 2;
+		if (sensorY < 2047)
+			sensorY = 2047;
+	}
+	else
+	{
+		sensorY += 2;
+		if (sensorY > 2047)
+			sensorY = 2047;
+	}
+}
+
 int systemGetDefaultJoypad()
 {
 	return theApp.joypadDefault;
@@ -117,7 +182,7 @@ bool systemReadJoypads()
 u32 systemGetOriginalJoypad(int i, bool sensor)
 {
 	if (i < 0 || i > 3)
-		i = systemGetDefaultJoypad();
+		i = 0;
 
 	u32 res = 0;
 	if (theApp.input)
@@ -177,7 +242,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 u32 systemGetJoypad(int i, bool sensor)
 {
 	if (i < 0 || i > 3)
-		i = systemGetDefaultJoypad();
+		i = 0;
 
 	// input priority: original+auto < Lua < frame search < movie, correct this if wrong
 
@@ -213,7 +278,7 @@ u32 systemGetJoypad(int i, bool sensor)
 void systemSetJoypad(int which, u32 buttons)
 {
 	if (which < 0 || which > 3)
-		which = theApp.joypadDefault;
+		which = 0;
 
 	currentButtons[which] = buttons;
 
@@ -535,7 +600,7 @@ int systemGetThrottle()
 	return theApp.throttle;
 }
 
-void systemFrame(int rate)
+void systemFrame()
 {
 	if (theApp.altAviRecordMethod && theApp.aviRecording)
 	{
@@ -595,7 +660,7 @@ void systemFrame(int rate)
 			if (theApp.wasPaused)
 				diff = 0;
 
-			int target = (100000 / (rate * theApp.throttle));
+			int target = (100000 / (60 * theApp.throttle));
 			int d	   = (target - diff);
 
 			if (d > 1000) // added to avoid 500-day waits for vba to start emulating.
@@ -793,72 +858,6 @@ EmulatedSystemCounters systemCounters =
 	// laggedLast
 	true,
 };
-
-// since this is supposed to be part of the core emulation, it shouldn't be moved to such a place as Util.cpp
-// currently unused
-void systemUpdateMotionSensor(int i)
-{
-//	extern bool8 cpuEEPROMSensorEnabled;
-
-	// handle motion sensor input
-	if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
-	{
-		sensorX += 3;
-		if (sensorX > 2197)
-			sensorX = 2197;
-		if (sensorX < 2047)
-			sensorX = 2057;
-	}
-	else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
-	{
-		sensorX -= 3;
-		if (sensorX < 1897)
-			sensorX = 1897;
-		if (sensorX > 2047)
-			sensorX = 2037;
-	}
-	else if (sensorX > 2047)
-	{
-		sensorX -= 2;
-		if (sensorX < 2047)
-			sensorX = 2047;
-	}
-	else
-	{
-		sensorX += 2;
-		if (sensorX > 2047)
-			sensorX = 2047;
-	}
-
-	if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
-	{
-		sensorY += 3;
-		if (sensorY > 2197)
-			sensorY = 2197;
-		if (sensorY < 2047)
-			sensorY = 2057;
-	}
-	else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
-	{
-		sensorY -= 3;
-		if (sensorY < 1897)
-			sensorY = 1897;
-		if (sensorY > 2047)
-			sensorY = 2037;
-	}
-	else if (sensorY > 2047)
-	{
-		sensorY -= 2;
-		if (sensorY < 2047)
-			sensorY = 2047;
-	}
-	else
-	{
-		sensorY += 2;
-		if (sensorY > 2047)
-			sensorY = 2047;
-	}
-}
 
 // VBAxyz stuff are not part of the core.
 

@@ -987,7 +987,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 
 void VBAUpdateButtonPressDisplay()
 {
-	uint32 keys = currentButtons[theApp.joypadDefault] & BUTTON_REGULAR_RECORDING_MASK;
+	uint32 keys = currentButtons[0] & BUTTON_REGULAR_RECORDING_MASK;
 
 	const static char KeyMap[]	 =  { 'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^' };
 	const static int  KeyOrder[] = { 5, 6, 4, 7, 0, 1, 9, 8, 3, 2, 12, 15, 13, 14, 11, 10 }; // < ^ > v   A B  L R  S s  { = } _
@@ -1043,7 +1043,7 @@ void VBAUpdateButtonPressDisplay()
 		}
 	}
 
-	lastKeys  = currentButtons[theApp.joypadDefault];
+	lastKeys  = currentButtons[0];
 	lastKeys |= theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
 	lastKeys |= (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
 
