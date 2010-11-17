@@ -628,6 +628,9 @@ void gbCompareLYToLYC()
 		register_STAT &= 0xfb;
 }
 
+// FIXME: horrible kludge to workaround the frame timing bug
+static int32 s_gbJoymask[4] = {0, 0, 0, 0};
+
 void gbWriteMemoryWrapped(register u16 address, register u8 value)
 {
 	if (address < 0x8000)
@@ -811,6 +814,8 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 				gbLcdMode	   = 0;
 				register_STAT &= 0xfc;
 				register_LY	   = 0x00;
+				// FIXME: horrible workaround
+				memcpy(gbJoymask, s_gbJoymask, sizeof(gbJoymask));
 			}
 			else
 			{
@@ -818,6 +823,9 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 				gbLcdMode	   = 0;
 				register_STAT &= 0xfc;
 				register_LY	   = 0x00;
+				// FIXME: horrible workaround
+				memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
+				memset(gbJoymask, 0, sizeof(gbJoymask));
 			}
 			//      compareLYToLYC();
 		}
@@ -1711,6 +1719,9 @@ void gbReset(bool userReset)
 	//  gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
 	gbSpeed		 = 0;
 	gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
+
+	// FIXME: horrible kludge
+	memset(s_gbJoymask, 0, sizeof(s_gbJoymask));
 
 	if (gbCgbMode)
 	{
@@ -2772,6 +2783,10 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	
 	for (int i = 0; i < 4; ++i)
 		systemSetJoypad(i, gbJoymask[i] & 0xFFFF);
+
+	// FIXME: horrible kludge
+	memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
+
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	systemRefreshScreen();
@@ -2891,7 +2906,14 @@ void gbCleanUp()
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+	memset(gbJoymask, 0, sizeof(gbJoymask));
+	// FIXME: horrible kludge
+	memset(s_gbJoymask, 0, sizeof(s_gbJoymask));
+
 	systemClearJoypads();
+	systemResetSensor();
+
+//	gbLastTime = gbFrameCount = 0;
 	systemRefreshScreen();
 }
 
@@ -3132,6 +3154,9 @@ void gbEmulate(int ticksToStop)
 			{
 				gbJoymask[0] = systemGetJoypad(0, sensor);
 			}
+
+			// FIXME: horrible kludge
+			memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
 
 //			if (sensor)
 //				systemUpdateMotionSensor(0);
@@ -3801,6 +3826,8 @@ void gbEmulate(int ticksToStop)
 				}
 				else
 					gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
+#else
+				int debug_i = 0;
 #endif
 			}
 		}
