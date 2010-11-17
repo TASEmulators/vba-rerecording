@@ -137,7 +137,7 @@ void  (*renderLine)() = mode0RenderLine;
 bool8 fxOn			 = false;
 bool8 windowOn		 = false;
 int32 frameSkipCount = 0;
-u32	  lastTime		 = 0;
+u32	  gbaLastTime	 = 0;
 int32 gbaFrameCount	 = 0;
 bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
 char  buffer[1024];
@@ -1470,6 +1470,9 @@ void CPUCleanUp()
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
 	systemClearJoypads();
+	systemResetSensor();
+
+//	gbaLastTime = gbaFrameCount = 0;
 	systemRefreshScreen();
 }
 
@@ -3693,7 +3696,8 @@ void CPUReset(bool userReset)
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
-	lastTime = systemGetClock();
+	gbaLastTime	  = systemGetClock();
+	gbaFrameCount = 0;
 
 	systemRefreshScreen();
 }
@@ -4039,11 +4043,11 @@ updateLoop:
 							systemFrame();
 
 							++gbaFrameCount;
-							u32 currentTime = systemGetClock();
-							if (currentTime - lastTime >= 1000)
+							u32 gbaCurrentTime = systemGetClock();
+							if (gbaCurrentTime - gbaLastTime >= 1000)
 							{
-								systemShowSpeed(int(float(gbaFrameCount) * 100000 / (float(currentTime - lastTime) * 60) + .5f));
-								lastTime	  = currentTime;
+								systemShowSpeed(int(float(gbaFrameCount) * 100000 / (float(gbaCurrentTime - gbaLastTime) * 60) + .5f));
+								gbaLastTime	  = gbaCurrentTime;
 								gbaFrameCount = 0;
 							}
 
