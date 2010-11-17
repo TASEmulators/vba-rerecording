@@ -3806,10 +3806,13 @@ void CPULoop(int _ticks)
 		if (systemReadJoypads())
 		{
 			// read default joystick
-			joy = systemGetJoypad(-1, cpuEEPROMSensorEnabled);
+			joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
 
-			VBAMovieResetIfRequested();
+//			if (cpuEEPROMSensorEnabled)
+//				systemUpdateMotionSensor(0);
 		}
+
+		VBAMovieResetIfRequested();
 
 		P1 = 0x03FF ^ (joy & 0x3FF);
 		UPDATE_REG(0x130, P1);
@@ -4033,7 +4036,7 @@ updateLoop:
 							}
 							CPUCheckDMA(1, 0x0f);
 
-							systemFrame(60);
+							systemFrame();
 
 							++gbaFrameCount;
 							u32 currentTime = systemGetClock();

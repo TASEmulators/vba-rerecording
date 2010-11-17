@@ -3130,8 +3130,11 @@ void gbEmulate(int ticksToStop)
 			}
 			else
 			{
-				gbJoymask[0] = systemGetJoypad(-1, sensor);
+				gbJoymask[0] = systemGetJoypad(0, sensor);
 			}
+
+//			if (sensor)
+//				systemUpdateMotionSensor(0);
 
 			newmask = gbJoymask[0];
 			if (newmask & 0xFF)
@@ -3333,7 +3336,7 @@ void gbEmulate(int ticksToStop)
 								gbInterrupt |= 2;
 						}
 
-						systemFrame(60);
+						systemFrame();
 
 						++gbFrameCount;
 						u32 currentTime = systemGetClock();

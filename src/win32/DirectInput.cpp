@@ -1088,6 +1088,12 @@ bool inputActive = true; // used to disable all input when the window is inactiv
 
 u32 DirectInput::readDevice(int i, bool sensor)
 {
+	// this old hack is evil
+	extern int  systemGetDefaultJoypad();
+	extern int32 gbSgbMode, gbSgbMultiplayer;
+	if (!(gbSgbMode && gbSgbMultiplayer))
+		i = systemGetDefaultJoypad();
+
 	u32 res = 0;
 
 	// manual input
