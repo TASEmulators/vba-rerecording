@@ -1,5 +1,15 @@
 ---VBA-rr v24---
 
+---VBA-rr v23.3---
+11-13-2010 aquanull - Fixed a bug that loading a post-movie savestate in read+write mode would result in a glitched recording mode.
+11-12-2010 aquanull - Frame Counter now tells if the movie is being played in edit mode.
+11-12-2010 aquanull - Movie->Resume Recording now becomes Movie->Resume/Exit Recording, which changes Read-Only settings as well.
+11-11-2010 aquanull - Restored old behavior of Movie->When Movie Ends->Restarts i.e. the movie will restart as soon as it ends.
+11-11-2010 aquanull - Mute Frame and Mute When Inactive no more mutes dumped audio.
+11-09-2010 aquanull - Fixed the issue that UI was not redrawn after the rom was closed.
+11-06-2010 aquanull - More throttle options availible.
+11-06-2010 aquanull - Fixed the issue that the emulator ignored the synchronization option with sound turned off.
+
 ---VBA-rr v23.2---
 11-04-2010 aquanull - Added a "New Folder" button to all directory browse dialogs.
 11-04-2010 aquanull - Fixed the old bug that the movie reset signal could improperly persist after loading a savestate.
