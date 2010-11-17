@@ -3770,8 +3770,8 @@ void gbEmulate(int ticksToStop)
 		if (!(register_LCDC & 0x80))
 		{
 			// Apparently it IS necessary to do something on this condition or games like
-			// Megaman would ignore low-level restart interrupt sequence (Start+Select+A+B).
-			if (USE_OLD_GB_TIMING)
+			// Megaman would freeze upon low-level restart interrupt sequence (Start+Select+A+B).
+			if (!USE_OLD_GB_TIMING)
 			{
 				if (systemReadJoypads())
 				{
@@ -3795,18 +3795,6 @@ void gbEmulate(int ticksToStop)
 						gbJoymask[0] = systemGetJoypad(0, false);
 					}
 				}
-			}
-			else
-			{
-/*
-                // For the benefit of (movies) having a constant rate of input, just reset this to 0 (same as user letting go of
-                // the button) immediately,
-                // otherwise an internal timer variables will change independently of how many frames of input pass by.
-                // (This fake-input is merely used to make the system wait at a certain frame until you let go of the buttons,
-                //  if it is used at all, sometimes it is sampled at the same frame as other input and completely ignored.)
-                gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
- */
-
 /*
                 // FIXME: since register_LY can be reset to 0 by some games, frame length lacks consistency
                 // and this weird thing happens
@@ -3815,7 +3803,7 @@ void gbEmulate(int ticksToStop)
                 {
                     frameBoundary = true;
                 }
- */
+//*/
 			}
 		}
 
