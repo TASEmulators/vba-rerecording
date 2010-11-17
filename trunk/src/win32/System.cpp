@@ -216,22 +216,14 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 
 	if (!sensor)
 	{
-		if (res & BUTTON_MASK_LEFT_MOTION)
-			res ^= BUTTON_MASK_LEFT_MOTION;
-		if (res & BUTTON_MASK_RIGHT_MOTION)
-			res ^= BUTTON_MASK_RIGHT_MOTION;
-		if (res & BUTTON_MASK_UP_MOTION)
-			res ^= BUTTON_MASK_UP_MOTION;
-		if (res & BUTTON_MASK_DOWN_MOTION)
-			res ^= BUTTON_MASK_DOWN_MOTION;
+		if (res & BUTTON_MOTION_MASK)
+			res &= ~BUTTON_MOTION_MASK;
 	}
 
 	if (systemCartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
 	{
-		if (res & BUTTON_MASK_L)
-			res ^= BUTTON_MASK_L;
-		if (res & BUTTON_MASK_R)
-			res ^= BUTTON_MASK_R;
+		if (res & (BUTTON_GBA_ONLY))
+			res &= ~BUTTON_GBA_ONLY;
 	}
 
 	currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;

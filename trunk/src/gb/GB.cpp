@@ -3770,7 +3770,7 @@ void gbEmulate(int ticksToStop)
 		if (!(register_LCDC & 0x80))
 		{
 			// Apparently it IS necessary to do something on this condition or games like
-			// Megaman will <s>freeze upon</s> now ignore low-level restart interrupt sequence (Start+Select+A+B).
+			// Megaman would ignore low-level restart interrupt sequence (Start+Select+A+B).
 			if (USE_OLD_GB_TIMING)
 			{
 				if (systemReadJoypads())
@@ -3792,7 +3792,7 @@ void gbEmulate(int ticksToStop)
 					}
 					else
 					{
-						gbJoymask[0] = systemGetJoypad(-1, false);
+						gbJoymask[0] = systemGetJoypad(0, false);
 					}
 				}
 			}
