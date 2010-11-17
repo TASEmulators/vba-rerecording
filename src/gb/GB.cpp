@@ -3769,10 +3769,14 @@ void gbEmulate(int ticksToStop)
 
 		if (!(register_LCDC & 0x80))
 		{
-			// Apparently it IS necessary to do something on this condition or games like
-			// Megaman would freeze upon low-level restart interrupt sequence (Start+Select+A+B).
 			if (!USE_OLD_GB_TIMING)
 			{
+				// FIXME: since register_LY can be reset to 0 by some games, frame length is variable
+				// and infinite loops can occurr
+				// for now, it IS necessary to do something on this condition or games like
+				// Megaman would freeze upon low-level restart interrupt sequence (Start+Select+A+B).
+				// the only sensible way to fix this issue is to implement the RIGHT frame timing
+#ifdef WANTS_INCOMPLETE_WORKAROUND
 				if (systemReadJoypads())
 				{
 					if (gbSgbMode && gbSgbMultiplayer)
@@ -3795,15 +3799,9 @@ void gbEmulate(int ticksToStop)
 						gbJoymask[0] = systemGetJoypad(0, false);
 					}
 				}
-/*
-                // FIXME: since register_LY can be reset to 0 by some games, frame length lacks consistency
-                // and this weird thing happens
-                // for now, it is commented out to make movies of such games replay
-                if (!frameBoundary)
-                {
-                    frameBoundary = true;
-                }
-//*/
+				else
+					gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
+#endif
 			}
 		}
 
