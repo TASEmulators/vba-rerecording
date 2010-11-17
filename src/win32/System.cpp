@@ -188,8 +188,8 @@ u32 systemGetJoypad(int i, bool sensor)
 	// since movie input has the highest priority, there's no point to read from other input
 	if (VBAMoviePlaying())
 	{
-		// VBAMovieUpdateInput() overwrites currentButtons[i]
-		VBAMovieUpdateInput(i);	// TODO: split this function
+		// VBAMovieRead() overwrites currentButtons[i]
+		VBAMovieRead(i, sensor);
 		res = currentButtons[i];
 	}
 	else
@@ -204,7 +204,7 @@ u32 systemGetJoypad(int i, bool sensor)
 
 		// flush non-hack buttons into the "current buttons" input buffer, which will be read by the movie routine
 		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-		VBAMovieUpdateInput(i);	// TODO: split this function
+		VBAMovieWrite(i, sensor);
 	}
 
 	return res | hackedButtons;
@@ -864,6 +864,13 @@ void systemUpdateMotionSensor(int i)
 
 void VBAOnEnteringFrameBoundary()
 {
+	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+
+	if (VBALuaRunning())
+	{
+		VBALuaFrameBoundary();
+	}
+
 	VBAMovieUpdateState();
 }
 

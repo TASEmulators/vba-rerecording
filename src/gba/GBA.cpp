@@ -4035,8 +4035,6 @@ updateLoop:
 
 							systemFrame(60);
 
-							frameBoundary = true;
-
 							++gbaFrameCount;
 							u32 currentTime = systemGetClock();
 							if (currentTime - lastTime >= 1000)
@@ -4052,12 +4050,6 @@ updateLoop:
 								++GBASystemCounters.lagCount;
 							}
 							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
-							CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-
-							if (VBALuaRunning())
-							{
-								VBALuaFrameBoundary();
-							}
 
 							// HACK: some special "buttons"
 							u32 ext = (joy >> 18);
@@ -4065,6 +4057,11 @@ updateLoop:
 
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1 ^ 0x3FF, ext);
+
+							frameBoundary = true;
+	
+							extern void VBAOnEnteringFrameBoundary();
+							VBAOnEnteringFrameBoundary();
 
 							pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -4546,11 +4543,11 @@ updateLoop:
 			}
 			else if (frameBoundary)
 			{
-				extern void VBAOnEnteringFrameBoundary();
-				VBAOnEnteringFrameBoundary();
-
 				// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
 				// but is there still any GBA .vbm that uses the old timing?
+///				extern void VBAOnEnteringFrameBoundary();
+///				VBAOnEnteringFrameBoundary();
+
 				frameBoundary = false;
 				newFrame	  = true;
 				break;

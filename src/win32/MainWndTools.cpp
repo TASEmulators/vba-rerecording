@@ -216,8 +216,7 @@ void MainWnd::OnUpdateToolsTileviewer(CCmdUI*pCmdUI)
 
 void MainWnd::OnDebugNextframe()
 {
-	if (theApp.paused)
-		theApp.paused = false;
+	systemSetPause(false);
 	theApp.winPauseNextFrame = true;
 }
 
@@ -770,7 +769,6 @@ void MainWnd::OnUpdateAsscWithSaveState(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.AsscWithSaveState);
 }
 
-
 void MainWnd::OnToolsResumeRecord()
 {
 	// toggle playing/recording
@@ -861,7 +859,7 @@ void MainWnd::OnToolsMovieConvertCurrent()
 		systemScreenMessage("Movie converted");
 		break;
 	case MOVIE_WRONG_VERSION:
-		systemScreenMessage("Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+		systemMessage(0, "Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
 		break;
 	default:
 		systemScreenMessage("Nothing to convert");
@@ -887,7 +885,7 @@ void MainWnd::OnToolsMovieAutoConvert()
 			systemScreenMessage("Movie converted");
 			break;
 		case MOVIE_WRONG_VERSION:
-			systemScreenMessage("Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+			systemMessage(0, "Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
 			break;
 		default:
 			systemScreenMessage("Auto movie conversion enabled");

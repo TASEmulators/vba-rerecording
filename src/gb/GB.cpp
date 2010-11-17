@@ -3335,8 +3335,6 @@ void gbEmulate(int ticksToStop)
 
 						systemFrame(60);
 
-						frameBoundary = true;
-
 						++gbFrameCount;
 						u32 currentTime = systemGetClock();
 						if (currentTime - gbLastTime >= 1000)
@@ -3352,16 +3350,15 @@ void gbEmulate(int ticksToStop)
 							++GBSystemCounters.lagCount;
 						}
 						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
-						CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-
-						if (VBALuaRunning())
-						{
-							VBALuaFrameBoundary();
-						}
 
 						// HACK: some special "buttons"
 						u8 ext = (newmask >> 18);
 						speedup	= (ext & 1) != 0;
+
+						frameBoundary = true;
+
+						extern void VBAOnEnteringFrameBoundary();
+						VBAOnEnteringFrameBoundary();
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -3758,7 +3755,6 @@ void gbEmulate(int ticksToStop)
 		if (USE_OLD_GB_TIMING)
 		{
 			// old timing code
-
 			if (ticksToStop > 0)
 				continue;
 		}
@@ -3823,8 +3819,8 @@ void gbEmulate(int ticksToStop)
 		// makes sure frames are really divided across input sampling boundaries which occur at a constant rate
 		if (frameBoundary || USE_OLD_GB_TIMING)
 		{
-			extern void VBAOnEnteringFrameBoundary();
-			VBAOnEnteringFrameBoundary();
+///			extern void VBAOnEnteringFrameBoundary();
+///			VBAOnEnteringFrameBoundary();
 
 			frameBoundary = false;
 			newFrame	  = true;
