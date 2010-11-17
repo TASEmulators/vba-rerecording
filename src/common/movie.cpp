@@ -64,10 +64,9 @@ static u16 initialInputs[4] = {0};
 static bool resetSignaled	  = false;
 static bool resetSignaledLast = false;
 
-static int controllersLeftThisFrame = 0;
 static int prevBorder, prevWinBorder, prevBorderAuto;
 
-// little-endian integer read/write functions:
+// little-endian integer pop/push functions:
 static inline uint32 Pop32(const uint8 * &ptr)
 {
 	uint32 v = (ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24));
@@ -113,6 +112,18 @@ static inline void Push16(uint16 v, uint8 * &ptr)
 static inline void Push8(uint8 v, uint8 * &ptr)
 {
 	*ptr++ = v;
+}
+
+// little-endian integer read/write functions:
+static inline uint16 Read16(const uint8 *ptr)
+{
+	return ptr[0] | (ptr[1] << 8);
+}
+
+static inline void Write16(uint16 v, uint8 *ptr)
+{
+	ptr[0] = uint8(v & 0xff);
+	ptr[1] = uint8((v >> 8) & 0xff);
 }
 
 static long file_length(FILE *fp)
@@ -355,124 +366,6 @@ static void change_state(MovieState new_state)
 	Movie.state = new_state;
 }
 
-static void skip_controllers(int i, void (*call_back_func)(int))
-{
-	// the number of controllers an SGB game checks per frame is not constant throughout the entire game
-	// so fill in the gaps with blank data when we hit a duplicate check when other controllers remain unchecked
-	if ((controllersLeftThisFrame & MOVIE_CONTROLLER(i)) == 0)
-	{
-		if (controllersLeftThisFrame)
-		{
-			// already requested, fill in others first
-			for (int controller = 0; controller < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; controller++)
-				if ((controllersLeftThisFrame & MOVIE_CONTROLLER(controller)) != 0)
-					(*call_back_func)(controller);
-		}
-	}
-	else
-		controllersLeftThisFrame ^= MOVIE_CONTROLLER(i);
-
-	if (!controllersLeftThisFrame)
-		controllersLeftThisFrame = Movie.header.controllerFlags;
-}
-
-static void read_frame_controller_data(int i)
-{
-	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
-	{
-		assert(0);
-		return;
-	}
-
-	skip_controllers(i, &read_frame_controller_data);
-
-	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
-	{
-		currentButtons[i] = Pop16(Movie.inputBufferPtr);
-	}
-	else
-	{
-		currentButtons[i] = 0;        // pretend the controller is disconnected
-	}
-
-	if ((currentButtons[i] & BUTTON_MASK_NEW_RESET) != 0)
-		resetSignaled = true;
-}
-
-static void write_frame_controller_data(int i)
-{
-	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
-	{
-		assert(0);
-		return;
-	}
-
-	skip_controllers(i, &write_frame_controller_data);
-
-	if (i == 0)
-	{
-		reserve_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
-	}
-
-	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
-	{
-		// get the current controller data
-		uint16 buttonData = currentButtons[i];
-
-		// mask away the irrelevent bits
-		buttonData &= BUTTON_REGULAR_MASK;
-
-#if (defined(WIN32) && !defined(SDL))
-		// add in the motion sensor bits
-		extern BOOL	  checkKey(LONG_PTR key);   // from Input.cpp
-		extern USHORT motion[4];     // from DirectInput.cpp
-		if (checkKey(motion[KEY_LEFT]))
-			buttonData |= BUTTON_MASK_LEFT_MOTION;
-		if (checkKey(motion[KEY_RIGHT]))
-			buttonData |= BUTTON_MASK_RIGHT_MOTION;
-		if (checkKey(motion[KEY_DOWN]))
-			buttonData |= BUTTON_MASK_DOWN_MOTION;
-		if (checkKey(motion[KEY_UP]))
-			buttonData |= BUTTON_MASK_UP_MOTION;
-#elif SDL
-		extern bool sdlCheckJoyKey(int key);         // from SDL.cpp
-		extern u16	motion[4];        // from SDL.cpp
-		if (sdlCheckJoyKey(motion[KEY_LEFT]))
-			buttonData |= BUTTON_MASK_LEFT_MOTION;
-		if (sdlCheckJoyKey(motion[KEY_RIGHT]))
-			buttonData |= BUTTON_MASK_RIGHT_MOTION;
-		if (sdlCheckJoyKey(motion[KEY_DOWN]))
-			buttonData |= BUTTON_MASK_DOWN_MOTION;
-		if (sdlCheckJoyKey(motion[KEY_UP]))
-			buttonData |= BUTTON_MASK_UP_MOTION;
-#endif
-
-		// soft-reset "button" for 1 frame if the game is reset while recording
-		if (resetSignaled)
-		{
-			buttonData |= BUTTON_MASK_NEW_RESET;
-		}
-
-		// backward compatibility kludge
-		if (resetSignaledLast)
-		{
-			buttonData |= BUTTON_MASK_OLD_RESET;
-		}
-
-		// write it to file
-		Push16(buttonData, Movie.inputBufferPtr);
-
-		// and for display
-		currentButtons[i] = buttonData;
-	}
-	else
-	{
-		// pretend the controller is disconnected (otherwise input it gives could cause desync since we're not writing it to the
-		// movie)
-		currentButtons[i] = 0;
-	}
-}
-
 void VBAMovieInit()
 {
 	memset(&Movie, 0, sizeof(Movie));
@@ -678,7 +571,6 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 	resetSignaled	  = false;
 	resetSignaledLast = false;
-	controllersLeftThisFrame = Movie.header.controllerFlags;
 
 	utilGzClose(stream);
 
@@ -966,10 +858,6 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 
 	resetSignaled	  = false;
 	resetSignaledLast = false;
-	controllersLeftThisFrame = Movie.header.controllerFlags;
-
-	// write controller data
-	reserve_buffer_space(Movie.bytesPerFrame);
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
@@ -1116,6 +1004,7 @@ void VBAMovieUpdateState()
 
 	if (Movie.state == MOVIE_STATE_PLAY)
 	{
+		Movie.inputBufferPtr += Movie.bytesPerFrame;
 		if (Movie.currentFrame >= Movie.header.length_frames)
 		{
 			// the movie ends anyway; what to do next depends on the settings
@@ -1126,7 +1015,8 @@ void VBAMovieUpdateState()
 	else if (Movie.state == MOVIE_STATE_RECORD)
 	{
 		Movie.header.length_frames = Movie.currentFrame;
-		fwrite((Movie.inputBufferPtr - Movie.bytesPerFrame), 1, Movie.bytesPerFrame, Movie.file);
+		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
+		Movie.inputBufferPtr += Movie.bytesPerFrame;
 		Movie.RecordedThisSession = true;
 	}
 	
@@ -1215,40 +1105,68 @@ void VBAMovieUpdateState()
 	}
 }
 
-void VBAMovieRead(int controllerNum, bool sensor)
+void VBAMovieRead(int i, bool /*sensor*/)
 {
-	switch (Movie.state)
-	{
-	case MOVIE_STATE_PLAY:
-	{
-		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
-			break;      // not a controller we're recognizing
+	if (Movie.state != MOVIE_STATE_PLAY)
+		return;
 
-		read_frame_controller_data(controllerNum);
-		break;
+	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
+		return;      // not a controller we're recognizing
+
+	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
+	{
+		currentButtons[i] = Read16(Movie.inputBufferPtr + i);
+	}
+	else
+	{
+		currentButtons[i] = 0;        // pretend the controller is disconnected
 	}
 
-	default:
-		break;
-	}
+	if ((currentButtons[i] & BUTTON_MASK_NEW_RESET) != 0)
+		resetSignaled = true;
 }
 
-void VBAMovieWrite(int controllerNum, bool sensor)
+void VBAMovieWrite(int i, bool /*sensor*/)
 {
-	switch (Movie.state)
-	{
-	case MOVIE_STATE_RECORD:
-	{
-		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
-			break;      // not a controller we're recognizing
+	if (Movie.state != MOVIE_STATE_RECORD)
+		return;
 
-		write_frame_controller_data(controllerNum);
-		break;
+	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
+		return;      // not a controller we're recognizing
+
+	reserve_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
+
+	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
+	{
+		// get the current controller data
+		uint16 buttonData = currentButtons[i];
+
+		// mask away the irrelevent bits
+		buttonData &= BUTTON_REGULAR_MASK | BUTTON_MOTION_MASK;
+
+		// soft-reset "button" for 1 frame if the game is reset while recording
+		if (resetSignaled)
+		{
+			buttonData |= BUTTON_MASK_NEW_RESET;
+		}
+
+		// backward compatibility kludge
+		if (resetSignaledLast)
+		{
+			buttonData |= BUTTON_MASK_OLD_RESET;
+		}
+
+		// and for display
+		currentButtons[i] = buttonData;
+	}
+	else
+	{
+		// pretend the controller is disconnected (otherwise input it gives could cause desync since we're not writing it to the
+		// movie)
+		currentButtons[i] = 0;
 	}
 
-	default:
-		break;
-	}
+	Write16(currentButtons[i], Movie.inputBufferPtr + i);
 }
 
 void VBAMovieStop(bool8 suppress_message)
