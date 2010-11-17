@@ -1247,7 +1247,6 @@ void VBAMovieWrite(int controllerNum, bool sensor)
 	}
 
 	default:
-		++Movie.currentFrame;
 		break;
 	}
 }
