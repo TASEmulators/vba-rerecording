@@ -68,33 +68,33 @@ static int controllersLeftThisFrame = 0;
 static int prevBorder, prevWinBorder, prevBorderAuto;
 
 // little-endian integer read/write functions:
-static inline uint32 Read32(const uint8 * &ptr)
+static inline uint32 Pop32(const uint8 * &ptr)
 {
 	uint32 v = (ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24));
 	ptr += 4;
 	return v;
 }
 
-static inline uint16 Read16(const uint8 * &ptr) /* const version */
+static inline uint16 Pop16(const uint8 * &ptr) /* const version */
 {
 	uint16 v = (ptr[0] | (ptr[1] << 8));
 	ptr += 2;
 	return v;
 }
 
-static inline uint16 Read16(uint8 * &ptr) /* non-const version */
+static inline uint16 Pop16(uint8 * &ptr) /* non-const version */
 {
 	uint16 v = (ptr[0] | (ptr[1] << 8));
 	ptr += 2;
 	return v;
 }
 
-static inline uint8 Read8(const uint8 * &ptr)
+static inline uint8 Pop8(const uint8 * &ptr)
 {
 	return *(ptr)++;
 }
 
-static inline void Write32(uint32 v, uint8 * &ptr)
+static inline void Push32(uint32 v, uint8 * &ptr)
 {
 	ptr[0] = (uint8)(v & 0xff);
 	ptr[1] = (uint8)((v >> 8) & 0xff);
@@ -103,14 +103,14 @@ static inline void Write32(uint32 v, uint8 * &ptr)
 	ptr	  += 4;
 }
 
-static inline void Write16(uint16 v, uint8 * &ptr)
+static inline void Push16(uint16 v, uint8 * &ptr)
 {
 	ptr[0] = (uint8)(v & 0xff);
 	ptr[1] = (uint8)((v >> 8) & 0xff);
 	ptr	  += 2;
 }
 
-static inline void Write8(uint8 v, uint8 * &ptr)
+static inline void Push8(uint8 v, uint8 * &ptr)
 {
 	*ptr++ = v;
 }
@@ -128,9 +128,9 @@ static int bytes_per_frame(SMovie &mov)
 {
 	int num_controllers = 0;
 
-	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
+	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 		if (mov.header.controllerFlags & MOVIE_CONTROLLER(i))
-			num_controllers++;
+			++num_controllers;
 
 	return CONTROLLER_DATA_SIZE * num_controllers;
 }
@@ -160,38 +160,38 @@ static int read_movie_header(FILE *file, SMovie &movie)
 	const uint8 *	  ptr	 = headerData;
 	SMovieFileHeader &header = movie.header;
 
-	header.magic = Read32(ptr);
+	header.magic = Pop32(ptr);
 	if (header.magic != VBM_MAGIC)
 		return MOVIE_WRONG_FORMAT;
 
-	header.version = Read32(ptr);
+	header.version = Pop32(ptr);
 	if (header.version != VBM_VERSION)
 		return MOVIE_WRONG_VERSION;
 
-	header.uid			  = Read32(ptr);
-	header.length_frames  = Read32(ptr) + 1;    // HACK: add 1 to the length for compatibility
-	header.rerecord_count = Read32(ptr);
+	header.uid			  = Pop32(ptr);
+	header.length_frames  = Pop32(ptr) + 1;    // HACK: add 1 to the length for compatibility
+	header.rerecord_count = Pop32(ptr);
 
-	header.startFlags	   = Read8(ptr);
-	header.controllerFlags = Read8(ptr);
-	header.typeFlags	   = Read8(ptr);
-	header.optionFlags	   = Read8(ptr);
+	header.startFlags	   = Pop8(ptr);
+	header.controllerFlags = Pop8(ptr);
+	header.typeFlags	   = Pop8(ptr);
+	header.optionFlags	   = Pop8(ptr);
 
-	header.saveType		  = Read32(ptr);
-	header.flashSize	  = Read32(ptr);
-	header.gbEmulatorType = Read32(ptr);
+	header.saveType		  = Pop32(ptr);
+	header.flashSize	  = Pop32(ptr);
+	header.gbEmulatorType = Pop32(ptr);
 
 	for (int i = 0; i < 12; i++)
-		header.romTitle[i] = Read8(ptr);
+		header.romTitle[i] = Pop8(ptr);
 
-	header.minorVersion	   = Read8(ptr);
+	header.minorVersion	   = Pop8(ptr);
 
-	header.romCRC = Read8(ptr);
-	header.romOrBiosChecksum = Read16(ptr);
-	header.romGameCode		 = Read32(ptr);
+	header.romCRC = Pop8(ptr);
+	header.romOrBiosChecksum = Pop16(ptr);
+	header.romGameCode		 = Pop32(ptr);
 
-	header.offset_to_savestate		 = Read32(ptr);
-	header.offset_to_controller_data = Read32(ptr);
+	header.offset_to_savestate		 = Pop32(ptr);
+	header.offset_to_controller_data = Pop32(ptr);
 
 	return MOVIE_SUCCESS;
 }
@@ -204,34 +204,34 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 	uint8 *ptr = headerData;
 	const SMovieFileHeader &header = movie.header;
 
-	Write32(header.magic, ptr);
-	Write32(header.version, ptr);
+	Push32(header.magic, ptr);
+	Push32(header.version, ptr);
 
-	Write32(header.uid, ptr);
-	Write32(header.length_frames - 1, ptr);     // HACK: reduce the length by 1 for compatibility with certain faulty old tools
+	Push32(header.uid, ptr);
+	Push32(header.length_frames - 1, ptr);     // HACK: reduce the length by 1 for compatibility with certain faulty old tools
 	                                            // like TME
-	Write32(header.rerecord_count, ptr);
+	Push32(header.rerecord_count, ptr);
 
-	Write8(header.startFlags, ptr);
-	Write8(header.controllerFlags, ptr);
-	Write8(header.typeFlags, ptr);
-	Write8(header.optionFlags, ptr);
+	Push8(header.startFlags, ptr);
+	Push8(header.controllerFlags, ptr);
+	Push8(header.typeFlags, ptr);
+	Push8(header.optionFlags, ptr);
 
-	Write32(header.saveType, ptr);
-	Write32(header.flashSize, ptr);
-	Write32(header.gbEmulatorType, ptr);
+	Push32(header.saveType, ptr);
+	Push32(header.flashSize, ptr);
+	Push32(header.gbEmulatorType, ptr);
 
 	for (int i = 0; i < 12; i++)
-		Write8(header.romTitle[i], ptr);
+		Push8(header.romTitle[i], ptr);
 
-	Write8(header.minorVersion, ptr);
+	Push8(header.minorVersion, ptr);
 
-	Write8(header.romCRC, ptr);
-	Write16(header.romOrBiosChecksum, ptr);
-	Write32(header.romGameCode, ptr);
+	Push8(header.romCRC, ptr);
+	Push16(header.romOrBiosChecksum, ptr);
+	Push32(header.romGameCode, ptr);
 
-	Write32(header.offset_to_savestate, ptr);
-	Write32(header.offset_to_controller_data, ptr);
+	Push32(header.offset_to_savestate, ptr);
+	Push32(header.offset_to_controller_data, ptr);
 
 	fwrite(headerData, 1, VBM_HEADER_SIZE, file);
 }
@@ -335,6 +335,22 @@ static void change_state(MovieState new_state)
 			Movie.inputBuffer = NULL;
 		}
 	}
+	else if (new_state == MOVIE_STATE_PLAY)
+	{
+		// this would cause problems if not dealt with
+		if (Movie.currentFrame >= Movie.header.length_frames)
+		{
+			new_state = MOVIE_STATE_END;
+		}
+	}
+	else if (new_state == MOVIE_STATE_RECORD)
+	{
+		// this would cause problems if not dealt with
+		if (Movie.currentFrame > Movie.header.length_frames)
+		{
+			new_state = MOVIE_STATE_END;
+		}
+	}
 
 	Movie.state = new_state;
 }
@@ -372,7 +388,7 @@ static void read_frame_controller_data(int i)
 
 	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 	{
-		currentButtons[i] = Read16(Movie.inputBufferPtr);
+		currentButtons[i] = Pop16(Movie.inputBufferPtr);
 	}
 	else
 	{
@@ -444,7 +460,7 @@ static void write_frame_controller_data(int i)
 		}
 
 		// write it to file
-		Write16(buttonData, Movie.inputBufferPtr);
+		Push16(buttonData, Movie.inputBufferPtr);
 
 		// and for display
 		currentButtons[i] = buttonData;
@@ -702,7 +718,6 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	Movie.RecordedThisSession = false;
 
 	change_state(MOVIE_STATE_PLAY);
-	VBAMovieUpdateState();
 
 	char messageString[64] = "Movie ";
 	bool converted = false;
@@ -714,6 +729,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 		else if (result == MOVIE_WRONG_VERSION)
 			strcat(messageString, "higher revision ");
 	}
+
 	if (Movie.state == MOVIE_STATE_PLAY)
 		strcat(messageString, "replaying ");
 	else
@@ -1091,9 +1107,12 @@ void VBAUpdateFrameCountDisplay()
 	systemScreenMessage(frameDisplayString, 1, -1);
 }
 
+// this function should only be called once every frame
 void VBAMovieUpdateState()
 {
-	bool willPause   = false;
+	bool willPause = false;
+
+	++Movie.currentFrame;
 
 	if (Movie.state == MOVIE_STATE_PLAY)
 	{
@@ -1103,6 +1122,12 @@ void VBAMovieUpdateState()
 			change_state(MOVIE_STATE_END);
 			systemScreenMessage("Movie end");
 		}
+	}
+	else if (Movie.state == MOVIE_STATE_RECORD)
+	{
+		Movie.header.length_frames = Movie.currentFrame;
+		fwrite((Movie.inputBufferPtr - Movie.bytesPerFrame), 1, Movie.bytesPerFrame, Movie.file);
+		Movie.RecordedThisSession = true;
 	}
 	
 	if (Movie.state == MOVIE_STATE_END)
@@ -1190,7 +1215,7 @@ void VBAMovieUpdateState()
 	}
 }
 
-void VBAMovieUpdateInput(int controllerNum, bool sensor)
+void VBAMovieRead(int controllerNum, bool sensor)
 {
 	switch (Movie.state)
 	{
@@ -1200,20 +1225,24 @@ void VBAMovieUpdateInput(int controllerNum, bool sensor)
 			break;      // not a controller we're recognizing
 
 		read_frame_controller_data(controllerNum);
-		++Movie.currentFrame;
 		break;
 	}
 
+	default:
+		break;
+	}
+}
+
+void VBAMovieWrite(int controllerNum, bool sensor)
+{
+	switch (Movie.state)
+	{
 	case MOVIE_STATE_RECORD:
 	{
 		if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(controllerNum)) == 0)
 			break;      // not a controller we're recognizing
 
 		write_frame_controller_data(controllerNum);
-		++Movie.currentFrame;
-		Movie.header.length_frames = Movie.currentFrame;
-		fwrite((Movie.inputBufferPtr - Movie.bytesPerFrame), 1, Movie.bytesPerFrame, Movie.file);
-		Movie.RecordedThisSession = true;
 		break;
 	}
 
@@ -1426,9 +1455,9 @@ void VBAMovieFreeze(uint8 * *buf, uint32 *size)
 		return;
 	}
 
-	Write32(Movie.header.uid, ptr);
-	Write32(Movie.currentFrame, ptr);
-	Write32(Movie.header.length_frames - 1, ptr);   // HACK: shorten the length by 1 for backward compatibility
+	Push32(Movie.header.uid, ptr);
+	Push32(Movie.currentFrame, ptr);
+	Push32(Movie.header.length_frames - 1, ptr);   // HACK: shorten the length by 1 for backward compatibility
 
 	memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * Movie.header.length_frames);
 }
@@ -1447,9 +1476,9 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		return MOVIE_WRONG_FORMAT;
 	}
 
-	uint32 movie_id		 = Read32(ptr);
-	uint32 current_frame = Read32(ptr);
-	uint32 end_frame	 = Read32(ptr) + 1;     // HACK: restore the length for backward compatibility
+	uint32 movie_id		 = Pop32(ptr);
+	uint32 current_frame = Pop32(ptr);
+	uint32 end_frame	 = Pop32(ptr) + 1;     // HACK: restore the length for backward compatibility
 	uint32 space_needed	 = Movie.bytesPerFrame * end_frame;
 
 	if (movie_id != Movie.header.uid)
@@ -1479,15 +1508,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame = current_frame;
 
-		// this checking might be unnecessary
-		if (current_frame >= Movie.header.length_frames)
-		{
-			change_state(MOVIE_STATE_END);
-		}
-		else
-		{
-			change_state(MOVIE_STATE_PLAY);
-		}
+		change_state(MOVIE_STATE_PLAY);
 	}
 	else
 	{
@@ -1508,15 +1529,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		flush_movie();
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
 
-		// this would cause problems if not dealt with
-		if (current_frame > end_frame)
-		{
-			change_state(MOVIE_STATE_END);
-		}
-		else
-		{
-			change_state(MOVIE_STATE_RECORD);
-		}
+		change_state(MOVIE_STATE_RECORD);
 	}
 
 	// FIXME: out of range
@@ -1539,8 +1552,6 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 			}
 		}
 	}
-
-	// VBAMovieUpdateState();
 
 	return MOVIE_SUCCESS;
 }
@@ -1568,12 +1579,10 @@ bool VBAMovieSwitchToPlaying()
 	}
 
 	change_state(MOVIE_STATE_PLAY);
-	systemScreenMessage("Movie replay (continue)");
-
-	bool8 recorded = Movie.RecordedThisSession;
-	Movie.RecordedThisSession = false;
-	VBAMovieUpdateState();
-	Movie.RecordedThisSession = recorded;
+	if (Movie.state == MOVIE_STATE_PLAY)
+		systemScreenMessage("Movie replay (continue)");
+	else
+		systemScreenMessage("Movie end");
 
 	return true;
 }
@@ -1714,8 +1723,8 @@ int VBAMovieConvertCurrent()
 		{
 			if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 			{
-				Write16(initialInputs[i], firstFramePtr);
-				// note: this is correct since Write16 advances the dest pointer by sizeof u16
+				Push16(initialInputs[i], firstFramePtr);
+				// note: this is correct since Push16 advances the dest pointer by sizeof u16
 			}
 		}
 	}
