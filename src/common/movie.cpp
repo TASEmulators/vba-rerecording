@@ -232,7 +232,7 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 	Push32(header.flashSize, ptr);
 	Push32(header.gbEmulatorType, ptr);
 
-	for (int i = 0; i < 12; i++)
+	for (int i = 0; i < 12; ++i)
 		Push8(header.romTitle[i], ptr);
 
 	Push8(header.minorVersion, ptr);
@@ -289,7 +289,7 @@ static void truncate_movie()
 
 static void remember_input_state()
 {
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 	{
 		if (systemCartridgeType == 0)
 		{
@@ -371,8 +371,9 @@ void VBAMovieInit()
 	memset(&Movie, 0, sizeof(Movie));
 	Movie.state		  = MOVIE_STATE_NONE;
 	Movie.pauseFrame  = -1;
-	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; i++)
-		currentButtons[i] = 0;
+
+	resetSignaled	  = false;
+	resetSignaledLast = false;
 }
 
 #ifdef SDL
@@ -535,7 +536,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	SetPlayEmuSettings();
 
 	// read the metadata / author info from file
-	fread(Movie.authorInfo, 1, sizeof(char) * MOVIE_METADATA_SIZE, file);
+	fread(Movie.authorInfo, 1, MOVIE_METADATA_SIZE, file);
 	fn = dup(fileno(file)); // XXX: why does this fail?? it returns -1 but errno == 0
 	fclose(file);
 
@@ -568,9 +569,6 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	{
 		HardResetAndSRAMClear();
 	}
-
-	resetSignaled	  = false;
-	resetSignaledLast = false;
 
 	utilGzClose(stream);
 
@@ -728,7 +726,7 @@ static void SetRecordEmuSettings()
 #endif
 }
 
-uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly)
+uint16 VBAMovieGetCurrentInputOf(int controllerNum, bool normalOnly)
 {
 	if (controllerNum < 0 || controllerNum >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
 		return 0;
@@ -855,9 +853,6 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	}
 
 	Movie.header.offset_to_controller_data = (uint32)ftell(file);
-
-	resetSignaled	  = false;
-	resetSignaledLast = false;
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
@@ -1115,7 +1110,7 @@ void VBAMovieRead(int i, bool /*sensor*/)
 
 	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 	{
-		currentButtons[i] = Read16(Movie.inputBufferPtr + i);
+		currentButtons[i] = Read16(Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i);
 	}
 	else
 	{
@@ -1156,6 +1151,8 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 			buttonData |= BUTTON_MASK_OLD_RESET;
 		}
 
+		Write16(buttonData, Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i);
+
 		// and for display
 		currentButtons[i] = buttonData;
 	}
@@ -1165,8 +1162,6 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		// movie)
 		currentButtons[i] = 0;
 	}
-
-	Write16(currentButtons[i], Movie.inputBufferPtr + i);
 }
 
 void VBAMovieStop(bool8 suppress_message)
@@ -1460,7 +1455,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	if (current_frame > 0)
 	{
 		const u8 NEW_RESET = u8(BUTTON_MASK_NEW_RESET >> 8);
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 		{
 			if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(i)) && (Movie.inputBufferPtr[1 - Movie.bytesPerFrame] & NEW_RESET))
 			{
@@ -1636,7 +1631,7 @@ int VBAMovieConvertCurrent()
 	if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
 	{
 		uint8 *firstFramePtr = Movie.inputBuffer;
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 		{
 			if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 			{
@@ -1649,7 +1644,7 @@ int VBAMovieConvertCurrent()
 	// convert old resets to new ones
 	const u8 OLD_RESET = u8(BUTTON_MASK_OLD_RESET >> 8);
 	const u8 NEW_RESET = u8(BUTTON_MASK_NEW_RESET >> 8);
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 	{
 		if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 		{

@@ -173,7 +173,7 @@ uint32 VBAMovieSetRerecordCount (uint32 newRerecordCount);
 std::string VBAMovieGetAuthorInfo();
 std::string VBAMovieGetFilename();
 
-uint32 VBAGetCurrentInputOf(int controllerNum, bool normalOnly = true);
+uint16 VBAMovieGetCurrentInputOf(int controllerNum, bool normalOnly = true);
 void VBAMovieSignalReset();
 void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
