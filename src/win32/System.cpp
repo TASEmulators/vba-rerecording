@@ -780,7 +780,7 @@ bool systemIsEmulating()
 
 void systemGbBorderOn()
 {
-	if (emulating && systemCartridgeType == 1 && gbBorderOn)
+	if (emulating && systemCartridgeType == 1)
 	{
 		theApp.updateWindowSize(theApp.videoOption);
 	}
@@ -788,7 +788,7 @@ void systemGbBorderOn()
 
 bool systemIsRunningGBA()
 {
-	return(systemCartridgeType == 0);
+	return (systemCartridgeType == 0);
 }
 
 bool systemIsSpedUp()
