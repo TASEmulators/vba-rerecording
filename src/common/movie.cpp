@@ -64,7 +64,7 @@ static u16 initialInputs[4] = {0};
 static bool resetSignaled	  = false;
 static bool resetSignaledLast = false;
 
-static int prevBorder, prevWinBorder, prevBorderAuto;
+static int prevEmulatorType, prevBorder, prevWinBorder, prevBorderAuto;
 
 // little-endian integer pop/push functions:
 static inline uint32 Pop32(const uint8 * &ptr)
@@ -326,14 +326,17 @@ static void change_state(MovieState new_state)
 		fclose(Movie.file);
 		Movie.file		   = NULL;
 		Movie.currentFrame = 0;
-
 #if (defined(WIN32) && !defined(SDL))
 		// undo changes to border settings
 		{
+			gbBorderOn			 = prevBorder;
 			theApp.winGbBorderOn = prevWinBorder;
 			gbBorderAutomatic	 = prevBorderAuto;
+			theApp.updateWindowSize(theApp.videoOption);
 		}
 #endif
+		gbEmulatorType = prevEmulatorType;
+
 		extern int32 gbDMASpeedVersion;
 		gbDMASpeedVersion = 1;
 
@@ -392,6 +395,7 @@ static void GetBatterySaveName(char *buffer)
 
 static void SetPlayEmuSettings()
 {
+	prevEmulatorType = gbEmulatorType;
 	gbEmulatorType = Movie.header.gbEmulatorType;
 	extern void SetPrefetchHack(bool);
 	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
@@ -685,7 +689,7 @@ static void SetRecordEmuSettings()
 	Movie.header.saveType  = saveType;
 	Movie.header.flashSize = sdlFlashSize;
 #endif
-	Movie.header.gbEmulatorType = gbEmulatorType;
+	prevEmulatorType = Movie.header.gbEmulatorType = gbEmulatorType;
 
 	if (!memLagTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
