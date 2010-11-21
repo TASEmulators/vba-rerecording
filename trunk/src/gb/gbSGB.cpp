@@ -334,7 +334,7 @@ void gbSgbPicture()
 	if (gbSgbMode && gbCgbMode && gbSgbCGBSupport > 4)
 	{
 		gbSgbCGBSupport = 0;
-		gbSgbMode		= 0;
+		gbSgbMode		= 2;
 		gbSgbMask		= 0;
 		gbSgbRenderBorder();
 		gbReset();
@@ -721,7 +721,7 @@ void gbSgbChrTransfer()
 	if (gbSgbMode && gbCgbMode && gbSgbCGBSupport == 7)
 	{
 		gbSgbCGBSupport = 0;
-		gbSgbMode		= 0;
+		gbSgbMode		= 2;
 		gbSgbMask		= 0;
 		gbSgbRenderBorder();
 		gbReset();

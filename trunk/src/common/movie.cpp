@@ -332,7 +332,7 @@ static void change_state(MovieState new_state)
 			gbBorderOn			 = prevBorder;
 			theApp.winGbBorderOn = prevWinBorder;
 			gbBorderAutomatic	 = prevBorderAuto;
-			theApp.updateWindowSize(theApp.videoOption);
+			systemGbBorderOn();
 		}
 #endif
 		gbEmulatorType = prevEmulatorType;
@@ -436,21 +436,19 @@ static void SetPlayEmuSettings()
 		gbBorderOn = true;
 		theApp.winGbBorderOn = true;
 		gbBorderAutomatic	 = false;
-		theApp.updateWindowSize(theApp.videoOption);
 	}
 	else
 	{
 		gbBorderOn = false;
 		theApp.winGbBorderOn = false;
 		gbBorderAutomatic	 = false;
-		theApp.updateWindowSize(theApp.videoOption);
 		if (theApp.hideMovieBorder)
 		{
 			theApp.hideMovieBorder = false;
 			prevBorder = false;     // it might be expected behaviour that it stays hidden after the movie
 		}
 	}
-
+	systemGbBorderOn();
 #else
 	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
 	extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
@@ -721,15 +719,14 @@ static void SetRecordEmuSettings()
 		gbBorderOn = true;
 		theApp.winGbBorderOn = true;
 		gbBorderAutomatic	 = false;
-		theApp.updateWindowSize(theApp.videoOption);
 	}
 	else
 	{
 		gbBorderOn = false;
 		theApp.winGbBorderOn = false;
 		gbBorderAutomatic	 = false;
-		theApp.updateWindowSize(theApp.videoOption);
 	}
+	systemGbBorderOn();
 #else
 	/// SDLFIXME
 #endif

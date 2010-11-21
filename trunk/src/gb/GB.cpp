@@ -1618,17 +1618,7 @@ void gbSpeedSwitch()
 
 void gbGetHardwareType()
 {
-	gbSgbMode = 0;
 	gbCgbMode = 0;
-	if (gbRom[0x146] == 0x03)
-	{
-		if (gbEmulatorType == 0 ||
-		    gbEmulatorType == 2 ||
-		    gbEmulatorType == 5 ||
-		    (!(gbRom[0x143] & 0x80) && (gbEmulatorType == 1 || gbEmulatorType == 4)))
-			gbSgbMode = 1;
-	}
-
 	if (gbRom[0x143] & 0x80)
 	{
 		if (gbEmulatorType == 0 ||
@@ -1639,6 +1629,22 @@ void gbGetHardwareType()
 		{
 			gbCgbMode = 1;
 		}
+	}
+
+	if (gbSgbMode == 2)
+	{
+		gbSgbMode = 0;
+		return;
+	}
+
+	gbSgbMode = 0;
+	if (gbRom[0x146] == 0x03)
+	{
+		if (gbEmulatorType == 0 ||
+		    gbEmulatorType == 2 ||
+		    gbEmulatorType == 5 ||
+		    (!(gbRom[0x143] & 0x80) && (gbEmulatorType == 1 || gbEmulatorType == 4)))
+			gbSgbMode = 1;
 	}
 }
 
@@ -1701,7 +1707,6 @@ void gbReset(bool userReset)
 			gbWram = (u8 *)malloc(0x8000 + 4);
 		memset(gbVram, 0, 0x4000 + 4);
 		memset(gbWram, 0, 0x8000 + 4);
-		memset(gbPalette, 0, 2 * 128);
 	}
 	else
 	{
@@ -2111,6 +2116,7 @@ void gbInit()
 
 	gbMemory = (u8 *)malloc(65536 + 4);
 	memset(gbMemory, 0, 65536 + 4);
+	memset(gbPalette, 0, 2 * 128);
 
 	// HACK: +4 at start to accomodate the 2xSaI filter reading out of bounds of the leftmost pixel
 	origPix = (u8 *)calloc(1, 4 * 257 * 226 + 4);
