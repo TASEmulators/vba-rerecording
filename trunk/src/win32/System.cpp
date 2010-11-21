@@ -780,6 +780,9 @@ bool systemIsEmulating()
 
 void systemGbBorderOn()
 {
+	if (vbaShuttingDown)
+		return;
+
 	if (emulating && systemCartridgeType == 1)
 	{
 		theApp.updateWindowSize(theApp.videoOption);
