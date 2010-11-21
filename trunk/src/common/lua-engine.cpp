@@ -578,7 +578,7 @@ defcase: default:
 								else
 								{
 								    s_tableAddressStack.push_back(lua_topointer(L, i));
-								    struct Scope { ~Scope(){ s_tableAddressStack.pop_back(); } } scope;
+								    struct Scope { ~Scope(){ s_tableAddressStack. pop_back(); } } scope;
 
 								    APPENDPRINT "{" END
 
@@ -636,7 +636,7 @@ defcase: default:
 								            if (remaining <= 0)
 								            {
 								                lua_settop(L, keyIndex - 1); // stack might not be clean yet if we're breaking
-												                             // early
+								                                             // early
 								                break;
 											}
 										}
@@ -696,7 +696,7 @@ defcase: default:
 				    {
 				        char *str = rawToCString(L);
 				        str[strlen(str) - 2] = 0; // hack: trim off the \r\n (which is there to simplify the print function's
-						                          // task)
+				                                  // task)
 				        lua_pushstring(L, str);
 				        return 1;
 					}
@@ -710,14 +710,14 @@ defcase: default:
 				        lua_getglobal(L, "tostring");
 				        lua_CFunction cf = lua_tocfunction(L, -1);
 				        if (cf == tostring || lua_isnil(L, -1)) // optimization: if using our own C tostring function, we can
-						                                        // bypass the call through Lua and all the string object
-						                                        // allocation that would entail
+				                                                // bypass the call through Lua and all the string object
+				                                                // allocation that would entail
 				        {
 				            lua_pop(L, 1);
 				            return rawToCString(L, idx);
 						}
 				        else // if the user overrided the tostring function, we have to actually call it and store the
-						     // temporarily allocated string it returns
+				             // temporarily allocated string it returns
 				        {
 				            lua_pushstring(L, "");
 				            for (int i = a; i <= n; i++)
@@ -901,7 +901,7 @@ defcase: default:
 
 				    struct cpuToRegisterMap
 				    {
-				        const char *		cpuName;
+				        const char *cpuName;
 				        registerPointerMap *rpmap;
 					}
 				    cpuToRegisterMaps [] =
@@ -1052,7 +1052,7 @@ defcase: default:
 
 				            void Calculate(const std::vector<unsigned int> &bytes)
 				            {
-				                islands.clear();
+				                islands. clear();
 
 				                unsigned int lastEnd = ~0;
 
@@ -1063,10 +1063,10 @@ defcase: default:
 				                    unsigned int addr = *iter;
 				                    if (addr < lastEnd || addr > lastEnd + (long long)maxGap)
 				                    {
-				                        islands.push_back(Island());
-				                        islands.back().start = addr;
+				                        islands. push_back(Island());
+				                        islands. back().start = addr;
 									}
-				                    islands.back().end = addr + 1;
+				                    islands.back(). end = addr + 1;
 				                    lastEnd = addr + 1;
 								}
 							}
@@ -1084,15 +1084,15 @@ defcase: default:
 
 				        Region<0xFFFFFFFF> broad;
 				        Region<0x1000>	   mid;
-				        Region<0> narrow;
+				        Region<0>		   narrow;
 
 				        void Calculate(std::vector<unsigned int> &bytes)
 				        {
-				            std::sort(bytes.begin(), bytes.end());
+				            std:: sort(bytes.begin(), bytes.end());
 
-				            broad. Calculate(bytes);
-				            mid.   Calculate(bytes);
-				            narrow.Calculate(bytes);
+				            broad.	Calculate(bytes);
+				            mid.	Calculate(bytes);
+				            narrow. Calculate(bytes);
 						}
 
 				        TieredRegion()
@@ -1163,7 +1163,7 @@ defcase: default:
 				            {
 #ifdef USE_INFO_STACK
 				                infoStack.insert(infoStack.begin(), &info);
-				                struct Scope { ~Scope(){ infoStack.erase(infoStack.begin()); } } scope;
+				                struct Scope { ~Scope(){ infoStack. erase(infoStack.begin()); } } scope;
 #endif
 				                lua_settop(L, 0);
 				                lua_getfield(L, LUA_REGISTRYINDEX, luaMemHookTypeStrings[hookType]);
@@ -1214,7 +1214,7 @@ defcase: default:
 				            //	address |= 0xFF0000; // account for mirroring of RAM
 				            if (hookedRegions[hookType].Contains(address, size))
 								CallRegisteredLuaMemHook_LuaMatch(address, size, value, hookType);  // something has hooked this
-							                                                                        // specific address
+				                                                                                    // specific address
 						}
 					}
 
@@ -1758,7 +1758,7 @@ defcase: default:
 				        {
 				            // Find an appropriate filename. This is OS specific, unfortunately.
 #if (defined(WIN32) && !defined(SDL))
-							CString stateName = winGetSavestateFilename(theApp.gameFilename, which);
+				            CString stateName = winGetSavestateFilename(theApp.gameFilename, which);
 #else
 				            extern char saveDir[2048];
 				            extern char filename[2048];
@@ -2060,6 +2060,7 @@ defcase: default:
 				        //gui_prepare();
 				        // Note: New version of Bresenham's Line Algorithm
 				        //
+				        //
 				        // http://groups.google.co.jp/group/rec.games.roguelike.development/browse_thread/thread/345f4c42c3b25858/29e07a3af3a450e6?show_docid=29e07a3af3a450e6
 				        int swappedx = 0;
 				        int swappedy = 0;
@@ -2349,21 +2350,21 @@ defcase: default:
 					}
 				    s_colorMapping[] =
 				    {
-				        { "white",		0xFFFFFFFF				 },
-				        { "black",		0x000000FF				 },
-				        { "clear",		0x00000000				 },
-				        { "gray",		0x7F7F7FFF				 },
-				        { "grey",		0x7F7F7FFF				 },
-				        { "red",		0xFF0000FF				 },
-				        { "orange",		0xFF7F00FF				 },
-				        { "yellow",		0xFFFF00FF				 },
-				        { "chartreuse", 0x7FFF00FF				 },
-				        { "green",		0x00FF00FF				 },
-				        { "teal",		0x00FF7FFF				 },
-				        { "cyan",		0x00FFFFFF				 },
-				        { "blue",		0x0000FFFF				 },
-				        { "purple",		0x7F00FFFF				 },
-				        { "magenta",	0xFF00FFFF				 },
+				        { "white",		0xFFFFFFFF		  },
+				        { "black",		0x000000FF		  },
+				        { "clear",		0x00000000		  },
+				        { "gray",		0x7F7F7FFF		  },
+				        { "grey",		0x7F7F7FFF		  },
+				        { "red",		0xFF0000FF		  },
+				        { "orange",		0xFF7F00FF		  },
+				        { "yellow",		0xFFFF00FF		  },
+				        { "chartreuse", 0x7FFF00FF		  },
+				        { "green",		0x00FF00FF		  },
+				        { "teal",		0x00FF7FFF		  },
+				        { "cyan",		0x00FFFFFF		  },
+				        { "blue",		0x0000FFFF		  },
+				        { "purple",		0x7F00FFFF		  },
+				        { "magenta",	0xFF00FFFF		  },
 					};
 
 /**
@@ -2392,7 +2393,7 @@ defcase: default:
 				            if (!strnicmp(str, "rand", 4))
 				            {
 				                *colour = gen_rand32() | 0xFF; //((rand()*255/RAND_MAX) << 8) | ((rand()*255/RAND_MAX) << 16) |
-								                               // ((rand()*255/RAND_MAX) << 24) | 0xFF;
+				                                               // ((rand()*255/RAND_MAX) << 24) | 0xFF;
 				                return true;
 							}
 
@@ -2413,7 +2414,7 @@ defcase: default:
 				    {
 				        switch (lua_type(L, offset))
 				        {
-						case LUA_TSTRING :
+						case LUA_TSTRING:
 							{
 							    const char *str = lua_tostring(L, offset);
 							    uint32		colour;
@@ -2429,13 +2430,13 @@ defcase: default:
 								}
 							}
 
-						case LUA_TNUMBER :
+						case LUA_TNUMBER:
 							{
 							    uint32 colour = (uint32) lua_tointeger(L, offset);
 							    return colour;
 							}
 
-						case LUA_TTABLE :
+						case LUA_TTABLE:
 							{
 							    int color = 0xFF;
 							    lua_pushnil(L); // first key
@@ -3246,8 +3247,8 @@ draw_outline:
 							return 0;  // out of screen or invalid size
 				        gui_prepare();
 
-				        const uint8 *pix	= (const uint8 *)(&ptr[yStartSrc * pitch + (xStartSrc * (trueColor ? 4 : 1))]);
-				        int bytesToNextLine = pitch - (width * (trueColor ? 4 : 1));
+				        const uint8 *pix = (const uint8 *)(&ptr[yStartSrc * pitch + (xStartSrc * (trueColor ? 4 : 1))]);
+				        int			 bytesToNextLine = pitch - (width * (trueColor ? 4 : 1));
 				        if (trueColor)
 				        {
 				            for (int y = yStartDst; y < height + yStartDst && y < LUA_SCREEN_HEIGHT; y++, pix += bytesToNextLine)
@@ -3321,6 +3322,7 @@ draw_outline:
 				        else
 							return luaL_error(L, "invalid popup type \"%s\"", type);
 
+				        theApp.winCheckFullscreen();
 				        systemSoundClearBuffer();
 				        int result = AfxGetApp()->m_pMainWnd->MessageBox(message, "Lua Script Pop-up", t);
 
@@ -3569,23 +3571,23 @@ use_console:
 				        "insert",
 				        "delete",
 				        NULL,
-				        "0",		   "1",			   "2",			   "3",		   "4",		  "5",		 "6",		"7",	   "8",		  "9",
-				        NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,
-				        "A",		   "B",			   "C",			   "D",		   "E",		  "F",		 "G",		"H",	   "I",		  "J",
-				        "K",		   "L",			   "M",			   "N",		   "O",		  "P",		 "Q",		"R",	   "S",		  "T",
-				        "U",		   "V",			   "W",			   "X",		   "Y",		  "Z",
+				        "0",		   "1",			   "2",			   "3",			   "4",		   "5",		  "6",		 "7",		"8",	   "9",
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,
+				        "A",		   "B",			   "C",			   "D",			   "E",		   "F",		  "G",		 "H",		"I",	   "J",
+				        "K",		   "L",			   "M",			   "N",			   "O",		   "P",		  "Q",		 "R",		"S",	   "T",
+				        "U",		   "V",			   "W",			   "X",			   "Y",		   "Z",
 				        NULL,
 				        NULL,
 				        NULL,
 				        NULL,
 				        NULL,
-				        "numpad0",	   "numpad1",	   "numpad2",	   "numpad3",  "numpad4", "numpad5", "numpad6", "numpad7", "numpad8", "numpad9",
+				        "numpad0",	   "numpad1",	   "numpad2",	   "numpad3",	   "numpad4",  "numpad5", "numpad6", "numpad7", "numpad8", "numpad9",
 				        "numpad*",	   "numpad+",
 				        NULL,
 				        "numpad-",	   "numpad.",	   "numpad/",
-				        "F1",		   "F2",		   "F3",		   "F4",	   "F5",	  "F6",		 "F7",		"F8",	   "F9",	  "F10",	 "F11",
+				        "F1",		   "F2",		   "F3",		   "F4",		   "F5",	   "F6",	  "F7",		 "F8",		"F9",	   "F10",	  "F11",
 				        "F12",
-				        "F13",		   "F14",		   "F15",	   "F16",	  "F17",	 "F18",		"F19",	   "F20",	  "F21",	 "F22",		"F23",
+				        "F13",		   "F14",		   "F15",		   "F16",		   "F17",	   "F18",	  "F19",	 "F20",		"F21",	   "F22",	  "F23",
 				        "F24",
 				        NULL,
 				        NULL,
@@ -3598,10 +3600,10 @@ use_console:
 				        "numlock",
 				        "scrolllock",
 				        NULL,          // 0x92
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,	  NULL,		 NULL,		NULL,
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,	  NULL,		 NULL,
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,	  NULL,
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,	  NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,
 				        NULL,          // 0xB9
 				        "semicolon",
 				        "plus",
@@ -3611,9 +3613,9 @@ use_console:
 				        "slash",
 				        "tilde",
 				        NULL,          // 0xC1
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,	  NULL,
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,	   NULL,
-				        NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,		NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,		 NULL,
+				        NULL,		   NULL,		   NULL,		   NULL,		   NULL,	   NULL,	  NULL,
 				        NULL,          // 0xDA
 				        "leftbracket",
 				        "backslash",
@@ -3931,19 +3933,19 @@ use_console:
 					}
 
 				    static const struct luaL_Reg bit_funcs[] = {
-				        { "tobit",	 bit_tobit				},
-				        { "bnot",	 bit_bnot				},
-				        { "band",	 bit_band				},
-				        { "bor",	 bit_bor				},
-				        { "bxor",	 bit_bxor				},
-				        { "lshift",	 bit_lshift				},
-				        { "rshift",	 bit_rshift				},
-				        { "arshift", bit_arshift			},
-				        { "rol",	 bit_rol				},
-				        { "ror",	 bit_ror				},
-				        { "bswap",	 bit_bswap				},
-				        { "tohex",	 bit_tohex				},
-				        { NULL,		 NULL					}
+				        { "tobit",	 bit_tobit	 },
+				        { "bnot",	 bit_bnot	 },
+				        { "band",	 bit_band	 },
+				        { "bor",	 bit_bor	 },
+				        { "bxor",	 bit_bxor	 },
+				        { "lshift",	 bit_lshift	 },
+				        { "rshift",	 bit_rshift	 },
+				        { "arshift", bit_arshift },
+				        { "rol",	 bit_rol	 },
+				        { "ror",	 bit_ror	 },
+				        { "bswap",	 bit_bswap	 },
+				        { "tohex",	 bit_tohex	 },
+				        { NULL,		 NULL		 }
 					};
 
 /* Signed right-shifts are implementation-defined per C89/C99.
@@ -4014,6 +4016,7 @@ use_console:
 
 #if (defined(WIN32) && !defined(SDL))
 				            // Uh oh
+				            theApp.winCheckFullscreen();
 				            systemSoundClearBuffer();
 				            int ret = AfxGetApp()->m_pMainWnd->MessageBox(
 				                "The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)",
@@ -4058,153 +4061,153 @@ use_console:
 
 				    static const struct luaL_reg vbalib[] = {
 				        //	{"speedmode", vba_speedmode},	// TODO: NYI
-				        { "frameadvance",	vba_frameadvance						   },
-				        { "pause",			vba_pause								   },
-				        { "framecount",		vba_framecount							   },
-				        { "lagcount",		vba_getlagcount							   },
-				        { "lagged",			vba_lagged								   },
-				        { "emulating",		vba_emulating							   },
-				        { "registerbefore", vba_registerbefore						   },
-				        { "registerafter",	vba_registerafter						   },
-				        { "registerexit",	vba_registerexit						   },
-				        { "message",		vba_message								   },
-				        { "print",			print									   }, // sure, why not
-				        { NULL,				NULL									   }
+				        { "frameadvance",	vba_frameadvance	  },
+				        { "pause",			vba_pause			  },
+				        { "framecount",		vba_framecount		  },
+				        { "lagcount",		vba_getlagcount		  },
+				        { "lagged",			vba_lagged			  },
+				        { "emulating",		vba_emulating		  },
+				        { "registerbefore", vba_registerbefore	  },
+				        { "registerafter",	vba_registerafter	  },
+				        { "registerexit",	vba_registerexit	  },
+				        { "message",		vba_message			  },
+				        { "print",			print				  }, // sure, why not
+				        { NULL,				NULL				  }
 					};
 
 				    static const struct luaL_reg memorylib[] = {
-				        { "readbyte",		   memory_readbyte										},
-				        { "readbytesigned",	   memory_readbytesigned								},
-				        { "readword",		   memory_readword										},
-				        { "readwordsigned",	   memory_readwordsigned								},
-				        { "readdword",		   memory_readdword										},
-				        { "readdwordsigned",   memory_readdwordsigned								},
-				        { "readbyterange",	   memory_readbyterange									},
-				        { "writebyte",		   memory_writebyte										},
-				        { "writeword",		   memory_writeword										},
-				        { "writedword",		   memory_writedword									},
-				        { "getregister",	   memory_getregister									},
-				        { "setregister",	   memory_setregister									},
+				        { "readbyte",		   memory_readbyte				 },
+				        { "readbytesigned",	   memory_readbytesigned		 },
+				        { "readword",		   memory_readword				 },
+				        { "readwordsigned",	   memory_readwordsigned		 },
+				        { "readdword",		   memory_readdword				 },
+				        { "readdwordsigned",   memory_readdwordsigned		 },
+				        { "readbyterange",	   memory_readbyterange			 },
+				        { "writebyte",		   memory_writebyte				 },
+				        { "writeword",		   memory_writeword				 },
+				        { "writedword",		   memory_writedword			 },
+				        { "getregister",	   memory_getregister			 },
+				        { "setregister",	   memory_setregister			 },
 
 				        // alternate naming scheme for word and double-word and unsigned
-				        { "readbyteunsigned",  memory_readbyte										},
-				        { "readwordunsigned",  memory_readword										},
-				        { "readdwordunsigned", memory_readdword										},
-				        { "readshort",		   memory_readword										},
-				        { "readshortunsigned", memory_readword										},
-				        { "readshortsigned",   memory_readwordsigned								},
-				        { "readlong",		   memory_readdword										},
-				        { "readlongunsigned",  memory_readdword										},
-				        { "readlongsigned",	   memory_readdwordsigned								},
-				        { "writeshort",		   memory_writeword										},
-				        { "writelong",		   memory_writedword									},
+				        { "readbyteunsigned",  memory_readbyte				 },
+				        { "readwordunsigned",  memory_readword				 },
+				        { "readdwordunsigned", memory_readdword				 },
+				        { "readshort",		   memory_readword				 },
+				        { "readshortunsigned", memory_readword				 },
+				        { "readshortsigned",   memory_readwordsigned		 },
+				        { "readlong",		   memory_readdword				 },
+				        { "readlongunsigned",  memory_readdword				 },
+				        { "readlongsigned",	   memory_readdwordsigned		 },
+				        { "writeshort",		   memory_writeword				 },
+				        { "writelong",		   memory_writedword			 },
 
 				        // memory hooks
-				        { "registerwrite",	   memory_registerwrite									},
+				        { "registerwrite",	   memory_registerwrite			 },
 				        //{"registerread", memory_registerread},
-				        { "registerexec",	   memory_registerexec									},
+				        { "registerexec",	   memory_registerexec			 },
 				        // alternate names
-				        { "register",		   memory_registerwrite									},
-				        { "registerrun",	   memory_registerexec									},
-				        { "registerexecute",   memory_registerexec									},
+				        { "register",		   memory_registerwrite			 },
+				        { "registerrun",	   memory_registerexec			 },
+				        { "registerexecute",   memory_registerexec			 },
 
-				        { NULL,				   NULL													}
+				        { NULL,				   NULL							 }
 					};
 
 				    static const struct luaL_reg joypadlib[] = {
-				        { "get",	  joypad_get				 },
-				        { "getdown",  joypad_getdown			 },
-				        { "getup",	  joypad_getup				 },
-				        { "set",	  joypad_set				 },
+				        { "get",	  joypad_get	  },
+				        { "getdown",  joypad_getdown  },
+				        { "getup",	  joypad_getup	  },
+				        { "set",	  joypad_set	  },
 
 				        // alternative names
-				        { "read",	  joypad_get				 },
-				        { "write",	  joypad_set				 },
-				        { "readdown", joypad_getdown			 },
-				        { "readup",	  joypad_getup				 },
-				        { NULL,		  NULL						 }
+				        { "read",	  joypad_get	  },
+				        { "write",	  joypad_set	  },
+				        { "readdown", joypad_getdown  },
+				        { "readup",	  joypad_getup	  },
+				        { NULL,		  NULL			  }
 					};
 
 				    static const struct luaL_reg savestatelib[] = {
-				        { "create", savestate_create		 },
-				        { "save",	savestate_save			 },
-				        { "load",	savestate_load			 },
+				        { "create", savestate_create },
+				        { "save",	savestate_save	 },
+				        { "load",	savestate_load	 },
 
-				        { NULL,		NULL					 }
+				        { NULL,		NULL			 }
 					};
 
 				    static const struct luaL_reg movielib[] = {
-				        { "active",			  movie_isactive									 },
-				        { "recording",		  movie_isrecording									 },
-				        { "playing",		  movie_isplaying									 },
-				        { "mode",			  movie_getmode										 },
+				        { "active",			  movie_isactive				},
+				        { "recording",		  movie_isrecording				},
+				        { "playing",		  movie_isplaying				},
+				        { "mode",			  movie_getmode					},
 
-				        { "length",			  movie_getlength									 },
-				        { "author",			  movie_getauthor									 },
-				        { "name",			  movie_getfilename									 },
-				        { "rerecordcount",	  movie_rerecordcount								 },
-				        { "setrerecordcount", movie_setrerecordcount							 },
+				        { "length",			  movie_getlength				},
+				        { "author",			  movie_getauthor				},
+				        { "name",			  movie_getfilename				},
+				        { "rerecordcount",	  movie_rerecordcount			},
+				        { "setrerecordcount", movie_setrerecordcount		},
 
-				        { "rerecordcounting", movie_rerecordcounting							 },
-				        { "framecount",		  vba_framecount									 }, // for those familiar with
-						                                                                            // other emulators that have
-						                                                                            // movie.framecount()
-						                                                                            // instead of
-						                                                                            // emulatorname.framecount()
+				        { "rerecordcounting", movie_rerecordcounting		},
+				        { "framecount",		  vba_framecount				}, // for those familiar with
+				                                                              // other emulators that have
+				                                                              // movie.framecount()
+				                                                              // instead of
+				                                                              // emulatorname.framecount()
 
-				        { "stop",			  movie_stop										 },
+				        { "stop",			  movie_stop					},
 
 				        // alternative names
-				        { "close",			  movie_stop										 },
-				        { "getauthor",		  movie_getauthor									 },
-				        { "getname",		  movie_getfilename									 },
-				        { NULL,				  NULL												 }
+				        { "close",			  movie_stop					},
+				        { "getauthor",		  movie_getauthor				},
+				        { "getname",		  movie_getfilename				},
+				        { NULL,				  NULL							}
 					};
 
 				    static const struct luaL_reg guilib[] = {
-				        { "register",	  gui_register						   },
-				        { "text",		  gui_text							   },
-				        { "box",		  gui_drawbox						   },
-				        { "line",		  gui_drawline						   },
-				        { "pixel",		  gui_drawpixel						   },
-				        { "opacity",	  gui_setopacity					   },
-				        { "transparency", gui_transparency					   },
-				        { "popup",		  gui_popup							   },
-				        { "parsecolor",	  gui_parsecolor					   },
-				        { "gdscreenshot", gui_gdscreenshot					   },
-				        { "gdoverlay",	  gui_gdoverlay						   },
-				        { "getpixel",	  gui_getpixel						   },
+				        { "register",	  gui_register		   },
+				        { "text",		  gui_text			   },
+				        { "box",		  gui_drawbox		   },
+				        { "line",		  gui_drawline		   },
+				        { "pixel",		  gui_drawpixel		   },
+				        { "opacity",	  gui_setopacity	   },
+				        { "transparency", gui_transparency	   },
+				        { "popup",		  gui_popup			   },
+				        { "parsecolor",	  gui_parsecolor	   },
+				        { "gdscreenshot", gui_gdscreenshot	   },
+				        { "gdoverlay",	  gui_gdoverlay		   },
+				        { "getpixel",	  gui_getpixel		   },
 
 				        // alternative names
-				        { "drawtext",	  gui_text							   },
-				        { "drawbox",	  gui_drawbox						   },
-				        { "drawline",	  gui_drawline						   },
-				        { "drawpixel",	  gui_drawpixel						   },
-				        { "setpixel",	  gui_drawpixel						   },
-				        { "writepixel",	  gui_drawpixel						   },
-				        { "rect",		  gui_drawbox						   },
-				        { "drawrect",	  gui_drawbox						   },
-				        { "drawimage",	  gui_gdoverlay						   },
-				        { "image",		  gui_gdoverlay						   },
-				        { "readpixel",	  gui_getpixel						   },
-				        { NULL,			  NULL								   }
+				        { "drawtext",	  gui_text			   },
+				        { "drawbox",	  gui_drawbox		   },
+				        { "drawline",	  gui_drawline		   },
+				        { "drawpixel",	  gui_drawpixel		   },
+				        { "setpixel",	  gui_drawpixel		   },
+				        { "writepixel",	  gui_drawpixel		   },
+				        { "rect",		  gui_drawbox		   },
+				        { "drawrect",	  gui_drawbox		   },
+				        { "drawimage",	  gui_gdoverlay		   },
+				        { "image",		  gui_gdoverlay		   },
+				        { "readpixel",	  gui_getpixel		   },
+				        { NULL,			  NULL				   }
 					};
 
 				    static const struct luaL_reg inputlib[] = {
-				        { "get",  input_getcurrentinputstatus	  },
+				        { "get",  input_getcurrentinputstatus  },
 
 				        // alternative names
-				        { "read", input_getcurrentinputstatus	  },
-				        { NULL,	  NULL							  }
+				        { "read", input_getcurrentinputstatus  },
+				        { NULL,	  NULL						   }
 					};
 
 // gocha: since vba dumps avi so badly,
 // I add avilib as a workaround for enhanced video encoding.
 				    static const struct luaL_reg avilib[] = {
-				        { "framecount", avi_framecount				   },
-				        { "pause",		avi_pause					   },
-				        { "resume",		avi_resume					   },
-				        { NULL,			NULL						   }
+				        { "framecount", avi_framecount },
+				        { "pause",		avi_pause	   },
+				        { "resume",		avi_resume	   },
+				        { NULL,			NULL		   }
 					};
 
 				    void CallExitFunction(void)

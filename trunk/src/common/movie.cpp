@@ -340,6 +340,8 @@ static void change_state(MovieState new_state)
 		extern int32 gbEchoRAMFixOn;
 		gbEchoRAMFixOn = 1;
 
+		gbNullInputHackTempEnabled = gbNullInputHackEnabled;
+
 		if (Movie.inputBuffer)
 		{
 			free(Movie.inputBuffer);
@@ -392,20 +394,14 @@ static void SetPlayEmuSettings()
 {
 	gbEmulatorType = Movie.header.gbEmulatorType;
 	extern void SetPrefetchHack(bool);
-#if (defined(WIN32) && !defined(SDL))
 	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 
-	// some GB/GBC games depend on the sound rate, so just use the highest one
-	systemSetSoundQuality(1);
+	gbNullInputHackTempEnabled = ((Movie.header.optionFlags & MOVIE_SETTING_GBINPUTHACK) != 0);
 
-	theApp.useOldGBTiming = false;
-//    theApp.removeIntros   = false;
-	theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
-	theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	rtcEnable((Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0);
-	theApp.winSaveType	= Movie.header.saveType;
-	theApp.winFlashSize = Movie.header.flashSize;
+	// some GB/GBC games depend on the sound rate, so just use the highest one
+	systemSoundSetQuality(1);
+	useOldFrameTiming = false;
 
 	extern int32 gbDMASpeedVersion;
 	if ((Movie.header.optionFlags & MOVIE_SETTING_GBCFF55FIX) != 0)
@@ -418,6 +414,14 @@ static void SetPlayEmuSettings()
 		gbEchoRAMFixOn = 1;
 	else
 		gbEchoRAMFixOn = 0;
+
+#if (defined(WIN32) && !defined(SDL))
+//    theApp.removeIntros   = false;
+	theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+	rtcEnable((Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0);
+	theApp.winSaveType	= Movie.header.saveType;
+	theApp.winFlashSize = Movie.header.flashSize;
 
 	prevBorder	   = gbBorderOn;
 	prevWinBorder  = theApp.winGbBorderOn;
@@ -452,9 +456,6 @@ static void SetPlayEmuSettings()
 	sdlRtcEnable = (Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0;
 	saveType	 = Movie.header.saveType;
 	sdlFlashSize = Movie.header.flashSize;
-
-	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
-		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 #endif
 }
 
@@ -595,17 +596,17 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
 	{ loadingMovie = false; return MOVIE_WRONG_FORMAT; }
 
-	// read controller data
-	uint32 to_read = Movie.bytesPerFrame * Movie.header.length_frames;
-	reserve_buffer_space(to_read);
-	fread(Movie.inputBuffer, 1, to_read, file);
-
 	strcpy(Movie.filename, movie_filename);
 	Movie.file			 = file;
 	Movie.inputBufferPtr = Movie.inputBuffer;
 	Movie.currentFrame	 = 0;
 	Movie.readOnly		 = movieReadOnly;
 	Movie.RecordedThisSession = false;
+
+	// read controller data
+	uint32 to_read = Movie.bytesPerFrame * Movie.header.length_frames;
+	reserve_buffer_space(to_read);
+	fread(Movie.inputBuffer, 1, to_read, file);
 
 	change_state(MOVIE_STATE_PLAY);
 
@@ -684,9 +685,13 @@ static void SetRecordEmuSettings()
 	Movie.header.saveType  = saveType;
 	Movie.header.flashSize = sdlFlashSize;
 #endif
+	Movie.header.gbEmulatorType = gbEmulatorType;
+
 	if (!memLagTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
-	Movie.header.gbEmulatorType = gbEmulatorType;
+
+	if (gbNullInputHackTempEnabled)
+		Movie.header.optionFlags |= MOVIE_SETTING_GBINPUTHACK;
 
 	Movie.header.optionFlags |= MOVIE_SETTING_GBCFF55FIX;
 	extern int32 gbDMASpeedVersion;
@@ -696,11 +701,12 @@ static void SetRecordEmuSettings()
 	extern int32 gbEchoRAMFixOn;
 	gbEchoRAMFixOn = 1;
 
-#if (defined(WIN32) && !defined(SDL))
 	// some GB/GBC games depend on the sound rate, so just use the highest one
-	systemSetSoundQuality(1);
+	systemSoundSetQuality(1);
 
-	theApp.useOldGBTiming = false;
+	useOldFrameTiming = false;
+
+#if (defined(WIN32) && !defined(SDL))
 //    theApp.removeIntros   = false;
 
 	prevBorder	   = gbBorderOn;
@@ -720,7 +726,6 @@ static void SetRecordEmuSettings()
 		gbBorderAutomatic	 = false;
 		theApp.updateWindowSize(theApp.videoOption);
 	}
-
 #else
 	/// SDLFIXME
 #endif
@@ -1408,17 +1413,16 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		// by loading another savestate or playing the movie from the beginning
 
 		// don't allow loading a state inconsistent with the current movie
-		if (end_frame < current_frame && end_frame < Movie.header.length_frames)
+		uint32 length_history = min(current_frame, Movie.header.length_frames);
+		if (end_frame < length_history)
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
-		uint32 length_history = min(current_frame, end_frame);
-		if (length_history > Movie.header.length_frames)
-			length_history = Movie.header.length_frames;
 		uint32 space_shared = Movie.bytesPerFrame * length_history;
 		if (memcmp(Movie.inputBuffer, ptr, space_shared))
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		Movie.currentFrame = current_frame;
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
 		change_state(MOVIE_STATE_PLAY);
 	}
@@ -1434,6 +1438,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.RecordedThisSession = true;
 
+		// do this before calling reserve_buffer_space()
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 		reserve_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
@@ -1443,9 +1449,6 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		change_state(MOVIE_STATE_RECORD);
 	}
-
-	// FIXME: out of range
-	Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
 
 	// necessary!
 	resetSignaled	  = false;

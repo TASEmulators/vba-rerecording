@@ -750,18 +750,18 @@ void systemSoundReset()
 		theApp.sound->reset();
 }
 
-void systemWriteDataToSoundBuffer()
+void systemSoundWriteToBuffer()
 {
 	if (theApp.sound)
 		theApp.sound->write();
 }
 
-bool systemCanChangeSoundQuality()
+bool systemSoundCanChangeQuality()
 {
 	return true;
 }
 
-bool systemSetSoundQuality(int quality)
+bool systemSoundSetQuality(int quality)
 {
 	if (systemCartridgeType == 0)
 		soundSetQuality(quality);

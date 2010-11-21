@@ -283,6 +283,8 @@ protected:
 	afx_msg void OnUpdateOptionsEmulatorSavetypeFlash1m(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorUseOldGBTiming();
 	afx_msg void OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI);
+	afx_msg void OnOptionsEmulatorUseGBNullInputKludge();
+	afx_msg void OnUpdateOptionsEmulatorUseGBNullInputKludge(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorGBALag();
 	afx_msg void OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorUsebiosfile();

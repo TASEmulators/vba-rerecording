@@ -109,6 +109,7 @@ extern int32	layerSettings;
 extern int32	layerEnable;
 extern bool8	speedHack;
 extern bool8	memLagEnabled, memLagTempEnabled;
+extern bool8	useOldFrameTiming;
 extern int32	cpuSaveType;
 extern bool8	cpuEnhancedDetection;
 extern bool8	cheatsEnabled;

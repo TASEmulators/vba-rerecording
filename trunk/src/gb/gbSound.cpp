@@ -880,7 +880,7 @@ void gbSoundTick()
 					soundResume();
 				}
 
-				systemWriteDataToSoundBuffer();
+				systemSoundWriteToBuffer();
 			}
 			soundIndex		 = 0;
 			soundBufferIndex = 0;
@@ -1009,7 +1009,7 @@ extern void soundShutdown();
 
 void gbSoundSetQuality(int quality)
 {
-	if (soundQuality != quality && systemCanChangeSoundQuality())
+	if (soundQuality != quality && systemSoundCanChangeQuality())
 	{
 		if (!soundOffFlag)
 			soundShutdown();

@@ -97,6 +97,10 @@ extern int32 gbBorderRowSkip;
 extern int32 gbBorderColumnSkip;
 extern int32 gbDmaTicks;
 
+extern bool8 useOldFrameTiming;
+extern bool8 gbNullInputHackEnabled;
+extern bool8 gbNullInputHackTempEnabled;
+
 extern void gbRenderLine();
 extern void gbDrawSprites();
 

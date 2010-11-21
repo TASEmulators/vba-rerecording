@@ -39,11 +39,11 @@
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
-extern soundtick_t GB_USE_TICKS_AS;
-
 #ifdef __GNUC__
 #define _stricmp strcasecmp
 #endif
+
+extern soundtick_t GB_USE_TICKS_AS;
 
 u8 *		 origPix = NULL;
 extern u8 *	 pix;
@@ -815,7 +815,8 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 				register_STAT &= 0xfc;
 				register_LY	   = 0x00;
 				// FIXME: horrible workaround
-				memcpy(gbJoymask, s_gbJoymask, sizeof(gbJoymask));
+				if (gbNullInputHackTempEnabled && !useOldFrameTiming)
+					memcpy(gbJoymask, s_gbJoymask, sizeof(gbJoymask));
 			}
 			else
 			{
@@ -825,7 +826,8 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 				register_LY	   = 0x00;
 				// FIXME: horrible workaround
 				memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
-				memset(gbJoymask, 0, sizeof(gbJoymask));
+				if (gbNullInputHackTempEnabled && !useOldFrameTiming)
+					memset(gbJoymask, 0, sizeof(gbJoymask));
 			}
 			//      compareLYToLYC();
 		}
@@ -3107,12 +3109,6 @@ bool gbUpdateSizes()
 	return true;
 }
 
-#if (defined(WIN32) && !defined(SDL))
-#   define USE_OLD_GB_TIMING (theApp.useOldGBTiming)
-#else
-#   define USE_OLD_GB_TIMING (false) /// SDL FIXME
-#endif
-
 void gbEmulate(int ticksToStop)
 {
 	gbRegister tempRegister;
@@ -3171,8 +3167,6 @@ void gbEmulate(int ticksToStop)
 		}
 
 		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-
-		GBSystemCounters.lagged = true;
 
 		newFrame = false;
 	}
@@ -3378,6 +3372,7 @@ void gbEmulate(int ticksToStop)
 							++GBSystemCounters.lagCount;
 						}
 						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
+						GBSystemCounters.lagged		= true;
 
 						// HACK: some special "buttons"
 						u8 ext = (newmask >> 18);
@@ -3780,7 +3775,7 @@ void gbEmulate(int ticksToStop)
 			}
 		}
 
-		if (USE_OLD_GB_TIMING)
+		if (useOldFrameTiming)
 		{
 			// old timing code
 			if (ticksToStop > 0)
@@ -3794,7 +3789,7 @@ void gbEmulate(int ticksToStop)
 
 		if (!(register_LCDC & 0x80))
 		{
-			if (!USE_OLD_GB_TIMING)
+			if (!useOldFrameTiming)
 			{
 				// FIXME: since register_LY can be reset to 0 by some games, frame length is variable
 				// and infinite loops can occurr
@@ -3827,13 +3822,12 @@ void gbEmulate(int ticksToStop)
 				else
 					gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
 #else
-				int debug_i = 0;
 #endif
 			}
 		}
 
 		// makes sure frames are really divided across input sampling boundaries which occur at a constant rate
-		if (frameBoundary || USE_OLD_GB_TIMING)
+		if (frameBoundary || useOldFrameTiming)
 		{
 ///			extern void VBAOnEnteringFrameBoundary();
 ///			VBAOnEnteringFrameBoundary();

@@ -107,7 +107,6 @@ public:
 	bool	  useBiosFile;
 	bool	  skipBiosFile;
 	CString	  biosFileName;
-	bool	  useOldGBTiming;
 	bool	  allowLeftRight;
 	bool	  autofireAccountForLag;
 	bool	  nextframeAccountForLag;

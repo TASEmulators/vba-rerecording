@@ -51,5 +51,7 @@ int32 gbBorderLineSkip   = 160;
 int32 gbBorderRowSkip    = 0;
 int32 gbBorderColumnSkip = 0;
 int32 gbDmaTicks         = 0;
+bool8 gbNullInputHackEnabled	 = false;
+bool8 gbNullInputHackTempEnabled = false;
 
 u8 (*gbSerialFunction)(u8) = NULL;
