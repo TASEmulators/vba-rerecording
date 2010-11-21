@@ -170,8 +170,8 @@ u32	  gbTimeNow			 = 0;
 int32 gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
 int32 gbDMASpeedVersion	 = 1;
 // emulator features
-int32 gbBattery			= 0;
-int32 gbJoymask[4]		= { 0, 0, 0, 0 };
+int32 gbBattery	   = 0;
+int32 gbJoymask[4] = { 0, 0, 0, 0 };
 
 int32 gbEchoRAMFixOn = 1;
 
@@ -629,7 +629,7 @@ void gbCompareLYToLYC()
 }
 
 // FIXME: horrible kludge to workaround the frame timing bug
-static int32 s_gbJoymask[4] = {0, 0, 0, 0};
+static int32 s_gbJoymask[4] = { 0, 0, 0, 0 };
 
 void gbWriteMemoryWrapped(register u16 address, register u8 value)
 {
@@ -1616,6 +1616,32 @@ void gbSpeedSwitch()
 	}
 }
 
+void gbGetHardwareType()
+{
+	gbSgbMode = 0;
+	gbCgbMode = 0;
+	if (gbRom[0x146] == 0x03)
+	{
+		if (gbEmulatorType == 0 ||
+		    gbEmulatorType == 2 ||
+		    gbEmulatorType == 5 ||
+		    (!(gbRom[0x143] & 0x80) && (gbEmulatorType == 1 || gbEmulatorType == 4)))
+			gbSgbMode = 1;
+	}
+
+	if (gbRom[0x143] & 0x80)
+	{
+		if (gbEmulatorType == 0 ||
+		    gbEmulatorType == 1 ||
+		    gbEmulatorType == 4 ||
+		    gbEmulatorType == 5 ||
+		    (gbRom[0x146] != 0x03 && (gbEmulatorType == 2)))
+		{
+			gbCgbMode = 1;
+		}
+	}
+}
+
 void gbReset(bool userReset)
 {
 	// movie must be closed while opening/creating a movie
@@ -1665,6 +1691,8 @@ void gbReset(bool userReset)
 	register_HDMA5 = 0;
 	register_SVBK  = 0;
 	register_IE	   = 0;
+
+	gbGetHardwareType();
 
 	if (gbCgbMode)
 	{
@@ -2686,6 +2714,10 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 
 	if (gbCgbMode)
 	{
+		if (!gbVram)
+			gbVram = (u8 *)malloc(0x4000 + 4);
+		if (!gbWram)
+			gbWram = (u8 *)malloc(0x8000 + 4);
 		utilGzRead(gzFile, gbVram, 0x4000);
 		utilGzRead(gzFile, gbWram, 0x8000);
 
@@ -2696,6 +2728,19 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		gbMemoryMap[0x08] = &gbVram[register_VBK * 0x2000];
 		gbMemoryMap[0x09] = &gbVram[register_VBK * 0x2000 + 0x1000];
 		gbMemoryMap[0x0d] = &gbWram[value * 0x1000];
+	}
+	else
+	{
+		if (gbVram)
+		{
+			free(gbVram);
+			gbVram = NULL;
+		}
+		if (gbWram)
+		{
+			free(gbWram);
+			gbWram = NULL;
+		}
 	}
 
 	gbSoundReadGame(version, gzFile);
@@ -2782,7 +2827,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		remove(tempBackupName);
 		tempFailCount = 0;
 	}
-	
+
 	for (int i = 0; i < 4; ++i)
 		systemSetJoypad(i, gbJoymask[i] & 0xFFFF);
 
@@ -3059,41 +3104,15 @@ bool gbUpdateSizes()
 		break;
 	}
 
-	if (gbRom[0x146] == 0x03)
+	gbGetHardwareType();
+	if (gbCgbMode == 1)
 	{
-		if (gbEmulatorType == 0 ||
-		    gbEmulatorType == 2 ||
-		    gbEmulatorType == 5 ||
-		    (!(gbRom[0x143] & 0x80) && (gbEmulatorType == 1 || gbEmulatorType == 4)))
-			gbSgbMode = 1;
-		else
-			gbSgbMode = 0;
+		gbVram	  = (u8 *)malloc(0x4000 + 4);
+		gbWram	  = (u8 *)malloc(0x8000 + 4);
+		memset(gbVram, 0, 0x4000 + 4);
+		memset(gbWram, 0, 0x8000 + 4);
+		memset(gbPalette, 0, 2 * 128);
 	}
-	else
-		gbSgbMode = 0;
-
-	if (gbRom[0x143] & 0x80)
-	{
-		if (gbEmulatorType == 0 ||
-		    gbEmulatorType == 1 ||
-		    gbEmulatorType == 4 ||
-		    gbEmulatorType == 5 ||
-		    (gbRom[0x146] != 0x03 && (gbEmulatorType == 2)))
-		{
-			gbCgbMode = 1;
-			gbVram	  = (u8 *)malloc(0x4000 + 4);
-			gbWram	  = (u8 *)malloc(0x8000 + 4);
-			memset(gbVram, 0, 0x4000 + 4);
-			memset(gbWram, 0, 0x8000 + 4);
-			memset(gbPalette, 0, 2 * 128);
-		}
-		else
-		{
-			gbCgbMode = 0;
-		}
-	}
-	else
-		gbCgbMode = 0;
 
 	gbInit();
 	gbReset();
@@ -3376,7 +3395,7 @@ void gbEmulate(int ticksToStop)
 
 						// HACK: some special "buttons"
 						u8 ext = (newmask >> 18);
-						speedup	= (ext & 1) != 0;
+						speedup = (ext & 1) != 0;
 
 						frameBoundary = true;
 
