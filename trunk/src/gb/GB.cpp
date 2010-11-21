@@ -1693,6 +1693,29 @@ void gbReset(bool userReset)
 	register_IE	   = 0;
 
 	gbGetHardwareType();
+	if (gbCgbMode)
+	{
+		if (!gbVram)
+			gbVram = (u8 *)malloc(0x4000 + 4);
+		if (!gbWram)
+			gbWram = (u8 *)malloc(0x8000 + 4);
+		memset(gbVram, 0, 0x4000 + 4);
+		memset(gbWram, 0, 0x8000 + 4);
+		memset(gbPalette, 0, 2 * 128);
+	}
+	else
+	{
+		if (gbVram)
+		{
+			free(gbVram);
+			gbVram = NULL;
+		}
+		if (gbWram)
+		{
+			free(gbWram);
+			gbWram = NULL;
+		}
+	}
 
 	if (gbCgbMode)
 	{
@@ -1705,8 +1728,6 @@ void gbReset(bool userReset)
 			BC.W = 0x0013;
 			DE.W = 0x00d8;
 			HL.W = 0x014d;
-			for (int i = 0; i < 8; i++)
-				gbPalette[i] = systemGbPalette[gbPaletteOption * 8 + i];
 		}
 		else
 		{
@@ -1721,6 +1742,9 @@ void gbReset(bool userReset)
 		register_HDMA5	 = 0xff;
 		gbMemory[0xff68] = 0xc0;
 		gbMemory[0xff6a] = 0xc0;
+
+		for (int i = 0; i < 64; i++)
+			gbPalette[i] = 0x7fff;
 	}
 	else
 	{
@@ -1763,8 +1787,6 @@ void gbReset(bool userReset)
 		gbWramBank		  = 1;
 		register_LY		  = 0x90;
 		gbLcdMode		  = 1;
-		for (int i = 0; i < 64; i++)
-			gbPalette[i] = 0x7fff;
 	}
 
 	if (gbSgbMode)
@@ -3102,16 +3124,6 @@ bool gbUpdateSizes()
 	case 0xff:
 		gbBattery = 1;
 		break;
-	}
-
-	gbGetHardwareType();
-	if (gbCgbMode == 1)
-	{
-		gbVram	  = (u8 *)malloc(0x4000 + 4);
-		gbWram	  = (u8 *)malloc(0x8000 + 4);
-		memset(gbVram, 0, 0x4000 + 4);
-		memset(gbWram, 0, 0x8000 + 4);
-		memset(gbPalette, 0, 2 * 128);
 	}
 
 	gbInit();
