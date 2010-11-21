@@ -3847,8 +3847,6 @@ void CPULoop(int _ticks)
 
 		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
-		GBASystemCounters.lagged = true;
-
 		newFrame = false;
 	}
 
@@ -4057,6 +4055,7 @@ updateLoop:
 								++GBASystemCounters.lagCount;
 							}
 							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
+							GBASystemCounters.lagged	 = true;
 
 							// HACK: some special "buttons"
 							u32 ext = (joy >> 18);
@@ -4536,11 +4535,7 @@ updateLoop:
 				}
 			}
 
-	#if (defined(WIN32) && !defined(SDL))
-			if (theApp.useOldGBTiming)
-	#else
-			if (false) /// SDL FIXME
-	#endif
+			if (useOldFrameTiming)
 			{
 				if (ticks <= 0)
 				{

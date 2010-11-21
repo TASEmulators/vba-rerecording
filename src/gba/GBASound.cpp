@@ -1314,7 +1314,7 @@ void soundTick()
 					soundResume();
 				}
 
-				systemWriteDataToSoundBuffer();
+				systemSoundWriteToBuffer();
 			}
 			soundIndex		 = 0;
 			soundBufferIndex = 0;
@@ -1507,7 +1507,7 @@ bool soundInit()
 
 void soundSetQuality(int quality)
 {
-	if (soundQuality != quality && systemCanChangeSoundQuality())
+	if (soundQuality != quality && systemSoundCanChangeQuality())
 	{
 		if (!soundOffFlag)
 			soundShutdown();

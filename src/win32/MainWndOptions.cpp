@@ -1039,13 +1039,27 @@ void MainWnd::OnUpdateOptionsEmulatorSkipbios(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsEmulatorUseOldGBTiming()
 {
-	theApp.useOldGBTiming = !theApp.useOldGBTiming;
+	useOldFrameTiming = !useOldFrameTiming;
 }
 
 void MainWnd::OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.useOldGBTiming);
+	pCmdUI->SetCheck(useOldFrameTiming);
 	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+}
+
+void MainWnd::OnOptionsEmulatorUseGBNullInputKludge()
+{
+	if (VBAMovieActive())
+		gbNullInputHackTempEnabled = !gbNullInputHackTempEnabled;
+	else
+		gbNullInputHackTempEnabled = gbNullInputHackEnabled = !gbNullInputHackEnabled;
+}
+
+void MainWnd::OnUpdateOptionsEmulatorUseGBNullInputKludge(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(VBAMovieActive() || GetAsyncKeyState(VK_CONTROL) ? gbNullInputHackTempEnabled : gbNullInputHackEnabled);
+	pCmdUI->Enable((!VBAMovieActive() && !useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorGBALag()
@@ -1058,8 +1072,6 @@ void MainWnd::OnOptionsEmulatorGBALag()
 
 void MainWnd::OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI)
 {
-///	extern bool prefetchActive, prefetchPrevActive, prefetchApplies;
-///	pCmdUI->SetCheck((prefetchApplies||(VBAMovieGetState()==MOVIE_STATE_PLAY)) ? prefetchActive : !memLagTempEnabled);
 	pCmdUI->SetCheck(!memLagTempEnabled);
 	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
 }
@@ -1240,7 +1252,7 @@ void MainWnd::OnUpdateOptionsSound22khz(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSound44khz()
 {
-	systemSetSoundQuality(1);
+	systemSoundSetQuality(1);
 }
 
 void MainWnd::OnUpdateOptionsSound44khz(CCmdUI*pCmdUI)

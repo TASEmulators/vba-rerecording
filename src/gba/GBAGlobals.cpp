@@ -46,6 +46,7 @@ int32	  layerEnable		   = 0xff00;
 bool8	  speedHack			   = false;
 bool8	  memLagEnabled		   = false;
 bool8	  memLagTempEnabled	   = false;
+bool8	  useOldFrameTiming	   = false;
 int32	  cpuSaveType		   = 0;
 bool8	  cpuEnhancedDetection = true;
 bool8	  cheatsEnabled		   = true;

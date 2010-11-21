@@ -432,7 +432,6 @@ VBA::VBA() : emulator(::theEmulator)
 	inputDisplay			= false;
 	speedupToggle			= false;
 	useOldSync				= false;
-	useOldGBTiming			= false;
 	allowLeftRight			= false;
 	autofireAccountForLag	= false;
 	nextframeAccountForLag	= false;
@@ -513,12 +512,12 @@ VBA::VBA() : emulator(::theEmulator)
 
 VBA::~VBA()
 {
-	InterframeCleanup();
+	if (VBAMovieActive())
+		VBAMovieStop(true);
 
 	saveSettings();
 
-	if (VBAMovieActive())
-		VBAMovieStop(true);
+	InterframeCleanup();
 
 	if (aviRecorder)
 	{
@@ -1975,8 +1974,10 @@ void VBA::loadSettings()
 	// emulation
 	memLagEnabled	  = regQueryDwordValue("memLagEnabled", false) ? true : false;
 	memLagTempEnabled = memLagEnabled;
+	gbNullInputHackEnabled	   = regQueryDwordValue("gbNullInputHackEnabled", false) ? true : false;
+	gbNullInputHackTempEnabled = gbNullInputHackEnabled;
 	useOldSync		  = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
-	useOldGBTiming	  = regQueryDwordValue("useOldGBTiming", false) ? true : false;
+	useOldFrameTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
 
 	useBiosFile	 = regQueryDwordValue("useBios", 0) ? true : false;
 	skipBiosFile = regQueryDwordValue("skipBios", 0) ? true : false;
@@ -2206,7 +2207,8 @@ void VBA::saveSettings()
 	regSetDwordValue("autoIPS", autoIPS);
 
 	regSetDwordValue("memLagEnabled", memLagEnabled);
-	regSetDwordValue("useOldGBTiming", useOldGBTiming);
+	regSetDwordValue("gbNullInputHackEnabled", gbNullInputHackEnabled);
+	regSetDwordValue("useOldGBTiming", useOldFrameTiming);
 	regSetDwordValue("useOldSync", useOldSync);
 
 	regSetDwordValue("agbPrint", agbPrintIsEnabled());

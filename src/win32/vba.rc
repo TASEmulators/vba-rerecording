@@ -2031,7 +2031,7 @@ BEGIN
             MENUITEM "&44 Khz",                     ID_OPTIONS_SOUND_44KHZ
         END
         MENUITEM SEPARATOR
-        POPUP "GBA &Emulation"
+        POPUP "&Emulation"
         BEGIN
             MENUITEM "&Real Time Clock",            ID_OPTIONS_EMULATOR_REALTIMECLOCK
             POPUP "Save &Type"
@@ -2049,8 +2049,9 @@ BEGIN
                 MENUITEM "Enhanced &Detection",         ID_OPTIONS_EMULATOR_SAVETYPE_ENHANCEDDETECTION
             END
             MENUITEM SEPARATOR
-            MENUITEM "&Lag Reduction",              ID_EMULATOR_GBALAG
-            MENUITEM "Use &Old Frame Timing",       ID_EMULATOR_USEOLDGBTIMING
+            MENUITEM "GBA &Lag Reduction",          ID_EMULATOR_GBALAG
+            MENUITEM "Use &Old Frame Timing",       ID_EMULATOR_USE_OLD_FRAME_TIMING
+            MENUITEM "    Use &GB Null Input Kludge", ID_EMULATOR_USE_GB_INPUT_KLUDGE
             MENUITEM SEPARATOR
             MENUITEM "&Use BIOS File",              ID_OPTIONS_EMULATOR_USEBIOSFILE
             MENUITEM "Skip BIOS &Intro",            ID_OPTIONS_EMULATOR_SKIPBIOS
