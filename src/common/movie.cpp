@@ -306,9 +306,6 @@ static void remember_input_state()
 
 static void change_state(MovieState new_state)
 {
-	if (new_state == Movie.state)
-		return;
-
 	if (Movie.state == MOVIE_STATE_RECORD)
 	{
 		flush_movie();
@@ -321,6 +318,9 @@ static void change_state(MovieState new_state)
 
 	if (new_state == MOVIE_STATE_NONE)
 	{
+		if (Movie.state == MOVIE_STATE_NONE)
+			return;
+
 		truncate_movie();
 
 		fclose(Movie.file);
@@ -357,6 +357,7 @@ static void change_state(MovieState new_state)
 		if (Movie.currentFrame >= Movie.header.length_frames)
 		{
 			new_state = MOVIE_STATE_END;
+			Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.header.length_frames;
 		}
 	}
 	else if (new_state == MOVIE_STATE_RECORD)
@@ -365,6 +366,7 @@ static void change_state(MovieState new_state)
 		if (Movie.currentFrame > Movie.header.length_frames)
 		{
 			new_state = MOVIE_STATE_END;
+			Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.header.length_frames;
 		}
 	}
 
@@ -1423,7 +1425,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		Movie.currentFrame = current_frame;
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
 
 		change_state(MOVIE_STATE_PLAY);
 	}
@@ -1440,7 +1442,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		Movie.RecordedThisSession = true;
 
 		// do this before calling reserve_buffer_space()
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.currentFrame;
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
 		reserve_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
