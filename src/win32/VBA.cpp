@@ -648,8 +648,8 @@ BOOL VBA::InitInstance()
 						goto invalidArgument;
 					biosFileName = argv[++i];
 					winCorrectPath(biosFileName);
-					extern void loadBIOS();
-					loadBIOS();
+
+					//systemLoadBIOS();
 				}
 				else if (_stricmp(argv[i], "-frameskip") == 0)
 				{

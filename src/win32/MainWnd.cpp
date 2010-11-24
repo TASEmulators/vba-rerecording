@@ -623,7 +623,6 @@ void MainWnd::OnSize(UINT nType, int cx, int cy)
 		theApp.iconic = false;
 	}
 
-
 	if (!theApp.changingVideoSize)
 	{
 		if (this)
@@ -1008,9 +1007,6 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				return;
 			}
 
-			extern void fillRomInfo(const SMovie &movieInfo, char romTitle [12],
-			                        uint32 & romGameCode, uint16 & checksum, uint8 & crc); // from MovieOpen.cpp
-
 			int cartType = movieInfo.header.typeFlags & 1 ? 0 : 1;
 
 			if (!emulating)
@@ -1026,7 +1022,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				else
 					return;
 			}
-			fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
+			VBAMovieGetRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 
 			while (movieInfo.header.romCRC != crc
 			       || strncmp(movieInfo.header.romTitle, romTitle, 12) != 0
@@ -1052,8 +1048,8 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 				{
 					sprintf(buffer, "type=%s  ",
 					        (movieInfo.header.typeFlags & MOVIE_TYPE_GBA) ?
-							"GBA" : (movieInfo.header.typeFlags & MOVIE_TYPE_GBC) ?
-							"GBC" : (movieInfo.header.typeFlags & MOVIE_TYPE_SGB) ? "SGB" : "GB");
+					        "GBA" : (movieInfo.header.typeFlags & MOVIE_TYPE_GBC) ?
+					        "GBC" : (movieInfo.header.typeFlags & MOVIE_TYPE_SGB) ? "SGB" : "GB");
 					strcat(warning1, buffer);
 
 					sprintf(buffer, "type=%s  ", systemCartridgeType ==
@@ -1061,10 +1057,10 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					strcat(warning2, buffer);
 				}
 				{
-					sprintf(buffer, "crc=%02d  ", movieInfo.header.romCRC);
+					sprintf(buffer, "crc=%02x  ", movieInfo.header.romCRC);
 					strcat(warning1, buffer);
 
-					sprintf(buffer, "crc=%02d  ", crc);
+					sprintf(buffer, "crc=%02x  ", crc);
 					strcat(warning2, buffer);
 				}
 				{
@@ -1089,12 +1085,12 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					sprintf(buffer,
 					        movieInfo.header.typeFlags &
 					        MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) ==
-					                          0 ? "(bios=none)  " : "(bios=%d)  ") : "check=%d  ",
+					                          0 ? "(bios=none)  " : "(bios=%04x)  ") : "check=%04x  ",
 					        movieInfo.header.romOrBiosChecksum);
 					strcat(warning1, buffer);
 
 					sprintf(buffer,
-					        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
+					        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%04x)  " : "check=%04x  ",
 					        checksum);
 					strcat(warning2, buffer);
 				}
@@ -1119,7 +1115,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 							VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
 						if (!winFileRun())
 							return;
-						fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
+						VBAMovieGetRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 					}
 					else
 						return;
@@ -1130,23 +1126,21 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			}
 romcheck_exit:
 
-			theApp.useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-			if (theApp.useBiosFile)
+			bool useBIOSFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+			if (useBIOSFile)
 			{
-				extern bool checkBIOS(CString & biosFileName); // from MovieCreate.cpp
-				if (!checkBIOS(theApp.biosFileName))
+				extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+				if (!systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile))
 				{
 					systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 					((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-					if (!checkBIOS(theApp.biosFileName))
+					if (!systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile))
 					{
 						systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 						return;
 					}
 				}
 			}
-			extern void loadBIOS();
-			loadBIOS();
 
 			int code = VBAMovieOpen(movieName, TRUE);
 
@@ -1183,7 +1177,6 @@ romcheck_exit:
 	else
 		DragFinish(hDropInfo);
 }
-
 
 /////////////////////
 
@@ -1227,8 +1220,8 @@ bool MainWnd::winFileOpenSelect(int cartridgeType)
 	if (initialDir.IsEmpty())
 	{
 		isOverrideEmpty = true;
-		CString altDir	= regQueryStringValue(cartridgeType != 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, NULL);
-		initialDir		= altDir.IsEmpty() ? theApp.exeDir : altDir;
+		CString altDir = regQueryStringValue(cartridgeType != 0 ? IDS_ROM_DIR : IDS_GBXROM_DIR, NULL);
+		initialDir = altDir.IsEmpty() ? theApp.exeDir : altDir;
 	}
 
 	FileDlg dlg(this, "", filter, selectedFilter, "ROM", exts, initialDir, title, false, true);
@@ -1237,7 +1230,7 @@ bool MainWnd::winFileOpenSelect(int cartridgeType)
 	{
 		regSetDwordValue("selectedFilter", dlg.m_ofn.nFilterIndex);
 		theApp.romFilename = dlg.GetPathName();
-		initialDir	  = winGetDirFromFilename(theApp.romFilename);
+		initialDir		   = winGetDirFromFilename(theApp.romFilename);
 
 		// we have directory override for that purpose
 		// but this can be...desirable
@@ -1254,8 +1247,8 @@ bool MainWnd::winFileOpenSelect(int cartridgeType)
 // we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
 // extensionless or unusually-named archives.
 static const char *s_romIgnoreExtensions[] = {
-	"vbm", "sgm",  "clt", "dat",  "gbs", "gcf",	"spc", "xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",
-	"htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
+	"vbm", "sgm",  "clt",  "dat",	"gbs",	"gcf",	"spc", "xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",
+	"htm", "html", "jpg",  "jpeg",	"png",	"bmp",	"gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
 };
 
 #include "GBACheatsDlg.h"
@@ -1279,7 +1272,7 @@ void MainWnd::winFileClose(bool reopening)
 			// save battery file before we change the filename...
 			winWriteBatteryFile();
 			cheatSearchCleanup(&cheatSearchData);
-			capturePrevious	= 0;
+			capturePrevious = 0;
 			captureNumber	= 0;
 		}
 
@@ -1316,7 +1309,7 @@ bool MainWnd::winFileRun()
 
 	// FIXME: assertion failure in fopen.c if canceled
 	if (ObtainFile(theApp.romFilename, logicalName, physicalName, "rom", s_romIgnoreExtensions,
-		sizeof(s_romIgnoreExtensions) / sizeof(*s_romIgnoreExtensions)))
+	               sizeof(s_romIgnoreExtensions) / sizeof(*s_romIgnoreExtensions)))
 	{
 		// theApp.romFilename is exactly the filename used for opening, while theApp.gameFilename is always the logical name
 		theApp.romFilename = theApp.gameFilename = logicalName;
@@ -1336,35 +1329,36 @@ bool MainWnd::winFileRun()
 		return false;
 	}
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-	systemCartridgeType	= (int)type;
+	systemCartridgeType		= (int)type;
 	if (type == IMAGE_GB)
 	{
 		if (!gbLoadRom(physicalName))
 			return false;
-		theApp.emulator = GBSystem;
+
 		gbBorderOn		= theApp.winGbBorderOn;
+		theApp.emulator = GBSystem;
 		theApp.romSize	= gbRomSize;
 		if (theApp.autoIPS)
 		{
 			CString ipsname = winGetDestFilename(logicalName, IDS_IPS_DIR, ".ips");
-			int size = gbRomSize;
+			int		size	= gbRomSize;
 			utilApplyIPS(ipsname, &gbRom, &size);
 			if (size != gbRomSize)
 			{
 				extern bool gbUpdateSizes();
 				gbUpdateSizes();
-				gbReset();
+				//gbReset();
 				theApp.romSize = size;
 			}
 		}
+
+		useBios = false;    // FIXME
 	}
 	else
 	{
 		int size = CPULoadRom(physicalName);
 		if (!size)
 			return false;
-
-		theApp.romSize = size;
 
 		flashSetSize(theApp.winFlashSize);
 		rtcEnable(theApp.winRtcEnable);
@@ -1394,23 +1388,28 @@ bool MainWnd::winFileRun()
 		if (i != (UINT)-1 && (i <= 5))
 			cpuSaveType = (int)i;
 
-		theApp.emulator = GBASystem;
 		/* disabled due to problems
 		   if(theApp.removeIntros && rom != NULL) {
 		   *((u32 *)rom)= 0xea00002e;
 		   }
 		 */
-
+		theApp.emulator = GBASystem;
+		theApp.romSize	= size;
 		if (theApp.autoIPS)
 		{
 			CString ipsname = winGetDestFilename(logicalName, IDS_IPS_DIR, ".ips");
-			int size = 0x2000000;
+			int		size	= 0x2000000;
 			utilApplyIPS(ipsname, &rom, &size);
-			if (size != 0x2000000)
-			{
-				CPUReset();
-			}
+//			if (size != 0x2000000
+//			{
+//				CPUReset();	// will reset below anyway
+//			}
 		}
+
+		skipBios = theApp.skipBiosFile ? true : false;
+		CPUInit();
+		CPULoadBios(theApp.biosFileName, theApp.useBiosFile ? true : false);
+		CPUReset();
 	}
 
 	if (theApp.soundInitialized)
@@ -1427,14 +1426,9 @@ bool MainWnd::winFileRun()
 		theApp.soundInitialized = true;
 	}
 
-	if (type == IMAGE_GBA)
-	{
-		skipBios = theApp.skipBiosFile ? true : false;
-		CPUInit((char *)(LPCTSTR)theApp.biosFileName, theApp.useBiosFile ? true : false);
-		CPUReset();
-	}
-
 	winReadBatteryFile();
+
+	emulating = true;
 
 	if (theApp.autoSaveLoadCheatList)
 		winLoadCheatListDefault();
@@ -1450,8 +1444,6 @@ bool MainWnd::winFileRun()
 
 	if (theApp.autoHideMenu && theApp.videoOption > VIDEO_4X && theApp.menuToggle)
 		OnFileTogglemenu();
-
-	emulating = true;
 
 	if (theApp.autoLoadMostRecent && !VBAMovieActive() && !VBAMovieLoading()) // would cause desync in movies...
 		OnFileLoadgameMostrecent();
@@ -1520,3 +1512,4 @@ bool MainWnd::winFileRun()
 
 	return true;
 }
+

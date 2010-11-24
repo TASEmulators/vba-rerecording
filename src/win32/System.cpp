@@ -838,6 +838,16 @@ bool systemPauseOnFrame()
 	return false;
 }
 
+bool systemLoadBIOS(const char *biosFileName, bool useBiosFile)
+{
+	bool use = false;
+	if (systemCartridgeType == 0)
+		use = CPULoadBios(biosFileName, useBiosFile);
+	else
+		use = false;
+	return use;
+}
+
 // FIXME: now platform-independant stuff
 // it should be admitted that the naming schema/code organization is a whole mess
 // these things should be moved somewhere else

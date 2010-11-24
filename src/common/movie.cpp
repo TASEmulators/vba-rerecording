@@ -54,12 +54,12 @@ extern u16 currentButtons[4];     // from System.cpp
 extern u16 lastKeys;
 
 SMovie Movie;
-bool   loadingMovie		   = false;
+bool   loadingMovie = false;
 
 // probably bad idea to have so many global variables, but I hate to recompile almost everything after editing VBA.h
 bool autoConvertMovieWhenPlaying = false;
 
-static u16 initialInputs[4] = {0};
+static u16 initialInputs[4] = { 0 };
 
 static bool resetSignaled	  = false;
 static bool resetSignaledLast = false;
@@ -179,7 +179,7 @@ static int read_movie_header(FILE *file, SMovie &movie)
 	if (header.version != VBM_VERSION)
 		return MOVIE_WRONG_VERSION;
 
-	header.uid			  = Pop32(ptr);
+	header.uid = Pop32(ptr);
 	header.length_frames  = Pop32(ptr) + 1;    // HACK: add 1 to the length for compatibility
 	header.rerecord_count = Pop32(ptr);
 
@@ -195,7 +195,7 @@ static int read_movie_header(FILE *file, SMovie &movie)
 	for (int i = 0; i < 12; i++)
 		header.romTitle[i] = Pop8(ptr);
 
-	header.minorVersion	   = Pop8(ptr);
+	header.minorVersion = Pop8(ptr);
 
 	header.romCRC = Pop8(ptr);
 	header.romOrBiosChecksum = Pop16(ptr);
@@ -220,7 +220,7 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 
 	Push32(header.uid, ptr);
 	Push32(header.length_frames - 1, ptr);     // HACK: reduce the length by 1 for compatibility with certain faulty old tools
-	                                            // like TME
+	                                           // like TME
 	Push32(header.rerecord_count, ptr);
 
 	Push8(header.startFlags, ptr);
@@ -329,7 +329,7 @@ static void change_state(MovieState new_state)
 #if (defined(WIN32) && !defined(SDL))
 		// undo changes to border settings
 		{
-			gbBorderOn			 = prevBorder;
+			gbBorderOn = prevBorder;
 			theApp.winGbBorderOn = prevWinBorder;
 			gbBorderAutomatic	 = prevBorderAuto;
 			systemGbBorderOn();
@@ -376,11 +376,35 @@ static void change_state(MovieState new_state)
 void VBAMovieInit()
 {
 	memset(&Movie, 0, sizeof(Movie));
-	Movie.state		  = MOVIE_STATE_NONE;
-	Movie.pauseFrame  = -1;
+	Movie.state		 = MOVIE_STATE_NONE;
+	Movie.pauseFrame = -1;
 
 	resetSignaled	  = false;
 	resetSignaledLast = false;
+}
+
+void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
+{
+	if (systemCartridgeType == 0) // GBA
+	{
+		extern u8 *bios, *rom;
+		memcpy(romTitle, &rom[0xa0], 12); // GBA TITLE
+		memcpy(&romGameCode, &rom[0xac], 4); // GBA ROM GAME CODE
+		if ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0)
+			checksum = utilCalcBIOSChecksum(bios, 4);  // GBA BIOS CHECKSUM
+		else
+			checksum = 0;
+		crc = rom[0xbd]; // GBA ROM CRC
+	}
+	else // non-GBA
+	{
+		extern u8 *gbRom;
+		memcpy(romTitle, &gbRom[0x134], 12); // GB TITLE (note this can be 15 but is truncated to 12)
+		romGameCode = (uint32)gbRom[0x146]; // GB ROM UNIT CODE
+
+		checksum = (gbRom[0x14e] << 8) | gbRom[0x14f]; // GB ROM CHECKSUM, read from big-endian
+		crc		 = gbRom[0x14d]; // GB ROM CRC
+	}
 }
 
 #ifdef SDL
@@ -393,12 +417,26 @@ static void GetBatterySaveName(char *buffer)
 	else
 		sprintf(buffer, "%s.sav", filename);
 }
+
 #endif
 
 static void SetPlayEmuSettings()
 {
 	prevEmulatorType = gbEmulatorType;
-	gbEmulatorType = Movie.header.gbEmulatorType;
+	gbEmulatorType	 = Movie.header.gbEmulatorType;
+
+#if (defined(WIN32) && !defined(SDL))
+//    theApp.removeIntros   = false;
+	theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+#else
+	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
+	extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
+	useBios		 = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+	skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
+#endif
+
 	extern void SetPrefetchHack(bool);
 	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
@@ -422,9 +460,6 @@ static void SetPlayEmuSettings()
 		gbEchoRAMFixOn = 0;
 
 #if (defined(WIN32) && !defined(SDL))
-//    theApp.removeIntros   = false;
-	theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
-	theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
 	rtcEnable((Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0);
 	theApp.winSaveType	= Movie.header.saveType;
 	theApp.winFlashSize = Movie.header.flashSize;
@@ -452,11 +487,6 @@ static void SetPlayEmuSettings()
 	}
 	systemGbBorderOn();
 #else
-	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
-	extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
-	useBios		 = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
-	removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
 	sdlRtcEnable = (Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0;
 	saveType	 = Movie.header.saveType;
 	sdlFlashSize = Movie.header.flashSize;
@@ -540,6 +570,10 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	// set emulator settings that make the movie more likely to stay synchronized
 	SetPlayEmuSettings();
 
+//	extern bool systemLoadBIOS();
+//	if (!systemLoadBIOS())
+//	{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
+
 	// read the metadata / author info from file
 	fread(Movie.authorInfo, 1, MOVIE_METADATA_SIZE, file);
 	fn = dup(fileno(file)); // XXX: why does this fail?? it returns -1 but errno == 0
@@ -601,10 +635,10 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	{ loadingMovie = false; return MOVIE_WRONG_FORMAT; }
 
 	strcpy(Movie.filename, movie_filename);
-	Movie.file			 = file;
-	Movie.inputBufferPtr = Movie.inputBuffer;
-	Movie.currentFrame	 = 0;
-	Movie.readOnly		 = movieReadOnly;
+	Movie.file = file;
+	Movie.inputBufferPtr	  = Movie.inputBuffer;
+	Movie.currentFrame		  = 0;
+	Movie.readOnly			  = movieReadOnly;
 	Movie.RecordedThisSession = false;
 
 	// read controller data
@@ -615,7 +649,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	change_state(MOVIE_STATE_PLAY);
 
 	char messageString[64] = "Movie ";
-	bool converted = false;
+	bool converted		   = false;
 	if (autoConvertMovieWhenPlaying)
 	{
 		int result = VBAMovieConvertCurrent();
@@ -640,29 +674,6 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	systemRefreshScreen();
 
 	{ loadingMovie = false; return MOVIE_SUCCESS; }
-}
-
-static void CalcROMInfo()
-{
-	if (systemCartridgeType == 0) // GBA
-	{
-		extern u8 *bios, *rom;
-		memcpy(Movie.header.romTitle, (const char *)&rom[0xa0], 12); // GBA TITLE
-		memcpy(&Movie.header.romGameCode, &rom[0xac], 4); // GBA ROM GAME CODE
-
-		extern u16 checksumBIOS();
-		Movie.header.romOrBiosChecksum = checksumBIOS(); // GBA BIOS CHECKSUM
-		Movie.header.romCRC = rom[0xbd]; // GBA ROM CRC
-	}
-	else // non-GBA
-	{
-		extern u8 *gbRom;
-		memcpy(Movie.header.romTitle, (const char *)&gbRom[0x134], 12); // GB TITLE (note this can be 15 but is truncated to 12)
-		Movie.header.romGameCode = (uint32)gbRom[0x146]; // GB ROM UNIT CODE
-
-		Movie.header.romOrBiosChecksum = (gbRom[0x14e] << 8) | gbRom[0x14f]; // GB ROM CHECKSUM
-		Movie.header.romCRC = gbRom[0x14d]; // GB ROM CRC
-	}
 }
 
 static void SetRecordEmuSettings()
@@ -784,8 +795,8 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	VBAMovieInit();
 
 	// fill in the movie's header
-	Movie.header.uid			 = (uint32)time(NULL);
-	Movie.header.magic			 = VBM_MAGIC;
+	Movie.header.uid = (uint32)time(NULL);
+	Movie.header.magic = VBM_MAGIC;
 	Movie.header.version		 = VBM_VERSION;
 	Movie.header.rerecord_count	 = 0;
 	Movie.header.length_frames	 = 0;
@@ -798,7 +809,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	SetRecordEmuSettings();
 
 	// set ROM and BIOS checksums and stuff
-	CalcROMInfo();
+	VBAMovieGetRomInfo(Movie, Movie.header.romTitle, Movie.header.romGameCode, Movie.header.romOrBiosChecksum, Movie.header.romCRC);
 
 	// write the header to file
 	write_movie_header(file, Movie);
@@ -864,10 +875,10 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
-	Movie.bytesPerFrame	 = bytes_per_frame(Movie);
-	Movie.inputBufferPtr = Movie.inputBuffer;
-	Movie.currentFrame	 = 0;
-	Movie.readOnly		 = false;
+	Movie.bytesPerFrame		  = bytes_per_frame(Movie);
+	Movie.inputBufferPtr	  = Movie.inputBuffer;
+	Movie.currentFrame		  = 0;
+	Movie.readOnly			  = false;
 	Movie.RecordedThisSession = true;
 
 	change_state(MOVIE_STATE_RECORD);
@@ -979,7 +990,7 @@ void VBAUpdateFrameCountDisplay()
 #if (defined(WIN32) && !defined(SDL))
 		if (theApp.lagCounter)
 #else
-	/// SDL FIXME
+		/// SDL FIXME
 #endif
 		{
 //			sprintf(lagFrameDisplayString, " %c %d", systemCounters.laggedLast ? '*' : '|', systemCounters.lagCount);
@@ -1019,10 +1030,10 @@ void VBAMovieUpdateState()
 	{
 		Movie.header.length_frames = Movie.currentFrame;
 		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
-		Movie.inputBufferPtr += Movie.bytesPerFrame;
+		Movie.inputBufferPtr	 += Movie.bytesPerFrame;
 		Movie.RecordedThisSession = true;
 	}
-	
+
 	if (Movie.state == MOVIE_STATE_END)
 	{
 		// might be better to move some of these into change_state()
@@ -1065,7 +1076,7 @@ void VBAMovieUpdateState()
 				break;
 			}
 #else
-		// SDL FIXME
+				// SDL FIXME
 #endif
 		}
 #if 0
@@ -1099,7 +1110,7 @@ void VBAMovieUpdateState()
 	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
 	{
 		Movie.pauseFrame = -1;
-		willPause = true;
+		willPause		 = true;
 	}
 
 	if (willPause)
@@ -1424,8 +1435,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		if (memcmp(Movie.inputBuffer, ptr, space_shared))
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
-		Movie.currentFrame = current_frame;
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
+		Movie.currentFrame	 = current_frame;
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame *min(current_frame, Movie.header.length_frames);
 
 		change_state(MOVIE_STATE_PLAY);
 	}
@@ -1442,7 +1453,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		Movie.RecordedThisSession = true;
 
 		// do this before calling reserve_buffer_space()
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame *min(current_frame, Movie.header.length_frames);
 		reserve_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
@@ -1655,7 +1666,7 @@ int VBAMovieConvertCurrent()
 		if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 		{
 			uint8 *startPtr = Movie.inputBuffer + sizeof(u16) * i + 1;
-			uint8 *endPtr   = Movie.inputBuffer + Movie.bytesPerFrame * (Movie.header.length_frames - 1);
+			uint8 *endPtr	= Movie.inputBuffer + Movie.bytesPerFrame * (Movie.header.length_frames - 1);
 			for (; startPtr < endPtr; startPtr += Movie.bytesPerFrame)
 			{
 				if (startPtr[Movie.bytesPerFrame] & OLD_RESET)
@@ -1672,13 +1683,14 @@ int VBAMovieConvertCurrent()
 
 void VBAMovieExtractFromSnapshot()
 {
-	// Currently, snapshots taken from a movie don't contain the initial SRAM or savestate of the movie, 
+	// Currently, snapshots taken from a movie don't contain the initial SRAM or savestate of the movie,
 	// even if the movie was recorded from either of them. If a snapshot was taken at the first frame
 	// i.e. Frame 0, it can be safely assumed that the snapshot reflects the initial state of such a movie.
 	// However, if it was taken after the first frame, the SRAM contained might either be still the same
 	// as the original (usually true if no write operations on the SRAM occured) or have been modified,
 	// while the exact original state could hardly, if not impossibly, be safely worked out.
-	
+
 	// TODO
 	;
 }
+

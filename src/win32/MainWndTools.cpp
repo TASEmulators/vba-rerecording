@@ -59,8 +59,8 @@ extern int32 gbBorderOn;
 extern int32 soundQuality;
 
 extern bool debugger;
-extern int  emulating;
-extern int  remoteSocket;
+extern int	emulating;
+extern int	remoteSocket;
 
 extern void remoteCleanUp();
 extern void remoteSetSockets(SOCKET, SOCKET);
@@ -82,7 +82,7 @@ void MainWnd::OnToolsDisassemble()
 	}
 }
 
-void MainWnd::OnUpdateToolsDisassemble(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsDisassemble(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -92,7 +92,7 @@ void MainWnd::OnToolsLogging()
 	toolsLogging();
 }
 
-void MainWnd::OnUpdateToolsLogging(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsLogging(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -104,7 +104,7 @@ void MainWnd::OnToolsIoviewer()
 	dlg->ShowWindow(SW_SHOW);
 }
 
-void MainWnd::OnUpdateToolsIoviewer(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsIoviewer(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && systemCartridgeType == 0);
 }
@@ -125,7 +125,7 @@ void MainWnd::OnToolsMapview()
 	}
 }
 
-void MainWnd::OnUpdateToolsMapview(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsMapview(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -146,7 +146,7 @@ void MainWnd::OnToolsMemoryviewer()
 	}
 }
 
-void MainWnd::OnUpdateToolsMemoryviewer(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsMemoryviewer(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -167,7 +167,7 @@ void MainWnd::OnToolsOamviewer()
 	}
 }
 
-void MainWnd::OnUpdateToolsOamviewer(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOamviewer(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -188,7 +188,7 @@ void MainWnd::OnToolsPaletteview()
 	}
 }
 
-void MainWnd::OnUpdateToolsPaletteview(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsPaletteview(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -209,7 +209,7 @@ void MainWnd::OnToolsTileviewer()
 	}
 }
 
-void MainWnd::OnUpdateToolsTileviewer(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsTileviewer(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X);
 }
@@ -220,7 +220,7 @@ void MainWnd::OnDebugNextframe()
 	theApp.winPauseNextFrame = true;
 }
 
-void MainWnd::OnUpdateDebugNextframe(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateDebugNextframe(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(emulating);
 }
@@ -230,27 +230,28 @@ void MainWnd::OnDebugNextframeAccountForLag()
 	theApp.nextframeAccountForLag = !theApp.nextframeAccountForLag;
 }
 
-void MainWnd::OnUpdateDebugNextframeAccountForLag(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateDebugNextframeAccountForLag(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.nextframeAccountForLag);
 }
 
 void MainWnd::OnDebugFramesearch()
 {
-	extern u16 currentButtons [4];     // from System.cpp
+	extern u16	  currentButtons [4];  // from System.cpp
 	extern SMovie Movie;
 	if (!theApp.frameSearching)
 	{
 		// starting a new search
-		theApp.frameSearching       = true;
-		theApp.frameSearchStart     = (Movie.state == MOVIE_STATE_NONE) ? systemCounters.frameCount : Movie.currentFrame;
-		theApp.frameSearchLength    = 0;
+		theApp.frameSearching		= true;
+		theApp.frameSearchStart		= (Movie.state == MOVIE_STATE_NONE) ? systemCounters.frameCount : Movie.currentFrame;
+		theApp.frameSearchLength	= 0;
 		theApp.frameSearchLoadValid = false;
-		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE*0], REWIND_SIZE); // 0 is start state, 1 is
-                                                                                                 // intermediate state (for
-                                                                                                 // speedup when going forward),
-                                                                                                 // 2 is end state
-		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE*1], REWIND_SIZE);
+		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE * 0], REWIND_SIZE); // 0 is start state, 1 is
+		                                                                                           // intermediate state (for
+		                                                                                           // speedup when going
+		                                                                                           // forward),
+		                                                                                           // 2 is end state
+		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE * 1], REWIND_SIZE);
 
 		// store old buttons from frame before the search
 		for (int i = 0; i < 4; i++)
@@ -262,7 +263,7 @@ void MainWnd::OnDebugFramesearch()
 		theApp.frameSearchLength++;
 
 		// try it
-		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE*1], REWIND_SIZE);
+		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE * 1], REWIND_SIZE);
 	}
 
 	char str [32];
@@ -278,7 +279,7 @@ void MainWnd::OnDebugFramesearch()
 		theApp.paused = false;
 }
 
-void MainWnd::OnUpdateDebugFramesearch(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateDebugFramesearch(CCmdUI *pCmdUI)
 {
 	extern SMovie Movie;
 	pCmdUI->Enable(emulating && Movie.state != MOVIE_STATE_PLAY);
@@ -296,7 +297,7 @@ void MainWnd::OnDebugFramesearchPrev()
 		}
 
 		// try it
-		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE*0], REWIND_SIZE);
+		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE * 0], REWIND_SIZE);
 
 		char str[32];
 		sprintf(str, "%d frame search", theApp.frameSearchLength);
@@ -312,7 +313,7 @@ void MainWnd::OnDebugFramesearchPrev()
 	}
 }
 
-void MainWnd::OnUpdateDebugFramesearchPrev(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateDebugFramesearchPrev(CCmdUI *pCmdUI)
 {
 	extern SMovie Movie;
 	pCmdUI->Enable(emulating && theApp.frameSearching && Movie.state != MOVIE_STATE_PLAY);
@@ -322,7 +323,7 @@ void MainWnd::OnDebugFramesearchLoad()
 {
 	if (theApp.frameSearchLoadValid)
 	{
-		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE*2], REWIND_SIZE);
+		theApp.emulator.emuReadMemState(&theApp.frameSearchMemory[REWIND_SIZE * 2], REWIND_SIZE);
 		theApp.paused = true;
 
 		if (theApp.frameSearching)
@@ -330,11 +331,11 @@ void MainWnd::OnDebugFramesearchLoad()
 		else
 			systemScreenMessage("restore search end", 0);
 	}
-	theApp.frameSearching      = false;
+	theApp.frameSearching	   = false;
 	theApp.frameSearchSkipping = false;
 }
 
-void MainWnd::OnUpdateDebugFramesearchLoad(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateDebugFramesearchLoad(CCmdUI *pCmdUI)
 {
 	extern SMovie Movie;
 	pCmdUI->Enable(emulating && Movie.state != MOVIE_STATE_PLAY);
@@ -346,7 +347,7 @@ void MainWnd::OnToolsFrameCounter()
 	extern void VBAUpdateFrameCountDisplay(); VBAUpdateFrameCountDisplay();
 }
 
-void MainWnd::OnUpdateToolsFrameCounter(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsFrameCounter(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.frameCounter);
 }
@@ -357,7 +358,7 @@ void MainWnd::OnToolsLagCounter()
 	extern void VBAUpdateFrameCountDisplay(); VBAUpdateFrameCountDisplay();
 }
 
-void MainWnd::OnUpdateToolsLagCounter(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsLagCounter(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.lagCounter);
 }
@@ -374,7 +375,7 @@ void MainWnd::OnToolsInputDisplay()
 	extern void VBAUpdateButtonPressDisplay(); VBAUpdateButtonPressDisplay();
 }
 
-void MainWnd::OnUpdateToolsInputDisplay(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsInputDisplay(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.inputDisplay);
 }
@@ -394,25 +395,26 @@ void MainWnd::OnToolsDebugGdb()
 			emulating = 1;
 			systemCartridgeType = 0;
 			theApp.gameFilename = "\\gnu_stub";
-			rom         = (u8 *)malloc(0x2000000 + 4);
-			workRAM     = (u8 *)calloc(1, 0x40000 + 4);
-			bios        = (u8 *)calloc(1, 0x4000 + 4);
-			internalRAM = (u8 *)calloc(1, 0x8000 + 4);
-			paletteRAM  = (u8 *)calloc(1, 0x400 + 4);
-			vram        = (u8 *)calloc(1, 0x20000 + 4);
-			oam         = (u8 *)calloc(1, 0x400 + 4);
-			pix         = (u8 *)calloc(1, 4 * 240 * 160);
-			ioMem       = (u8 *)calloc(1, 0x400 + 4);
+			rom					= (u8 *)malloc(0x2000000 + 4);
+			workRAM				= (u8 *)calloc(1, 0x40000 + 4);
+			bios				= (u8 *)calloc(1, 0x4000 + 4);
+			internalRAM			= (u8 *)calloc(1, 0x8000 + 4);
+			paletteRAM			= (u8 *)calloc(1, 0x400 + 4);
+			vram				= (u8 *)calloc(1, 0x20000 + 4);
+			oam					= (u8 *)calloc(1, 0x400 + 4);
+			pix					= (u8 *)calloc(1, 4 * 240 * 160);
+			ioMem				= (u8 *)calloc(1, 0x400 + 4);
 
 			theApp.emulator = GBASystem;
 
-			CPUInit(theApp.biosFileName, theApp.useBiosFile ? true : false);
+			CPUInit();
+			CPULoadBios(theApp.biosFileName, theApp.useBiosFile ? true : false);
 			CPUReset();
 		}
 	}
 }
 
-void MainWnd::OnUpdateToolsDebugGdb(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsDebugGdb(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && remoteSocket == -1);
 }
@@ -446,7 +448,7 @@ void MainWnd::OnToolsDebugLoadandwait()
 	}
 }
 
-void MainWnd::OnUpdateToolsDebugLoadandwait(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsDebugLoadandwait(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && remoteSocket == -1);
 }
@@ -466,7 +468,7 @@ void MainWnd::OnToolsDebugBreak()
 	debugger = true;
 }
 
-void MainWnd::OnUpdateToolsDebugBreak(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsDebugBreak(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && remoteSocket != -1);
 }
@@ -477,7 +479,7 @@ void MainWnd::OnToolsDebugDisconnect()
 	debugger = false;
 }
 
-void MainWnd::OnUpdateToolsDebugDisconnect(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsDebugDisconnect(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && remoteSocket != -1);
 }
@@ -521,7 +523,7 @@ void MainWnd::OnToolsSoundStartrecording()
 	}
 
 	theApp.soundRecordName = dlg.GetPathName();
-	theApp.soundRecording = true;
+	theApp.soundRecording  = true;
 }
 
 void MainWnd::OnToolsSoundStoprecording()
@@ -534,7 +536,7 @@ void MainWnd::OnToolsSoundStoprecording()
 	theApp.soundRecording = false;
 }
 
-void MainWnd::OnUpdateToolsSoundRecording(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsSoundRecording(CCmdUI *pCmdUI)
 {
 	if (pCmdUI->m_pMenu != NULL)
 	{
@@ -588,7 +590,7 @@ void MainWnd::OnToolsStartAVIRecording()
 	}
 
 	theApp.aviRecordName = theApp.soundRecordName =  dlg.GetPathName();
-	theApp.aviRecording  = true;
+	theApp.aviRecording	 = true;
 
 ///  extern long linearFrameCount; linearFrameCount = 0;
 ///  extern long linearSoundByteCount; linearSoundByteCount = 0;
@@ -623,17 +625,17 @@ void MainWnd::OnToolsStartAVIRecording()
 
 		BITMAPINFOHEADER bi;
 		memset(&bi, 0, sizeof(bi));
-		bi.biSize      = 0x28;
-		bi.biPlanes    = 1;
+		bi.biSize	   = 0x28;
+		bi.biPlanes	   = 1;
 		bi.biBitCount  = 24;
-		bi.biWidth     = width;
-		bi.biHeight    = height;
-		bi.biSizeImage = 3*width*height;
+		bi.biWidth	   = width;
+		bi.biHeight	   = height;
+		bi.biSizeImage = 3 * width * height;
 		theApp.aviRecorder->SetVideoFormat(&bi);
 		if (!theApp.aviRecorder->Open(theApp.aviRecordName))
 		{
 			delete theApp.aviRecorder;
-			theApp.aviRecorder  = NULL;
+			theApp.aviRecorder	= NULL;
 			theApp.aviRecording = false;
 		}
 
@@ -641,11 +643,11 @@ void MainWnd::OnToolsStartAVIRecording()
 		{
 			WAVEFORMATEX wfx;
 			memset(&wfx, 0, sizeof(wfx));
-			wfx.wFormatTag      = WAVE_FORMAT_PCM;
-			wfx.nChannels       = 2;
-			wfx.nSamplesPerSec  = 44100 / soundQuality;
-			wfx.wBitsPerSample  = 16;
-			wfx.nBlockAlign     = (wfx.wBitsPerSample/8) * wfx.nChannels;
+			wfx.wFormatTag		= WAVE_FORMAT_PCM;
+			wfx.nChannels		= 2;
+			wfx.nSamplesPerSec	= 44100 / soundQuality;
+			wfx.wBitsPerSample	= 16;
+			wfx.nBlockAlign		= (wfx.wBitsPerSample / 8) * wfx.nChannels;
 			wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 			wfx.cbSize = 0;
 			theApp.aviRecorder->SetSoundFormat(&wfx);
@@ -668,7 +670,7 @@ void MainWnd::OnToolsStopAVIRecording()
 	theApp.aviRecording = false;
 }
 
-void MainWnd::OnUpdateToolsAVIRecording(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsAVIRecording(CCmdUI *pCmdUI)
 {
 	if (pCmdUI->m_pMenu != NULL)
 	{
@@ -683,7 +685,7 @@ void MainWnd::OnUpdateToolsAVIRecording(CCmdUI*pCmdUI)
 	pCmdUI->Enable(emulating);
 }
 
-void MainWnd::OnUpdateToolsPauseAVIRecording(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsPauseAVIRecording(CCmdUI *pCmdUI)
 {
 	if (pCmdUI->m_pMenu != NULL)
 	{
@@ -712,7 +714,7 @@ void MainWnd::OnToolsRecordMovie()
 	dlg.DoModal();
 }
 
-void MainWnd::OnUpdateToolsRecordMovie(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsRecordMovie(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(emulating);
 }
@@ -722,7 +724,7 @@ void MainWnd::OnToolsStopMovie()
 	VBAMovieStop(false);
 }
 
-void MainWnd::OnUpdateToolsStopMovie(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsStopMovie(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(emulating && VBAMovieActive());
 }
@@ -733,22 +735,23 @@ void MainWnd::OnToolsPlayMovie()
 	dlg.DoModal();
 }
 
-void MainWnd::OnUpdateToolsPlayMovie(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsPlayMovie(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(emulating);
 }
 
 void MainWnd::OnToolsPlayReadOnly()
 {
-	if (!VBAMovieActive()) {
+	if (!VBAMovieActive())
+	{
 		theApp.movieReadOnly = !theApp.movieReadOnly;
-		systemScreenMessage(theApp.movieReadOnly  ? "Movie now read-only" : "Movie now editable");
+		systemScreenMessage(theApp.movieReadOnly ? "Movie now read-only" : "Movie now editable");
 	}
 	else
 		VBAMovieToggleReadOnly();
 }
 
-void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI *pCmdUI)
 {
 ///  pCmdUI->Enable(VBAMovieActive()); // FIXME: this is right, but disabling menu items screws up accelerators until you view
 // the menu!
@@ -757,13 +760,12 @@ void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(VBAMovieActive() ? VBAMovieReadOnly() : theApp.movieReadOnly);
 }
 
-
 void MainWnd::OnAsscWithSaveState()
 {
 	theApp.AsscWithSaveState = !theApp.AsscWithSaveState;
 }
 
-void MainWnd::OnUpdateAsscWithSaveState(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateAsscWithSaveState(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE); // TEMP
 	pCmdUI->SetCheck(theApp.AsscWithSaveState);
@@ -784,7 +786,7 @@ void MainWnd::OnToolsResumeRecord()
 	}
 }
 
-void MainWnd::OnUpdateToolsResumeRecord(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsResumeRecord(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(VBAMovieActive());
 }
@@ -794,7 +796,7 @@ void MainWnd::OnToolsPlayRestart()
 	VBAMovieRestart();
 }
 
-void MainWnd::OnUpdateToolsPlayRestart(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsPlayRestart(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(VBAMovieActive());
 }
@@ -804,7 +806,7 @@ void MainWnd::OnToolsOnMovieEndPause()
 	theApp.movieOnEndPause = !theApp.movieOnEndPause;
 }
 
-void MainWnd::OnUpdateToolsOnMovieEndPause(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOnMovieEndPause(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.movieOnEndPause);
 }
@@ -814,7 +816,7 @@ void MainWnd::OnToolsOnMovieEndStop()
 	theApp.movieOnEndBehavior = 0;
 }
 
-void MainWnd::OnUpdateToolsOnMovieEndStop(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOnMovieEndStop(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 0);
 }
@@ -824,7 +826,7 @@ void MainWnd::OnToolsOnMovieEndRestart()
 	theApp.movieOnEndBehavior = 1;
 }
 
-void MainWnd::OnUpdateToolsOnMovieEndRestart(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOnMovieEndRestart(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 1);
 }
@@ -834,7 +836,7 @@ void MainWnd::OnToolsOnMovieEndAppend()
 	theApp.movieOnEndBehavior = 2;
 }
 
-void MainWnd::OnUpdateToolsOnMovieEndAppend(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOnMovieEndAppend(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 2);
 }
@@ -844,7 +846,7 @@ void MainWnd::OnToolsOnMovieEndKeep()
 	theApp.movieOnEndBehavior = 3;
 }
 
-void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 3);
 }
@@ -867,14 +869,14 @@ void MainWnd::OnToolsMovieConvertCurrent()
 	}
 }
 
-void MainWnd::OnUpdateToolsMovieConvertCurrent(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsMovieConvertCurrent(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(VBAMovieActive());
 }
 
 void MainWnd::OnToolsMovieAutoConvert()
 {
-	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	extern bool autoConvertMovieWhenPlaying;    // from movie.cpp
 	autoConvertMovieWhenPlaying = !autoConvertMovieWhenPlaying;
 	if (autoConvertMovieWhenPlaying)
 	{
@@ -894,9 +896,9 @@ void MainWnd::OnToolsMovieAutoConvert()
 	}
 }
 
-void MainWnd::OnUpdateToolsMovieAutoConvert(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsMovieAutoConvert(CCmdUI *pCmdUI)
 {
-	extern bool autoConvertMovieWhenPlaying;	// from movie.cpp
+	extern bool autoConvertMovieWhenPlaying;    // from movie.cpp
 	pCmdUI->SetCheck(autoConvertMovieWhenPlaying);
 }
 
@@ -907,7 +909,7 @@ void MainWnd::OnToolsMovieExtractFromSnapshot()
 	VBAMovieExtractFromSnapshot();
 }
 
-void MainWnd::OnUpdateToolsMovieExtractFromSnapshot(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsMovieExtractFromSnapshot(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(FALSE);
 }
@@ -920,13 +922,13 @@ void MainWnd::OnToolsRewind()
 		assert(theApp.rewindPos >= 0 && theApp.rewindPos < theApp.rewindSlots);
 		theApp.rewindPos = (--theApp.rewindPos + theApp.rewindSlots) % theApp.rewindSlots;
 		assert(theApp.rewindPos >= 0 && theApp.rewindPos < theApp.rewindSlots);
-		theApp.emulator.emuReadMemState(&theApp.rewindMemory[REWIND_SIZE*theApp.rewindPos], REWIND_SIZE);
+		theApp.emulator.emuReadMemState(&theApp.rewindMemory[REWIND_SIZE * theApp.rewindPos], REWIND_SIZE);
 		theApp.rewindCount--;
 		if (theApp.rewindCount > 0)
 			theApp.rewindCounter = 0;
 		else
 		{
-			theApp.rewindCounter    = theApp.rewindTimer;
+			theApp.rewindCounter	= theApp.rewindTimer;
 			theApp.rewindSaveNeeded = true;
 
 			// immediately save state to avoid eroding away the earliest you can rewind to
@@ -937,7 +939,7 @@ void MainWnd::OnToolsRewind()
 	}
 }
 
-void MainWnd::OnUpdateToolsRewind(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsRewind(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.rewindMemory != NULL && emulating && theApp.rewindCount);
 }
@@ -955,10 +957,11 @@ void MainWnd::OnToolsCustomize()
 		theApp.winAccelMgr.Write();
 	}
 
-	theApp.winAccelMgr.UpdateMenu(theApp.menu);	// we should always do this since the menu has been reloaded
+	theApp.winAccelMgr.UpdateMenu(theApp.menu); // we should always do this since the menu has been reloaded
 }
 
-void MainWnd::OnUpdateToolsCustomize(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateToolsCustomize(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(theApp.videoOption != VIDEO_320x240);
 }
+

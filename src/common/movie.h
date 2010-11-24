@@ -140,6 +140,7 @@ struct SMovie
 int VBAMovieOpen(const char *filename, bool8 read_only);
 int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags);
 int VBAMovieGetInfo(const char *filename, SMovie*info);
+void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle[12], uint32 &romGameCode, uint16 &checksum, uint8 &crc);
 void VBAMovieStop(bool8 suppress_message);
 const char *VBAChooseMovieFilename(bool8 read_only);
 

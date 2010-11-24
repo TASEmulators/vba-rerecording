@@ -231,7 +231,7 @@ CString BugReport::createReport()
 		}
 	}
 
-	AppendFormat(report, "Using BIOS   : %d\r\n", theApp.useBiosFile);
+	AppendFormat(report, "Using BIOS   : %d\r\n", useBios);
 	AppendFormat(report, "Skip BIOS    : %d\r\n", theApp.skipBiosFile);
 	AppendFormat(report, "Disable SFX  : %d\r\n", cpuDisableSfx);
 ///  AppendFormat(report, "Skip intro   : %d\r\n", theApp.removeIntros);

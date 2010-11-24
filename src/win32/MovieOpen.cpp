@@ -129,70 +129,15 @@ void MovieOpen::OnBnClickedBrowse()
 	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 }
 
-// returns the checksum of the BIOS that will be loaded after the next restart
-u16 checksumBIOS()
-{
-	bool hasBIOS = false;
-	u8 * tempBIOS;
-	if (theApp.useBiosFile)
-	{
-		tempBIOS = (u8 *)malloc(0x4000);
-		int size = 0x4000;
-		if (utilLoad(theApp.biosFileName,
-		             utilIsGBABios,
-		             tempBIOS,
-		             size))
-		{
-			if (size == 0x4000)
-				hasBIOS = true;
-		}
-	}
-
-	u16 biosCheck = 0;
-	if (hasBIOS)
-	{
-		for (int i = 0; i < 0x4000; i += 4)
-			biosCheck += *((u32 *)&tempBIOS[i]);
-		free(tempBIOS);
-	}
-
-	return biosCheck;
-}
-
-void fillRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
-{
-	if (systemCartridgeType == 0) // GBA
-	{
-		extern u8 *bios, *rom;
-		memcpy(romTitle, (const char *)&rom[0xa0], 12); // GBA TITLE
-		memcpy(&romGameCode, &rom[0xac], 4); // GBA ROM GAME CODE
-
-		bool prevUseBiosFile = theApp.useBiosFile;
-		theApp.useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-		checksum = checksumBIOS(); // GBA BIOS CHECKSUM
-		theApp.useBiosFile = prevUseBiosFile;
-		crc = rom[0xbd]; // GBA ROM CRC
-	}
-	else // non-GBA
-	{
-		extern u8 *gbRom;
-		memcpy(romTitle, (const char *)&gbRom[0x134], 12); // GB TITLE (note this can be 15 but is truncated to 12)
-		romGameCode = (uint32)gbRom[0x146]; // GB ROM UNIT CODE
-
-		checksum = (gbRom[0x14e] << 8) | gbRom[0x14f]; // GB ROM CHECKSUM
-		crc		 = gbRom[0x14d]; // GB ROM CRC
-	}
-}
-
 // some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not
 // directly.
 // also includes definitely non-movie extensions we know about, since we only use this variable in a movie opening function.
 // we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
 // extensionless or unusually-named archives.
 static const char *s_movieIgnoreExtensions [] = {
-	"gba", "gbc", "gb",	 "sgb", "cgb", "bin", "agb", "bios", "mb",	"elf",  "sgm", "clt",  "dat", "gbs", "gcf", "spc",
-	"xpc", "pal", "act", "dmp", "avi", "ini", "txt", "nfo",  "htm", "html", "jpg", "jpeg", "png", "bmp", "gif", "mp3",
-	"wav", "lnk", "exe", "bat", "sav", "luasav"
+	"gba", "gbc", "gb",	 "sgb",	 "cgb",	 "bin", "agb", "bios", "mb",   "elf",	"sgm",	"clt",	 "dat",	 "gbs",	 "gcf", "spc",
+	"xpc", "pal", "act", "dmp",	 "avi",	 "ini", "txt", "nfo",  "htm",  "html",	"jpg",	"jpeg",	 "png",	 "bmp",	 "gif", "mp3",
+	"wav", "lnk", "exe", "bat",	 "sav",	 "luasav"
 };
 
 void MovieOpen::OnBnClickedMovieRefresh()
@@ -211,8 +156,8 @@ void MovieOpen::OnBnClickedMovieRefresh()
 	if (movieLogicalName.GetLength() > 2048) movieLogicalName.Truncate(2048);
 
 	char LogicalName[2048], PhysicalName[2048];
-	if (ObtainFile(tempName, LogicalName, PhysicalName, "mov", s_movieIgnoreExtensions, 
-		sizeof(s_movieIgnoreExtensions) / sizeof(*s_movieIgnoreExtensions)))
+	if (ObtainFile(tempName, LogicalName, PhysicalName, "mov", s_movieIgnoreExtensions,
+	               sizeof(s_movieIgnoreExtensions) / sizeof(*s_movieIgnoreExtensions)))
 	{
 		if (tempName != LogicalName)
 		{
@@ -326,7 +271,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			uint16 checksum;
 			uint8  crc;
 
-			fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
+			VBAMovieGetRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 
 			// rather than treat these as warnings, might as well always show the info in the dialog (it's probably more
 			// informative and reassuring)
@@ -358,10 +303,10 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			}
 ///			if (movieInfo.header.romCRC != crc)
 			{
-				sprintf(buffer, "crc=%02d  ", movieInfo.header.romCRC);
+				sprintf(buffer, "crc=%02x  ", movieInfo.header.romCRC);
 				strcat(warning1, buffer);
 
-				sprintf(buffer, "crc=%02d  ", crc);
+				sprintf(buffer, "crc=%02x  ", crc);
 				strcat(warning2, buffer);
 			}
 ///			if (movieInfo.header.romGameCode != romGameCode)
@@ -390,12 +335,12 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				sprintf(buffer,
 				        movieInfo.header.typeFlags &
 				        MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) ==
-				                          0 ? "(bios=none)  " : "(bios=%d)  ") : "check=%d  ",
+				                          0 ? "(bios=none)  " : "(bios=%04x)  ") : "check=%04x  ",
 				        movieInfo.header.romOrBiosChecksum);
 				strcat(warning1, buffer);
 
 				sprintf(buffer,
-				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%d)  " : "check=%d  ",
+				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%04x)  " : "check=%04x  ",
 				        checksum);
 				strcat(warning2, buffer);
 			}
@@ -463,7 +408,7 @@ BOOL MovieOpen::OnWndMsg(UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *res)
 			uint16 checksum;
 			uint8  crc;
 
-			fillRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
+			VBAMovieGetRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 
 			if (movieInfo.header.romCRC != crc
 			    || strncmp(movieInfo.header.romTitle, romTitle, 12) != 0
@@ -487,23 +432,21 @@ BOOL MovieOpen::OnWndMsg(UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *res)
 
 void MovieOpen::OnBnClickedOk()
 {
-	theApp.useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	if (theApp.useBiosFile)
+	bool useBIOSFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+	if (useBIOSFile)
 	{
-		extern bool checkBIOS(CString & biosFileName); // from MovieCreate.cpp
-		if (!checkBIOS(theApp.biosFileName))
+		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+		if (!systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile))
 		{
 			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 			((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-			if (!checkBIOS(theApp.biosFileName))
+			if (!systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile))
 			{
 				systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 				return;
 			}
 		}
 	}
-	extern void loadBIOS();
-	loadBIOS();
 
 	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
 
