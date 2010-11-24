@@ -1813,6 +1813,13 @@ void gbReset(bool userReset)
 
 	memset(&gbDataMBC5, 0, sizeof(gbDataMBC5));
 	gbDataMBC5.mapperROMBank = 1;
+	switch (gbRom[0x147])
+	{
+	case 0x1c:
+	case 0x1d:
+	case 0x1e:
+		gbDataMBC5.isRumbleCartridge = 1;
+	}
 
 	memset(&gbDataHuC1, 0, sizeof(gbDataHuC1));
 	gbDataHuC1.mapperROMBank = 1;
@@ -2109,10 +2116,26 @@ bool gbReadSaveMBC7(const char *name)
 	return true;
 }
 
+#if 0
+bool gbLoadBIOS(const char *biosFileName, bool useBiosFile)
+{
+	useBios = false;
+	if (useBiosFile)
+	{
+		useBios = utilLoadBIOS(bios, biosFileName, gbEmulatorType);
+		if (!useBios)
+		{
+			systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BOOTROM file"));
+		}
+	}
+	return useBios;
+}
+#endif
+
 void gbInit()
 {
 	gbGenFilter();
-	gbSgbInit();
+	gbSgbInit();    // calls gbSgbReset()... whatever
 
 	gbMemory = (u8 *)malloc(65536 + 4);
 	memset(gbMemory, 0, 65536 + 4);
@@ -3134,14 +3157,6 @@ bool gbUpdateSizes()
 
 	gbInit();
 	gbReset();
-
-	switch (type)
-	{
-	case 0x1c:
-	case 0x1d:
-	case 0x1e:
-		gbDataMBC5.isRumbleCartridge = 1;
-	}
 
 	return true;
 }

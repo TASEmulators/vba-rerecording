@@ -55,22 +55,23 @@ extern int systemBlueShift;
 extern u16 systemColorMap16[0x10000];
 extern u32 systemColorMap32[0x10000];
 
-static int (ZEXPORT *utilGzWriteFunc)(gzFile, voidp, unsigned int) = NULL;
-static int (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int)  = NULL;
-static int (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
+static int	   (ZEXPORT *utilGzWriteFunc)(gzFile, voidp, unsigned int) = NULL;
+static int	   (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int)  = NULL;
+static int	   (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
+static z_off_t (ZEXPORT *utilGzSeekFunc)(gzFile, z_off_t, int) = NULL;
 
 void utilPutDword(u8 *p, u32 value)
 {
 	*p++ = value & 255;
 	*p++ = (value >> 8) & 255;
 	*p++ = (value >> 16) & 255;
-	*p   = (value >> 24) & 255;
+	*p	 = (value >> 24) & 255;
 }
 
 void utilPutWord(u8 *p, u16 value)
 {
 	*p++ = value & 255;
-	*p   = (value >> 8) & 255;
+	*p	 = (value >> 8) & 255;
 }
 
 void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
@@ -82,7 +83,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 	{
 	case 16:
 	{
-		u16 *p = (u16 *)(pix+(w+2)*(h)*2); // skip first black line
+		u16 *p = (u16 *)(pix + (w + 2) * (h) * 2); // skip first black line
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -95,13 +96,13 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 			}
 			p++; // skip black pixel for filters
 			p++; // skip black pixel for filters
-			p -= 2*(w+2);
+			p -= 2 * (w + 2);
 		}
 		break;
 	}
 	case 24:
 	{
-		u8 *pixU8 = (u8 *)pix+3*w*(h-1);
+		u8 *pixU8 = (u8 *)pix + 3 * w * (h - 1);
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -114,7 +115,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 				}
 				else
 				{
-					int red   = *pixU8++;
+					int red	  = *pixU8++;
 					int green = *pixU8++;
 					int blue  = *pixU8++;
 
@@ -123,13 +124,13 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 					*b++ = red;
 				}
 			}
-			pixU8 -= 2*3*w;
+			pixU8 -= 2 * 3 * w;
 		}
 		break;
 	}
 	case 32:
 	{
-		u32 *pixU32 = (u32 *)(pix+4*(w+1)*(h));
+		u32 *pixU32 = (u32 *)(pix + 4 * (w + 1) * (h));
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -141,7 +142,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
 			}
 			pixU32++;
-			pixU32 -= 2*(w+1);
+			pixU32 -= 2 * (w + 1);
 		}
 		break;
 	}
@@ -184,7 +185,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	bmpheader.ident[0] = 'B';
 	bmpheader.ident[1] = 'M';
 
-	u32 fsz = sizeof(bmpheader) + w*h*3;
+	u32 fsz = sizeof(bmpheader) + w * h * 3;
 	utilPutDword(bmpheader.filesize, fsz);
 	utilPutDword(bmpheader.dataoffset, 0x36);
 	utilPutDword(bmpheader.headersize, 0x28);
@@ -192,7 +193,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	utilPutDword(bmpheader.height, h);
 	utilPutDword(bmpheader.planes, 1);
 	utilPutDword(bmpheader.bitsperpixel, 24);
-	utilPutDword(bmpheader.datasize, 3*w*h);
+	utilPutDword(bmpheader.datasize, 3 * w * h);
 
 	fwrite(&bmpheader, 1, sizeof(bmpheader), fp);
 
@@ -209,7 +210,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	{
 	case 16:
 	{
-		u16 *p = (u16 *)(pix+(w+2)*(h)*2); // skip first black line
+		u16 *p = (u16 *)(pix + (w + 2) * (h) * 2); // skip first black line
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -222,8 +223,8 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 			}
 			p++; // skip black pixel for filters
 			p++; // skip black pixel for filters
-			p -= 2*(w+2);
-			fwrite(writeBuffer, 1, 3*w, fp);
+			p -= 2 * (w + 2);
+			fwrite(writeBuffer, 1, 3 * w, fp);
 
 			b = writeBuffer;
 		}
@@ -231,7 +232,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 24:
 	{
-		u8 *pixU8 = (u8 *)pix+3*w*(h-1);
+		u8 *pixU8 = (u8 *)pix + 3 * w * (h - 1);
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -244,7 +245,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 				}
 				else
 				{
-					int red   = *pixU8++;
+					int red	  = *pixU8++;
 					int green = *pixU8++;
 					int blue  = *pixU8++;
 
@@ -253,8 +254,8 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 					*b++ = red;
 				}
 			}
-			pixU8 -= 2*3*w;
-			fwrite(writeBuffer, 1, 3*w, fp);
+			pixU8 -= 2 * 3 * w;
+			fwrite(writeBuffer, 1, 3 * w, fp);
 
 			b = writeBuffer;
 		}
@@ -262,7 +263,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 32:
 	{
-		u32 *pixU32 = (u32 *)(pix+4*(w+1)*(h));
+		u32 *pixU32 = (u32 *)(pix + 4 * (w + 1) * (h));
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -274,9 +275,9 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 				*b++ = ((v >> systemRedShift) & 0x001f) << 3; // R
 			}
 			pixU32++;
-			pixU32 -= 2*(w+1);
+			pixU32 -= 2 * (w + 1);
 
-			fwrite(writeBuffer, 1, 3*w, fp);
+			fwrite(writeBuffer, 1, 3 * w, fp);
 
 			b = writeBuffer;
 		}
@@ -351,7 +352,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 	{
 	case 16:
 	{
-		u16 *p = (u16 *)(pix+(w+2)*2); // skip first black line
+		u16 *p = (u16 *)(pix + (w + 2) * 2); // skip first black line
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -387,7 +388,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 				{
 					int blue  = *pixU8++;
 					int green = *pixU8++;
-					int red   = *pixU8++;
+					int red	  = *pixU8++;
 
 					*b++ = red;
 					*b++ = green;
@@ -402,7 +403,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 32:
 	{
-		u32 *pixU32 = (u32 *)(pix+4*(w+1));
+		u32 *pixU32 = (u32 *)(pix + 4 * (w + 1));
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -435,40 +436,40 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 static int utilReadInt2(FILE *f)
 {
 	int res = 0;
-	int c   = fgetc(f);
+	int c	= fgetc(f);
 	if (c == EOF)
 		return -1;
 	res = c;
-	c   = fgetc(f);
+	c	= fgetc(f);
 	if (c == EOF)
 		return -1;
-	return c + (res<<8);
+	return c + (res << 8);
 }
 
 static int utilReadInt3(FILE *f)
 {
 	int res = 0;
-	int c   = fgetc(f);
+	int c	= fgetc(f);
 	if (c == EOF)
 		return -1;
 	res = c;
-	c   = fgetc(f);
+	c	= fgetc(f);
 	if (c == EOF)
 		return -1;
-	res = c + (res<<8);
-	c   = fgetc(f);
+	res = c + (res << 8);
+	c	= fgetc(f);
 	if (c == EOF)
 		return -1;
-	return c + (res<<8);
+	return c + (res << 8);
 }
 
-void utilApplyIPS(const char *ips, u8 **r, int *s)
+void utilApplyIPS(const char *ips, u8 * *r, int *s)
 {
 	// from the IPS spec at http://zerosoft.zophar.net/ips.htm
 	FILE *f = fopen(ips, "rb");
 	if (!f)
 		return;
-	u8 *rom  = *r;
+	u8 *rom	 = *r;
 	int size = *s;
 	if (fgetc(f) == 'P' &&
 	    fgetc(f) == 'A' &&
@@ -479,7 +480,7 @@ void utilApplyIPS(const char *ips, u8 **r, int *s)
 		int b;
 		int offset;
 		int len;
-		for (;;)
+		for (;; )
 		{
 			// read offset
 			offset = utilReadInt3(f);
@@ -504,9 +505,9 @@ void utilApplyIPS(const char *ips, u8 **r, int *s)
 			if ((offset + len) >= size)
 			{
 				size *= 2;
-				rom   = (u8 *)realloc(rom, size);
-				*r    = rom;
-				*s    = size;
+				rom	  = (u8 *)realloc(rom, size);
+				*r	  = rom;
+				*s	  = size;
 			}
 			if (b == -1)
 			{
@@ -558,43 +559,6 @@ bool utilIsGBAImage(const char *file)
 	return false;
 }
 
-bool utilIsGBABios(const char *file)
-{
-	if (strlen(file) > 4)
-	{
-		const char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".gba") == 0)
-				return true;
-			if (_stricmp(p, ".agb") == 0)
-				return true;
-			if (_stricmp(p, ".bin") == 0)
-				return true;
-			if (_stricmp(p, ".bios") == 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-bool utilIsELF(const char *file)
-{
-	if (strlen(file) > 4)
-	{
-		const char *p = strrchr(file, '.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".elf") == 0)
-				return true;
-		}
-	}
-	return false;
-}
-
 bool utilIsGBImage(const char *file)
 {
 	if (strlen(file) > 4)
@@ -614,6 +578,67 @@ bool utilIsGBImage(const char *file)
 		}
 	}
 
+	return false;
+}
+
+bool utilIsGBABios(const char *file)
+{
+	if (strlen(file) > 4)
+	{
+		const char *p = strrchr(file, '.');
+
+		if (p != NULL)
+		{
+			if (_stricmp(p, ".gba") == 0)
+				return true;
+			if (_stricmp(p, ".agb") == 0)
+				return true;
+			if (_stricmp(p, ".bin") == 0)
+				return true;
+			if (_stricmp(p, ".bios") == 0)
+				return true;
+			if (_stricmp(p, ".rom") == 0)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool utilIsGBBios(const char *file)
+{
+	if (strlen(file) > 4)
+	{
+		const char *p = strrchr(file, '.');
+
+		if (p != NULL)
+		{
+			if (_stricmp(p, ".gb") == 0)
+				return true;
+			if (_stricmp(p, ".bin") == 0)
+				return true;
+			if (_stricmp(p, ".bios") == 0)
+				return true;
+			if (_stricmp(p, ".rom") == 0)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool utilIsELF(const char *file)
+{
+	if (strlen(file) > 4)
+	{
+		const char *p = strrchr(file, '.');
+
+		if (p != NULL)
+		{
+			if (_stricmp(p, ".elf") == 0)
+				return true;
+		}
+	}
 	return false;
 }
 
@@ -966,7 +991,7 @@ static u8 *utilLoadGzipFile(const char *file,
 		size = fileSize;
 	}
 	int read = fileSize <= size ? fileSize : size;
-	int r    = gzread(gz, image, read);
+	int r	 = gzread(gz, image, read);
 	gzclose(gz);
 
 	if (r != (int)read)
@@ -1009,8 +1034,8 @@ static u8 *utilLoadRarFile(const char *file,
 		}
 		if (found)
 		{
-			void *        memory = NULL;
-			unsigned long lsize  = 0;
+			void *memory		= NULL;
+			unsigned long lsize = 0;
 			size = p->item.UnpSize;
 			int r = urarlib_get((void *)&memory, &lsize, buffer, (void *)file, "");
 			if (!r)
@@ -1088,7 +1113,7 @@ u8 *utilLoad(const char *file,
 		size = fileSize;
 	}
 	int read = fileSize <= size ? fileSize : size;
-	int r    = fread(image, 1, read, f);
+	int r	 = fread(image, 1, read, f);
 	fclose(f);
 
 	if (r != (int)read)
@@ -1117,7 +1142,7 @@ int32 utilReadInt(gzFile gzFile)
 	return i;
 }
 
-void utilReadData(gzFile gzFile, variable_desc*data)
+void utilReadData(gzFile gzFile, variable_desc *data)
 {
 	while (data->address)
 	{
@@ -1138,17 +1163,19 @@ void utilWriteData(gzFile gzFile, variable_desc *data)
 gzFile utilGzOpen(const char *file, const char *mode)
 {
 	utilGzWriteFunc = (int (ZEXPORT *)(void *, void *const, unsigned int))gzwrite;
-	utilGzReadFunc  = gzread;
+	utilGzReadFunc	= gzread;
 	utilGzCloseFunc = gzclose;
+	utilGzSeekFunc	= gzseek;
 
 	return gzopen(file, mode);
 }
 
 gzFile utilGzReopen(int id, const char *mode)
 {
-	utilGzWriteFunc = (int(*) (void *, void *const, unsigned int))gzwrite;
-	utilGzReadFunc  = gzread;
+	utilGzWriteFunc = (int (*)(void *, void *const, unsigned int))gzwrite;
+	utilGzReadFunc	= gzread;
 	utilGzCloseFunc = gzclose;
+	utilGzSeekFunc	= gzseek;
 
 	return gzdopen(id, mode);
 }
@@ -1156,8 +1183,9 @@ gzFile utilGzReopen(int id, const char *mode)
 gzFile utilMemGzOpen(char *memory, int available, char *mode)
 {
 	utilGzWriteFunc = memgzwrite;
-	utilGzReadFunc  = memgzread;
+	utilGzReadFunc	= memgzread;
 	utilGzCloseFunc = memgzclose;
+	utilGzSeekFunc	= NULL;
 
 	return memgzopen(memory, available, mode);
 }
@@ -1177,6 +1205,11 @@ int utilGzClose(gzFile file)
 	return utilGzCloseFunc(file);
 }
 
+z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence)
+{
+	return utilGzSeekFunc(file, offset, whence);
+}
+
 long utilGzMemTell(gzFile file)
 {
 	return memtell(file);
@@ -1184,10 +1217,10 @@ long utilGzMemTell(gzFile file)
 
 void utilGBAFindSave(const u8 *data, const int size)
 {
-	u32 *p         = (u32 *)data;
-	u32 *end       = (u32 *)(data + size);
-	int  saveType  = 0;
-	int  flashSize = 0x10000;
+	u32 *p		   = (u32 *)data;
+	u32 *end	   = (u32 *)(data + size);
+	int	 saveType  = 0;
+	int	 flashSize = 0x10000;
 	bool rtcFound  = false;
 
 	while (p  < end)
@@ -1272,5 +1305,101 @@ void utilUpdateSystemColorMaps()
 		break;
 	}
 	}
+}
+
+//// BIOS stuff
+// systemType uses the same enum values as gbEmulatorType does
+
+bool utilLoadBIOS(u8 *bios, const char *biosFileName, int systemType)
+{
+	if (bios == NULL || strlen(biosFileName) == 0)
+		return false;
+
+	if (systemType == 4)
+	{
+		int biosSize = 0x4000;
+		if (utilLoad(biosFileName, utilIsGBABios, bios, biosSize))
+		{
+			if (biosSize == 0x4000)
+				return true;
+		}
+	}
+	else
+	{
+		int biosSize = 0x100;
+		if (utilLoad(biosFileName, utilIsGBBios, bios, biosSize))
+		{
+			if (biosSize == 0x100)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool utilCheckBIOS(const char *biosFileName, int systemType)
+{
+	if (strlen(biosFileName) == 0)
+		return false;
+
+	u8 * tempBIOS = (u8 *)malloc(systemType == 4 ? 0x4000 : 0x100);
+	bool result	  = utilLoadBIOS(tempBIOS, biosFileName, systemType);
+	free(tempBIOS);
+
+	return result;
+}
+
+#if 0
+// returns the checksum of the BIOS that will be loaded after the next restart
+u16 utilCalcBIOSChecksum(const u8 *bios, int systemType)
+{
+	u32	biosChecksum = 0;
+	if (bios)
+	{
+		int biosSize	= (systemType == 4 ? 0x4000 : 0x100);
+		const u16 *data = reinterpret_cast<const u16 *>(bios);
+		for (int i = biosSize; i > 0; i -= 2)
+			biosChecksum += *data++;
+	}
+
+	while ((biosChecksum >> 16) & 0xFFFF)
+		biosChecksum = (biosChecksum &0xFFFF) + ((biosChecksum >> 16) & 0xFFFF);
+
+	return biosChecksum & 0xFFFF;
+}
+#else
+// returns the checksum of the BIOS that will be loaded after the next restart
+u16 utilCalcBIOSChecksum(const u8 *bios, int systemType)
+{
+	u32	biosChecksum = 0;
+	if (bios)
+	{
+		int biosSize	= (systemType == 4 ? 0x4000 : 0x100);
+		const u32 *data = reinterpret_cast<const u32 *>(bios);
+		for (int i = biosSize; i > 0; i -= 4)
+			biosChecksum += *data++;
+	}
+
+	return biosChecksum & 0xFFFF;
+}
+#endif
+
+// returns the checksum of the BIOS file
+u16 utilCalcBIOSFileChecksum(const char *biosFileName, int systemType)
+{
+	if (strlen(biosFileName) == 0)
+		return 0;
+
+	u16		  biosChecksum = 0;
+	const int biosSize	   = (systemType == 4 ? 0x4000 : 0x100);
+	u8 *	  tempBIOS	   = (u8 *)malloc(biosSize);
+	bool	  hasBIOS	   = utilLoadBIOS(tempBIOS, biosFileName, systemType);
+	if (hasBIOS)
+	{
+		biosChecksum = utilCalcBIOSChecksum(tempBIOS, systemType);
+	}
+	free(tempBIOS);
+
+	return biosChecksum;
 }
 

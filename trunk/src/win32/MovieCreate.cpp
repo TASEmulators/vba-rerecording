@@ -128,55 +128,41 @@ void MovieCreate::OnBnClickedBrowse()
 	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 }
 
-void loadBIOS()
-{
-	if (bios == NULL)
-		return;
-
-	useBios = false;
-	if (theApp.useBiosFile)
-	{
-		int size = 0x4000;
-		if (utilLoad(theApp.biosFileName,
-		             utilIsGBABios,
-		             bios,
-		             size))
-		{
-			if (size == 0x4000)
-				useBios = true;
-		}
-	}
-	if (!useBios)
-	{
-		memcpy(bios, myROM, /*sizeof(myROM)*/ 0x4000); // copy internal emulator BIOS
-		theApp.useBiosFile = false;
-	}
-}
-
-bool checkBIOS(CString &biosFileName)
-{
-	if (biosFileName.IsEmpty())
-		return false;
-
-	bool ok		  = false;
-	u8 * tempBIOS = (u8 *)malloc(0x4000);
-	int	 size	  = 0x4000;
-	if (utilLoad(biosFileName,
-	             utilIsGBABios,
-	             tempBIOS,
-	             size))
-	{
-		if (size == 0x4000)
-			ok = true;
-		else
-			systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BIOS file size"));
-	}
-	free(tempBIOS);
-	return ok;
-}
-
 void MovieCreate::OnBnClickedOk()
 {
+	// has to be done before creating the movie
+	bool useBiosFile  = false;
+	bool skipBiosFile = false;
+
+	if (m_biosOption == 1)
+	{
+		useBiosFile = false;
+	}
+	else if (m_biosOption == 2)
+	{
+		useBiosFile	 = true;
+		skipBiosFile = true;
+	}
+	else if (m_biosOption == 3)
+	{
+		useBiosFile	 = true;
+		skipBiosFile = false;
+	}
+
+	extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+	if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
+	{
+		if (m_biosOption > 0)
+		{
+			systemMessage(0, "Invalid GBA BIOS file!");
+			return;
+		}
+	}
+
+	theApp.useBiosFile = useBiosFile;
+	if (useBiosFile)
+		theApp.skipBiosFile = skipBiosFile;
+
 	int startFlags = 0, controllerFlags = 0, typeFlags = 0;
 
 	if (m_startOption == 0)
@@ -187,13 +173,24 @@ void MovieCreate::OnBnClickedOk()
 	//	startFlags = 0; // no SRAM or snapshot
 
 	if (m_systemOption == 0)
-		typeFlags |= MOVIE_TYPE_GBA, gbEmulatorType = 4;
+	{
+		typeFlags	  |= MOVIE_TYPE_GBA;
+		gbEmulatorType = 4;
+	}
 	else if (m_systemOption == 1)
-		typeFlags |= MOVIE_TYPE_GBC, gbEmulatorType = 1;
+	{
+		typeFlags	  |= MOVIE_TYPE_GBC;
+		gbEmulatorType = 1;
+	}
 	else if (m_systemOption == 2)
-		typeFlags |= MOVIE_TYPE_SGB, gbEmulatorType = 2;
+	{
+		typeFlags	  |= MOVIE_TYPE_SGB;
+		gbEmulatorType = 2;
+	}
 	else
+	{
 		gbEmulatorType = 3;  // plain old GB
+	}
 
 	controllerFlags |= MOVIE_CONTROLLER(0);
 	if (typeFlags & MOVIE_TYPE_SGB)
@@ -204,13 +201,6 @@ void MovieCreate::OnBnClickedOk()
 		// SGB games are free to request controllers while running, so we have to assume it needs all 4
 ///		controllerFlags |= MOVIE_CONTROLLER(1) | MOVIE_CONTROLLER(2) | MOVIE_CONTROLLER(3);
 	}
-
-	if (m_biosOption == 1)
-		theApp.useBiosFile = false;
-	if (m_biosOption == 2)
-		theApp.useBiosFile = true, theApp.skipBiosFile = true, loadBIOS();
-	if (m_biosOption == 3)
-		theApp.useBiosFile = true, theApp.skipBiosFile = false, loadBIOS();
 
 	// get author and movie info from the edit fields:
 	char info [MOVIE_METADATA_SIZE], buffer [MOVIE_METADATA_SIZE];
@@ -244,7 +234,6 @@ void MovieCreate::OnBnClickedOk()
 	}
 
 	CString movieName;
-
 	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(movieName);
 
 	// actually make the movie file:
@@ -366,29 +355,35 @@ void MovieCreate::OnBnClickedRecEmubios()
 
 void MovieCreate::OnBnClickedRecGbabios()
 {
-	if (checkBIOS(theApp.biosFileName))
+	if (utilCheckBIOS(theApp.biosFileName, 4))
 		m_biosOption = 2;
 	else
 	{
 		((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-		if (checkBIOS(theApp.biosFileName))
+		if (utilCheckBIOS(theApp.biosFileName, 4))
 			m_biosOption = 2;
 		else
+		{
+			systemMessage(0, "This option requires a valid GBA BIOS file.");
 			CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_EMUBIOS);
+		}
 	}
 }
 
 void MovieCreate::OnBnClickedRecGbabiosintro()
 {
-	if (checkBIOS(theApp.biosFileName))
+	if (utilCheckBIOS(theApp.biosFileName, 4))
 		m_biosOption = 3;
 	else
 	{
 		((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-		if (checkBIOS(theApp.biosFileName))
+		if (utilCheckBIOS(theApp.biosFileName, 4))
 			m_biosOption = 3;
 		else
+		{
+			systemMessage(0, "This option requires a valid GBA BIOS file.");
 			CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_EMUBIOS);
+		}
 	}
 }
 

@@ -134,7 +134,7 @@ u32	  dma3Source		= 0;
 u32	  dma3Dest			= 0;
 void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
-bool8 fxOn			 = false;
+bool8 fxOn = false;
 bool8 windowOn		 = false;
 int32 frameSkipCount = 0;
 u32	  gbaLastTime	 = 0;
@@ -205,6 +205,9 @@ const bool8 memory32[16] = {
 };
 
 u8 biosProtected[4];
+
+u8 cpuBitsSet[256];
+u8 cpuLowestBitSet[256];
 
 #ifdef WORDS_BIGENDIAN
 bool8 cpuBiosSwapped = false;
@@ -1514,7 +1517,6 @@ int CPULoadRom(const char *szFile)
 #endif
 
 	AllocMappedMem(rom, mapROM, "vbaROM", 0x2000000, false, 0);
-
 	AllocMappedMem(workRAM, mapWORKRAM, "vbaWORKRAM", 0x40000, true, 0);
 
 	u8 *whereToLoad = rom;
@@ -1560,18 +1562,13 @@ int CPULoadRom(const char *szFile)
 	}
 
 	AllocMappedMem(bios, mapBIOS, "vbaBIOS", 0x4000, true, 0);
-
 	AllocMappedMem(internalRAM, mapIRAM, "vbaIRAM", 0x8000, true, 0);
-
 	AllocMappedMem(paletteRAM, mapPALETTERAM, "vbaPALETTERAM", 0x400, true, 0);
-
 	AllocMappedMem(vram, mapVRAM, "vbaVRAM", 0x20000, true, 0);
-
 	AllocMappedMem(oam, mapOAM, "vbaOAM", 0x400, true, 0);
 
 	// HACK: +4 at start to accomodate the 2xSaI filter reading out of bounds of the leftmost pixel
 	AllocMappedMem(pix, mapPIX, "vbaPIX", 4 * 241 * 162, true, 4);
-
 	AllocMappedMem(ioMem, mapIOMEM, "vbaIOMEM", 0x400, true, 0);
 
 	CPUUpdateRenderBuffers(true);
@@ -3268,10 +3265,28 @@ void CPUWriteByte(u32 address, u8 b)
 	CallRegisteredLuaMemHook(address, 1, b, LUAMEMHOOK_WRITE);
 }
 
-u8 cpuBitsSet[256];
-u8 cpuLowestBitSet[256];
+bool CPULoadBios(const char *biosFileName, bool useBiosFile)
+{
+	useBios = false;
+	if (useBiosFile)
+	{
+		useBios = utilLoadBIOS(bios, biosFileName, 4);
+		if (!useBios)
+		{
+			systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid GBA BIOS file"));
+		}
+	}
 
-void CPUInit(const char *biosFileName, bool useBiosFile)
+	if (!useBios)
+	{
+		// load internal BIOS
+		memcpy(bios, myROM, sizeof(myROM));
+	}
+
+	return useBios;
+}
+
+void CPUInit()
 {
 #ifdef WORDS_BIGENDIAN
 	if (!cpuBiosSwapped)
@@ -3286,35 +3301,19 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 	gbaSaveType = 0;
 	eepromInUse = 0;
 	saveType	= 0;
-	useBios		= false;
-
-	if (useBiosFile)
-	{
-		int size = 0x4000;
-		if (utilLoad(biosFileName,
-		             utilIsGBABios,
-		             bios,
-		             size))
-		{
-			if (size == 0x4000)
-				useBios = true;
-			else
-				systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BIOS file size"));
-		}
-	}
 
 	if (!useBios)
 	{
+		// load internal BIOS
 		memcpy(bios, myROM, sizeof(myROM));
 	}
-
-	int i = 0;
 
 	biosProtected[0] = 0x00;
 	biosProtected[1] = 0xf0;
 	biosProtected[2] = 0x29;
 	biosProtected[3] = 0xe1;
 
+	int i = 0;
 	for (i = 0; i < 256; i++)
 	{
 		int cpuBitSetCount = 0;
@@ -3850,7 +3849,7 @@ void CPULoop(int _ticks)
 		newFrame = false;
 	}
 
-	for (;;)
+	for (;; )
 	{
 #ifndef FINAL_VERSION
 		if (systemDebug)
@@ -4059,13 +4058,13 @@ updateLoop:
 
 							// HACK: some special "buttons"
 							u32 ext = (joy >> 18);
-							speedup	= (ext & 1) != 0;
+							speedup = (ext & 1) != 0;
 
 							if (cheatsEnabled)
 								cheatsCheckKeys(P1 ^ 0x3FF, ext);
 
 							frameBoundary = true;
-	
+
 							extern void VBAOnEnteringFrameBoundary();
 							VBAOnEnteringFrameBoundary();
 
@@ -4482,7 +4481,7 @@ updateLoop:
 			}
 #endif
 
-			ticks -= clockTicks;
+			ticks		-= clockTicks;
 			cpuLoopTicks = CPUUpdateTicks();
 
 			// FIXME: it is too bad that it is still not determined whether the loop can be exited at this point
@@ -4606,15 +4605,15 @@ struct EmulatedSystem GBASystem =
 EmulatedSystemCounters &GBASystemCounters = systemCounters;
 
 /*
-EmulatedSystemCounters GBASystemCounters =
-{
-	// frameCount
-	0,
-	// lagCount
-	0,
-	// lagged
-	true,
-	// laggedLast
-	true,
-};
-*/
+   EmulatedSystemCounters GBASystemCounters =
+   {
+    // frameCount
+    0,
+    // lagCount
+    0,
+    // lagged
+    true,
+    // laggedLast
+    true,
+   };
+ */

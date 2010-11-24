@@ -50,6 +50,7 @@ extern bool utilIsGBAImage(const char *);
 extern bool utilIsGBABios(const char *file);
 extern bool utilIsELF(const char *file);
 extern bool utilIsGBImage(const char *);
+extern bool utilIsGBBios(const char *file);
 extern bool utilIsZipFile(const char *);
 extern bool utilIsGzipFile(const char *);
 extern bool utilIsRarFile(const char *);
@@ -68,8 +69,13 @@ extern gzFile utilMemGzOpen(char *memory, int available, char *mode);
 extern int utilGzWrite(gzFile file,  voidp buffer, unsigned int len);
 extern int utilGzRead(gzFile file, voidp buffer, unsigned int len);
 extern int utilGzClose(gzFile file);
+extern z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence);
 extern long utilGzMemTell(gzFile file);
 extern void utilGBAFindSave(const u8 *, const int);
 extern void utilUpdateSystemColorMaps();
+extern bool utilLoadBIOS(u8 *bios, const char *biosFileName, int systemType);
+extern bool utilCheckBIOS(const char *biosFileName, int systemType);
+extern u16 utilCalcBIOSChecksum(const u8 *bios, int systemType);
+extern u16 utilCalcBIOSFileChecksum(const char *biosFileName, int systemType);
 
 #endif // VBA_UTIL_H
