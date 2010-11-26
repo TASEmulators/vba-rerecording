@@ -21,7 +21,7 @@
 #   include "../win32/VBA.h"
 #endif
 
-#include <memory.h>
+#include <cstring>
 #include <cassert>
 
 #include "../common/System.h"

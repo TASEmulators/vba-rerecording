@@ -18,7 +18,7 @@
 
 #include <cmath>
 #include <cstdlib>
-#include <memory.h>
+#include <cstring>
 
 #include "bios.h"
 #include "../common/System.h"
