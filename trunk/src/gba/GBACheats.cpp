@@ -19,7 +19,6 @@
 #include <cstdio>
 #include <cctype>
 #include <cstring>
-#include <memory.h>
 
 #include "../common/System.h"
 #include "../common/Util.h"

@@ -25,7 +25,6 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <cstring>
-#include <memory.h>
 
 #include "../Port.h"
 #include "../NLS.h"
