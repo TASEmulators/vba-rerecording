@@ -694,13 +694,14 @@
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
     </CustomBuild>
+    <None Include="..\documentation\Changelog.txt" />
+    <None Include="..\documentation\License.txt" />
+    <None Include="..\documentation\TODO.txt" />
     <None Include="..\src\win32\gbadvance.ico" />
     <None Include="..\ChangeLog" />
-    <None Include="..\Changelog.txt" />
     <None Include="..\README" />
     <None Include="..\README-win.txt" />
     <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
-    <None Include="..\TODO.txt" />
     <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
