@@ -779,9 +779,6 @@
     <None Include="..\ChangeLog">
       <Filter>Docs</Filter>
     </None>
-    <None Include="..\Changelog.txt">
-      <Filter>Docs</Filter>
-    </None>
     <None Include="..\README">
       <Filter>Docs</Filter>
     </None>
@@ -792,10 +789,16 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
-    <None Include="..\TODO.txt">
+    <None Include="ClassDiagram1.cd" />
+    <None Include="..\documentation\Changelog.txt">
       <Filter>Docs</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
+    <None Include="..\documentation\License.txt">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="..\documentation\TODO.txt">
+      <Filter>Docs</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\AutoBuild.h">

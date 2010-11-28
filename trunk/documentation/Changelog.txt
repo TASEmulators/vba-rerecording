@@ -1,6 +1,11 @@
 ---VBA-rr v24---
 
 ---VBA-rr v23.3---
+11-28-2010 aquanull - Fixed the bug that reset failed to clear the whole screen.
+11-23-2010 aquanull - Fixed the old movie input buffer bug.
+11-21-2010 aquanull - Improved GBx mode detection upon reset.
+11-21-2010 aquanull - Fixed crash when loading a GBC mode savestate in mono GB mode.
+11-17-2010 aquanull - Added an option for GB games to mimic the pre-v23 white screen input behavior.
 11-13-2010 aquanull - Fixed a bug that loading a post-movie savestate in read+write mode would result in a glitched recording mode.
 11-12-2010 aquanull - Frame Counter now tells if the movie is being played in edit mode.
 11-12-2010 aquanull - Movie->Resume Recording now becomes Movie->Resume/Exit Recording, which changes Read-Only settings as well.
