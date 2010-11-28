@@ -436,11 +436,11 @@ void MovieOpen::OnBnClickedOk()
 	if (useBIOSFile)
 	{
 		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
-		if (!systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile))
+		if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
 		{
 			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 			((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-			if (!systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile))
+			if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
 			{
 				systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 				return;
