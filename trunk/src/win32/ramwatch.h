@@ -1,5 +1,6 @@
 #ifndef RAMWATCH_H
 #define RAMWATCH_H
+
 bool ResetWatches();
 void OpenRWRecentFile(int memwRFileNumber);
 extern bool AutoRWLoad;

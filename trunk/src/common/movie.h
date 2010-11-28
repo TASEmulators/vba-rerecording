@@ -5,12 +5,16 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <cstdio>
-#include <cstdlib>
 #include <ctime>
 #include <string>
 
 #include "../Port.h"
+
+#define ZLIB
+///#ifdef ZLIB
+#ifndef WIN32
+#include "zlib.h"
+#endif
 
 #ifndef MOVIE_SUCCESS
 #  define MOVIE_SUCCESS 1
@@ -54,12 +58,6 @@
 #define MOVIE_SETTING_GBCFF55FIX    (1<<5)
 #define MOVIE_SETTING_GBECHORAMFIX  (1<<6)
 
-#define ZLIB
-
-///#ifdef ZLIB
-#ifndef WIN32
-#include "zlib.h"
-#endif
 #define STREAM gzFile
 /*#define READ_STREAM(p,l,s) gzread (s,p,l)
  #define WRITE_STREAM(p,l,s) gzwrite (s,p,l)
