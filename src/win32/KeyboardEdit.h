@@ -25,6 +25,8 @@
 // Remarks :
 //
 ////////////////////////////////////////////////////////////////////////////////
+// Modified by the VBA-rr Team
+
 #if !defined(AFX_KEYBOARDEDIT_H__88E35AB0_2E23_11D2_BA24_0060B0B5E151__INCLUDED_)
 #define AFX_KEYBOARDEDIT_H__88E35AB0_2E23_11D2_BA24_0060B0B5E151__INCLUDED_
 
