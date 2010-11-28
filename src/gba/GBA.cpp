@@ -3397,7 +3397,7 @@ void CPUReset(bool userReset)
 	// clean palette
 	memset(paletteRAM, 0, 0x400);
 	// clean picture
-	memset(pix, 0, 4 * 160 * 240);
+	memset(pix, 0, 4 * 241 * 162);
 	// clean vram
 	memset(vram, 0, 0x20000);
 	// clean io memory

@@ -1703,6 +1703,13 @@ void gbReset(bool userReset)
 		}
 	}
 
+	// clean LineBuffer
+	if (gbLineBuffer)
+		memset(gbLineBuffer, 0, 160 * sizeof(u16));
+	// clean Pix
+	if (pix)
+		memset(pix, 0, 4 * 257 * 226);
+
 	if (gbCgbMode)
 	{
 		if (gbSgbMode)
