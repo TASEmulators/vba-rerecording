@@ -2557,7 +2557,7 @@ bool gbWriteMemSaveState(char *memory, int available)
 
 	bool res = gbWriteSaveStateToStream(gzFile);
 
-	long pos = utilGzMemTell(gzFile) + 8;
+	long pos = utilGzTell(gzFile) + 8;
 
 	if (pos >= (available))
 		res = false;
