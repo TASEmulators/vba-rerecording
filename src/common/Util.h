@@ -51,7 +51,7 @@ extern int utilGzWrite(gzFile file,  voidp buffer, unsigned int len);
 extern int utilGzRead(gzFile file, voidp buffer, unsigned int len);
 extern int utilGzClose(gzFile file);
 extern z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence);
-extern long utilGzMemTell(gzFile file);
+extern z_off_t utilGzTell(gzFile file);
 extern void utilGBAFindSave(const u8 *, const int);
 extern void utilUpdateSystemColorMaps();
 extern bool utilLoadBIOS(u8 *bios, const char *biosFileName, int systemType);

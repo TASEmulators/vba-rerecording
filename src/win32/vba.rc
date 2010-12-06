@@ -2202,7 +2202,7 @@ BEGIN
                 MENUITEM SEPARATOR
                 MENUITEM "&Auto Convert When Playing",  ID_MOVIE_TOOL_AUTO_CONVERT
                 MENUITEM SEPARATOR
-                MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT
+                MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, INACTIVE
             END
             MENUITEM "&Associate With Savestates",  ID_MOVIE_ASSC_WITH_SAVESTATE
         END

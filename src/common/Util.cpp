@@ -41,6 +41,7 @@ static int	   (ZEXPORT *utilGzWriteFunc)(gzFile, voidp, unsigned int) = NULL;
 static int	   (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int)  = NULL;
 static int	   (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
 static z_off_t (ZEXPORT *utilGzSeekFunc)(gzFile, z_off_t, int) = NULL;
+static z_off_t (ZEXPORT *utilGzTellFunc)(gzFile) = NULL;
 
 void utilPutDword(u8 *p, u32 value)
 {
@@ -1144,20 +1145,22 @@ void utilWriteData(gzFile gzFile, variable_desc *data)
 
 gzFile utilGzOpen(const char *file, const char *mode)
 {
-	utilGzWriteFunc = (int (ZEXPORT *)(void *, void *const, unsigned int))gzwrite;
+	utilGzWriteFunc = gzwrite;
 	utilGzReadFunc	= gzread;
 	utilGzCloseFunc = gzclose;
 	utilGzSeekFunc	= gzseek;
+	utilGzTellFunc	= gztell;
 
 	return gzopen(file, mode);
 }
 
 gzFile utilGzReopen(int id, const char *mode)
 {
-	utilGzWriteFunc = (int (*)(void *, void *const, unsigned int))gzwrite;
+	utilGzWriteFunc = gzwrite;
 	utilGzReadFunc	= gzread;
 	utilGzCloseFunc = gzclose;
 	utilGzSeekFunc	= gzseek;
+	utilGzTellFunc	= gztell;
 
 	return gzdopen(id, mode);
 }
@@ -1167,7 +1170,8 @@ gzFile utilMemGzOpen(char *memory, int available, char *mode)
 	utilGzWriteFunc = memgzwrite;
 	utilGzReadFunc	= memgzread;
 	utilGzCloseFunc = memgzclose;
-	utilGzSeekFunc	= NULL;
+	utilGzSeekFunc	= NULL;	// FIXME: not implemented...
+	utilGzTellFunc	= memtell;
 
 	return memgzopen(memory, available, mode);
 }
@@ -1192,9 +1196,9 @@ z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence)
 	return utilGzSeekFunc(file, offset, whence);
 }
 
-long utilGzMemTell(gzFile file)
+z_off_t utilGzTell(gzFile file)
 {
-	return memtell(file);
+	return utilGzTellFunc(file);
 }
 
 void utilGBAFindSave(const u8 *data, const int size)
