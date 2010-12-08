@@ -318,6 +318,8 @@ static void change_state(MovieState new_state)
 
 	if (new_state == MOVIE_STATE_NONE)
 	{
+		Movie.pauseFrame = -1;
+
 		if (Movie.state == MOVIE_STATE_NONE)
 			return;
 
@@ -795,7 +797,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	VBAMovieInit();
 
 	// fill in the movie's header
-	Movie.header.uid = (uint32)time(NULL);
+	Movie.header.uid   = (uint32)time(NULL);
 	Movie.header.magic = VBM_MAGIC;
 	Movie.header.version		 = VBM_VERSION;
 	Movie.header.rerecord_count	 = 0;
@@ -1012,9 +1014,16 @@ void VBAUpdateFrameCountDisplay()
 // this function should only be called once every frame
 void VBAMovieUpdateState()
 {
+	++Movie.currentFrame;
+
 	bool willPause = false;
 
-	++Movie.currentFrame;
+	// if the movie's been set to pause at a certain frame
+	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame == (uint32)Movie.pauseFrame)
+	{
+		Movie.pauseFrame = -1;
+		willPause		 = true;
+	}
 
 	if (Movie.state == MOVIE_STATE_PLAY)
 	{
@@ -1040,9 +1049,12 @@ void VBAMovieUpdateState()
 		if (Movie.currentFrame == Movie.header.length_frames)
 		{
 #if (defined(WIN32) && !defined(SDL))
-			willPause = theApp.movieOnEndPause;
+			if (theApp.movieOnEndPause)
+			{
+				willPause = true;
+			}
 #else
-			willPause = false;     // SDL FIXME
+			// SDL FIXME
 #endif
 
 #if (defined(WIN32) && !defined(SDL))
@@ -1105,13 +1117,6 @@ void VBAMovieUpdateState()
 		}
 #endif
 	} // end if (Movie.state == MOVIE_STATE_END)
-
-	// if the movie's been set to pause at a certain frame
-	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame >= (uint32)Movie.pauseFrame)
-	{
-		Movie.pauseFrame = -1;
-		willPause		 = true;
-	}
 
 	if (willPause)
 	{
