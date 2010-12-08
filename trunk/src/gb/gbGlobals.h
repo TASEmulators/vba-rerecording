@@ -47,6 +47,11 @@ inline void gbWriteMemoryQuick(u16 address, u8 value)
 	gbMemoryMap[address>>12][address&0xfff] = value;
 }
 
+inline u8 gbReadROMQuick(u32 address)
+{
+	return gbRom[address];
+}
+
 extern int32 gbFrameSkip;
 extern u16   gbColorFilter[32768];
 extern int32 gbColorOption;
