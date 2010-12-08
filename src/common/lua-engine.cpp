@@ -222,6 +222,24 @@ static inline void gbWriteMemoryQuick32(u16 addr, u32 b)
 	gbWriteMemoryQuick(addr + 1, (b >> 24) & 0xff);
 }
 
+static inline u8 gbReadROMQuick8(u32 addr)
+{
+	return gbReadROMQuick(addr & gbRomSizeMask);
+}
+
+static inline u8 gbReadROMQuick16(u32 addr)
+{
+	return (gbReadROMQuick(addr+1 & gbRomSizeMask) << 8) | gbReadROMQuick(addr & gbRomSizeMask);
+}
+
+static inline u8 gbReadROMQuick32(u32 addr)
+{
+	return (gbReadROMQuick(addr+3 & gbRomSizeMask) << 24) |
+	       (gbReadROMQuick(addr+2 & gbRomSizeMask) << 16) |
+	       (gbReadROMQuick(addr+1 & gbRomSizeMask) << 8) |
+	       gbReadROMQuick(addr & gbRomSizeMask);
+}
+
 typedef void (*GetColorFunc)(const uint8 *, uint8 *, uint8 *, uint8 *);
 typedef void (*SetColorFunc)(uint8 *, uint8, uint8, uint8);
 
@@ -1593,6 +1611,166 @@ defcase: default:
 
 				        CallRegisteredLuaMemHook(addr, 4, val, LUAMEMHOOK_WRITE);
 				        return 0;
+					}
+
+				    static int memory_gbromreadbyte(lua_State *L)
+				    {
+				        u32 addr;
+				        u8	val;
+
+				        addr = luaL_checkinteger(L, 1);
+				        if (systemIsRunningGBA())
+				        {
+							lua_pushnil(L);
+							return 1;
+						}
+				        else
+				        {
+				            val = gbReadROMQuick8(addr);
+						}
+
+				        lua_pushinteger(L, val);
+				        return 1;
+					}
+
+				    static int memory_gbromreadbytesigned(lua_State *L)
+				    {
+				        u32 addr;
+				        s8	val;
+
+				        addr = luaL_checkinteger(L, 1);
+				        if (systemIsRunningGBA())
+				        {
+				            lua_pushnil(L);
+							return 1;
+						}
+				        else
+				        {
+				            val = (s8) gbReadROMQuick8(addr);
+						}
+
+				        lua_pushinteger(L, val);
+				        return 1;
+					}
+
+				    static int memory_gbromreadword(lua_State *L)
+				    {
+				        u32 addr;
+				        u16 val;
+
+				        addr = luaL_checkinteger(L, 1);
+				        if (systemIsRunningGBA())
+				        {
+				            lua_pushnil(L);
+							return 1;
+						}
+				        else
+				        {
+				            val = gbReadROMQuick16(addr);
+						}
+
+				        lua_pushinteger(L, val);
+				        return 1;
+					}
+
+				    static int memory_gbromreadwordsigned(lua_State *L)
+				    {
+				        u32 addr;
+				        s16 val;
+
+				        addr = luaL_checkinteger(L, 1);
+				        if (systemIsRunningGBA())
+				        {
+				            lua_pushnil(L);
+							return 1;
+						}
+				        else
+				        {
+				            val = (s16) gbReadROMQuick16(addr);
+						}
+
+				        lua_pushinteger(L, val);
+				        return 1;
+					}
+
+				    static int memory_gbromreaddword(lua_State *L)
+				    {
+				        u32 addr;
+				        u32 val;
+
+				        addr = luaL_checkinteger(L, 1);
+				        if (systemIsRunningGBA())
+				        {
+				            lua_pushnil(L);
+							return 1;
+						}
+				        else
+				        {
+				            val = gbReadROMQuick32(addr);
+						}
+
+				        // lua_pushinteger doesn't work properly for 32bit system, does it?
+				        if (val >= 0x80000000 && sizeof(int) <= 4)
+							lua_pushnumber(L, val);
+				        else
+							lua_pushinteger(L, val);
+				        return 1;
+					}
+
+				    static int memory_gbromreaddwordsigned(lua_State *L)
+				    {
+				        u32 addr;
+				        s32 val;
+
+				        addr = luaL_checkinteger(L, 1);
+				        if (systemIsRunningGBA())
+				        {
+				            lua_pushnil(L);
+							return 1;
+						}
+				        else
+				        {
+				            val = (s32) gbReadROMQuick32(addr);
+						}
+
+				        lua_pushinteger(L, val);
+				        return 1;
+					}
+
+				    static int memory_gbromreadbyterange(lua_State *L)
+				    {
+				        uint32 address = luaL_checkinteger(L, 1);
+				        int	   length  = luaL_checkinteger(L, 2);
+
+				        if (length < 0)
+				        {
+				            address += length;
+				            length	 = -length;
+						}
+
+				        // push the array
+				        lua_createtable(L, abs(length), 0);
+
+				        // put all the values into the (1-based) array
+				        for (int a = address, n = 1; n <= length; a++, n++)
+				        {
+				            unsigned char value;
+
+				            if (systemIsRunningGBA())
+				            {
+				                lua_pushnil(L);
+								return 1;
+							}
+				            else
+				            {
+				                value = gbReadROMQuick8(a);
+							}
+
+				            lua_pushinteger(L, value);
+				            lua_rawseti(L, -2, n);
+						}
+
+				        return 1;
 					}
 
 // table joypad.get(int which = 1)
@@ -4076,31 +4254,47 @@ use_console:
 					};
 
 				    static const struct luaL_reg memorylib[] = {
-				        { "readbyte",		   memory_readbyte				 },
-				        { "readbytesigned",	   memory_readbytesigned		 },
-				        { "readword",		   memory_readword				 },
-				        { "readwordsigned",	   memory_readwordsigned		 },
-				        { "readdword",		   memory_readdword				 },
-				        { "readdwordsigned",   memory_readdwordsigned		 },
-				        { "readbyterange",	   memory_readbyterange			 },
-				        { "writebyte",		   memory_writebyte				 },
-				        { "writeword",		   memory_writeword				 },
-				        { "writedword",		   memory_writedword			 },
-				        { "getregister",	   memory_getregister			 },
-				        { "setregister",	   memory_setregister			 },
+				        { "readbyte",				memory_readbyte				},
+				        { "readbytesigned",			memory_readbytesigned		},
+				        { "readword",				memory_readword				},
+				        { "readwordsigned",			memory_readwordsigned		},
+				        { "readdword",				memory_readdword			},
+				        { "readdwordsigned",		memory_readdwordsigned		},
+				        { "readbyterange",			memory_readbyterange		},
+				        { "writebyte",				memory_writebyte			},
+				        { "writeword",				memory_writeword			},
+				        { "writedword",				memory_writedword			},
+				        { "getregister",			memory_getregister			},
+				        { "setregister",			memory_setregister			},
+						{ "gbromreadbyte",			memory_gbromreadbyte		},
+						{ "gbromreadbytesigned",	memory_gbromreadbytesigned	},
+						{ "gbromreadword",			memory_gbromreadword		},
+						{ "gbromreadwordsigned",	memory_gbromreadwordsigned	},
+						{ "gbromreaddword",			memory_gbromreaddword		},
+						{ "gbromreaddwordsigned",	memory_gbromreaddwordsigned	},
+						{ "gbromreadbyterange",		memory_gbromreadbyterange	},
 
 				        // alternate naming scheme for word and double-word and unsigned
-				        { "readbyteunsigned",  memory_readbyte				 },
-				        { "readwordunsigned",  memory_readword				 },
-				        { "readdwordunsigned", memory_readdword				 },
-				        { "readshort",		   memory_readword				 },
-				        { "readshortunsigned", memory_readword				 },
-				        { "readshortsigned",   memory_readwordsigned		 },
-				        { "readlong",		   memory_readdword				 },
-				        { "readlongunsigned",  memory_readdword				 },
-				        { "readlongsigned",	   memory_readdwordsigned		 },
-				        { "writeshort",		   memory_writeword				 },
-				        { "writelong",		   memory_writedword			 },
+				        { "readbyteunsigned",		memory_readbyte				},
+				        { "readwordunsigned",		memory_readword				},
+				        { "readdwordunsigned",		memory_readdword			},
+				        { "readshort",				memory_readword				},
+				        { "readshortunsigned",		memory_readword				},
+				        { "readshortsigned",		memory_readwordsigned		},
+				        { "readlong",				memory_readdword			},
+				        { "readlongunsigned",		memory_readdword			},
+						{ "readlongsigned",			memory_readdwordsigned		},
+				        { "writeshort",				memory_writeword			},
+				        { "writelong",				memory_writedword			},
+						{ "gbromreadbyteunsigned",	memory_gbromreadbyte		},
+						{ "gbromreadwordunsigned",	memory_gbromreadword		},
+						{ "gbromreaddwordunsigned",	memory_gbromreaddword		},
+						{ "gbromreadshort",			memory_gbromreadword		},
+						{ "gbromreadshortunsigned",	memory_gbromreadword		},
+						{ "gbromreadshortsigned",	memory_gbromreadwordsigned	},
+						{ "gbromreadlong",			memory_gbromreaddword		},
+						{ "gbromreadlongunsigned",	memory_gbromreaddword		},
+						{ "gbromreadlongsigned",	memory_gbromreaddwordsigned	},
 
 				        // memory hooks
 				        { "registerwrite",	   memory_registerwrite			 },
