@@ -1,4 +1,7 @@
----VBA-rr v24---
+---VBA-rr v23.4---
+12-08-2010 gcupcakekid - Added memory.gbromreadxxxx() functions.
+12-08-2010 aquanull - Fixed when the movie being played is closed right at the frame equal to "Pause at frame".
+12-05-2010 aquanull - Disabled something not implemented yet.
 
 ---VBA-rr v23.3---
 11-28-2010 aquanull - Fixed the bug that reset failed to clear the whole screen.
