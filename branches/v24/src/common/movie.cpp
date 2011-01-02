@@ -1011,6 +1011,7 @@ void VBAMovieUpdateState()
 		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
 		Movie.inputBufferPtr	 += Movie.bytesPerFrame;
 		Movie.RecordedThisSession = true;
+		flush_movie();
 	}
 
 	if (Movie.state == MOVIE_STATE_END)
