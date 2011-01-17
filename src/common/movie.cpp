@@ -407,7 +407,7 @@ static void change_state(MovieState new_state)
 			{
 			case 1:
 				// the old behavior
-				VBAMovieRestart();
+				//VBAMovieRestart();
 				break;
 			case 2:
 #else
@@ -427,6 +427,8 @@ static void change_state(MovieState new_state)
 			case 3:
 				// keep open
 				break;
+			case 0:
+				// fall through
 			default:
 				// close movie
 				//VBAMovieStop(false);
@@ -443,7 +445,8 @@ static void change_state(MovieState new_state)
 			switch (theApp.movieOnEndBehavior)
 			{
 			case 1:
-				//VBAMovieRestart();
+				// FIXME: this should be delayed till the current frame ends
+				VBAMovieRestart();
 				break;
 			case 2:
 				// nothing
@@ -451,6 +454,8 @@ static void change_state(MovieState new_state)
 			case 3:
 				// keep open
 				break;
+			case 0:
+				// fall through
 			default:
 				// close movie
 				VBAMovieStop(false);
@@ -1620,7 +1625,7 @@ void VBAMovieRestart()
 
 		Movie.RecordedThisSession = modified;
 
-//		systemScreenMessage("Movie replay (restart)");
+		systemScreenMessage("Movie replay (restart)");
 	}
 }
 
