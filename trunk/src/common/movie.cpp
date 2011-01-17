@@ -372,7 +372,101 @@ static void change_state(MovieState new_state)
 		}
 	}
 
+	if (new_state == MOVIE_STATE_END && Movie.state != MOVIE_STATE_END)
+	{
+		systemScreenMessage("Movie end");
+	}
+
 	Movie.state = new_state;
+
+	// checking for movie end
+	bool willPause = false;
+
+	// if the movie's been set to pause at a certain frame
+	if (Movie.state != MOVIE_STATE_NONE && Movie.pauseFrame >= 0 && Movie.currentFrame == (uint32)Movie.pauseFrame)
+	{
+		Movie.pauseFrame = -1;
+		willPause		 = true;
+	}
+
+	if (Movie.state == MOVIE_STATE_END)
+	{
+		if (Movie.currentFrame == Movie.header.length_frames)
+		{
+#if (defined(WIN32) && !defined(SDL))
+			if (theApp.movieOnEndPause)
+			{
+				willPause = true;
+			}
+#else
+			// SDL FIXME
+#endif
+
+#if (defined(WIN32) && !defined(SDL))
+			switch (theApp.movieOnEndBehavior)
+			{
+			case 1:
+				// the old behavior
+				VBAMovieRestart();
+				break;
+			case 2:
+#else
+			// SDL FIXME
+#endif
+				if (Movie.RecordedThisSession)
+				{
+					// if user has been recording this movie since the last time it started playing,
+					// they probably don't want the movie to end now during playback,
+					// so switch back to recording when it reaches the end
+					VBAMovieSwitchToRecording();
+					systemScreenMessage("Recording resumed");
+					willPause = true;
+				}
+#if (defined(WIN32) && !defined(SDL))
+				break;
+			case 3:
+				// keep open
+				break;
+			default:
+				// close movie
+				//VBAMovieStop(false);
+				break;
+			}
+#else
+				// SDL FIXME
+#endif
+		}
+#if 1
+		else if (Movie.currentFrame > Movie.header.length_frames)
+		{
+#if (defined(WIN32) && !defined(SDL))
+			switch (theApp.movieOnEndBehavior)
+			{
+			case 1:
+				//VBAMovieRestart();
+				break;
+			case 2:
+				// nothing
+				break;
+			case 3:
+				// keep open
+				break;
+			default:
+				// close movie
+				VBAMovieStop(false);
+				break;
+			}
+#else
+			// SDLFIXME
+#endif
+		}
+#endif
+	} // end if (Movie.state == MOVIE_STATE_END)
+
+	if (willPause)
+	{
+		systemSetPause(true);
+	}
 }
 
 void VBAMovieInit()
@@ -1016,15 +1110,6 @@ void VBAMovieUpdateState()
 {
 	++Movie.currentFrame;
 
-	bool willPause = false;
-
-	// if the movie's been set to pause at a certain frame
-	if (VBAMovieActive() && Movie.pauseFrame >= 0 && Movie.currentFrame == (uint32)Movie.pauseFrame)
-	{
-		Movie.pauseFrame = -1;
-		willPause		 = true;
-	}
-
 	if (Movie.state == MOVIE_STATE_PLAY)
 	{
 		Movie.inputBufferPtr += Movie.bytesPerFrame;
@@ -1032,7 +1117,6 @@ void VBAMovieUpdateState()
 		{
 			// the movie ends anyway; what to do next depends on the settings
 			change_state(MOVIE_STATE_END);
-			systemScreenMessage("Movie end");
 		}
 	}
 	else if (Movie.state == MOVIE_STATE_RECORD)
@@ -1043,85 +1127,9 @@ void VBAMovieUpdateState()
 		Movie.RecordedThisSession = true;
 		flush_movie();
 	}
-
-	if (Movie.state == MOVIE_STATE_END)
+	else if (Movie.state == MOVIE_STATE_END)
 	{
-		// might be better to move some of these into change_state()
-		if (Movie.currentFrame == Movie.header.length_frames)
-		{
-#if (defined(WIN32) && !defined(SDL))
-			if (theApp.movieOnEndPause)
-			{
-				willPause = true;
-			}
-#else
-			// SDL FIXME
-#endif
-
-#if (defined(WIN32) && !defined(SDL))
-			switch (theApp.movieOnEndBehavior)
-			{
-			case 1:
-				// the old behavior
-				VBAMovieRestart();
-				break;
-			case 2:
-#else
-			// SDL FIXME
-#endif
-				if (Movie.RecordedThisSession)
-				{
-					// if user has been recording this movie since the last time it started playing,
-					// they probably don't want the movie to end now during playback,
-					// so switch back to recording when it reaches the end
-					VBAMovieSwitchToRecording();
-					systemScreenMessage("Recording resumed");
-					willPause = true;
-				}
-#if (defined(WIN32) && !defined(SDL))
-				break;
-			case 3:
-				// keep open
-				break;
-			default:
-				// close movie
-				VBAMovieStop(false);
-				break;
-			}
-#else
-				// SDL FIXME
-#endif
-		}
-#if 0
-		else if (Movie.currentFrame > Movie.header.length_frames)
-		{
-#if (defined(WIN32) && !defined(SDL))
-			switch (theApp.movieOnEndBehavior)
-			{
-			case 1:
-				//VBAMovieRestart();
-				break;
-			case 2:
-				// nothing
-				break;
-			case 3:
-				// keep open
-				break;
-			default:
-				// close movie
-				//VBAMovieStop(false);
-				break;
-			}
-#else
-			// SDLFIXME
-#endif
-		}
-#endif
-	} // end if (Movie.state == MOVIE_STATE_END)
-
-	if (willPause)
-	{
-		systemSetPause(true);
+		change_state(MOVIE_STATE_END);
 	}
 }
 
@@ -1442,7 +1450,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		Movie.currentFrame	 = current_frame;
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame *min(current_frame, Movie.header.length_frames);
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
 
 		change_state(MOVIE_STATE_PLAY);
 	}
@@ -1459,7 +1467,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		Movie.RecordedThisSession = true;
 
 		// do this before calling reserve_buffer_space()
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame *min(current_frame, Movie.header.length_frames);
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
 		reserve_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
