@@ -3926,6 +3926,244 @@ use_console:
 				        return 1;
 					}
 
+					static int sound_get(lua_State *L)
+					{
+						extern int32 soundLevel1;
+						extern int32 soundLevel2;
+						extern int32 soundBalance;
+						extern int32 soundMasterOn;
+						extern int32 soundVIN;
+						extern int32 sound1On;
+						extern int32 sound1EnvelopeVolume;
+						extern int32 sound2On;
+						extern int32 sound2EnvelopeVolume;
+						extern int32 sound3On;
+						extern int32 sound3OutputLevel;
+						extern int32 sound3Bank;
+						extern int32 sound3DataSize;
+						extern int32 sound3ForcedOutput;
+						extern int32 sound4On;
+						extern int32 sound4EnvelopeVolume;
+						extern u8 sound3WaveRam[0x20];
+
+						int freqReg;
+						double freq;
+						double leftvolscale;
+						double rightvolscale;
+						double panpot;
+						bool gba = systemIsRunningGBA();
+						u8* gbMem = gba ? ioMem : gbMemory;
+						const int rNR10 = gba ? 0x60 : 0xff10;
+						const int rNR11 = gba ? 0x62 : 0xff11;
+						const int rNR12 = gba ? 0x63 : 0xff12;
+						const int rNR13 = gba ? 0x64 : 0xff13;
+						const int rNR14 = gba ? 0x65 : 0xff14;
+						const int rNR21 = gba ? 0x68 : 0xff16;
+						const int rNR22 = gba ? 0x69 : 0xff17;
+						const int rNR23 = gba ? 0x6c : 0xff18;
+						const int rNR24 = gba ? 0x6d : 0xff19;
+						const int rNR30 = gba ? 0x70 : 0xff1a;
+						const int rNR31 = gba ? 0x72 : 0xff1b;
+						const int rNR32 = gba ? 0x73 : 0xff1c;
+						const int rNR33 = gba ? 0x74 : 0xff1d;
+						const int rNR34 = gba ? 0x75 : 0xff1e;
+						const int rNR41 = gba ? 0x78 : 0xff20;
+						const int rNR42 = gba ? 0x79 : 0xff21;
+						const int rNR43 = gba ? 0x7c : 0xff22;
+						const int rNR44 = gba ? 0x7d : 0xff23;
+						const int rNR50 = gba ? 0x80 : 0xff24;
+						const int rNR51 = gba ? 0x81 : 0xff25;
+						const int rNR52 = gba ? 0x84 : 0xff26;
+						const int rWAVE_RAM = gba ? 0x90 : 0xff30;
+
+						const int32 _soundVIN = 0x88; // gba ? 0x88 : soundVIN;
+						const bool soundVINLeft = ((_soundVIN & 0x80) != 0);
+						const bool soundVINRight = ((_soundVIN & 0x08) != 0);
+
+						lua_newtable(L);
+
+						// square1
+						lua_newtable(L);
+						if(sound1On == 0 || soundMasterOn == 0)
+						{
+							lua_pushnumber(L, 0.0);
+							panpot = 0.5;
+						}
+						else
+						{
+							double envVolume = sound1EnvelopeVolume / 15.0;
+							if (soundVINLeft && (soundBalance & 0x10) != 0)
+								leftvolscale = ((soundLevel2 / 7.0) * envVolume);
+							else
+								leftvolscale = 0.0;
+							if (soundVINRight && (soundBalance & 0x01) != 0)
+								rightvolscale = ((soundLevel1 / 7.0) * envVolume);
+							else
+								rightvolscale = 0.0;
+							if ((leftvolscale + rightvolscale) != 0)
+								panpot = rightvolscale / (leftvolscale + rightvolscale);
+							else
+								panpot = 0.5;
+							lua_pushnumber(L, (leftvolscale + rightvolscale) / 2.0);
+						}
+						lua_setfield(L, -2, "volume");
+						lua_pushnumber(L, panpot);
+						lua_setfield(L, -2, "panpot");
+						freqReg = (((int)(gbMem[rNR14] & 7) << 8) | gbMem[rNR13]);
+						freq = 131072.0 / (2048 - freqReg);
+						lua_pushnumber(L, freq);
+						lua_setfield(L, -2, "frequency");
+						lua_pushnumber(L, (log(freq / 440.0) * 12 / log(2.0)) + 69);
+						lua_setfield(L, -2, "midikey");
+						lua_pushinteger(L, (gbMem[rNR11] & 0xC0) >> 6);
+						lua_setfield(L, -2, "duty");
+						lua_newtable(L);
+						lua_pushinteger(L, freqReg);
+						lua_setfield(L, -2, "frequency");
+						lua_setfield(L, -2, "regs");
+						lua_setfield(L, -2, "square1");
+						// square2
+						lua_newtable(L);
+						if(sound2On == 0 || soundMasterOn == 0)
+						{
+							lua_pushnumber(L, 0.0);
+							panpot = 0.5;
+						}
+						else
+						{
+							double envVolume = sound2EnvelopeVolume / 15.0;
+							if (soundVINLeft && (soundBalance & 0x20) != 0)
+								leftvolscale = ((soundLevel2 / 7.0) * envVolume);
+							else
+								leftvolscale = 0.0;
+							if (soundVINRight && (soundBalance & 0x02) != 0)
+								rightvolscale = ((soundLevel1 / 7.0) * envVolume);
+							else
+								rightvolscale = 0.0;
+							if ((leftvolscale + rightvolscale) != 0)
+								panpot = rightvolscale / (leftvolscale + rightvolscale);
+							else
+								panpot = 0.5;
+							lua_pushnumber(L, (leftvolscale + rightvolscale) / 2.0);
+						}
+						lua_setfield(L, -2, "volume");
+						lua_pushnumber(L, panpot);
+						lua_setfield(L, -2, "panpot");
+						freqReg = (((int)(gbMem[rNR24] & 7) << 8) | gbMem[rNR23]);
+						freq = 131072.0 / (2048 - freqReg);
+						lua_pushnumber(L, freq);
+						lua_setfield(L, -2, "frequency");
+						lua_pushnumber(L, (log(freq / 440.0) * 12 / log(2.0)) + 69);
+						lua_setfield(L, -2, "midikey");
+						lua_pushinteger(L, (gbMem[rNR21] & 0xC0) >> 6);
+						lua_setfield(L, -2, "duty");
+						lua_newtable(L);
+						lua_pushinteger(L, freqReg);
+						lua_setfield(L, -2, "frequency");
+						lua_setfield(L, -2, "regs");
+						lua_setfield(L, -2, "square2");
+						// wavememory
+						lua_newtable(L);
+						if(sound3On == 0 || soundMasterOn == 0)
+						{
+							lua_pushnumber(L, 0.0);
+							panpot = 0.5;
+						}
+						else
+						{
+							double envVolume;
+							if (gba && sound3ForcedOutput != 0)
+								envVolume = 0.75;
+							else
+							{
+								double volTable[4] = { 0.0, 1.0, 0.5, 0.25 };
+								envVolume = volTable[sound3OutputLevel & 3];
+							}
+
+							if (soundVINLeft && (soundBalance & 0x40) != 0)
+								leftvolscale = ((soundLevel2 / 7.0) * envVolume);
+							else
+								leftvolscale = 0.0;
+							if (soundVINRight && (soundBalance & 0x04) != 0)
+								rightvolscale = ((soundLevel1 / 7.0) * envVolume);
+							else
+								rightvolscale = 0.0;
+							if ((leftvolscale + rightvolscale) != 0)
+								panpot = rightvolscale / (leftvolscale + rightvolscale);
+							else
+								panpot = 0.5;
+							lua_pushnumber(L, (leftvolscale + rightvolscale) / 2.0);
+						}
+						lua_setfield(L, -2, "volume");
+						lua_pushnumber(L, panpot);
+						lua_setfield(L, -2, "panpot");
+						int waveMemSamples = 32;
+						if (gba)
+						{
+							lua_pushlstring(L, (const char *) &sound3WaveRam[sound3Bank * 0x10], sound3DataSize ? 0x20 : 0x10);
+							waveMemSamples = sound3DataSize ? 64 : 32;
+						}
+						else
+						{
+							lua_pushlstring(L, (const char *) &gbMem[rWAVE_RAM], 0x10);
+						}
+						lua_setfield(L, -2, "waveform");
+						freqReg = (((int)(gbMem[rNR34] & 7) << 8) | gbMem[rNR33]);
+						freq = 2097152.0 / (waveMemSamples * (2048 - freqReg));
+						lua_pushnumber(L, freq);
+						lua_setfield(L, -2, "frequency");
+						lua_pushnumber(L, (log(freq / 440.0) * 12 / log(2.0)) + 69);
+						lua_setfield(L, -2, "midikey");
+						lua_newtable(L);
+						lua_pushinteger(L, freqReg);
+						lua_setfield(L, -2, "frequency");
+						lua_setfield(L, -2, "regs");
+						lua_setfield(L, -2, "wavememory");
+						// noise
+						lua_newtable(L);
+						if(sound4On == 0 || soundMasterOn == 0)
+						{
+							lua_pushnumber(L, 0.0);
+							panpot = 0.5;
+						}
+						else
+						{
+							double envVolume = sound4EnvelopeVolume / 15.0;
+							if (soundVINLeft && (soundBalance & 0x80) != 0)
+								leftvolscale = ((soundLevel2 / 7.0) * envVolume);
+							else
+								leftvolscale = 0.0;
+							if (soundVINRight && (soundBalance & 0x08) != 0)
+								rightvolscale = ((soundLevel1 / 7.0) * envVolume);
+							else
+								rightvolscale = 0.0;
+							if ((leftvolscale + rightvolscale) != 0)
+								panpot = rightvolscale / (leftvolscale + rightvolscale);
+							else
+								panpot = 0.5;
+							lua_pushnumber(L, (leftvolscale + rightvolscale) / 2.0);
+						}
+						lua_setfield(L, -2, "volume");
+						lua_pushnumber(L, panpot);
+						lua_setfield(L, -2, "panpot");
+						const int gbNoiseFreqTable[8] = { 1, 2, 4, 6, 8, 10, 12, 14 };
+						freqReg = gbNoiseFreqTable[gbMem[rNR43] & 7] << (1 + (gbMem[rNR43] >> 4));
+						lua_pushboolean(L, (gbMem[rNR43] & 8) != 0);
+						lua_setfield(L, -2, "short");
+						freq = 1048576.0 / freqReg;
+						lua_pushnumber(L, freq);
+						lua_setfield(L, -2, "frequency");
+						lua_pushnumber(L, (log(freq / 440.0) * 12 / log(2.0)) + 69);
+						lua_setfield(L, -2, "midikey");
+						lua_newtable(L);
+						lua_pushinteger(L, freqReg);
+						lua_setfield(L, -2, "frequency");
+						lua_setfield(L, -2, "regs");
+						lua_setfield(L, -2, "noise");
+
+						return 1;
+					}
+
 // same as math.random, but uses SFMT instead of C rand()
 // FIXME: this function doesn't care multi-instance,
 
@@ -4395,6 +4633,13 @@ use_console:
 				        { NULL,	  NULL						   }
 					};
 
+				    static const struct luaL_reg soundlib[] = {
+				        { "get",  sound_get                    },
+
+				        // alternative names
+				        { NULL,	  NULL						   }
+					};
+
 // gocha: since vba dumps avi so badly,
 // I add avilib as a workaround for enhanced video encoding.
 				    static const struct luaL_reg avilib[] = {
@@ -4537,6 +4782,7 @@ use_console:
 				            luaL_register(LUA, "movie", movielib);
 				            luaL_register(LUA, "gui", guilib);
 				            luaL_register(LUA, "input", inputlib);
+				            luaL_register(LUA, "sound", soundlib);
 				            luaL_register(LUA, "bit", bit_funcs); // LuaBitOp library
 				            luaL_register(LUA, "avi", avilib); // workaround for enhanced video encoding
 				            lua_settop(LUA, 0); // clean the stack, because each call to luaL_register leaves a table on top

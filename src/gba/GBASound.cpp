@@ -405,8 +405,8 @@ void soundEvent(u32 address, u8 data)
 			sound2Index = 0;
 			sound2On	= 1;
 		}
-		break;
 		ioMem[address] = data;
+		break;
 	case NR30:
 		data &= 0xe0;
 		if (!(data & 0x80))
@@ -826,6 +826,7 @@ void soundChannel3()
 				break;
 			}
 		}
+		//value += 1;
 		sound3Last = value;
 	}
 
