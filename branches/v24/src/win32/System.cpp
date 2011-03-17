@@ -171,7 +171,7 @@ bool systemReadJoypads()
 	// so we try to limit the input frequency here just in case.
 	static u32 lastTime = systemGetClock();
 	if ((u32)(systemGetClock() - lastTime) < 10)
-		return true;  // must return true because it's related to movie timing
+		return false;
 	lastTime = systemGetClock();
 
 	if (theApp.input)

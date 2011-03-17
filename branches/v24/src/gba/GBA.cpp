@@ -3787,14 +3787,11 @@ void CPULoop(int _ticks)
 		VBAOnExitingFrameBoundary();
 
 		// update joystick information
-		if (systemReadJoypads())
-		{
-			// read default joystick
-			joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
+		systemReadJoypads();
 
-//			if (cpuEEPROMSensorEnabled)
-//				systemUpdateMotionSensor(0);
-		}
+		joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
+//		if (cpuEEPROMSensorEnabled)
+//		systemUpdateMotionSensor(0);
 
 		VBAMovieResetIfRequested();
 

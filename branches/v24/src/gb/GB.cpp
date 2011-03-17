@@ -5114,29 +5114,29 @@ void gbDrawLine()
 
 static void gbGetUserInput()
 {
+	// update joystick information
+	systemReadJoypads();
+
 	bool sensor = (gbRom[0x147] == 0x22);
-	if (systemReadJoypads())
+
+	if (gbSgbMode && gbSgbMultiplayer)
 	{
-		// read joystick
-		if (gbSgbMode && gbSgbMultiplayer)
+		if (gbSgbFourPlayers)
 		{
-			if (gbSgbFourPlayers)
-			{
-				gbJoymask[0] = systemGetJoypad(0, sensor);
-				gbJoymask[1] = systemGetJoypad(1, false);
-				gbJoymask[2] = systemGetJoypad(2, false);
-				gbJoymask[3] = systemGetJoypad(3, false);
-			}
-			else
-			{
-				gbJoymask[0] = systemGetJoypad(0, sensor);
-				gbJoymask[1] = systemGetJoypad(1, false);
-			}
+			gbJoymask[0] = systemGetJoypad(0, sensor);
+			gbJoymask[1] = systemGetJoypad(1, false);
+			gbJoymask[2] = systemGetJoypad(2, false);
+			gbJoymask[3] = systemGetJoypad(3, false);
 		}
 		else
 		{
 			gbJoymask[0] = systemGetJoypad(0, sensor);
+			gbJoymask[1] = systemGetJoypad(1, false);
 		}
+	}
+	else
+	{
+		gbJoymask[0] = systemGetJoypad(0, sensor);
 	}
 
 	int newmask = gbJoymask[0] & 255;

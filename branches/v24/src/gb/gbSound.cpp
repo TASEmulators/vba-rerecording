@@ -536,6 +536,7 @@ void gbSoundChannel3()
 		}
 
 		value -= 8;
+		value *= 2;
 
 		switch (sound3OutputLevel)
 		{
@@ -551,6 +552,7 @@ void gbSoundChannel3()
 			value = (value >> 2);
 			break;
 		}
+		//value += 1;
 		sound3Last = value;
 	}
 
