@@ -3166,45 +3166,45 @@ void gbEmulate(int ticksToStop)
 		extern void VBAOnExitingFrameBoundary();
 		VBAOnExitingFrameBoundary();
 
-		if (systemReadJoypads())
-		{
-			bool sensor = (gbRom[0x147] == 0x22);
+		// update joystick information
+		systemReadJoypads();
 
-			// read joystick
-			if (gbSgbMode && gbSgbMultiplayer)
+		bool sensor = (gbRom[0x147] == 0x22);
+
+		// read joystick
+		if (gbSgbMode && gbSgbMultiplayer)
+		{
+			if (gbSgbFourPlayers)
 			{
-				if (gbSgbFourPlayers)
-				{
-					gbJoymask[0] = systemGetJoypad(0, sensor);
-					gbJoymask[1] = systemGetJoypad(1, false);
-					gbJoymask[2] = systemGetJoypad(2, false);
-					gbJoymask[3] = systemGetJoypad(3, false);
-				}
-				else
-				{
-					gbJoymask[0] = systemGetJoypad(0, sensor);
-					gbJoymask[1] = systemGetJoypad(1, false);
-				}
+				gbJoymask[0] = systemGetJoypad(0, sensor);
+				gbJoymask[1] = systemGetJoypad(1, false);
+				gbJoymask[2] = systemGetJoypad(2, false);
+				gbJoymask[3] = systemGetJoypad(3, false);
 			}
 			else
 			{
 				gbJoymask[0] = systemGetJoypad(0, sensor);
+				gbJoymask[1] = systemGetJoypad(1, false);
 			}
-
-			// FIXME: horrible kludge
-			memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
-
-//			if (sensor)
-//				systemUpdateMotionSensor(0);
-
-			newmask = gbJoymask[0];
-			if (newmask & 0xFF)
-			{
-				gbInterrupt |= 16;
-			}
-
-			VBAMovieResetIfRequested();
 		}
+		else
+		{
+			gbJoymask[0] = systemGetJoypad(0, sensor);
+		}
+
+		// FIXME: horrible kludge
+		memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
+
+//		if (sensor)
+//			systemUpdateMotionSensor(0);
+
+		newmask = gbJoymask[0];
+		if (newmask & 0xFF)
+		{
+			gbInterrupt |= 16;
+		}
+
+		VBAMovieResetIfRequested();
 
 		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
