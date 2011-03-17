@@ -1055,12 +1055,7 @@ bool DirectInput::readDevices()
 	{
 		if (pDevices[i].needed)
 		{
-			if (i)
-			{
-				ok = readJoystick(i);
-			}
-			else
-				ok = readKeyboard();
+			ok = (i > 0 ? readJoystick(i) : readKeyboard()) || ok;
 		}
 	}
 	return ok;
