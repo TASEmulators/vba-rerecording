@@ -124,7 +124,7 @@ CString BugReport::createReport()
 	AppendFormat(report, "Emu version  : %s\r\n", VBA_VERSION_STRING);
 	AppendFormat(report, "Emu Type     : %s\r\n",
 #ifdef FINAL_VERSION
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 	             "Development Version"
 #else
 	             "Normal Version"

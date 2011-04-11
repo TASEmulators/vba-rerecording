@@ -1325,7 +1325,10 @@ bool CPUImportEepromFile(const char *fileName)
 		}
 	}
 	else
+	{
+		fclose(file);
 		return false;
+	}
 	fclose(file);
 	return true;
 }
@@ -1877,7 +1880,7 @@ void CPUSoftwareInterrupt(int comment)
 #endif
 	if (useBios)
 	{
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
@@ -1905,7 +1908,7 @@ void CPUSoftwareInterrupt(int comment)
 		BIOS_RegisterRamReset();
 		break;
 	case 0x02:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("Halt: (VCOUNT = %2d)\n",
@@ -1916,7 +1919,7 @@ void CPUSoftwareInterrupt(int comment)
 		holdType  = -1;
 		break;
 	case 0x03:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("Stop: (VCOUNT = %2d)\n",
@@ -1928,7 +1931,7 @@ void CPUSoftwareInterrupt(int comment)
 		stopState = true;
 		break;
 	case 0x04:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("IntrWait: 0x%08x,0x%08x (VCOUNT = %2d)\n",
@@ -1940,7 +1943,7 @@ void CPUSoftwareInterrupt(int comment)
 		CPUSoftwareInterrupt();
 		break;
 	case 0x05:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("VBlankIntrWait: (VCOUNT = %2d)\n",
@@ -2004,7 +2007,7 @@ void CPUSoftwareInterrupt(int comment)
 		BIOS_Diff16bitUnFilter();
 		break;
 	case 0x19:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("SoundBiasSet: 0x%08x (VCOUNT = %2d)\n",
@@ -2024,7 +2027,7 @@ void CPUSoftwareInterrupt(int comment)
 		BIOS_SndDriverJmpTableCopy();
 	// let it go, because we don't really emulate this function // FIXME (?)
 	default:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_SWI)
 		{
 			log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
@@ -2185,7 +2188,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				destIncrement = 0;
 				break;
 			}
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 			if (systemVerbose & VERBOSE_DMA0)
 			{
 				int count = (DM0CNT_L ? DM0CNT_L : 0x4000) << 1;
@@ -2250,7 +2253,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			}
 			if (reason == 3)
 			{
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 				if (systemVerbose & VERBOSE_DMA1)
 				{
 					log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
@@ -2263,7 +2266,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			}
 			else
 			{
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 				if (systemVerbose & VERBOSE_DMA1)
 				{
 					int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
@@ -2330,7 +2333,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			}
 			if (reason == 3)
 			{
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 				if (systemVerbose & VERBOSE_DMA2)
 				{
 					int count = (4) << 2;
@@ -2344,7 +2347,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			}
 			else
 			{
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 				if (systemVerbose & VERBOSE_DMA2)
 				{
 					int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
@@ -2408,7 +2411,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				destIncrement = 0;
 				break;
 			}
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 			if (systemVerbose & VERBOSE_DMA3)
 			{
 				int count = (DM3CNT_L ? DM3CNT_L : 0x10000) << 1;
@@ -3016,7 +3019,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 
 void CPUWriteHalfWordWrapped(u32 address, u16 value)
 {
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 	if (address & 1)
 	{
 		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
@@ -3092,7 +3095,7 @@ void CPUWriteHalfWordWrapped(u32 address, u16 value)
 		goto unwritable;
 	default:
 unwritable:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
 		{
 			log("Illegal halfword write: %04x to %08x from %08x\n",
@@ -3227,7 +3230,7 @@ void CPUWriteByteWrapped(u32 address, u8 b)
 	// default
 	default:
 unwritable:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
 		{
 			log("Illegal byte write: %02x to %08x from %08x\n",
