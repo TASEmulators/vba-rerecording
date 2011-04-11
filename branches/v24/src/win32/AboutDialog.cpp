@@ -5,7 +5,7 @@
 #include "resource.h"
 #include "AboutDialog.h"
 
-#include "../AutoBuild.h"
+#include "../version.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,7 +51,7 @@ BOOL AboutDialog::OnInitDialog()
 		m_translator.SubclassDlgItem(IDC_TRANSLATOR_URL, this);
 	}
 
-	m_link.SetWindowText("http://code.google.com/p/vba-rerecording/");
+	m_link.SetWindowText(VBA_RR_SITE);
 
 	return TRUE; // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE

@@ -22,7 +22,7 @@
 #include "Sound.h"
 #include "VBA.h"
 
-#include "../AutoBuild.h"
+#include "../version.h"
 #include "../common/Util.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"

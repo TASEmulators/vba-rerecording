@@ -6,7 +6,7 @@
 #include "BugReport.h"
 #include "VBA.h"
 
-#include "../AutoBuild.h"
+#include "../version.h"
 #include "../gba/agbprint.h"
 #include "../gba/Flash.h"
 #include "../gba/GBACheats.h"
@@ -122,17 +122,7 @@ CString BugReport::createReport()
 
 	CString report = "";
 	AppendFormat(report, "Emu version  : %s\r\n", VBA_VERSION_STRING);
-	AppendFormat(report, "Emu Type     : %s\r\n",
-#ifdef FINAL_VERSION
-#ifdef GBA_LOGGING
-	             "Development Version"
-#else
-	             "Normal Version"
-#endif
-#else
-	             "Debug Version"
-#endif
-	             );
+AppendFormat(report, "Emu type     : %s\r\n", VBA_BUILDTYPE_STRING);
 
 	if (systemIsEmulating())
 	{
@@ -146,7 +136,7 @@ CString BugReport::createReport()
 			{
 				check += *((u32 *)&bios[i]);
 			}
-			AppendFormat(report, "BIOS Checksum: %08X\r\n", check);
+			AppendFormat(report, "BIOS checksum: %08X\r\n", check);
 
 			strncpy(buffer, (const char *)&rom[0xa0], 12);
 			buffer[12] = 0;
