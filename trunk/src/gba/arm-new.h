@@ -7441,7 +7441,7 @@ if (cond_res)
 		break;
 #endif
 	default:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_UNDEFINED)
 			log("Undefined ARM instruction %08x at %08x\n", opcode,
 			    armNextPC - 4);
