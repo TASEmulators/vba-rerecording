@@ -3,13 +3,14 @@
 
 #include "GBAGlobals.h"
 
+extern void (*dbgOutput)(char *, u32);
 extern int systemVerbose;
 
 #define debuggerWriteHalfWord(addr, value) \
-    WRITE16LE((u16 *)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], (value))
+    WRITE16LE((u16 *)&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask], (value))
 
 #define debuggerReadHalfWord(addr) \
-    READ16LE(((u16 *)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+    READ16LE(((u16 *)&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask]))
 
 static bool agbPrintEnabled = false;
 static bool agbPrintProtect = false;
@@ -53,8 +54,6 @@ bool agbPrintIsEnabled()
 {
 	return agbPrintEnabled;
 }
-
-extern void (*dbgOutput)(char *, u32);
 
 void agbPrintFlush()
 {
