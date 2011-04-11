@@ -2515,7 +2515,7 @@ case 0xbf:
 case 0xde:
 default:
 unknown_thumb:
-#ifdef DEV_VERSION
+#ifdef GBA_LOGGING
 	if (systemVerbose & VERBOSE_UNDEFINED)
 		log("Undefined THUMB instruction %04x at %08x\n", opcode, armNextPC - 2);
 #endif
