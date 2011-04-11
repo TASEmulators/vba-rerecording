@@ -42,7 +42,7 @@ extern int32 soundQuality;
 
 extern bool debugger;
 extern int	emulating;
-extern int	remoteSocket;
+extern SOCKET	remoteSocket;
 
 extern void remoteCleanUp();
 extern void remoteSetSockets(SOCKET, SOCKET);

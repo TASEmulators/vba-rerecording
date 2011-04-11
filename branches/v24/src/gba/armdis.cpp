@@ -653,7 +653,7 @@ int disThumb(u32 offset, char *dest, int flags)
 				                               ((opcode & 0xff)<<2));
 				*dest++ = '$';
 				dest    = addHex(dest, 32, value);
-				char *s = elfGetAddressSymbol(value);
+				const char *s = elfGetAddressSymbol(value);
 				if (*s)
 				{
 					*dest++ = ' ';
@@ -666,7 +666,7 @@ int disThumb(u32 offset, char *dest, int flags)
 				u32 value = (offset&0xfffffffc)+4+((opcode & 0xff)<<2);
 				*dest++ = '$';
 				dest    = addHex(dest, 32, value);
-				char *s = elfGetAddressSymbol(value);
+				const char *s = elfGetAddressSymbol(value);
 				if (*s)
 				{
 					*dest++ = ' ';
@@ -762,7 +762,7 @@ int disThumb(u32 offset, char *dest, int flags)
 				add     = (add<<12)|((nopcode&0x7ff)<<1);
 				*dest++ = '$';
 				dest    = addHex(dest, 32, offset+4+add);
-				char *s = elfGetAddressSymbol(offset+4+add);
+				const char *s = elfGetAddressSymbol(offset+4+add);
 				if (*s)
 				{
 					*dest++ = ' ';

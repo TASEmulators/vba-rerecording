@@ -5,7 +5,6 @@
 #include "bios.h"
 #include "../common/System.h"
 #include "GBA.h"
-#include "GBACheats.h" // FIXME: SDL build requires this
 #include "GBAinline.h"
 #include "GBAGlobals.h"
 
@@ -55,15 +54,16 @@ void BIOS_ArcTan()
 	}
 #endif
 
-	s32 a = -((s32)(reg[0].I * reg[0].I)) >> 14;
+	s32 a =  -(((s32)(reg[0].I * reg[0].I)) >> 14);
 	s32 b = ((0xA9 * a) >> 14) + 0x390;
-	b        = ((b * a) >> 14) + 0x91C;
-	b        = ((b * a) >> 14) + 0xFB6;
-	b        = ((b * a) >> 14) + 0x16AA;
-	b        = ((b * a) >> 14) + 0x2081;
-	b        = ((b * a) >> 14) + 0x3651;
-	b        = ((b * a) >> 14) + 0xA2F9;
-	reg[0].I = (reg[0].I * b) >> 16;
+	b		 = ((b * a) >> 14) + 0x91C;
+	b		 = ((b * a) >> 14) + 0xFB6;
+	b		 = ((b * a) >> 14) + 0x16AA;
+	b		 = ((b * a) >> 14) + 0x2081;
+	b		 = ((b * a) >> 14) + 0x3651;
+	b		 = ((b * a) >> 14) + 0xA2F9;
+	a		 = ((s32)reg[0].I * b) >> 16;
+	reg[0].I = a;
 
 #ifdef GBA_LOGGING
 	if (systemVerbose & VERBOSE_SWI)
@@ -86,45 +86,42 @@ void BIOS_ArcTan2()
 	}
 #endif
 
-	s16 x = reg[0].I;
-	s16 y = reg[1].I;
-
+	s32 x	= reg[0].I;
+	s32 y	= reg[1].I;
+	u32 res = 0;
 	if (y == 0)
 	{
-		reg[0].I = 0x8000 & x;
-		reg[3].I = 0x170;
+		res = ((x >> 16) & 0x8000);
 	}
 	else
 	{
 		if (x == 0)
 		{
-			reg[0].I = (0x8000 & y) + 0x4000;
-			reg[3].I = 0x170;
+			res = ((y >> 16) & 0x8000) + 0x4000;
 		}
 		else
 		{
-			if (abs(x) > abs(y))
+			if ((abs(x) > abs(y)) || ((abs(x) == abs(y)) && (!((x < 0) && (y < 0)))))
 			{
 				reg[1].I = x;
 				reg[0].I = y << 14;
 				BIOS_Div();
 				BIOS_ArcTan();
 				if (x < 0)
-					reg[0].I = 0x8000 + reg[0].I;
+					res = 0x8000 + reg[0].I;
 				else
-					reg[0].I = ((y & 0x8000) << 1) + reg[0].I;
-				reg[3].I = 0x170;
+					res = (((y >> 16) & 0x8000) << 1) + reg[0].I;
 			}
 			else
 			{
 				reg[0].I = x << 14;
 				BIOS_Div();
 				BIOS_ArcTan();
-				reg[0].I = (0x4000 + (y & 0x8000)) - reg[0].I;
-				reg[3].I = 0x170;
+				res = (0x4000 + ((y >> 16) & 0x8000)) - reg[0].I;
 			}
 		}
 	}
+	reg[0].I = res;
 
 #ifdef GBA_LOGGING
 	if (systemVerbose & VERBOSE_SWI)
@@ -154,13 +151,17 @@ void BIOS_BitUnPack()
 
 	int len = CPUReadHalfWord(header);
 	// check address
-	int bits    = CPUReadByte(header+2);
+	if (((source & 0xe000000) == 0) ||
+	    ((source + len) & 0xe000000) == 0)
+		return;
+
+	int bits	= CPUReadByte(header + 2);
 	int revbits = 8 - bits;
 	// u32 value = 0;
-	u32  base    = CPUReadMemory(header+4);
+	u32	 base	 = CPUReadMemory(header + 4);
 	bool addBase = (base & 0x80000000) ? true : false;
 	base &= 0x7fffffff;
-	int dataSize = CPUReadByte(header+3);
+	int dataSize = CPUReadByte(header + 3);
 
 	int data = 0;
 	int bitwritecount = 0;
@@ -170,16 +171,16 @@ void BIOS_BitUnPack()
 		if (len < 0)
 			break;
 		int mask = 0xff >> revbits;
-		u8  b    = CPUReadByte(source);
+		u8	b	 = CPUReadByte(source);
 		source++;
 		int bitcount = 0;
 		while (1)
 		{
 			if (bitcount >= 8)
 				break;
-			u32 d    = b & mask;
+			u32 d	 = b & mask;
 			u32 temp = d >> bitcount;
-			if (!temp && addBase)
+			if (d || addBase)
 			{
 				temp += base;
 			}
@@ -192,10 +193,15 @@ void BIOS_BitUnPack()
 				data  = 0;
 				bitwritecount = 0;
 			}
-			mask    <<= bits;
+			mask	<<= bits;
 			bitcount += bits;
 		}
 	}
+}
+
+void BIOS_GetBiosChecksum()
+{
+	reg[0].I = 0xBAAE187F;
 }
 
 void BIOS_BgAffineSet()
@@ -211,9 +217,9 @@ void BIOS_BgAffineSet()
 	}
 #endif
 
-	u32 src  = reg[0].I;
+	u32 src	 = reg[0].I;
 	u32 dest = reg[1].I;
-	int num  = reg[2].I;
+	int num	 = reg[2].I;
 
 	for (int i = 0; i < num; i++)
 	{
@@ -229,15 +235,15 @@ void BIOS_BgAffineSet()
 		src += 2;
 		s16 ry = CPUReadHalfWord(src);
 		src += 2;
-		u16 theta = CPUReadHalfWord(src)>>8;
+		u16 theta = CPUReadHalfWord(src) >> 8;
 		src += 4; // keep structure alignment
-		s32 a = (s32)sineTable[(theta+0x40)&255];
-		s32 b = (s32)sineTable[theta];
+		s32 a = sineTable[(theta + 0x40) & 255];
+		s32 b = sineTable[theta];
 
-		s16 dx  =  (s16)((rx * a)>>14);
-		s16 dmx = (s16)((rx * b)>>14);
-		s16 dy  =  (s16)((ry * b)>>14);
-		s16 dmy = (s16)((ry * a)>>14);
+		s16 dx	=  (rx * a) >> 14;
+		s16 dmx = (rx * b) >> 14;
+		s16 dy	=  (ry * b) >> 14;
+		s16 dmy = (ry * a) >> 14;
 
 		CPUWriteHalfWord(dest, dx);
 		dest += 2;
@@ -270,10 +276,10 @@ void BIOS_CpuSet()
 
 	u32 source = reg[0].I;
 	u32 dest   = reg[1].I;
-	u32 cnt    = reg[2].I;
+	u32 cnt	   = reg[2].I;
 
 	if (((source & 0xe000000) == 0) ||
-	    ((source + (((cnt << 11)>>9) & 0x1fffff)) & 0xe000000) == 0)
+	    ((source + (((cnt << 11) >> 9) & 0x1fffff)) & 0xe000000) == 0)
 		return;
 
 	int count = cnt & 0x1FFFFF;
@@ -287,7 +293,7 @@ void BIOS_CpuSet()
 		// fill ?
 		if ((cnt >> 24) & 1)
 		{
-			u32 value = CPUReadMemory(source);
+			u32 value = (source > 0x0EFFFFFF ? 0x1CAD1CAD : CPUReadMemory(source));
 			while (count)
 			{
 				CPUWriteMemory(dest, value);
@@ -300,7 +306,7 @@ void BIOS_CpuSet()
 			// copy
 			while (count)
 			{
-				CPUWriteMemory(dest, CPUReadMemory(source));
+				CPUWriteMemory(dest, (source > 0x0EFFFFFF ? 0x1CAD1CAD : CPUReadMemory(source)));
 				source += 4;
 				dest   += 4;
 				count--;
@@ -312,7 +318,7 @@ void BIOS_CpuSet()
 		// 16-bit fill?
 		if ((cnt >> 24) & 1)
 		{
-			u16 value = CPUReadHalfWord(source);
+			u16 value = (source > 0x0EFFFFFF ? 0x1CAD : CPUReadHalfWord(source));
 			while (count)
 			{
 				CPUWriteHalfWord(dest, value);
@@ -325,7 +331,7 @@ void BIOS_CpuSet()
 			// copy
 			while (count)
 			{
-				CPUWriteHalfWord(dest, CPUReadHalfWord(source));
+				CPUWriteHalfWord(dest, (source > 0x0EFFFFFF ? 0x1CAD : CPUReadHalfWord(source)));
 				source += 2;
 				dest   += 2;
 				count--;
@@ -346,10 +352,10 @@ void BIOS_CpuFastSet()
 
 	u32 source = reg[0].I;
 	u32 dest   = reg[1].I;
-	u32 cnt    = reg[2].I;
+	u32 cnt	   = reg[2].I;
 
 	if (((source & 0xe000000) == 0) ||
-	    ((source + (((cnt << 11)>>9) & 0x1fffff)) & 0xe000000) == 0)
+	    ((source + (((cnt << 11) >> 9) & 0x1fffff)) & 0xe000000) == 0)
 		return;
 
 	// needed for 32-bit mode!
@@ -364,7 +370,7 @@ void BIOS_CpuFastSet()
 		while (count > 0)
 		{
 			// BIOS always transfers 32 bytes at a time
-			u32 value = CPUReadMemory(source);
+			u32 value = (source > 0x0EFFFFFF ? 0xBAFFFFFB : CPUReadMemory(source));
 			for (int i = 0; i < 8; i++)
 			{
 				CPUWriteMemory(dest, value);
@@ -381,7 +387,7 @@ void BIOS_CpuFastSet()
 			// BIOS always transfers 32 bytes at a time
 			for (int i = 0; i < 8; i++)
 			{
-				CPUWriteMemory(dest, CPUReadMemory(source));
+				CPUWriteMemory(dest, (source > 0x0EFFFFFF ? 0xBAFFFFFB : CPUReadMemory(source)));
 				source += 4;
 				dest   += 4;
 			}
@@ -407,7 +413,7 @@ void BIOS_Diff8bitUnFilterWram()
 	source += 4;
 
 	if (((source & 0xe000000) == 0) ||
-	    ((source + ((header >> 8) & 0x1fffff) & 0xe000000) == 0))
+	    (((source + ((header >> 8) & 0x1fffff)) & 0xe000000) == 0))
 		return;
 
 	int len = header >> 8;
@@ -447,26 +453,26 @@ void BIOS_Diff8bitUnFilterVram()
 
 	int len = header >> 8;
 
-	u8  data      = CPUReadByte(source++);
+	u8	data	  = CPUReadByte(source++);
 	u16 writeData = data;
-	int shift     = 8;
-	int bytes     = 1;
+	int shift	  = 8;
+	int bytes	  = 1;
 
 	while (len >= 2)
 	{
 		u8 diff = CPUReadByte(source++);
-		data      += diff;
+		data	  += diff;
 		writeData |= (data << shift);
 		bytes++;
 		shift += 8;
 		if (bytes == 2)
 		{
 			CPUWriteHalfWord(dest, writeData);
-			dest     += 2;
-			len      -= 2;
-			bytes     = 0;
+			dest	 += 2;
+			len		 -= 2;
+			bytes	  = 0;
 			writeData = 0;
-			shift     = 0;
+			shift	  = 0;
 		}
 	}
 }
@@ -497,7 +503,7 @@ void BIOS_Diff16bitUnFilter()
 	source += 2;
 	CPUWriteHalfWord(dest, data);
 	dest += 2;
-	len  -= 2;
+	len	 -= 2;
 
 	while (len >= 2)
 	{
@@ -506,7 +512,7 @@ void BIOS_Diff16bitUnFilter()
 		data   += diff;
 		CPUWriteHalfWord(dest, data);
 		dest += 2;
-		len  -= 2;
+		len	 -= 2;
 	}
 }
 
@@ -530,7 +536,7 @@ void BIOS_Div()
 		reg[0].I = number / denom;
 		reg[1].I = number % denom;
 		s32 temp = (s32)reg[0].I;
-		reg[3].I = temp < 0 ? (u32)-temp : (u32)temp;
+		reg[3].I = temp < 0 ? (u32) - temp : (u32)temp;
 	}
 #ifdef GBA_LOGGING
 	if (systemVerbose & VERBOSE_SWI)
@@ -586,7 +592,7 @@ void BIOS_HuffUnComp()
 
 	u32 treeStart = source;
 
-	source += (treeSize<<1) + 1;
+	source += ((treeSize + 1) << 1) - 1; // minus because we already skipped one byte
 
 	int len = header >> 8;
 
@@ -594,13 +600,13 @@ void BIOS_HuffUnComp()
 	u32 data = CPUReadMemory(source);
 	source += 4;
 
-	int  pos         = 0;
-	u8   rootNode    = CPUReadByte(treeStart);
-	u8   currentNode = rootNode;
-	bool writeData   = false;
-	int  byteShift   = 0;
-	int  byteCount   = 0;
-	u32  writeValue  = 0;
+	int	 pos		 = 0;
+	u8	 rootNode	 = CPUReadByte(treeStart);
+	u8	 currentNode = rootNode;
+	bool writeData	 = false;
+	int	 byteShift	 = 0;
+	int	 byteCount	 = 0;
+	u32	 writeValue	 = 0;
 
 	if ((header & 0x0F) == 8)
 	{
@@ -610,21 +616,21 @@ void BIOS_HuffUnComp()
 			if (pos == 0)
 				pos++;
 			else
-				pos += (((currentNode & 0x3F)+1)<<1);
+				pos += (((currentNode & 0x3F) + 1) << 1);
 
 			if (data & mask)
 			{
 				// right
 				if (currentNode & 0x40)
 					writeData = true;
-				currentNode = CPUReadByte(treeStart+pos+1);
+				currentNode = CPUReadByte(treeStart + pos + 1);
 			}
 			else
 			{
 				// left
 				if (currentNode & 0x80)
 					writeData = true;
-				currentNode = CPUReadByte(treeStart+pos);
+				currentNode = CPUReadByte(treeStart + pos);
 			}
 
 			if (writeData)
@@ -633,9 +639,9 @@ void BIOS_HuffUnComp()
 				byteCount++;
 				byteShift += 8;
 
-				pos         = 0;
+				pos			= 0;
 				currentNode = rootNode;
-				writeData   = false;
+				writeData	= false;
 
 				if (byteCount == 4)
 				{
@@ -643,15 +649,15 @@ void BIOS_HuffUnComp()
 					byteShift = 0;
 					CPUWriteMemory(dest, writeValue);
 					writeValue = 0;
-					dest      += 4;
-					len       -= 4;
+					dest	  += 4;
+					len		  -= 4;
 				}
 			}
 			mask >>= 1;
 			if (mask == 0)
 			{
-				mask    = 0x80000000;
-				data    = CPUReadMemory(source);
+				mask	= 0x80000000;
+				data	= CPUReadMemory(source);
 				source += 4;
 			}
 		}
@@ -659,28 +665,28 @@ void BIOS_HuffUnComp()
 	else
 	{
 		int halfLen = 0;
-		int value   = 0;
+		int value	= 0;
 		while (len > 0)
 		{
 			// take left
 			if (pos == 0)
 				pos++;
 			else
-				pos += (((currentNode & 0x3F)+1)<<1);
+				pos += (((currentNode & 0x3F) + 1) << 1);
 
 			if ((data & mask))
 			{
 				// right
 				if (currentNode & 0x40)
 					writeData = true;
-				currentNode = CPUReadByte(treeStart+pos+1);
+				currentNode = CPUReadByte(treeStart + pos + 1);
 			}
 			else
 			{
 				// left
 				if (currentNode & 0x80)
 					writeData = true;
-				currentNode = CPUReadByte(treeStart+pos);
+				currentNode = CPUReadByte(treeStart + pos);
 			}
 
 			if (writeData)
@@ -688,7 +694,7 @@ void BIOS_HuffUnComp()
 				if (halfLen == 0)
 					value |= currentNode;
 				else
-					value |= (currentNode<<4);
+					value |= (currentNode << 4);
 
 				halfLen += 4;
 				if (halfLen == 8)
@@ -698,27 +704,27 @@ void BIOS_HuffUnComp()
 					byteShift += 8;
 
 					halfLen = 0;
-					value   = 0;
+					value	= 0;
 
 					if (byteCount == 4)
 					{
 						byteCount = 0;
 						byteShift = 0;
 						CPUWriteMemory(dest, writeValue);
-						dest      += 4;
+						dest	  += 4;
 						writeValue = 0;
-						len       -= 4;
+						len		  -= 4;
 					}
 				}
-				pos         = 0;
+				pos			= 0;
 				currentNode = rootNode;
-				writeData   = false;
+				writeData	= false;
 			}
 			mask >>= 1;
 			if (mask == 0)
 			{
-				mask    = 0x80000000;
-				data    = CPUReadMemory(source);
+				mask	= 0x80000000;
+				data	= CPUReadMemory(source);
 				source += 4;
 			}
 		}
@@ -765,10 +771,10 @@ void BIOS_LZ77UnCompVram()
 				{
 					u16 data = CPUReadByte(source++) << 8;
 					data |= CPUReadByte(source++);
-					int length       = (data >> 12) + 3;
-					int offset       = (data & 0x0FFF);
+					int length		 = (data >> 12) + 3;
+					int offset		 = (data & 0x0FFF);
 					u32 windowOffset = dest + byteCount - offset - 1;
-					for (int i = 0; i < length; i++)
+					for (int j = 0; j < length; j++)
 					{
 						writeValue |= (CPUReadByte(windowOffset++) << byteShift);
 						byteShift  += 8;
@@ -777,7 +783,7 @@ void BIOS_LZ77UnCompVram()
 						if (byteCount == 2)
 						{
 							CPUWriteHalfWord(dest, writeValue);
-							dest      += 2;
+							dest	  += 2;
 							byteCount  = 0;
 							byteShift  = 0;
 							writeValue = 0;
@@ -795,7 +801,7 @@ void BIOS_LZ77UnCompVram()
 					if (byteCount == 2)
 					{
 						CPUWriteHalfWord(dest, writeValue);
-						dest      += 2;
+						dest	  += 2;
 						byteCount  = 0;
 						byteShift  = 0;
 						writeValue = 0;
@@ -817,7 +823,7 @@ void BIOS_LZ77UnCompVram()
 				if (byteCount == 2)
 				{
 					CPUWriteHalfWord(dest, writeValue);
-					dest      += 2;
+					dest	  += 2;
 					byteShift  = 0;
 					byteCount  = 0;
 					writeValue = 0;
@@ -864,10 +870,10 @@ void BIOS_LZ77UnCompWram()
 				{
 					u16 data = CPUReadByte(source++) << 8;
 					data |= CPUReadByte(source++);
-					int length       = (data >> 12) + 3;
-					int offset       = (data & 0x0FFF);
+					int length		 = (data >> 12) + 3;
+					int offset		 = (data & 0x0FFF);
 					u32 windowOffset = dest - offset - 1;
-					for (int i = 0; i < length; i++)
+					for (int j = 0; j < length; j++)
 					{
 						CPUWriteByte(dest++, CPUReadByte(windowOffset++));
 						len--;
@@ -912,9 +918,9 @@ void BIOS_ObjAffineSet()
 	}
 #endif
 
-	u32 src    = reg[0].I;
+	u32 src	   = reg[0].I;
 	u32 dest   = reg[1].I;
-	int num    = reg[2].I;
+	int num	   = reg[2].I;
 	int offset = reg[3].I;
 
 	for (int i = 0; i < num; i++)
@@ -923,16 +929,16 @@ void BIOS_ObjAffineSet()
 		src += 2;
 		s16 ry = CPUReadHalfWord(src);
 		src += 2;
-		u16 theta = CPUReadHalfWord(src)>>8;
+		u16 theta = CPUReadHalfWord(src) >> 8;
 		src += 4; // keep structure alignment
 
-		s32 a = (s32)sineTable[(theta+0x40)&255];
+		s32 a = (s32)sineTable[(theta + 0x40) & 255];
 		s32 b = (s32)sineTable[theta];
 
-		s16 dx  =  (s16)((rx * a)>>14);
-		s16 dmx = (s16)((rx * b)>>14);
-		s16 dy  =  (s16)((ry * b)>>14);
-		s16 dmy = (s16)((ry * a)>>14);
+		s16 dx	=  ((s32)rx * a) >> 14;
+		s16 dmx = ((s32)rx * b) >> 14;
+		s16 dy	=  ((s32)ry * b) >> 14;
+		s16 dmy = ((s32)ry * a) >> 14;
 
 		CPUWriteHalfWord(dest, dx);
 		dest += offset;
@@ -949,6 +955,8 @@ void BIOS_RegisterRamReset(u32 flags)
 {
 	// no need to trace here. this is only called directly from GBA.cpp
 	// to emulate bios initialization
+
+	CPUUpdateRegister(0x0, 0x80);
 
 	if (flags)
 	{
@@ -981,19 +989,17 @@ void BIOS_RegisterRamReset(u32 flags)
 		if (flags & 0x80)
 		{
 			int i;
-			for (i = 0; i < 8; i++)
-				CPUUpdateRegister(0x200+i*2, 0);
+			for (i = 0; i < 0x10; i++)
+				CPUUpdateRegister(0x200 + i * 2, 0);
 
-			CPUUpdateRegister(0x202, 0xFFFF);
+			for (i = 0; i < 0xF; i++)
+				CPUUpdateRegister(0x4 + i * 2, 0);
 
-			for (i = 0; i < 8; i++)
-				CPUUpdateRegister(0x4+i*2, 0);
+			for (i = 0; i < 0x20; i++)
+				CPUUpdateRegister(0x20 + i * 2, 0);
 
-			for (i = 0; i < 16; i++)
-				CPUUpdateRegister(0x20+i*2, 0);
-
-			for (i = 0; i < 24; i++)
-				CPUUpdateRegister(0xb0+i*2, 0);
+			for (i = 0; i < 0x18; i++)
+				CPUUpdateRegister(0xb0 + i * 2, 0);
 
 			CPUUpdateRegister(0x130, 0);
 			CPUUpdateRegister(0x20, 0x100);
@@ -1006,10 +1012,10 @@ void BIOS_RegisterRamReset(u32 flags)
 		{
 			int i;
 			for (i = 0; i < 8; i++)
-				CPUUpdateRegister(0x110+i*2, 0);
+				CPUUpdateRegister(0x110 + i * 2, 0);
 			CPUUpdateRegister(0x134, 0x8000);
 			for (i = 0; i < 7; i++)
-				CPUUpdateRegister(0x140+i*2, 0);
+				CPUUpdateRegister(0x140 + i * 2, 0);
 		}
 
 		if (flags & 0x40)
@@ -1018,13 +1024,13 @@ void BIOS_RegisterRamReset(u32 flags)
 			CPUWriteByte(0x4000084, 0);
 			CPUWriteByte(0x4000084, 0x80);
 			CPUWriteMemory(0x4000080, 0x880e0000);
-			CPUUpdateRegister(0x88, CPUReadHalfWord(0x4000088)&0x3ff);
+			CPUUpdateRegister(0x88, CPUReadHalfWord(0x4000088) & 0x3ff);
 			CPUWriteByte(0x4000070, 0x70);
 			for (i = 0; i < 8; i++)
-				CPUUpdateRegister(0x90+i*2, 0);
+				CPUUpdateRegister(0x90 + i * 2, 0);
 			CPUWriteByte(0x4000070, 0);
 			for (i = 0; i < 8; i++)
-				CPUUpdateRegister(0x90+i*2, 0);
+				CPUUpdateRegister(0x90 + i * 2, 0);
 			CPUWriteByte(0x4000084, 0);
 		}
 	}
@@ -1059,21 +1065,21 @@ void BIOS_RLUnCompVram()
 	u32 source = reg[0].I;
 	u32 dest   = reg[1].I;
 
-	u32 header = CPUReadMemory(source);
+	u32 header = CPUReadMemory(source & 0xFFFFFFFC);
 	source += 4;
 
 	if (((source & 0xe000000) == 0) ||
 	    ((source + ((header >> 8) & 0x1fffff)) & 0xe000000) == 0)
 		return;
 
-	int len        = header >> 8;
+	int len		   = header >> 8;
 	int byteCount  = 0;
 	int byteShift  = 0;
 	u32 writeValue = 0;
 
 	while (len > 0)
 	{
-		u8  d = CPUReadByte(source++);
+		u8	d = CPUReadByte(source++);
 		int l = d & 0x7F;
 		if (d & 0x80)
 		{
@@ -1088,7 +1094,7 @@ void BIOS_RLUnCompVram()
 				if (byteCount == 2)
 				{
 					CPUWriteHalfWord(dest, writeValue);
-					dest      += 2;
+					dest	  += 2;
 					byteCount  = 0;
 					byteShift  = 0;
 					writeValue = 0;
@@ -1109,7 +1115,7 @@ void BIOS_RLUnCompVram()
 				if (byteCount == 2)
 				{
 					CPUWriteHalfWord(dest, writeValue);
-					dest      += 2;
+					dest	  += 2;
 					byteCount  = 0;
 					byteShift  = 0;
 					writeValue = 0;
@@ -1137,7 +1143,7 @@ void BIOS_RLUnCompWram()
 	u32 source = reg[0].I;
 	u32 dest   = reg[1].I;
 
-	u32 header = CPUReadMemory(source);
+	u32 header = CPUReadMemory(source & 0xFFFFFFFC);
 	source += 4;
 
 	if (((source & 0xe000000) == 0) ||
@@ -1148,7 +1154,7 @@ void BIOS_RLUnCompWram()
 
 	while (len > 0)
 	{
-		u8  d = CPUReadByte(source++);
+		u8	d = CPUReadByte(source++);
 		int l = d & 0x7F;
 		if (d & 0x80)
 		{
@@ -1185,18 +1191,18 @@ void BIOS_SoftReset()
 	}
 #endif
 
-	armState        = true;
-	armMode         = 0x1F;
-	armIrqEnable    = false;
-	C_FLAG          = V_FLAG = N_FLAG = Z_FLAG = false;
-	reg[13].I       = 0x03007F00;
-	reg[14].I       = 0x00000000;
-	reg[16].I       = 0x00000000;
-	reg[R13_IRQ].I  = 0x03007FA0;
-	reg[R14_IRQ].I  = 0x00000000;
+	armState		= true;
+	armMode			= 0x1F;
+	armIrqEnable	= false;
+	C_FLAG			= V_FLAG = N_FLAG = Z_FLAG = false;
+	reg[13].I		= 0x03007F00;
+	reg[14].I		= 0x00000000;
+	reg[16].I		= 0x00000000;
+	reg[R13_IRQ].I	= 0x03007FA0;
+	reg[R14_IRQ].I	= 0x00000000;
 	reg[SPSR_IRQ].I = 0x00000000;
-	reg[R13_SVC].I  = 0x03007FE0;
-	reg[R14_SVC].I  = 0x00000000;
+	reg[R13_SVC].I	= 0x03007FE0;
+	reg[R14_SVC].I	= 0x00000000;
 	reg[SPSR_SVC].I = 0x00000000;
 	u8 b = internalRAM[0x7ffa];
 
@@ -1245,10 +1251,10 @@ void BIOS_MidiKey2Freq()
 		    reg[2].I);
 	}
 #endif
-	int    freq = CPUReadMemory(reg[0].I+4);
+	int	   freq = CPUReadMemory(reg[0].I + 4);
 	double tmp;
-	tmp      = ((double)(180 - reg[1].I)) - ((double)reg[2].I / 256.f);
-	tmp      = pow((double)2.f, tmp / 12.f);
+	tmp		 = ((double)(180 - reg[1].I)) - ((double)reg[2].I / 256.f);
+	tmp		 = pow((double)2.f, tmp / 12.f);
 	reg[0].I = (int)((double)freq / tmp);
 
 #ifdef GBA_LOGGING
