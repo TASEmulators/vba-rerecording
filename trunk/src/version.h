@@ -24,18 +24,8 @@
 #define VBA_RR_MAJOR_VERSION_NO 23
 #define VBA_RR_MINOR_VERSION_NO 5
 
-#ifdef _DEBUG
-#	define VBA_SUBVERSION_STRING " DEBUG"
-#	define VBA_BUILDTYPE_STRING  "Debug"
-#elif defined(PUBLIC_RELEASE)
-#	define VBA_SUBVERSION_STRING ""
-#	define VBA_BUILDTYPE_STRING  "Release"
-#else // interim
-#	ifdef WIN32
-#		include "svnrev.h"
-#	endif
-#	define VBA_SUBVERSION_STRING " svn" SVN_REV_STR
-#	define VBA_BUILDTYPE_STRING  "Interim"
+#if !defined(_DEBUG) && (defined(WIN32) || defined(RC_INVOKED))
+#	include "svnrev.h"
 #endif
 
 #ifndef SVN_REV
@@ -48,6 +38,17 @@
 #	else
 #		define define SVN_REV_STR ""
 #	endif
+#endif
+
+#ifdef _DEBUG
+#	define VBA_SUBVERSION_STRING " DEBUG"
+#	define VBA_BUILDTYPE_STRING  "Debug"
+#elif defined(PUBLIC_RELEASE)
+#	define VBA_SUBVERSION_STRING ""
+#	define VBA_BUILDTYPE_STRING  "Release"
+#else // interim
+#	define VBA_SUBVERSION_STRING " svn" SVN_REV_STR
+#	define VBA_BUILDTYPE_STRING  "Interim"
 #endif
 
 #define VBA_FEATURE_STRING ""
