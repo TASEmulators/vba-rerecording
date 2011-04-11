@@ -23,7 +23,7 @@
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
-#include "../gba/CheatSearch.h"
+#include "../common/CheatSearch.h"
 #include "../gba/RTC.h"
 #include "../gba/GBASound.h"
 #include "../common/Util.h"

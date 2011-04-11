@@ -12,7 +12,7 @@
 
 #include "../gba/GBACheats.h"
 #include "../gba/GBAGlobals.h"
-#include "../gba/CheatSearch.h"
+#include "../common/CheatSearch.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

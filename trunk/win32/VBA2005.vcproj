@@ -460,7 +460,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\gba\CheatSearch.cpp"
+					RelativePath="..\src\common\CheatSearch.cpp"
 					>
 				</File>
 				<File
@@ -1962,7 +1962,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gba\CheatSearch.h"
+				RelativePath="..\src\common\CheatSearch.h"
 				>
 			</File>
 			<File

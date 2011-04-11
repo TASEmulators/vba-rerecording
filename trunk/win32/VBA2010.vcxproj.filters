@@ -55,6 +55,12 @@
     <Filter Include="Source Files\Lua">
       <UniqueIdentifier>{8be1a721-ca6d-4234-a6ff-b5260c64dce0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{3f23c87c-ae4d-47aa-84b0-440cc9337e7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{53082bf9-2bc8-47a0-b2d0-5081be584ff6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Win32">
       <UniqueIdentifier>{745e7f63-d761-4b12-929b-983653a80d60}</UniqueIdentifier>
     </Filter>
@@ -64,35 +70,14 @@
     <Filter Include="Source Files\Win32\Dialogs">
       <UniqueIdentifier>{cae5d503-3a32-4079-a406-17e7884300cf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\zlib">
-      <UniqueIdentifier>{89914abc-e02f-47d6-9815-28b67436f3b5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Win32\Controls">
       <UniqueIdentifier>{7b48d92c-475f-482a-9916-dfbbab7b62b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\zlib">
+      <UniqueIdentifier>{89914abc-e02f-47d6-9815-28b67436f3b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\common\lua-engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\memgzio.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\movie.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\nesvideos-piece.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\Text.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\unzip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\Util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\filters\2xSaI.cpp">
       <Filter>Source Files\Filters</Filter>
     </ClCompile>
@@ -136,9 +121,6 @@
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
     <ClCompile Include="..\src\gba\GBACheats.cpp">
-      <Filter>Source Files\GBA</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\gba\CheatSearch.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
     <ClCompile Include="..\src\gba\EEprom.cpp">
@@ -633,6 +615,30 @@
     <ClCompile Include="..\src\win32\WinMiscUtil.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\common\CheatSearch.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\Util.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\lua-engine.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\memgzio.c">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\movie.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\nesvideos-piece.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\Text.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\unzip.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ChangeLog">
@@ -660,36 +666,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\AutoBuild.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\inputGlobal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\memgzio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\movie.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\nesvideos-piece.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\System.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\Text.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\unzip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\Util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\vbalua.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\filters\hq2x.h">
       <Filter>Header Files\Filters</Filter>
     </ClInclude>
@@ -718,9 +694,6 @@
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
     <ClInclude Include="..\src\gba\GBACheats.h">
-      <Filter>Header Files\GBA</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\gba\CheatSearch.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
     <ClInclude Include="..\src\gba\EEprom.h">
@@ -851,15 +824,6 @@
     </ClInclude>
     <ClInclude Include="..\src\lua\src\lzio.h">
       <Filter>Header Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\NLS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Port.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\version.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\7zip\7zip.h">
       <Filter>Header Files\Win32\7zip</Filter>
@@ -1082,6 +1046,48 @@
     </ClInclude>
     <ClInclude Include="..\src\win32\Joypad.h">
       <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\CheatSearch.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\inputGlobal.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\memgzio.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\movie.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\nesvideos-piece.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\System.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\Text.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\unzip.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\Util.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\vbalua.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AutoBuild.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Port.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NLS.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
