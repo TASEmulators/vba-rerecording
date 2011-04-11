@@ -1236,7 +1236,7 @@ static const char *s_romIgnoreExtensions[] = {
 #include "GBACheatsDlg.h"
 #include "GBCheatsDlg.h"
 
-#include "../gba/CheatSearch.h"
+#include "../common/CheatSearch.h"
 #include "../gba/GBA.h"
 #include "../gb/GB.h"
 #include "../gba/Flash.h"
