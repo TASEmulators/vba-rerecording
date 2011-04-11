@@ -1012,10 +1012,6 @@ void soundTimerOverflow(int timer)
 	}
 }
 
-#ifndef max
-#define max(a, b) (a) < (b) ? (b) : (a)
-#endif
-
 void soundMix()
 {
 	int res		 = 0;

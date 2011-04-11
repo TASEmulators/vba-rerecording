@@ -1432,7 +1432,7 @@ defcase: default:
 						}
 				        else
 				        {
-				            val = gbReadMemoryQuick16(addr);
+				            val = gbReadMemoryQuick16(addr & 0x0000FFFF);
 						}
 
 				        lua_pushinteger(L, val);
@@ -1470,7 +1470,7 @@ defcase: default:
 						}
 				        else
 				        {
-				            val = gbReadMemoryQuick32(addr);
+				            val = gbReadMemoryQuick32(addr & 0x0000FFFF);
 						}
 
 				        // lua_pushinteger doesn't work properly for 32bit system, does it?
