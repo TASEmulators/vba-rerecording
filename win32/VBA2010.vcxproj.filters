@@ -641,15 +641,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ChangeLog">
-      <Filter>Docs</Filter>
-    </None>
-    <None Include="..\README">
-      <Filter>Docs</Filter>
-    </None>
-    <None Include="..\README-win.txt">
-      <Filter>Docs</Filter>
-    </None>
     <None Include="..\src\win32\gbadvance.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -662,6 +653,9 @@
       <Filter>Docs</Filter>
     </None>
     <None Include="..\documentation\TODO.txt">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="..\documentation\Readme.txt">
       <Filter>Docs</Filter>
     </None>
   </ItemGroup>
@@ -1077,9 +1071,6 @@
     <ClInclude Include="..\src\common\vbalua.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\AutoBuild.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1088,6 +1079,9 @@
     </ClInclude>
     <ClInclude Include="..\src\NLS.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\VersionInfo.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

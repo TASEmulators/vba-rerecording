@@ -558,16 +558,13 @@
     </CustomBuild>
     <None Include="..\documentation\Changelog.txt" />
     <None Include="..\documentation\License.txt" />
+    <None Include="..\documentation\Readme.txt" />
     <None Include="..\documentation\TODO.txt" />
     <None Include="..\src\win32\gbadvance.ico" />
-    <None Include="..\ChangeLog" />
-    <None Include="..\README" />
-    <None Include="..\README-win.txt" />
     <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
     <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\AutoBuild.h" />
     <ClInclude Include="..\src\common\CheatSearch.h" />
     <ClInclude Include="..\src\common\inputGlobal.h" />
     <ClInclude Include="..\src\common\memgzio.h" />
@@ -625,6 +622,7 @@
     <ClInclude Include="..\src\win32\stdafx.h" />
     <ClInclude Include="..\src\win32\StringTokenizer.h" />
     <ClInclude Include="..\src\win32\VBA.h" />
+    <ClInclude Include="..\src\win32\VersionInfo.h" />
     <ClInclude Include="..\src\win32\WavWriter.h" />
     <ClInclude Include="..\src\win32\WinHelper.h" />
     <ClInclude Include="..\src\win32\WinMiscUtil.h" />

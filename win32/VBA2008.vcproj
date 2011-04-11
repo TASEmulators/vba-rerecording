@@ -2779,10 +2779,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\AutoBuild.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\win32\AVIWrite.h"
 				>
 			</File>
@@ -3222,6 +3218,10 @@
 						AdditionalIncludeDirectories="\VisualBoyAdvance\src\win32;$(NoInherit)"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\win32\VersionInfo.h"
+				>
 			</File>
 		</Filter>
 		<File

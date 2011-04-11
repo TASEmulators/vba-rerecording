@@ -7,7 +7,7 @@ in the source file:
 
 Copyright for the modifications to the files mentioned above:
   VisualBoyAdvance Rerecording GB/GBA emulator
-  Copyright (C) 2005-2010 nitsuja and the VBA-rr development team
+  Copyright (C) 2005-2011 nitsuja and the VBA-rr development team
 
 All files excluding precompiled libraries or executables in win32,
 7-zip files under the restrictions of unRAR license, libjpeg, libpng,
