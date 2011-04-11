@@ -10,7 +10,7 @@
 #include "Sound.h"
 #include "VBA.h"
 
-#include "../gba/CheatSearch.h"
+#include "../common/CheatSearch.h"
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
 
