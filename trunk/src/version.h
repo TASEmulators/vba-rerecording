@@ -23,7 +23,6 @@
 #define VBA_NAME "VBA-RR"
 #define VBA_RR_MAJOR_VERSION_NO 23
 #define VBA_RR_MINOR_VERSION_NO 5
-#define SVN_REV 0
 
 #ifdef _DEBUG
 #	define VBA_SUBVERSION_STRING " DEBUG"
@@ -34,15 +33,21 @@
 #else // interim
 #	ifdef WIN32
 #		include "svnrev.h"
-#	else
-#		ifdef SVN_REV
-#			define SVN_REV_STR STRINGIZE_VALUE(SVN_REV)
-#		else
-#			define SVN_REV_STR ""
-#		endif
 #	endif
 #	define VBA_SUBVERSION_STRING " svn" SVN_REV_STR
 #	define VBA_BUILDTYPE_STRING  "Interim"
+#endif
+
+#ifndef SVN_REV
+#	define SVN_REV 0
+#endif
+
+#ifndef SVN_REV_STR
+#	if SVN_REV > 0
+#		define SVN_REV_STR STRINGIZE_VALUE(SVN_REV)
+#	else
+#		define define SVN_REV_STR ""
+#	endif
 #endif
 
 #define VBA_FEATURE_STRING ""
