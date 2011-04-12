@@ -25,9 +25,9 @@
 #define VBA_RR_MINOR_VERSION_NO 5
 
 #if !defined(_DEBUG) && (defined(WIN32) || defined(RC_INVOKED))
-#	include "svnrev.h"
+#	include "../win32/defaultconfig/svnrev.h"
 #endif
-
+#
 #ifndef SVN_REV
 #	define SVN_REV 0
 #endif
