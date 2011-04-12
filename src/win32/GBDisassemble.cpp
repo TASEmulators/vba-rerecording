@@ -149,7 +149,7 @@ BOOL GBDisassemble::OnInitDialog()
 	CFont *font = CFont::FromHandle((HFONT)GetStockObject(SYSTEM_FIXED_FONT));
 	m_list.SetFont(font);
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 7; i++)
 		GetDlgItem(IDC_R0+i)->SetFont(font);
 
 	m_address.LimitText(4);
@@ -194,7 +194,7 @@ void GBDisassemble::refresh()
 	count = (r.bottom - r.top+1)/h;
 
 	m_list.ResetContent();
-	if (!emulating || systemCartridgeType != 1)
+	if (!systemIsEmulating() || systemCartridgeType != 1)
 		return;
 
 	char buffer[80];
