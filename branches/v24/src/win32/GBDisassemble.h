@@ -18,14 +18,11 @@ class GBDisassemble : public ResizeDlg, IUpdateListener
 {
 	// Construction
 public:
-	void refresh();
-	u16  lastAddress;
-	int  count;
-	bool autoUpdate;
-	u16  address;
-	GBDisassemble(CWnd*pParent = NULL);  // standard constructor
-
+	//bool autoUpdate;	// If these two variables are defined here, the dialog will crash!
+	//u16  address;		// There might be a bug within MFC.
 	virtual void update();
+	void refresh();
+	GBDisassemble(CWnd*pParent = NULL);  // standard constructor
 
 	// Dialog Data
 	//{{AFX_DATA(GBDisassemble)
@@ -37,6 +34,10 @@ public:
 	BOOL     m_n;
 	BOOL     m_z;
 	//}}AFX_DATA
+	bool autoUpdate;
+	int  count;
+	u16  address;
+	u16  lastAddress;
 
 	// Overrides
 	// ClassWizard generated virtual function overrides

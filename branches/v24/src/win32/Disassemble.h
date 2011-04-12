@@ -19,9 +19,6 @@ class Disassemble : public ResizeDlg, IUpdateListener
 public:
 	virtual void update();
 	void refresh();
-	int  count;
-	bool autoUpdate;
-	u32  address;
 	Disassemble(CWnd*pParent = NULL);  // standard constructor
 
 	// Dialog Data
@@ -36,8 +33,11 @@ public:
 	BOOL     m_t;
 	BOOL     m_v;
 	BOOL     m_z;
-	int      mode;
 	//}}AFX_DATA
+	bool autoUpdate;
+	int  count;
+	u32  address;
+	int  mode;
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
