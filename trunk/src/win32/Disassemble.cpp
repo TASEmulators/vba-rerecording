@@ -32,12 +32,11 @@ Disassemble::Disassemble(CWnd*pParent /*=NULL*/)
 	m_t  = FALSE;
 	m_v  = FALSE;
 	m_z  = FALSE;
-	mode = -1;
 	//}}AFX_DATA_INIT
-	mode       = 0;
-	address    = 0;
 	autoUpdate = false;
+	address    = 0;
 	count      = 1;
+	mode       = 0;
 }
 
 void Disassemble::DoDataExchange(CDataExchange*pDX)
@@ -192,7 +191,6 @@ BOOL Disassemble::OnInitDialog()
 	GetDlgItem(IDC_VSCROLL)->SetScrollInfo(SB_CTL, &si, TRUE);
 
 	CFont *font = CFont::FromHandle((HFONT)GetStockObject(SYSTEM_FIXED_FONT));
-
 	m_list.SetFont(font, FALSE);
 	for (int i = 0; i < 17; i++)
 		GetDlgItem(IDC_R0+i)->SetFont(font, FALSE);
