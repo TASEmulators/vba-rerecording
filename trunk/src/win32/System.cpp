@@ -699,6 +699,38 @@ void systemFrame()
 ///  theApp.autoFrameSkipLastTime = time;
 }
 
+int systemFramesToSkip()
+{
+	int framesToSkip = systemFrameSkip;
+
+	bool fastForward = speedup;
+
+#if (defined(WIN32) && !defined(SDL))
+	fastForward = (fastForward || theApp.frameSearchSkipping);
+	int throttle = theApp.throttle;
+	if (theApp.frameSearching && throttle < 100)
+		throttle = 100;
+#else
+	extern int throttle;
+#endif
+
+#if (defined(WIN32) && !defined(SDL))
+	if (theApp.aviRecording || theApp.nvVideoLog)
+	{
+		framesToSkip = 0; // render all frames
+	}
+	else
+	{
+		if (fastForward)
+			framesToSkip = 9;  // try 6 FPS during speedup
+		else if (throttle != 100)
+			framesToSkip = (framesToSkip * throttle) / 100;
+	}
+#endif
+
+	return framesToSkip;
+}
+
 // sound
 
 bool systemSoundInit()

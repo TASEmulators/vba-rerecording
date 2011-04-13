@@ -79,6 +79,7 @@ extern int32	saveType;
 extern bool8	useBios;
 extern bool8	skipBios;
 extern int32	frameSkip;
+extern u32		extButtons;
 extern bool8	capturePrevious;
 extern int32	captureNumber;
 extern bool8	speedup;

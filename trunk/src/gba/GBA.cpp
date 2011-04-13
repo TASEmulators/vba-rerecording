@@ -1,8 +1,3 @@
-#if (defined(WIN32) && !defined(SDL))
-#   include "../win32/stdafx.h"
-#   include "../win32/VBA.h"
-#endif
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
@@ -124,7 +119,8 @@ bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = fals
 char  buffer[1024];
 FILE *out = NULL;
 
-static bool8 pauseAfterFrameAdvance = false;
+static bool newFrame = true;
+static bool pauseAfterFrameAdvance = false;
 
 const int32 TIMER_TICKS[4] = {
 	1,
@@ -1404,12 +1400,8 @@ bool CPUWriteBMPFile(const char *fileName)
 	return utilWriteBMPFile(fileName, 240, 160, pix);
 }
 
-static bool frameBoundary = false;
-static bool newFrame	  = true;
-
 void CPUCleanUp()
 {
-	frameBoundary = false;
 	newFrame	  = true;
 
 	GBASystemCounters.frameCount = 0;
@@ -3783,7 +3775,6 @@ void CPULoop(int _ticks)
 		cpuSavedTicks = 5;
 	}
 
-	u32 joy = 0;
 	if (newFrame)
 	{
 		extern void VBAOnExitingFrameBoundary();
@@ -3792,12 +3783,10 @@ void CPULoop(int _ticks)
 		// update joystick information
 		systemReadJoypads();
 
-		joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
+		u32 joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
 
 //		if (cpuEEPROMSensorEnabled)
 //			systemUpdateMotionSensor(0);
-
-		VBAMovieResetIfRequested();
 
 		P1 = 0x03FF ^ (joy & 0x3FF);
 		UPDATE_REG(0x130, P1);
@@ -3825,6 +3814,12 @@ void CPULoop(int _ticks)
 				}
 			}
 		}
+
+		// HACK: some special "buttons"
+		extButtons = (joy >> 18);
+		speedup	   = (extButtons & 1) != 0;
+
+		VBAMovieResetIfRequested();
 
 		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
@@ -3974,30 +3969,7 @@ updateLoop:
 				}
 				else
 				{
-					bool fastForward  = speedup;
-					int	 framesToSkip = systemFrameSkip;
-		#if (defined(WIN32) && !defined(SDL))
-					int throttle = theApp.throttle;
-					if (theApp.frameSearching && throttle < 100)
-						throttle = 100;
-					fastForward |= theApp.frameSearchSkipping;
-		#else
-					extern int throttle;
-		#endif
-
-					if (fastForward)
-						framesToSkip = 9;  // try 6 FPS during speedup
-					else if (throttle != 100)
-						framesToSkip = (framesToSkip * throttle) / 100;  // change frame skip to match up with the throttle's
-					                                                     // adjusted speed (so 6 frame skip becomes 3 frames at
-					                                                     // 50% speed)
-
-#if (defined(WIN32) && !defined(SDL))
-					if (theApp.aviRecording || theApp.nvVideoLog)
-					{
-						framesToSkip = 0; // render all frames
-					}
-#endif
+					int framesToSkip = systemFramesToSkip();
 
 					if (DISPSTAT & 2)
 					{
@@ -4038,17 +4010,13 @@ updateLoop:
 							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
 							GBASystemCounters.lagged	 = true;
 
-							// HACK: some special "buttons"
-							u32 ext = (joy >> 18);
-							speedup = (ext & 1) != 0;
-
 							if (cheatsEnabled)
-								cheatsCheckKeys(P1 ^ 0x3FF, ext);
-
-							frameBoundary = true;
+								cheatsCheckKeys(P1 ^ 0x3FF, extButtons);
 
 							extern void VBAOnEnteringFrameBoundary();
 							VBAOnEnteringFrameBoundary();
+
+							newFrame = true;
 
 							pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -4057,7 +4025,7 @@ updateLoop:
 								systemRenderFrame();
 								frameSkipCount = 0;
 
-								bool capturePressed = (ext & 2) != 0;
+								bool capturePressed = (extButtons & 2) != 0;
 								if (capturePressed && !capturePrevious)
 								{
 									captureNumber = systemScreenCapture(captureNumber);
@@ -4524,15 +4492,13 @@ updateLoop:
 					break;
 				}
 			}
-			else if (frameBoundary)
+			else if (newFrame)
 			{
 				// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
 				// but is there still any GBA .vbm that uses the old timing?
 ///				extern void VBAOnEnteringFrameBoundary();
 ///				VBAOnEnteringFrameBoundary();
 
-				frameBoundary = false;
-				newFrame	  = true;
 				break;
 			}
 		}
