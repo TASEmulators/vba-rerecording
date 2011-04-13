@@ -14,6 +14,7 @@
 #include "../common/System.h"
 #include "../common/Util.h"
 #include "../common/movie.h"
+#include "../common/vbalua.h"
 
 // FIXME: constant (GB) or boolean (GBA)?!
 enum
@@ -773,7 +774,7 @@ void gbCompareLYToWY()
 		}
 }
 
-void gbWriteMemory(register u16 address, register u8 value)
+void gbWriteMemoryWrapped(register u16 address, register u8 value)
 {
 	if (address < 0x8000)
 	{
@@ -1678,6 +1679,12 @@ void gbWriteMemory(register u16 address, register u8 value)
 	gbMemory[address] = value;
 }
 
+void gbWriteMemory(register u16 address, register u8 value)
+{
+	gbWriteMemoryWrapped(address, value);
+	CallRegisteredLuaMemHook(address, 1, value, LUAMEMHOOK_WRITE);
+}
+
 u8 gbReadOpcode(register u16 address)
 {
 	if (gbCheatMap[address])
@@ -2306,7 +2313,8 @@ void gbReset(bool userReset)
 		return;
 	}
 
-	stopCounter		   = 0;
+	extButtons  = 0;
+	stopCounter = 0;
 	v20FrameTimingHack = false;
 	newFrame = true;
 	pauseAfterFrameAdvance = false;
@@ -4610,7 +4618,8 @@ bool gbWriteBMPFile(const char *fileName)
 
 void gbCleanUp()
 {
-	stopCounter		   = 0;
+	extButtons  = 0;
+	stopCounter = 0;
 	v20FrameTimingHack = false;
 	newFrame = true;
 	pauseAfterFrameAdvance = false;
@@ -5178,7 +5187,6 @@ static void gbFrameBoundaryWork()
 
 	pauseAfterFrameAdvance = systemPauseOnFrame();
 
-
 	if (gbFrameSkipCount >= systemFramesToSkip() || pauseAfterFrameAdvance)
 	{
 		if (!gbSgbMask)
@@ -5228,6 +5236,8 @@ void gbEmulate(int ticksToStop)
 		gbGetUserInput();
 
 		VBAMovieResetIfRequested();
+
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 		// simulate the v20 frame timing hack
 		if (v20FrameTimingHack)
@@ -5305,6 +5315,7 @@ void gbEmulate(int ticksToStop)
 			opcode2 = 0;
 			execute = true;
 
+			CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);
 			opcode2 = opcode1 = opcode = gbReadOpcode(PC.W++);
 
 			// If HALT state was launched while IME = 0 and (register_IF & register_IE & 0x1F),
@@ -5321,6 +5332,7 @@ void gbEmulate(int ticksToStop)
 			{
 			case 0xCB:
 				// extended opcode
+				//CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);	// is this desired?
 				opcode2	   = opcode = gbReadOpcode(PC.W++);
 				clockTicks = gbCyclesCB[opcode];
 				break;
