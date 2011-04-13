@@ -16,6 +16,7 @@ int32	  saveType			   = 0;
 bool8	  useBios			   = false;
 bool8	  skipBios			   = false;
 int32	  frameSkip			   = 1;
+u32		  extButtons		   = 0;
 bool8	  capturePrevious	   = false;
 int32	  captureNumber		   = 0;
 bool8	  speedup			   = false;

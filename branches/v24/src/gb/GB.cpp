@@ -3,12 +3,7 @@
 #include <cstring>
 #include <cassert>
 
-#if (defined(WIN32) && !defined(SDL))
-#   include "../win32/stdafx.h"
-#   include "../win32/VBA.h"
-#endif
-
-#include "../common/System.h"
+#include "../Port.h"
 #include "../NLS.h"
 #include "gb.h"
 #include "gbCheats.h"
@@ -16,6 +11,7 @@
 #include "gbMemory.h"
 #include "gbSGB.h"
 #include "gbSound.h"
+#include "../common/System.h"
 #include "../common/Util.h"
 #include "../common/movie.h"
 
@@ -33,6 +29,9 @@ enum
 #endif
 
 extern u8 *	 pix;
+extern u32	 extButtons;
+extern bool8 capturePrevious;
+extern int32 captureNumber;
 extern bool8 speedup;
 bool gbUpdateSizes();
 bool inBios = false;
@@ -5137,40 +5136,8 @@ static void gbGetUserInput()
 		gbMemory[0xff0f] |= 16;
 	}
 
-	u32 ext = (gbJoymask[0] >> 18);
-	speedup = (ext & 1) != 0;
-}
-
-static int gbFramesToSkip()
-{
-	int framesToSkip = systemFrameSkip;
-
-	bool fastForward = speedup;
-
-#if (defined(WIN32) && !defined(SDL))
-	fastForward = (fastForward || theApp.frameSearchSkipping);
-	int throttle = theApp.throttle;
-	if (theApp.frameSearching && throttle < 100)
-		throttle = 100;
-#else
-	extern int throttle;
-#endif
-
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.aviRecording || theApp.nvVideoLog)
-	{
-		framesToSkip = 0; // render all frames
-	}
-	else
-	{
-		if (fastForward)
-			framesToSkip = 9;  // try 6 FPS during speedup
-		else if (throttle != 100)
-			framesToSkip = (framesToSkip * throttle) / 100;
-	}
-#endif
-
-	return framesToSkip;
+	extButtons = (newmask >> 18);
+	speedup	   = (extButtons & 1) != 0;
 }
 
 static void gbFrameBoundaryWork()
@@ -5211,17 +5178,8 @@ static void gbFrameBoundaryWork()
 
 	pauseAfterFrameAdvance = systemPauseOnFrame();
 
-	u32 ext = (gbJoymask[0] >> 18);
-	bool capturePressed = (ext & 2) != 0;
-	extern bool8 capturePrevious;
-	extern int32 captureNumber;
-	if (capturePressed && !capturePrevious)
-	{
-		captureNumber = systemScreenCapture(captureNumber);
-	}
-	capturePrevious = capturePressed && !pauseAfterFrameAdvance;
 
-	if (gbFrameSkipCount >= gbFramesToSkip() || pauseAfterFrameAdvance)
+	if (gbFrameSkipCount >= systemFramesToSkip() || pauseAfterFrameAdvance)
 	{
 		if (!gbSgbMask)
 		{
@@ -5230,6 +5188,13 @@ static void gbFrameBoundaryWork()
 		}
 		systemRenderFrame();
 		gbFrameSkipCount = 0;
+
+		bool capturePressed = (extButtons & 2) != 0;
+		if (capturePressed && !capturePrevious)
+		{
+			captureNumber = systemScreenCapture(captureNumber);
+		}
+		capturePrevious = capturePressed && !pauseAfterFrameAdvance;
 	}
 	else
 		gbFrameSkipCount++;
@@ -5738,7 +5703,7 @@ gbRedoLoop:
 									gbDrawSprites(true);
 								}
 
-								if (gbFrameSkipCount >= gbFramesToSkip())
+								if (gbFrameSkipCount >= systemFramesToSkip())
 								{
 									if (gbBlackScreen)
 									{
