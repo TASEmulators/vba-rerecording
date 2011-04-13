@@ -80,8 +80,6 @@ extern bool CPUReadStateFromStream(gzFile);
 extern bool CPUWriteStateToStream(gzFile);
 extern int CPULoadRom(const char *);
 extern void CPUUpdateRegister(u32, u16);
-extern void CPUWriteHalfWord(u32, u16);
-extern void CPUWriteByte(u32, u8);
 extern bool CPULoadBios(const char *, bool);
 extern void CPUInit();
 extern void CPUReset(bool userReset = false);

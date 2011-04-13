@@ -6,7 +6,8 @@
 #include "IOViewer.h"
 #include "VBA.h"
 
-#include "../gba/GBA.h" // CPUWriteHalfWord
+#include "../gba/GBA.h"
+#include "../gba/GBAinline.h" // CPUWriteHalfWord
 #include "../gba/GBAGlobals.h"
 
 #include "IOViewerRegs.h"
