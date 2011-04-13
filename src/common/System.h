@@ -106,6 +106,7 @@ extern void systemDecreaseThrottle();
 extern void systemSetThrottle(int);
 extern int  systemGetThrottle();
 extern void systemFrame();
+extern int  systemFramesToSkip();
 extern bool systemIsEmulating();
 extern void systemGbBorderOn();
 extern bool systemIsRunningGBA();

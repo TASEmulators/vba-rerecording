@@ -3,6 +3,8 @@
 #include <cstring>
 #include <cassert>
 
+#include "../Port.h"
+#include "../NLS.h"
 #include "GB.h"
 #include "gbCheats.h"
 #include "gbGlobals.h"
@@ -11,11 +13,6 @@
 #include "gbSound.h"
 #include "../common/unzip.h"
 #include "../common/Util.h"
-#if (defined(WIN32) && !defined(SDL))
-#   include "../win32/stdafx.h"
-#   include "../win32/VBA.h"
-#endif
-#include "../NLS.h"
 #include "../common/System.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
@@ -28,6 +25,7 @@ extern soundtick_t GB_USE_TICKS_AS;
 
 u8 *		 origPix = NULL;
 extern u8 *	 pix;
+extern u32	 extButtons;
 extern bool8 capturePrevious;
 extern int32 captureNumber;
 extern bool8 speedup;
@@ -156,7 +154,8 @@ int32 gbJoymask[4] = { 0, 0, 0, 0 };
 
 int32 gbEchoRAMFixOn = 1;
 
-static bool8 pauseAfterFrameAdvance = false;
+static bool newFrame = true;
+static bool pauseAfterFrameAdvance = false;
 
 int32 gbRomSizes[] = { 0x00008000, // 32K
 	                   0x00010000, // 64K
@@ -2932,12 +2931,8 @@ bool gbWriteBMPFile(const char *fileName)
 	return utilWriteBMPFile(fileName, 160, 144, pix);
 }
 
-static bool frameBoundary = false;
-static bool newFrame	  = true;
-
 void gbCleanUp()
 {
-	frameBoundary = false;
 	newFrame	  = true;
 
 	GBSystemCounters.frameCount = 0;
@@ -3204,6 +3199,9 @@ void gbEmulate(int ticksToStop)
 			gbInterrupt |= 16;
 		}
 
+		extButtons = (newmask >> 18);
+		speedup	   = (extButtons & 1) != 0;
+
 		VBAMovieResetIfRequested();
 
 		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
@@ -3270,6 +3268,7 @@ void gbEmulate(int ticksToStop)
 			{
 			case 0xCB:
 				// extended opcode
+				//CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);	// is this desired?
 				opcode	   = gbReadOpcode(PC.W++);
 				clockTicks = gbCyclesCB[opcode];
 				switch (opcode)
@@ -3346,30 +3345,7 @@ void gbEmulate(int ticksToStop)
 			// our counter is off, see what we need to do
 			while (gbLcdTicks <= 0)
 			{
-				int framesToSkip = systemFrameSkip;
-
-				bool fastForward = speedup;
-
-#if (defined(WIN32) && !defined(SDL))
-				int throttle = theApp.throttle;
-				if (theApp.frameSearching && throttle < 100)
-					throttle = 100;
-				fastForward |= theApp.frameSearchSkipping;
-#else
-				extern int throttle;
-#endif
-
-				if (fastForward)
-					framesToSkip = 9;  // try 6 FPS during speedup
-				else if (throttle != 100)
-					framesToSkip = (framesToSkip * throttle) / 100;
-
-#if (defined(WIN32) && !defined(SDL))
-				if (theApp.aviRecording || theApp.nvVideoLog)
-				{
-					framesToSkip = 0; // render all frames
-				}
-#endif
+				int framesToSkip = systemFramesToSkip();
 
 				switch (gbLcdMode)
 				{
@@ -3414,14 +3390,10 @@ void gbEmulate(int ticksToStop)
 						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
 						GBSystemCounters.lagged		= true;
 
-						// HACK: some special "buttons"
-						u8 ext = (newmask >> 18);
-						speedup = (ext & 1) != 0;
-
-						frameBoundary = true;
-
 						extern void VBAOnEnteringFrameBoundary();
 						VBAOnEnteringFrameBoundary();
+
+						newFrame = true;
 
 						pauseAfterFrameAdvance = systemPauseOnFrame();
 
@@ -3433,7 +3405,7 @@ void gbEmulate(int ticksToStop)
 							systemRenderFrame();
 							gbFrameSkipCount = 0;
 
-							bool capturePressed = (ext & 2) != 0;
+							bool capturePressed = (extButtons & 2) != 0;
 							if (capturePressed && !capturePrevious)
 							{
 								captureNumber = systemScreenCapture(captureNumber);
@@ -3823,7 +3795,7 @@ void gbEmulate(int ticksToStop)
 		}
 		else
 		{
-			if (!frameBoundary && (register_LCDC & 0x80) != 0)
+			if (!newFrame && (register_LCDC & 0x80) != 0)
 				continue;
 		}
 
@@ -3867,13 +3839,11 @@ void gbEmulate(int ticksToStop)
 		}
 
 		// makes sure frames are really divided across input sampling boundaries which occur at a constant rate
-		if (frameBoundary || useOldFrameTiming)
+		if (newFrame || useOldFrameTiming)
 		{
 ///			extern void VBAOnEnteringFrameBoundary();
 ///			VBAOnEnteringFrameBoundary();
 
-			frameBoundary = false;
-			newFrame	  = true;
 			break;
 		}
 	}
