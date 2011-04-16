@@ -44,7 +44,6 @@ void eepromErase()
 	eepromByte    = 0;
 	eepromBits    = 0;
 	eepromAddress = 0;
-	eepromData[0x2000];
 	memset(eepromBuffer, 0, 16*sizeof(u8));
 	eepromInUse = false;
 	eepromSize  = 512;

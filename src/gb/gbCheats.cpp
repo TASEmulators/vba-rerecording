@@ -152,6 +152,7 @@ bool gbCheatsLoadCheatList(const char *file)
 		return false;
 	}
 
+	fclose(f);
 	gbCheatNumber = count;
 	gbCheatUpdateMap();
 

@@ -2190,14 +2190,10 @@ bool gbWriteBatteryToStream(gzFile gzfile)
 
 	// ...copy over the temp file...
 	char *temp = new char [len];
-	if (temp == NULL)
-	{
-		fclose(fileTemp);
-		return false;
-	}
 	fseek(fileTemp, 0, SEEK_SET);
 	if (fread(temp, len, 1, fileTemp) != 1)
 	{
+		delete [] temp;
 		fclose(fileTemp);
 		return false;
 	}
@@ -2279,19 +2275,17 @@ bool gbReadBatteryFromStream(gzFile gzfile)
 #define TEMP_SAVE_FNAME ("tempvbaread.sav")
 	int	  pos	 = gztell(gzfile);
 	int	  buflen = 1024;
-	char *temp	 = new char [buflen];
-	if (temp == NULL)
-		return false;
-
 	// ...make a temp file and write it there...
 	FILE *fileTemp = fopen(TEMP_SAVE_FNAME, "wb");
 	if (fileTemp == NULL)
 		return false;
 	int gzDeflated;
+	char *temp	 = new char [buflen];
 	while ((gzDeflated = utilGzRead(gzfile, temp, buflen)) != 0)
 	{
 		if (gzDeflated == -1 || fwrite(temp, gzDeflated, 1, fileTemp) != 1)
 		{
+			delete [] temp;
 			fclose(fileTemp);
 			gzseek(gzfile, pos, SEEK_SET); /// FIXME: leaves pos in gzfile before save instead of after it (everything that
 			                               // calls this right now does a seek afterwards so it doesn't matter for now, but it's
