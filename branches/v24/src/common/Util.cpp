@@ -1047,6 +1047,7 @@ static u8 *utilLoadRarFile(const char *file,
 
 #endif
 
+// the caller is responsible for caling free(return value) to release the memory
 u8 *utilLoad(const char *file,
              bool (*accept)(const char *),
              u8 *data,
