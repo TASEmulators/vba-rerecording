@@ -733,7 +733,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame;
 
 	if (fseek(file, Movie.header.offset_to_controller_data, SEEK_SET))
-	{ loadingMovie = false; return MOVIE_WRONG_FORMAT; }
+	{ fclose(file); loadingMovie = false; return MOVIE_WRONG_FORMAT; }
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
