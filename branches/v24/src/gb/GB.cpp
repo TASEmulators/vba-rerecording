@@ -5133,13 +5133,12 @@ static void gbGetUserInput()
 		gbJoymask[0] = systemGetJoypad(0, sensor);
 	}
 
-	int newmask = gbJoymask[0] & 255;
-	if (newmask)
+	if (gbJoymask[0] & 0xFF)
 	{
 		gbMemory[0xff0f] |= 16;
 	}
 
-	extButtons = (newmask >> 18);
+	extButtons = (gbJoymask[0] >> 18);
 	speedup	   = (extButtons & 1) != 0;
 }
 
