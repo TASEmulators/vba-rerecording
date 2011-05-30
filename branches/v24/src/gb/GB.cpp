@@ -643,7 +643,7 @@ void gbGenFilter()
 u8 gbReadMemory(u16 address);
 
 // used for OAM DMA only
-void gbOamDmaCopyMemory(u16 address)
+static void gbOamDmaCopyMemory(u16 address)
 {
 	if (address < 0xe000)
 	{
@@ -668,13 +668,19 @@ void gbOamDmaCopyMemory(u16 address)
 }
 
 // HDMA
-void gbHdmaCopyMemory(u16 d, u16 s, int count)
+static void gbHdmaCopyMemory(u16 dst, u16 src, int count)
 {
 	while (count--)
 	{
-		gbWriteMemory(d, gbReadMemory(s));
-		s++;
-		d++;
+#if 0
+		gbMemoryMap[dst >> 12][dst & 0x0fff] = (((src & 0xe000) == 0x8000) || src >= 0xfe00) ? 
+			0xff : gbMemoryMap[src >> 12][src & 0x0fff];
+#else
+		gbMemoryMap[dst >> 12][dst & 0x0fff] = (((src & 0xe000) == 0x8000) || src >= 0xfe00) ? 
+			0xff : (gbCheatMap[src] ? gbCheatRead(src) : gbMemoryMap[src >> 12][src & 0x0fff]);
+#endif
+		++dst;
+		++src;
 	}
 }
 
