@@ -605,11 +605,6 @@ void CPUUpdateWindow1()
 	}
 }
 
-extern u32 line0[240];
-extern u32 line1[240];
-extern u32 line2[240];
-extern u32 line3[240];
-
 #define CLEAR_ARRAY(a) \
 	{ \
 		u32 *array = (a); \
@@ -4565,3 +4560,7 @@ EmulatedSystemCounters &GBASystemCounters = systemCounters;
     true,
    };
  */
+
+
+#undef CPU_BREAK_LOOP
+#undef CPU_BREAK_LOOP2

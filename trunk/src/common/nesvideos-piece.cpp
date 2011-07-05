@@ -514,3 +514,12 @@ static void FlushWrite(FILE* fp, const unsigned char*buf, unsigned length)
 ///		LoggingEnabled = 0;
 ///	}
 }
+
+// for the UB tech
+#undef BGR24
+#undef BGR16
+#undef BGR15
+
+#undef u32
+#undef u16
+#undef s4

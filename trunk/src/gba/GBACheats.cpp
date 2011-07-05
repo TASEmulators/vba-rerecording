@@ -1765,7 +1765,7 @@ extern int  cpuSavedTicks;
 
 extern void debuggerBreakOnWrite(u32 *, u32, u32, int);
 
-#define CPU_BREAK_LOOP \
+#define CPU_BREAK_LOOP2 \
     cpuSavedTicks    = cpuSavedTicks - *extCpuLoopTicks; \
     *extCpuLoopTicks = *extClockTicks; \
     *extTicks        = *extClockTicks;
@@ -1777,7 +1777,7 @@ void cheatsWriteMemory(u32 *address, u32 value, u32 mask)
 	if (cheatsNumber == 0)
 	{
 		debuggerBreakOnWrite(address, *address, value, 2);
-		CPU_BREAK_LOOP;
+		CPU_BREAK_LOOP2;
 		*address = value;
 		return;
 	}
@@ -1792,7 +1792,7 @@ void cheatsWriteHalfWord(u16 *address, u16 value, u16 mask)
 	if (cheatsNumber == 0)
 	{
 		debuggerBreakOnWrite((u32 *)address, *address, value, 1);
-		CPU_BREAK_LOOP;
+		CPU_BREAK_LOOP2;
 		*address = value;
 		return;
 	}
@@ -1811,7 +1811,7 @@ void cheatsWriteByte(u8 *, u8)
 	if (cheatsNumber == 0)
 	{
 		debuggerBreakOnWrite((u32 *)address, *address, value, 0);
-		CPU_BREAK_LOOP;
+		CPU_BREAK_LOOP2;
 		*address = value;
 		return;
 	}
@@ -1819,3 +1819,4 @@ void cheatsWriteByte(u8 *, u8)
 #endif
 }
 
+#undef CPU_BREAK_LOOP2

@@ -14,12 +14,6 @@
 #include "../gba/GBAGlobals.h"
 #include "../common/CheatSearch.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // GBACheatSearch dialog
 
@@ -139,24 +133,6 @@ void GBACheatSearch::OnStart()
 	}
 }
 
-static void dlgSystemMessage(CWnd *hWnd, int number, const char *defaultMsg, ...)
-{
-	CString buffer;
-	va_list valist;
-	CString msg = defaultMsg;
-	if (number)
-		msg = winResLoadString(number);
-
-	va_start(valist, defaultMsg);
-	buffer.FormatV(msg, valist);
-
-	theApp.winCheckFullscreen();
-	systemSoundClearBuffer();
-	hWnd->MessageBox(buffer, winResLoadString(IDS_ERROR), MB_OK|MB_ICONERROR);
-
-	va_end(valist);
-}
-
 void GBACheatSearch::OnSearch()
 {
 	CString buffer;
@@ -171,7 +147,7 @@ void GBACheatSearch::OnSearch()
 		m_value.GetWindowText(buffer);
 		if (buffer.IsEmpty())
 		{
-			dlgSystemMessage(this, IDS_NUMBER_CANNOT_BE_EMPTY, "Number cannot be empty");
+			systemMessage(IDS_NUMBER_CANNOT_BE_EMPTY, "Number cannot be empty");
 			return;
 		}
 		int value = 0;
@@ -343,8 +319,7 @@ void GBACheatSearch::addChanges(bool showMsgs)
 	if (count > 4000)
 	{
 		if (showMsgs)
-			dlgSystemMessage(
-			    this,
+			systemMessage(
 			    IDS_SEARCH_PRODUCED_TOO_MANY,
 			    "Search produced %d results.\nThey have been remembered, but are too many to display.\nPlease refine it better by performing additional searches.",
 			    count);
@@ -354,8 +329,7 @@ void GBACheatSearch::addChanges(bool showMsgs)
 	if (count == 0)
 	{
 		if (showMsgs)
-			dlgSystemMessage(this, IDS_SEARCH_PRODUCED_NO_RESULTS,
-			                 "Search produced no results.");
+			systemMessage(IDS_SEARCH_PRODUCED_NO_RESULTS, "Search produced no results.");
 		return;
 	}
 
@@ -722,21 +696,19 @@ bool AddCheat::addCheat()
 	{}
 	else
 	{
-		dlgSystemMessage(this, IDS_INVALID_ADDRESS, "Invalid address: %08x", address);
+		systemMessage(IDS_INVALID_ADDRESS, "Invalid address: %08x", address);
 		return false;
 	}
 	if (sizeType != 0)
 	{
 		if (sizeType == 1 && address & 1)
 		{
-			dlgSystemMessage(this, IDS_MISALIGNED_HALFWORD,
-			                 "Misaligned half-word address: %08x", address);
+			systemMessage(IDS_MISALIGNED_HALFWORD, "Misaligned half-word address: %08x", address);
 			return false;
 		}
 		if (sizeType == 2 && address & 3)
 		{
-			dlgSystemMessage(this, IDS_MISALIGNED_WORD,
-			                 "Misaligned word address: %08x", address);
+			systemMessage(IDS_MISALIGNED_WORD, "Misaligned word address: %08x", address);
 			return false;
 		}
 	}
@@ -745,7 +717,7 @@ bool AddCheat::addCheat()
 
 	if (buffer.IsEmpty())
 	{
-		dlgSystemMessage(this, IDS_VALUE_CANNOT_BE_EMPTY, "Value cannot be empty");
+		systemMessage(IDS_VALUE_CANNOT_BE_EMPTY, "Value cannot be empty");
 		return false;
 	}
 

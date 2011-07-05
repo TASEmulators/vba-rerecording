@@ -20,12 +20,6 @@ extern "C" {
 
 extern u8 gbInvertTab[256];
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // GBMapView dialog
 

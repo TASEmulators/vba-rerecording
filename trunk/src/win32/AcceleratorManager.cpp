@@ -37,12 +37,6 @@
 #include "VBA.h"
 //#include "../common/System.h"
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
 CAcceleratorManager::CAcceleratorManager()
 {
 	m_bAutoSave     = FALSE;

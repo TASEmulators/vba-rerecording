@@ -21,6 +21,11 @@
 #define _stricmp strcasecmp
 #endif
 
+// FIXME: constant (GB) or boolean (GBA)?!
+#define C_FLAG 0x10
+#define H_FLAG 0x20
+#define N_FLAG 0x40
+#define Z_FLAG 0x80
 extern soundtick_t GB_USE_TICKS_AS;
 
 u8 *		 origPix = NULL;

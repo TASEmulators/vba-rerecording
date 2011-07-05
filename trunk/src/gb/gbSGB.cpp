@@ -8,7 +8,6 @@
 #include "../common/movie.h"
 
 extern u8 * pix;
-extern bool speedup;
 
 #define GBSGB_NONE            0
 #define GBSGB_RESET           1

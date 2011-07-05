@@ -15,12 +15,6 @@
 
 #include "../common/System.h" // for system messages
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 #define MAX_DRIVERS         32                  // 32 drivers maximum
 
 //-----------------------------------------------------------------------------

@@ -50,12 +50,6 @@ extern int remoteSocket;
 
 void winlog(const char *msg, ...);
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 bool debugger = false;
 
 char movieFileToPlay[1024];

@@ -8,12 +8,6 @@
 #include "zlib.h"
 #include "../Port.h"
 
-// FIXME: constant (GB) or boolean (GBA)?!
-#define C_FLAG 0x10
-#define H_FLAG 0x20
-#define N_FLAG 0x40
-#define Z_FLAG 0x80
-
 typedef union
 {
 	struct
