@@ -1646,8 +1646,6 @@ void VBAMovieRestart()
 		VBAMovieOpen(movieName, Movie.readOnly); // can't just pass in Movie.filename, since VBAMovieOpen clears out Movie's
 		                                         // variables
 
-		long where = ftell(Movie.file);
-
 		Movie.RecordedThisSession = modified;
 
 		systemScreenMessage("Movie replay (restart)");
