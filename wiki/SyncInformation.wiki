@@ -1,5 +1,5 @@
 #labels Featured
-#"Family Tree"
+=="Family Tree"==
 
 Something like this:
 {{{
@@ -11,14 +11,16 @@ Something like this:
 }}}
 
 Version numbers:
-* Original series: 1.x.y
-* VBA-M: only SVN revision numbers
-* VBA-RR: 1.7.2.560 (pre v23.3?), 7.23.y.z (v23.x), 7.24.y.z (v24-alpha)
-* VBA-"ReR": 8.24.y.z (z is likely to be 0 due to bugs...)
+ * Original series: 1.x.y
+ * VBA-M: only SVN revision numbers
+ * VBA-RR: 1.7.2.560 (pre v23.3?), 7.23.y.z (v23.x), 7.24.y.z (v24-alpha)
+ * VBA-"ReR": 8.24.y.z (z is likely to be 0 due to bugs...)
 
 Note: This might be inaccurate though.
 
-#summary VBA Sync Information for published movies on TASVideos.org
+Movies are more likely to be sync-able with VBA-RR versions that are on the same horizontal line. There are always exceptions, nevertheless.
+
+==summary VBA Sync Information for published movies on TASVideos.org==
 
 These movies require manual or automatical conversion in order to be played on VBA-ReRecording v23:
 
