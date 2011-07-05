@@ -247,40 +247,57 @@ static void write_movie_header(FILE *file, const SMovie &movie)
 	fwrite(headerData, 1, VBM_HEADER_SIZE, file);
 }
 
-static void flush_movie()
+static void flush_movie_header()
 {
+	assert(Movie.file != 0 && "logical error!");
 	if (!Movie.file)
 		return;
 
-//	long originalPos = ftell(Movie.file);
+	long originalPos = ftell(Movie.file);
 
 	// (over-)write the header
 	fseek(Movie.file, 0, SEEK_SET);
 	write_movie_header(Movie.file, Movie);
 
-	// (over-)write the controller data
+	fflush(Movie.file);
+
+	fseek(Movie.file, originalPos, SEEK_SET);
+}
+
+static void flush_movie_frames()
+{
+	assert(Movie.file && "logical error!");
+	if (!Movie.file)
+		return;
+
+	long originalPos = ftell(Movie.file);
+
+	// overwrite the controller data
 	fseek(Movie.file, Movie.header.offset_to_controller_data, SEEK_SET);
 	fwrite(Movie.inputBuffer, 1, Movie.bytesPerFrame * Movie.header.length_frames, Movie.file);
 
 	fflush(Movie.file);
 
-//	fseek(Movie.file, originalPos, SEEK_SET);
+	fseek(Movie.file, originalPos, SEEK_SET);
 }
 
-static void truncate_movie()
+static void truncate_movie(long length)
 {
-	// truncate movie to header.length_frames length
+	// truncate movie to length
 	// NOTE: it's certain that the savestate block is never after the
 	//       controller data block, because the VBM format decrees it.
 
-	if (!Movie.file)
+	assert(Movie.file && length >= 0);
+	if (!Movie.file || length < 0)
 		return;
 
 	assert(Movie.header.offset_to_savestate <= Movie.header.offset_to_controller_data);
 	if (Movie.header.offset_to_savestate > Movie.header.offset_to_controller_data)
 		return;
 
-	const long truncLen = long(Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.header.length_frames);
+	Movie.header.length_frames = length;
+	flush_movie_header();
+	const long truncLen = long(Movie.header.offset_to_controller_data + Movie.bytesPerFrame * length);
 	if (file_length(Movie.file) != truncLen)
 	{
 		ftruncate(fileno(Movie.file), truncLen);
@@ -308,7 +325,7 @@ static void change_state(MovieState new_state)
 {
 	if (Movie.state == MOVIE_STATE_RECORD)
 	{
-		flush_movie();
+		//truncate_movie(Movie.header.length_frames);
 	}
 
 #if (defined(WIN32) && !defined(SDL))
@@ -323,7 +340,7 @@ static void change_state(MovieState new_state)
 		if (Movie.state == MOVIE_STATE_NONE)
 			return;
 
-		truncate_movie();
+		truncate_movie(Movie.header.length_frames);
 
 		fclose(Movie.file);
 		Movie.file		   = NULL;
@@ -355,6 +372,8 @@ static void change_state(MovieState new_state)
 	}
 	else if (new_state == MOVIE_STATE_PLAY)
 	{
+		assert(Movie.file);
+
 		// this would cause problems if not dealt with
 		if (Movie.currentFrame >= Movie.header.length_frames)
 		{
@@ -364,12 +383,16 @@ static void change_state(MovieState new_state)
 	}
 	else if (new_state == MOVIE_STATE_RECORD)
 	{
+		assert(Movie.file);
+
 		// this would cause problems if not dealt with
 		if (Movie.currentFrame > Movie.header.length_frames)
 		{
 			new_state = MOVIE_STATE_END;
 			Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.header.length_frames;
 		}
+
+		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
 	}
 
 	if (new_state == MOVIE_STATE_END && Movie.state != MOVIE_STATE_END)
@@ -1126,11 +1149,12 @@ void VBAMovieUpdateState()
 	}
 	else if (Movie.state == MOVIE_STATE_RECORD)
 	{
-		Movie.header.length_frames = Movie.currentFrame;
+		// use first fseek?
 		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
+		Movie.header.length_frames = Movie.currentFrame;
 		Movie.inputBufferPtr	 += Movie.bytesPerFrame;
 		Movie.RecordedThisSession = true;
-		flush_movie();
+		flush_movie_header();
 	}
 	else if (Movie.state == MOVIE_STATE_END)
 	{
@@ -1477,8 +1501,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
 		// for consistency, no auto movie conversion here since we don't auto convert the corresponding savestate
-		flush_movie();
-		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
+		flush_movie_header();
+		flush_movie_frames();
 
 		change_state(MOVIE_STATE_RECORD);
 	}
@@ -1545,14 +1569,13 @@ bool VBAMovieSwitchToRecording()
 		VBAMovieToggleReadOnly();
 	}
 
-	change_state(MOVIE_STATE_RECORD);
-	systemScreenMessage("Movie re-record");
-
-	Movie.header.length_frames = Movie.currentFrame;
 	if (!VBALuaRerecordCountSkip())
 		++Movie.header.rerecord_count;
 
-	flush_movie(); // necessary?
+	change_state(MOVIE_STATE_RECORD);
+	systemScreenMessage("Movie re-record");
+
+	truncate_movie(Movie.currentFrame);
 
 	return true;
 }
@@ -1623,6 +1646,8 @@ void VBAMovieRestart()
 		VBAMovieOpen(movieName, Movie.readOnly); // can't just pass in Movie.filename, since VBAMovieOpen clears out Movie's
 		                                         // variables
 
+		long where = ftell(Movie.file);
+
 		Movie.RecordedThisSession = modified;
 
 		systemScreenMessage("Movie replay (restart)");
@@ -1659,7 +1684,7 @@ int VBAMovieConvertCurrent()
 
 	if (Movie.header.length_frames == 0) // this could happen
 	{
-		flush_movie();
+		truncate_movie(0);
 		return MOVIE_SUCCESS;
 	}
 
@@ -1696,7 +1721,8 @@ int VBAMovieConvertCurrent()
 		}
 	}
 
-	flush_movie();
+	flush_movie_header();
+	flush_movie_frames();
 	return MOVIE_SUCCESS;
 }
 
