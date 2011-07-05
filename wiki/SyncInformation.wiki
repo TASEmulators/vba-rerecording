@@ -6,7 +6,7 @@ Something like this:
 <VBA 1.72> -- <VBA-RR> v19 -- v21 -- v22 -- v23 -- (still active)
                         \
                          -- v20 -- v24-alpha -- (undecided)
-                                   /
+                                    \
 <VBA 1.80b> -- <VBA-M series> -- <VBA-"ReR"> v24 -- (active)
 }}}
 
