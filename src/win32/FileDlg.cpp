@@ -10,12 +10,6 @@
 #include "Sound.h"
 #include "VBA.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 static FileDlg *instance = NULL;
 
 static UINT_PTR CALLBACK HookFunc(HWND hwnd,

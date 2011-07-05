@@ -405,7 +405,7 @@ CCmdAccelOb::CCmdAccelOb(BYTE cVirt, WORD wIDCommand, WORD wKey, LPCTSTR szComma
 	m_wIDCommand = wIDCommand;
 	m_szCommand	 = szCommand;
 
-	CAccelsOb *pAccel = DEBUG_NEW CAccelsOb(cVirt, wKey, bLocked);
+	CAccelsOb *pAccel = new CAccelsOb(cVirt, wKey, bLocked);
 	ASSERT(pAccel != NULL);
 	m_Accels.AddTail(pAccel);
 }
@@ -428,7 +428,7 @@ CCmdAccelOb::~CCmdAccelOb()
 //
 void CCmdAccelOb::Add(BYTE cVirt, WORD wKey, bool bLocked)
 {
-	CAccelsOb *pAccel = DEBUG_NEW CAccelsOb(cVirt, wKey, bLocked);
+	CAccelsOb *pAccel = new CAccelsOb(cVirt, wKey, bLocked);
 	ASSERT(pAccel != NULL);
 	m_Accels.AddTail(pAccel);
 }
@@ -456,7 +456,7 @@ CCmdAccelOb & CCmdAccelOb::operator=(const CCmdAccelOb &from)
 	POSITION   pos = from.m_Accels.GetHeadPosition();
 	while (pos != NULL)
 	{
-		pAccel = DEBUG_NEW CAccelsOb(from.m_Accels.GetNext(pos));
+		pAccel = new CAccelsOb(from.m_Accels.GetNext(pos));
 		ASSERT(pAccel != NULL);
 		m_Accels.AddTail(pAccel);
 	}

@@ -31,12 +31,6 @@
 #include "../gba/GBAGlobals.h"
 #include "../gb/GB.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 extern int32 gbBorderOn;
 extern int32 soundQuality;
 

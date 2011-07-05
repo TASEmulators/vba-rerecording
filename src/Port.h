@@ -107,6 +107,12 @@ typedef int16  s16;
 typedef int32  s32;
 typedef int64  s64;
 
+// for consistency
+static inline u8 swap8(u8 v)
+{
+	return v;
+}
+
 // swaps a 16-bit value
 static inline u16 swap16(u16 v)
 {
@@ -118,6 +124,12 @@ static inline u32 swap32(u32 v)
 {
 	return (v<<24)|((v<<8)&0xff0000)|((v>>8)&0xff00)|(v>>24);
 }
+
+#define READ8LE(x) \
+    *((u8 *)x)
+
+#define WRITE8LE(x, v) \
+    *((u8 *)x) = (v)
 
 #ifdef WORDS_BIGENDIAN
 #if defined(__GNUC__) && defined(__ppc__)

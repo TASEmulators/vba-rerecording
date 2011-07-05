@@ -148,12 +148,6 @@ static const struct {
 	{ DIK_MEDIASELECT,	VK_LAUNCH_MEDIA_SELECT,	0 },
 };
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 extern void directXMessage(const char *);
 extern void winlog(const char *msg, ...);
 

@@ -74,15 +74,18 @@ void mode5RenderLineNoWindow();
 void mode5RenderLineAll();
 
 extern int  coeff[32];
-extern u32  line0[240];
-extern u32  line1[240];
-extern u32  line2[240];
-extern u32  line3[240];
-extern u32  lineOBJ[240];
-extern u32  lineOBJWin[240];
-extern u32  lineMix[240];
-extern bool gfxInWin0[240];
-extern bool gfxInWin1[240];
+
+#define LINE_BUFFER_OVERFLOW_LEEWAY (512-240)
+
+extern u32  line0[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern u32  line1[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern u32  line2[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern u32  line3[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern u32  lineOBJ[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern u32  lineOBJWin[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern u32  lineMix[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern bool gfxInWin0[240+LINE_BUFFER_OVERFLOW_LEEWAY];
+extern bool gfxInWin1[240+LINE_BUFFER_OVERFLOW_LEEWAY];
 
 extern int gfxBG2Changed;
 extern int gfxBG3Changed;

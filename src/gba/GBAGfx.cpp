@@ -9,7 +9,6 @@ int coeff[32] = {
 // renders outside the given buffer (past 239) which corrupts other memory,
 // so rather than find all places in that code that need to be fixed,
 // just give it enough extra scratch space to use
-#define LINE_BUFFER_OVERFLOW_LEEWAY (512-240)
 
 u32  line0[240+LINE_BUFFER_OVERFLOW_LEEWAY];
 u32  line1[240+LINE_BUFFER_OVERFLOW_LEEWAY];

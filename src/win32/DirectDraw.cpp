@@ -14,12 +14,6 @@
 #include "../common/Text.h"
 #include "../version.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 extern u32 RGB_LOW_BITS_MASK;
 extern int systemSpeed;
 extern int Init_2xSaI(u32);

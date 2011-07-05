@@ -260,24 +260,6 @@ void remotePutPacket(char *packet)
 	 */
 }
 
-#define debuggerReadMemory(addr) \
-    (*(u32 *)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask])
-
-#define debuggerReadHalfWord(addr) \
-    (*(u16 *)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask])
-
-#define debuggerReadByte(addr) \
-    map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
-
-#define debuggerWriteMemory(addr, value) \
-    *(u32 *)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask] = (value)
-
-#define debuggerWriteHalfWord(addr, value) \
-    *(u16 *)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask] = (value)
-
-#define debuggerWriteByte(addr, value) \
-    map[(addr)>>24].address[(addr) & map[(addr)>>24].mask] = (value)
-
 void remoteOutput(char *s, u32 addr)
 {
 	char buffer[16384];

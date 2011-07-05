@@ -301,11 +301,10 @@ static void drawTextInternal(u8 *screen, int pitch, int x, int y,
 				progressColorList(colorList, loCol, hiCol, outCol);
 
 			u16  mask = u16(~RGB_LOW_BITS_MASK);
-			int  h, w;
 			u16 *s = (u16 *)scr;
-			for (h = 0-1; h < 8+1; h++)
+			for (int h = 0-1; h < 8+1; h++)
 			{
-				for (w = 0-1; w < 8+1; w++, s++)
+				for (int w = 0-1; w < 8+1; w++, s++)
 				{
 					int on = (h < 0 || w < 0 || h >= 8 || w >= 8) ? 0 : (fontdata2[(c<<3)+h]>>w)&1;
 

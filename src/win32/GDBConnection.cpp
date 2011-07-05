@@ -9,12 +9,6 @@
 
 #define SOCKET_MESSAGE WM_APP+1
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 static bool initialized = false;
 
 /////////////////////////////////////////////////////////////////////////////

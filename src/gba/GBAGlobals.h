@@ -18,6 +18,25 @@
 #define VERBOSE_UNDEFINED          256
 #define VERBOSE_AGBPRINT           512
 
+// moved from armdis.cpp
+#define debuggerReadMemory(addr) \
+    READ32LE(&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask])
+
+#define debuggerReadHalfWord(addr) \
+    READ16LE(&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask])
+
+#define debuggerReadByte(addr) \
+    READ8LE(&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask])
+
+#define debuggerWriteMemory(addr, value) \
+    WRITE32LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]), (value))
+
+#define debuggerWriteHalfWord(addr, value) \
+    WRITE16LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]), (value))
+
+#define debuggerWriteByte(addr, value) \
+    WRITE8LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]), (value))
+
 // moved from GBA.h
 typedef struct
 {

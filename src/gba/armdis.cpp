@@ -14,15 +14,6 @@ struct Opcodes
 	const char *mnemonic;
 };
 
-#define debuggerReadMemory(addr) \
-    READ32LE(((u32 *)&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask]))
-
-#define debuggerReadHalfWord(addr) \
-    READ16LE(((u16 *)&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask]))
-
-#define debuggerReadByte(addr) \
-    map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask]
-
 const char hdig[] = "0123456789abcdef";
 
 const char *decVals[16] = {
