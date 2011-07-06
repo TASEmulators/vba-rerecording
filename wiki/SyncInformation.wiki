@@ -11,15 +11,15 @@ Something like this:
 }}}
 
 Version numbers:
- * *Original series:* _1.x.y(.z)_
+ * *Original VBA:* _1.x.y.z_
  * *VBA-M:* _1.8.0.0_ (only SVN revision numbers matter)
  * *VBA-RR:*
-  * *pre v23.3 (?):* _1.7.2.560_ (only SVN revision numbers matter)
+  * *_pre_ v23.5:* _1.7.2.560_ (only SVN revision numbers matter)
   * *v23.x:* _7.23.y.z_
   * *v24-alpha:* _7.24.y.z_
  * *VBA-"ReR":* _8.24.y.z_ (z is likely to be 0 due to bugs...)
 
-Note: This might be inaccurate though.
+Note: This might be inaccurate.
 
 Movies are more likely to be sync-able with VBA-RR versions that are on the same horizontal line. There are always exceptions, nevertheless.
 
