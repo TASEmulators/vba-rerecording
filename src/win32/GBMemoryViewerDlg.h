@@ -27,6 +27,7 @@ class GBMemoryViewerDlg : public ResizeDlg, IUpdateListener, IMemoryViewerDlg
 	GBMemoryViewer m_viewer;
 	bool autoUpdate;
 	int  decimalDisplay;
+	int  align;
 	// Construction
 public:
 	void setCurrentAddress(u32 address);
@@ -63,6 +64,7 @@ protected:
 	afx_msg void On32Bit();
 	afx_msg void OnAutoUpdate();
 	afx_msg void OnDecimalDisplay();
+	afx_msg void OnAlign();
 	afx_msg void OnGo();
 	afx_msg void OnSelchangeAddresses();
 	afx_msg void OnSave();
