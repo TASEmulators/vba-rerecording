@@ -748,7 +748,7 @@ bool AddCheat::addCheat()
 		break;
 	}
 
-	cheatsAdd(code, buffer, address, value, -1, sizeType);
+	cheatsAdd(code, buffer, address, address, value, -1, sizeType);
 	return true;
 }
 
