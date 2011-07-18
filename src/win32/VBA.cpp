@@ -110,13 +110,13 @@ void DrawLuaGui()
 		if (gbBorderOn)
 		{
 			copyX		= 256, copyY       = 224;
-			copyOffsetX = 48,  copyOffsetY = 40;
+			screenX		= 256, screenY     = 224;
 		}
 		else
 		{
 			copyX = 160, copyY = 144;
+			screenX = 160, screenY = 144;
 		}
-		screenX = 160, screenY = 144;
 	}
 	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
