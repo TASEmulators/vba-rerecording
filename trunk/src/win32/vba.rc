@@ -24,29 +24,32 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Version
 //
 
-#include "VersionInfo.h"
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION    VBA_VERSIONINFO_FILEVER
- PRODUCTVERSION VBA_VERSIONINFO_PRODUCTVER
- FILEFLAGSMASK  0x3fL
- FILEFLAGS      VBA_VERSIONINFO_FILEFLAGS
- FILEOS         0x40004L
- FILETYPE       0x1L
- FILESUBTYPE    0x0L
+ FILEVERSION 7,23,5,374
+ PRODUCTVERSION 7,23,5,374
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x3L
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "VBA-RR comes with NO WARRANTY. Use it at your own risk."
-            VALUE "CompanyName", VBA_VERSIONINFO_ORGANIZATION
+            VALUE "CompanyName", "http://code.google.com/p/vba-rerecording/"
             VALUE "FileDescription", "VisualBoyAdvance-ReRecording Emulator"
-            VALUE "FileVersion", VBA_VERSIONINFO_STRFILEVER
+            VALUE "FileVersion", "7, 23, 5, 374"
             VALUE "InternalName", "VBA-RR"
-            VALUE "LegalCopyright", VBA_VERSIONINFO_STRCOPYRIGHT
+            VALUE "LegalCopyright", "Copyright (C) 2005-2011 VBA-RR Development Team"
             VALUE "OriginalFilename", "VisualBoyAdvance.exe"
             VALUE "ProductName", "GB/C/A emulator for Windows"
-            VALUE "ProductVersion", VBA_VERSIONINFO_STRPRODUCTVER
+            VALUE "ProductVersion", "7, 23, 5, 374"
             VALUE "PrivateBuild", "0"
             VALUE "SpecialBuild", "0"
         END
@@ -562,9 +565,10 @@ BEGIN
     PUSHBUTTON      "&Load...",IDC_LOAD,132,157,50,14
     PUSHBUTTON      "&Save...",IDC_SAVE,197,157,50,14
     PUSHBUTTON      "&Close",IDC_CLOSE,262,157,50,14
-    LTEXT           "Current address:",IDC_CURRENT_ADDRESS_LABEL,210,142,77,8
+    LTEXT           "Current address:",IDC_CURRENT_ADDRESS_LABEL,235,142,52,8
     EDITTEXT        IDC_CURRENT_ADDRESS,291,139,82,14,ES_RIGHT | ES_AUTOHSCROLL | WS_DISABLED
-    CONTROL         "Decimal Display",IDC_DECIMAL_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,102,139,66,10
+    CONTROL         "Decimal Display",IDC_DECIMAL_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,85,139,66,10
+    CONTROL         "Align to 16-byte",IDC_ALIGN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,139,65,10
 END
 
 IDD_OAM_VIEW DIALOG 0, 0, 234, 185
