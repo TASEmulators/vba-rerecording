@@ -1020,6 +1020,9 @@ void soundMix()
 	int dsaRatio = ioMem[0x82] & 4;
 	int dsbRatio = ioMem[0x82] & 8;
 
+	if (ioMem)
+		soundBalance = (ioMem[NR51] & soundEnableFlag & ~soundMutedFlag);
+
 	if (soundBalance & 16)
 	{
 		cgbRes = ((s8)soundBuffer[0][soundIndex]);
@@ -1316,63 +1319,40 @@ void soundResume()
 	systemSoundResume();
 }
 
-void soundToggle(int channels)
+void soundEnableChannels(int channels)
 {
-	int active = soundGetEnable() & 0x30f;
-	active ^= channels;
-	soundEnable(active);
-	soundDisable((~active) & 0x30f);
+	int c = (channels & 0x0f) << 4;
+	soundEnableFlag |= ((channels & 0x30f) | c);
 }
 
-void soundEnable(int channels)
+void soundDisableChannels(int channels)
 {
-	int c = channels & 0x0f;
-
-	soundEnableFlag |= ((channels & 0x30f) | c | (c << 4));
-	soundMutedFlag	|= ((channels & 0x30f) | c | (c << 4));
-	extern u8 *gbMemory;
-	if (ioMem)
-		soundBalance = (ioMem[NR51] & soundEnableFlag);
-	else if (gbMemory)
-		soundBalance = (gbMemory[0xff25] & soundEnableFlag);
+	int c = (channels & 0x0f) << 4;
+	soundEnableFlag &= ~((channels & 0x30f) | c);
 }
 
-void soundDisable(int channels)
-{
-	int c = channels & 0x0f;
-
-	soundEnableFlag &= (~((channels & 0x30f) | c | (c << 4)));
-	soundMutedFlag	&= (~((channels & 0x30f) | c | (c << 4)));
-	extern u8 *gbMemory;
-	if (ioMem)
-		soundBalance = (ioMem[NR51] & soundEnableFlag);
-	else if (gbMemory)
-		soundBalance = (gbMemory[0xff25] & soundEnableFlag);
-}
-
-int soundGetEnable()
+int soundGetEnabledChannels()
 {
 	return (soundEnableFlag & 0x30f);
 }
 
-void soundSetMuted(bool isMuted)
+#if 0
+// unused
+void soundMuteChannels(int channels)
 {
-	int32 old = soundMutedFlag;
-	if (isMuted)
-	{
-		soundDisable(soundEnableFlag);
-	}
-	else
-	{
-		soundEnable(soundMutedFlag);
-	}
-	soundMutedFlag = old;
+	soundMutedFlag |= channels & 0x30f;
 }
 
-int soundGetMuted()
+void soundUnmuteChannels(int channels)
+{
+	soundMutedFlag &= ~(channels & 0x30f);
+}
+
+int soundGetMutedChannels()
 {
 	return (soundMutedFlag & 0x30f);
 }
+#endif
 
 void soundReset()
 {
@@ -1478,7 +1458,7 @@ bool soundInit()
 
 		memset(soundFinalWave, 0, soundBufferLen);
 
-		soundPaused = true;
+		soundPaused = 1;
 		return true;
 	}
 	return false;
@@ -1522,7 +1502,12 @@ void soundSaveGame(gzFile gzFile)
 
 void soundReadGame(gzFile gzFile, int version)
 {
+	int32 oldSoundPaused = soundPaused;
+	int32 oldSoundEnableFlag = soundEnableFlag;
 	utilReadData(gzFile, soundSaveStruct);
+	soundPaused = oldSoundPaused;
+	soundEnableFlag = oldSoundEnableFlag;
+
 	if (version >= SAVE_GAME_VERSION_3)
 	{
 		utilReadData(gzFile, soundSaveStructV2);

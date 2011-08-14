@@ -629,6 +629,7 @@
 #define IDC_STATIC5                     1375
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40002
+#define ID_OPTIONS_SOUND_MUTE           40003
 #define ID_OPTIONS_VIDEO_VSYNC          40009
 #define ID_OPTIONS_VIDEO_X1             40010
 #define ID_OPTIONS_VIDEO_X2             40011
@@ -642,8 +643,8 @@
 #define ID_FILE_LOAD                    40019
 #define ID_OPTIONS_SOUND_DIRECTSOUNDA   40020
 #define ID_OPTIONS_SOUND_DIRECTSOUNDB   40021
-#define ID_OPTIONS_SOUND_OFF            40022
-#define ID_OPTIONS_SOUND_MUTE           40023
+#define ID_OPTIONS_SOUND_DISABLE        40022
+#define ID_OPTIONS_SOUND_OFF            40023
 #define ID_OPTIONS_SOUND_ON             40024
 #define ID_OPTIONS_SOUND_CHANNEL1       40025
 #define ID_OPTIONS_SOUND_CHANNEL2       40026

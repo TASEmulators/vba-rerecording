@@ -222,7 +222,7 @@ AppendFormat(report, "Emu type     : %s\r\n", VBA_BUILDTYPE_STRING);
 	AppendFormat(report, "Turbo Mode   : %d\r\n", theApp.speedupToggle);
 	AppendFormat(report, "Synchronize  : %d\r\n", synchronize);
 	AppendFormat(report, "Sound OFF    : %d\r\n", soundOffFlag);
-	AppendFormat(report, "Channels     : %04x\r\n", soundGetEnable() & 0x30f);
+	AppendFormat(report, "Channels     : %04x\r\n", soundGetEnabledChannels() & 0x30f);
 	AppendFormat(report, "Old Sync     : %d\r\n", theApp.useOldSync);
 	AppendFormat(report, "Priority     : %d\r\n", theApp.threadPriority);
 	AppendFormat(report, "Filters      : %d (%d)\r\n", theApp.filterType, theApp.ifbType);

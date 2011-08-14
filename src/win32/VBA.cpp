@@ -1933,9 +1933,9 @@ void VBA::loadSettings()
 	accuratePitchThrottle = regQueryDwordValue("accuratePitchThrottle", FALSE) ? TRUE : FALSE;
 
 	// sound
-	int res = regQueryDwordValue("soundEnable", 0x30f);
-	soundEnable(res);
-	soundDisable(~res);
+	int resChannels = regQueryDwordValue("soundEnable", 0x30f);
+	soundEnableChannels(resChannels);
+	soundDisableChannels(~resChannels);
 	soundOffFlag = (regQueryDwordValue("soundOff", 0)) ? true : false;
 	soundQuality = regQueryDwordValue("soundQuality", 2);
 	soundEcho	 = regQueryDwordValue("soundEcho", 0) ? true : false;
@@ -2163,7 +2163,7 @@ void VBA::saveSettings()
 	regSetDwordValue("accuratePitchThrottle", accuratePitchThrottle);
 
 	// sound
-	regSetDwordValue("soundEnable", (soundGetMuted() | soundGetEnable()) & 0x30f);
+	regSetDwordValue("soundEnable", soundGetEnabledChannels() & 0x030f);
 	regSetDwordValue("soundOff", soundOffFlag);
 	regSetDwordValue("soundQuality", soundQuality);
 	regSetDwordValue("soundEcho", soundEcho);

@@ -102,6 +102,7 @@ extern int32 sound4EnvelopeUpDown;
 extern int32 sound4EnvelopeATLReload;
 
 extern int32 soundEnableFlag;
+extern int32 soundMutedFlag;
 
 extern int32 soundFreqRatio[8];
 extern int32 soundShiftClock[16];
@@ -650,6 +651,9 @@ void gbSoundMix()
 {
 	int res = 0;
 
+	if (gbMemory)
+		soundBalance = (gbMemory[NR51] & soundEnableFlag & ~soundMutedFlag);
+
 	if (soundBalance & 16)
 	{
 		res += ((s8)soundBuffer[0][soundIndex]);
@@ -1098,7 +1102,11 @@ void gbSoundSaveGame(gzFile gzFile)
 
 void gbSoundReadGame(int version, gzFile gzFile)
 {
+	int32 oldSoundPaused = soundPaused;
+	int32 oldSoundEnableFlag = soundEnableFlag;
 	utilReadData(gzFile, gbSoundSaveStruct);
+	soundPaused = oldSoundPaused;
+	soundEnableFlag = oldSoundEnableFlag;
 
 	soundBufferIndex = soundIndex * 2;
 
