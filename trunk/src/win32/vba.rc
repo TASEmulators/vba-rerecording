@@ -1993,12 +1993,12 @@ BEGIN
         END
         POPUP "&Audio"
         BEGIN
-            MENUITEM "&On",                         ID_OPTIONS_SOUND_ON
-            MENUITEM "&Mute",                       ID_OPTIONS_SOUND_MUTE
-            MENUITEM "O&ff",                        ID_OPTIONS_SOUND_OFF
+            MENUITEM "&Disable",                    ID_OPTIONS_SOUND_DISABLE
             MENUITEM SEPARATOR
+            MENUITEM "&Mute All Channels",          ID_OPTIONS_SOUND_MUTE
             MENUITEM "Mute Frame &Advance",         ID_OPTIONS_SOUND_MUTEFRAMEADVANCE
             MENUITEM "Mute When &Inactive",         ID_OPTIONS_SOUND_MUTEWHENINACTIVE
+            MENUITEM SEPARATOR
             MENUITEM "&Use Old Synchronization",    ID_OPTIONS_SOUND_USEOLDSYNCHRONIZATION
             MENUITEM "&Reverse Stereo",             ID_OPTIONS_SOUND_REVERSESTEREO
             MENUITEM SEPARATOR
@@ -2016,6 +2016,9 @@ BEGIN
             END
             POPUP "&Channels"
             BEGIN
+                MENUITEM "&Enable All Channels",        ID_OPTIONS_SOUND_ON, CHECKED
+                MENUITEM "&Disable All Channels",       ID_OPTIONS_SOUND_OFF
+                MENUITEM SEPARATOR
                 MENUITEM "Channel &1",                  ID_OPTIONS_SOUND_CHANNEL1, CHECKED
                 MENUITEM "Channel &2",                  ID_OPTIONS_SOUND_CHANNEL2, CHECKED
                 MENUITEM "Channel &3",                  ID_OPTIONS_SOUND_CHANNEL3, CHECKED
@@ -2147,8 +2150,8 @@ BEGIN
             MENUITEM "&Disassemble...",             ID_TOOLS_DISASSEMBLE
             MENUITEM "&Logging...",                 ID_TOOLS_LOGGING
             MENUITEM "&IO Viewer...",               ID_TOOLS_IOVIEWER
-            MENUITEM "M&ap Viewer...",              ID_TOOLS_MAPVIEW
-            MENUITEM "&Memory Viewer...",           ID_TOOLS_MEMORYVIEWER
+            MENUITEM "&Map Viewer...",              ID_TOOLS_MAPVIEW
+            MENUITEM "Memory &Viewer...",           ID_TOOLS_MEMORYVIEWER
             MENUITEM "&OAM Viewer...",              ID_TOOLS_OAMVIEWER
             MENUITEM "&Palette Viewer...",          ID_TOOLS_PALETTEVIEW
             MENUITEM "&Tile Viewer...",             ID_TOOLS_TILEVIEWER

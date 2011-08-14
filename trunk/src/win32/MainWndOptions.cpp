@@ -31,8 +31,6 @@ extern int emulating;
 
 #define VBA_CONFIRM_MODE WM_APP + 100
 
-extern void CPUUpdateRenderBuffers(bool force);
-
 void MainWnd::OnOptionsFrameskipThrottleNothrottle()
 {
 	systemSetThrottle(0);
@@ -1100,43 +1098,69 @@ void MainWnd::OnUpdateOptionsEmulatorBmpformat(CCmdUI*pCmdUI)
 	pCmdUI->SetCheck(theApp.captureFormat == 1);
 }
 
-void MainWnd::OnOptionsSoundOff()
-{
-	soundOffFlag = true;
-	soundShutdown();
-}
-
-void MainWnd::OnUpdateOptionsSoundOff(CCmdUI*pCmdUI)
-{
-	pCmdUI->SetCheck(soundOffFlag);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
-}
-
-void MainWnd::OnOptionsSoundMute()
-{
-	soundDisable(0x30f);
-}
-
-void MainWnd::OnUpdateOptionsSoundMute(CCmdUI*pCmdUI)
-{
-	int active = soundGetEnable() & 0x30f;
-	pCmdUI->SetCheck(active == 0);
-}
-
-void MainWnd::OnOptionsSoundOn()
+void MainWnd::OnOptionsSoundDisable()
 {
 	if (soundOffFlag)
 	{
 		soundOffFlag = false;
 		soundInit();
 	}
-	soundEnable(0x30f);
+	else
+	{
+		soundOffFlag = true;
+		soundShutdown();
+	}
+}
+
+void MainWnd::OnUpdateOptionsSoundDisable(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(soundOffFlag);
+	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+}
+
+static void OnSoundToggleEnabled(int c)
+{
+	if (soundGetEnabledChannels() & c)
+	{
+		soundDisableChannels(c);
+	}
+	else
+	{
+		soundEnableChannels(c);
+	}
+}
+
+void MainWnd::OnOptionsSoundMute()
+{
+	if ((soundGetEnabledChannels() & 0x030f) == 0)
+		soundEnableChannels(0x030f);
+	else
+		soundDisableChannels(0x030f);
+}
+
+void MainWnd::OnUpdateOptionsSoundMute(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck((soundGetEnabledChannels() & 0x030f) == 0);
+}
+
+void MainWnd::OnOptionsSoundOff()
+{
+	soundDisableChannels(0x030f);
+}
+
+void MainWnd::OnUpdateOptionsSoundOff(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck((soundGetEnabledChannels() & 0x030f) == 0);
+}
+
+void MainWnd::OnOptionsSoundOn()
+{
+	soundEnableChannels(0x030f);
 }
 
 void MainWnd::OnUpdateOptionsSoundOn(CCmdUI*pCmdUI)
 {
-	int active = soundGetEnable() & 0x30f;
-	pCmdUI->SetCheck(active != 0 && !soundOffFlag);
+	pCmdUI->SetCheck(soundGetEnabledChannels() == 0x030f);
 }
 
 void MainWnd::OnOptionsSoundUseoldsynchronization()
@@ -1275,64 +1299,64 @@ void MainWnd::OnUpdateOptionsSoundVolume5x(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSoundChannel1()
 {
-	soundToggle(0x01);
+	OnSoundToggleEnabled(0x01);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel1(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnable() & 1);
+	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x01);
 }
 
 void MainWnd::OnOptionsSoundChannel2()
 {
-	soundToggle(0x02);
+	OnSoundToggleEnabled(0x02);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel2(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnable() & 2);
+	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x02);
 }
 
 void MainWnd::OnOptionsSoundChannel3()
 {
-	soundToggle(0x04);
+	OnSoundToggleEnabled(0x04);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel3(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnable() & 4);
+	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x04);
 }
 
 void MainWnd::OnOptionsSoundChannel4()
 {
-	soundToggle(0x08);
+	OnSoundToggleEnabled(0x08);
 }
 
 void MainWnd::OnUpdateOptionsSoundChannel4(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnable() & 8);
+	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x08);
 }
 
 void MainWnd::OnOptionsSoundDirectsounda()
 {
-	soundToggle(0x0100);
+	OnSoundToggleEnabled(0x0100);
 }
 
 void MainWnd::OnUpdateOptionsSoundDirectsounda(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnable() & 256);
-	pCmdUI->Enable(systemCartridgeType == 0);
+	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x0100);
+	//pCmdUI->Enable(systemCartridgeType == 0);
 }
 
 void MainWnd::OnOptionsSoundDirectsoundb()
 {
-	soundToggle(0x0200);
+	OnSoundToggleEnabled(0x0200);
 }
 
 void MainWnd::OnUpdateOptionsSoundDirectsoundb(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnable() & 512);
-	pCmdUI->Enable(systemCartridgeType == 0);
+	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x0200);
+	//pCmdUI->Enable(systemCartridgeType == 0);
 }
 
 void MainWnd::OnOptionsGameboyBorder()
