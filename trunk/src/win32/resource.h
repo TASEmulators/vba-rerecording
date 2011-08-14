@@ -7,7 +7,6 @@
 #define IDS_SAVE_GAME_NOT_USING_BIOS    3
 #define IDS_SAVE_GAME_USING_BIOS        4
 #define IDS_UNSUPPORTED_SAVE_TYPE       5
-#define VBA_RR_MINOR_VERSION_NO         5
 #define IDS_CANNOT_OPEN_FILE            6
 #define IDS_BAD_ZIP_FILE                7
 #define IDS_NO_IMAGE_ON_ZIP             8
@@ -26,7 +25,6 @@
 #define IDS_ERROR_OPENING_IMAGE_FROM    21
 #define IDS_ERROR_READING_IMAGE_FROM    22
 #define IDS_UNSUPPORTED_ROM_SIZE        23
-#define VBA_RR_MAJOR_VERSION_NO         23
 #define IDS_UNSUPPORTED_RAM_SIZE        24
 #define IDS_UNKNOWN_CARTRIDGE_TYPE      25
 #define IDS_MAXIMUM_NUMBER_OF_CHEATS    26
@@ -106,7 +104,6 @@
 #define IDD_RAMWATCH                    163
 #define IDD_PROMPT                      164
 #define IDR_ACCELERATOR1                165
-#define SVN_REV                         374
 #define IDC_R0                          1000
 #define IDC_EDIT_UP                     1000
 #define IDC_R1                          1001
