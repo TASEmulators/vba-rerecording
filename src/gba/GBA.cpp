@@ -41,7 +41,6 @@
     *extCpuLoopTicks = *extClockTicks; \
     *extTicks		 = *extClockTicks;
 
-u32 mastercode = 0;
 int32 cpuDmaTicksToUpdate = 0;
 int32 cpuDmaCount		  = 0;
 bool8 cpuDmaHack		  = 0;
