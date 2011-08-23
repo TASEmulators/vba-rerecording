@@ -4119,6 +4119,7 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 		}
 	}
 
+	// FIXME: ?????????
 //	gbReset();
 
 	inBios = ib;
@@ -4480,8 +4481,9 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 		gbScreenOn			= (utilReadInt(gzFile) ? true : false);
 	}
 
-	if (gbSpeed)
-		gbLine99Ticks *= 2;
+	// FIXME: ?????????
+//	if (gbSpeed)
+//		gbLine99Ticks *= 2;
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 

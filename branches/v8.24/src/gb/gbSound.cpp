@@ -1118,6 +1118,7 @@ void gbSoundReadGame(int version, gzFile gzFile)
 	utilGzRead(gzFile, soundBuffer, 4 * 735);
 	utilGzRead(gzFile, soundFinalWave, 2 * 735);
 
+	// note: this resets the value of soundIndex to 0
 	if (version >= 7)
 	{
 		int quality = 1;
