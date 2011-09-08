@@ -8,6 +8,10 @@
 #include "../common/movie.h"
 #include <direct.h>
 
+#include "GSACodeSelect.h"
+#include "../gba/GBACheats.h"
+#include "../gb/gbCheats.h"
+
 // #undef WinDef macro garbage
 #ifdef max
 #undef max
@@ -343,10 +347,6 @@ int winScreenCapture(int captureNumber)
 
 	return captureNumber;
 }
-
-#include "GSACodeSelect.h"
-#include "../gba/GBACheats.h"
-#include "../gb/gbCheats.h"
 
 bool winImportGSACodeFile(CString &fileName)
 {
