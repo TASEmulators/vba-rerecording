@@ -323,10 +323,12 @@ static void remember_input_state()
 
 static void change_state(MovieState new_state)
 {
+#if 0
 	if (Movie.state == MOVIE_STATE_RECORD)
 	{
-		//truncate_movie(Movie.header.length_frames);
+		truncate_movie(Movie.header.length_frames);
 	}
+#endif
 
 #if (defined(WIN32) && !defined(SDL))
 	theApp.frameSearching	   = false;
@@ -1450,8 +1452,6 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame	 = current_frame;
 		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
-
-		change_state(MOVIE_STATE_PLAY);
 	}
 	else
 	{
@@ -1473,9 +1473,9 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		// for consistency, no auto movie conversion here since we don't auto convert the corresponding savestate
 		flush_movie_header();
 		flush_movie_frames();
-
-		change_state(MOVIE_STATE_RECORD);
 	}
+
+	change_state(MOVIE_STATE_PLAY);	// check for movie end
 
 	// necessary!
 	resetSignaled	  = false;
@@ -1545,7 +1545,7 @@ bool VBAMovieSwitchToRecording()
 	change_state(MOVIE_STATE_RECORD);
 	systemScreenMessage("Movie re-record");
 
-	truncate_movie(Movie.currentFrame);
+	//truncate_movie(Movie.currentFrame);
 
 	return true;
 }
@@ -1615,8 +1615,6 @@ void VBAMovieRestart()
 		movieName[_MAX_PATH - 1] = '\0';
 		VBAMovieOpen(movieName, Movie.readOnly); // can't just pass in Movie.filename, since VBAMovieOpen clears out Movie's
 		                                         // variables
-
-		long where = ftell(Movie.file);
 
 		Movie.RecordedThisSession = modified;
 
