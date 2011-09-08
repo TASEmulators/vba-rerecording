@@ -183,7 +183,13 @@ void MainWnd::OnFileLoad()
 		theApp.rewindSaveNeeded = false;
 
 		if (res)
+		{
+			if (VBAMovieActive() && !VBAMovieReadOnly())
+			{
+				VBAMovieSwitchToRecording();
+			}
 			systemScreenMessage(winResLoadString(IDS_LOADED_STATE));
+		}
 	}
 }
 
@@ -211,12 +217,20 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 		if (VBAMovieActive())
 		{
 			if (VBAMovieReadOnly())
+			{
 				format = winResLoadString(IDS_REPLAYED_STATE_N);
+			}
 			else
+			{
+				VBAMovieSwitchToRecording();
 				format = winResLoadString(IDS_RERECORDED_STATE_N);
+			}
 		}
 		else
+		{
 			format = winResLoadString(IDS_LOADED_STATE_N);
+		}
+
 		CString buffer;
 		buffer.Format(format, nID);
 		systemScreenMessage(buffer);
@@ -230,7 +244,12 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 			FILETIME   ft;
 			GetSystemTime(&st);
 			SystemTimeToFileTime(&st, &ft);
-			HANDLE fh = CreateFile(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+			HANDLE fh = CreateFile(filename, 
+									GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 
+									NULL, 
+									OPEN_EXISTING, 
+									0, 
+									NULL);
 			if (fh != INVALID_HANDLE_VALUE)
 				SetFileTime(fh, NULL, NULL, &ft);
 			CloseHandle(fh);

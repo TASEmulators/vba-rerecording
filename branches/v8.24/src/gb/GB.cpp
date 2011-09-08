@@ -640,8 +640,6 @@ void gbGenFilter()
 }
 #endif
 
-u8 gbReadMemory(u16 address);
-
 // used for OAM DMA only
 static void gbOamDmaCopyMemory(u16 address)
 {
