@@ -5,9 +5,9 @@
 #include "gbGlobals.h"
 #include "gbSound.h"
 
-extern u8  soundBuffer[6][735];
-extern u16 soundFinalWave[1470];
-extern int soundVolume;
+extern u8	 soundBuffer[6][735];
+extern u16	 soundFinalWave[1470];
+extern int32 soundVolume;
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000

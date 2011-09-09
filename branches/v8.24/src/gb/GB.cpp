@@ -209,9 +209,9 @@ u32 gbElapsedTime	   = 0;
 u32 gbTimeNow		   = 0;
 int gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
 // emulator features
-int	 gbBattery		= 0;
-bool gbBatteryError = false;
-int	 gbJoymask[4]	= { 0, 0, 0, 0 };
+int	  gbBattery		= 0;
+bool  gbBatteryError = false;
+int32 gbJoymask[4]	= { 0, 0, 0, 0 };
 
 static bool newFrame = true;
 static bool pauseAfterFrameAdvance = false;

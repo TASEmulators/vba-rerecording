@@ -5,11 +5,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-extern int gbRomSizeMask;
-extern int gbRomSize;
-extern int gbRamSize;
-extern int gbRamSizeMask;
-extern int gbTAMA5ramSize;
+extern int32 gbRomSizeMask;
+extern int32 gbRomSize;
+extern int32 gbRamSize;
+extern int32 gbRamSizeMask;
+extern int32 gbTAMA5ramSize;
 
 extern bool8 useBios;
 extern bool8 skipBios;
@@ -83,24 +83,24 @@ static inline void gbWriteMemoryQuick32(u16 addr, u32 b)
 	gbWriteMemoryQuick(addr + 1, (b >> 24) & 0xff);
 }
 
-extern int	gbFrameSkip;
-extern u16	gbColorFilter[32768];
-extern int	gbColorOption;
-extern int	gbPaletteOption;
-extern int	gbEmulatorType;
-extern int	gbBorderOn;
-extern int	gbBorderAutomatic;
-extern int	gbCgbMode;
-extern int	gbSgbMode;
-extern int	gbWindowLine;
-extern int	gbSpeed;
-extern u8	gbBgp[4];
-extern u8	gbObp0[4];
-extern u8	gbObp1[4];
-extern u16	gbPalette[128];
-extern bool gbScreenOn;
-extern bool gbDrawWindow;
-extern u8	gbSCYLine[300];
+extern int	 gbFrameSkip;
+extern u16	 gbColorFilter[32768];
+extern int	 gbColorOption;
+extern int32 gbPaletteOption;
+extern int	 gbEmulatorType;
+extern int32 gbBorderOn;
+extern int	 gbBorderAutomatic;
+extern int	 gbCgbMode;
+extern int	 gbSgbMode;
+extern int	 gbWindowLine;
+extern int	 gbSpeed;
+extern u8	 gbBgp[4];
+extern u8	 gbObp0[4];
+extern u8	 gbObp1[4];
+extern u16	 gbPalette[128];
+extern bool  gbScreenOn;
+extern bool  gbDrawWindow;
+extern u8	 gbSCYLine[300];
 // gbSCXLine is used for the emulation (bug) of the SX change
 // found in the Artic Zone game.
 extern u8 gbSCXLine[300];
