@@ -85,7 +85,7 @@ static inline void gbWriteMemoryQuick32(u16 addr, u32 b)
 
 extern int	 gbFrameSkip;
 extern u16	 gbColorFilter[32768];
-extern int	 gbColorOption;
+extern int32 gbColorOption;
 extern int32 gbPaletteOption;
 extern int	 gbEmulatorType;
 extern int32 gbBorderOn;

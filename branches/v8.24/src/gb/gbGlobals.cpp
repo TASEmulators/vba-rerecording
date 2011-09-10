@@ -28,7 +28,7 @@ int	 gbCgbMode = 0;
 
 u16   gbColorFilter[32768];
 int32 gbColorOption		 = 0;
-int   gbPaletteOption	 = 0;
+int32 gbPaletteOption	 = 0;
 int	  gbEmulatorType	 = 0;
 int32 gbBorderOn		 = 1;
 int   gbBorderAutomatic	 = 0;
