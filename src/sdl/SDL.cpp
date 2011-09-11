@@ -2720,6 +2720,8 @@ void systemRefreshScreen(){}
 void systemRenderFrame()
 {
   renderedFrames++;
+  VBAUpdateFrameCountDisplay();
+  VBAUpdateButtonPressDisplay();
   
   if(yuv) {
     Draw_Overlay(surface, sizeOption+1);
