@@ -37,6 +37,7 @@ bin_PROGRAMS = VisualBoyAdvance$(EXEEXT)
 noinst_PROGRAMS = TestEmu$(EXEEXT)
 subdir = src/sdl
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+OBJDIR = $(top_srcdir)/src/obj
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
@@ -57,7 +58,7 @@ TestEmu_OBJECTS = $(am_TestEmu_OBJECTS)
 am_VisualBoyAdvance_OBJECTS = SDL.$(OBJEXT) debugger.$(OBJEXT) \
 	expr-lex.$(OBJEXT) expr.$(OBJEXT) exprNode.$(OBJEXT) \
 	getopt.$(OBJEXT) getopt1.$(OBJEXT)
-VisualBoyAdvance_OBJECTS = $(am_VisualBoyAdvance_OBJECTS)
+VisualBoyAdvance_OBJECTS = $(patsubst %,$(OBJDIR)/%,$(am_VisualBoyAdvance_OBJECTS))
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -307,9 +308,23 @@ clean-noinstPROGRAMS:
 TestEmu$(EXEEXT): $(TestEmu_OBJECTS) $(TestEmu_DEPENDENCIES) 
 	@rm -f TestEmu$(EXEEXT)
 	$(CXXLINK) $(TestEmu_OBJECTS) $(TestEmu_LDADD) $(LIBS)
-VisualBoyAdvance$(EXEEXT): $(VisualBoyAdvance_OBJECTS) $(VisualBoyAdvance_DEPENDENCIES) 
+	
+OBJECTS_ = \
+2xSaImmx.o  elf.o         GBASound.o   gbSound.o     Mode2.o       RTC.o \
+2xSaI.o     gbCheats.o   getopt1.o     Mode3.o       scanline.o expr.o \
+admame.o    gbDis.o      getopt.o      Mode4.o       SDL.o expr-lex.o \
+agbprint.o  gbGfx.o      hq2x.o        Mode5.o       simple2x.o exprNode.o \
+armdis.o    Flash.o       gbGlobals.o  interframe.o  motionblur.o  Sram.o \
+bilinear.o  GBACheats.o   gbMemory.o   lua-engine.o  movie.o        \
+bios.o      GBAGfx.o      GB.o         memgzio.o     pixel.o       Text.o \
+GBAGlobals.o  gbPrinter.o  Mode0.o       prof.o        unzip.o debugger.o\
+EEprom.o    GBA.o         gbSGB.o      Mode1.o       remote.o      Util.o \
+
+OBJECTS = $(patsubst %,$(OBJDIR)/%,$(OBJECTS_))
+
+$(top_srcdir)/src/VisualBoyAdvance$(EXEEXT): $(OBJECTS) $(top_srcdir)/src/lua/libgblua.a 
 	@rm -f VisualBoyAdvance$(EXEEXT)
-	$(CXXLINK) $(VisualBoyAdvance_OBJECTS) $(VisualBoyAdvance_LDADD) $(LIBS)
+	$(CXXLINK) $(OBJECTS) $(top_srcdir)/src/lua/libgblua.a -L/usr/lib -lSDL -lpthread -lpng -lz
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -326,7 +341,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
 
-.c.o:
+$(OBJDIR)/%.o: %.c
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -340,7 +355,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
-.cpp.o:
+$(OBJDIR)/%.o: %.cpp
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -429,7 +444,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(VisualBoyAdvance_OBJECTS) $(top_srcdir)/src/VisualBoyAdvance$(EXEEXT)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \

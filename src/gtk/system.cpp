@@ -25,9 +25,9 @@
 
 #include "../common/System.h"
 #include "../common/Util.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 
 #include "window.h"
 #include "intl.h"
@@ -162,12 +162,12 @@ void systemSetTitle(const char * _csTitle)
   GUI()->set_title(_csTitle);
 }
 
-void systemScreenCapture(int _iNum)
+int systemScreenCapture(int _iNum)
 {
   GUI()->vCaptureScreen(_iNum);
 }
 
-void systemWriteDataToSoundBuffer()
+void systemSoundWriteToBuffer()
 {
   if (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)
   {

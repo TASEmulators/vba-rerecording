@@ -35,6 +35,7 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = src/prof
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+OBJDIR = $(top_srcdir)/src/obj
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
@@ -52,7 +53,7 @@ ARFLAGS = cru
 libprof_a_AR = $(AR) $(ARFLAGS)
 libprof_a_LIBADD =
 am_libprof_a_OBJECTS = prof.$(OBJEXT)
-libprof_a_OBJECTS = $(am_libprof_a_OBJECTS)
+libprof_a_OBJECTS = $(patsubst %,$(OBJDIR)/%,$(am_libprof_a_OBJECTS))
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -257,7 +258,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prof.Po@am__quote@
 
-.cpp.o:
+$(OBJDIR)/%.o: %.cpp
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -346,7 +347,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(libprof_a_OBJECTS)
 installdirs:
 install: install-am
 install-exec: install-exec-am

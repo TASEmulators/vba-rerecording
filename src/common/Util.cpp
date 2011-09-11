@@ -43,6 +43,14 @@ static int	   (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
 static z_off_t (ZEXPORT *utilGzSeekFunc)(gzFile, z_off_t, int) = NULL;
 static z_off_t (ZEXPORT *utilGzTellFunc)(gzFile) = NULL;
 
+//Kludge to get it to compile in Linux, GCC cannot convert
+//gzwrite function pointer to the type of utilGzWriteFunc
+//due to void* and const void* differences
+//--Felipe 
+int gzWrite(gzFile file, void* buf, unsigned len){
+	return gzwrite(file,buf,len);
+}
+
 void utilPutDword(u8 *p, u32 value)
 {
 	*p++ = value & 255;
@@ -1146,7 +1154,7 @@ void utilWriteData(gzFile gzFile, variable_desc *data)
 
 gzFile utilGzOpen(const char *file, const char *mode)
 {
-	utilGzWriteFunc = gzwrite;
+	utilGzWriteFunc = gzWrite;
 	utilGzReadFunc	= gzread;
 	utilGzCloseFunc = gzclose;
 	utilGzSeekFunc	= gzseek;
@@ -1157,7 +1165,7 @@ gzFile utilGzOpen(const char *file, const char *mode)
 
 gzFile utilGzReopen(int id, const char *mode)
 {
-	utilGzWriteFunc = gzwrite;
+	utilGzWriteFunc = gzWrite;
 	utilGzReadFunc	= gzread;
 	utilGzCloseFunc = gzclose;
 	utilGzSeekFunc	= gzseek;

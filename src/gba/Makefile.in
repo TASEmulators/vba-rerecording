@@ -35,6 +35,7 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = src/gba
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+OBJDIR = $(top_srcdir)/src/obj
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
@@ -52,13 +53,13 @@ ARFLAGS = cru
 libgba_a_AR = $(AR) $(ARFLAGS)
 libgba_a_LIBADD =
 am_libgba_a_OBJECTS = agbprint.$(OBJEXT) armdis.$(OBJEXT) \
-	bios.$(OBJEXT) elf.$(OBJEXT) Cheats.$(OBJEXT) EEprom.$(OBJEXT) \
+	bios.$(OBJEXT) elf.$(OBJEXT) GBACheats.$(OBJEXT) EEprom.$(OBJEXT) \
 	Flash.$(OBJEXT) GBA.$(OBJEXT) GBAGfx.$(OBJEXT) \
-	Globals.$(OBJEXT) Mode0.$(OBJEXT) Mode1.$(OBJEXT) \
+	GBAGlobals.$(OBJEXT) Mode0.$(OBJEXT) Mode1.$(OBJEXT) \
 	Mode2.$(OBJEXT) Mode3.$(OBJEXT) Mode4.$(OBJEXT) \
-	Mode5.$(OBJEXT) remote.$(OBJEXT) RTC.$(OBJEXT) Sound.$(OBJEXT) \
+	Mode5.$(OBJEXT) remote.$(OBJEXT) RTC.$(OBJEXT) GBASound.$(OBJEXT) \
 	Sram.$(OBJEXT)
-libgba_a_OBJECTS = $(am_libgba_a_OBJECTS)
+libgba_a_OBJECTS = $(patsubst %,$(OBJDIR)/%,$(am_libgba_a_OBJECTS))
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -320,7 +321,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/remote.Po@am__quote@
 
-.cpp.o:
+$(OBJDIR)/%.o: %.cpp
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -409,7 +410,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(libgba_a_OBJECTS)
 installdirs:
 install: install-am
 install-exec: install-exec-am

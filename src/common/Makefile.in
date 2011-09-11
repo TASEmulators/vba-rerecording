@@ -35,6 +35,7 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = src/common
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+OBJDIR = $(top_srcdir)/src/obj
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
@@ -53,7 +54,7 @@ libgbcom_a_AR = $(AR) $(ARFLAGS)
 libgbcom_a_LIBADD =
 am_libgbcom_a_OBJECTS = lua-engine.$(OBJEXT) memgzio.$(OBJEXT) \
 	movie.$(OBJEXT) Text.$(OBJEXT) unzip.$(OBJEXT) Util.$(OBJEXT)
-libgbcom_a_OBJECTS = $(am_libgbcom_a_OBJECTS)
+libgbcom_a_OBJECTS = $(patsubst %,$(OBJDIR)/%,$(am_libgbcom_a_OBJECTS))
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -224,6 +225,7 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\"$(sysconfdir)\"
 
 AM_CXXFLAGS = -fno-exceptions @SDL_CFLAGS@
+
 all: all-am
 
 .SUFFIXES:
@@ -278,7 +280,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movie.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unzip.Po@am__quote@
 
-.c.o:
+$(OBJDIR)/%.o: %.c
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -292,7 +294,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
-.cpp.o:
+$(OBJDIR)/%.o: %.cpp
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -381,7 +383,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(libgbcom_a_OBJECTS)
 installdirs:
 install: install-am
 install-exec: install-exec-am

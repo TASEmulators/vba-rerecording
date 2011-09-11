@@ -31,20 +31,22 @@
 namespace SigC
 {
 
+using namespace sigc;
+
 template <class T_return, class T_obj1, class T_obj2>
-inline Slot0<T_return>
+inline slot0<T_return>
 slot( T_obj1& _A_obj, T_return (T_obj2::*_A_func)() )
 { return ::sigc::bound_mem_functor0<T_return, T_obj2>
              (dynamic_cast< T_obj1&>(_A_obj), _A_func); }
 
 template <class T_return, class T_arg1, class T_obj1, class T_obj2>
-inline Slot1<T_return, T_arg1>
+inline slot1<T_return, T_arg1>
 slot( T_obj1& _A_obj, T_return (T_obj2::*_A_func)(T_arg1) )
 { return ::sigc::bound_mem_functor1<T_return, T_obj2, T_arg1>
              (dynamic_cast< T_obj1&>(_A_obj), _A_func); }
 
 template <class T_return, class T_arg1,class T_arg2, class T_obj1, class T_obj2>
-inline Slot2<T_return, T_arg1,T_arg2>
+inline slot2<T_return, T_arg1,T_arg2>
 slot( T_obj1& _A_obj, T_return (T_obj2::*_A_func)(T_arg1,T_arg2) )
 { return ::sigc::bound_mem_functor2<T_return, T_obj2, T_arg1,T_arg2>
              (dynamic_cast< T_obj1&>(_A_obj), _A_func); }

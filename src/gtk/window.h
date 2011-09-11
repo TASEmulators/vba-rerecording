@@ -267,7 +267,7 @@ private:
 
   Gtk::Tooltips m_oTooltips;
 
-  SigC::Connection m_oEmuSig;
+  SigC::connection m_oEmuSig;
 
   std::vector<JoypadConfig> m_oJoypads;
   Keymap * m_poKeymap;
