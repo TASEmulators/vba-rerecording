@@ -633,7 +633,7 @@ static void HardResetAndSRAMClear()
 	remove(fname);     // delete the damn SRAM file
 
 	// Henceforth, emuCleanUp means "clear out SRAM"
-	theEmulator.emuCleanUp();     // keep it from being resurrected from RAM
+	//theEmulator.emuCleanUp();     // keep it from being resurrected from RAM <--This is wrong, it'll deallocate all variables --Felipe
 
 	/// FIXME the correct SDL code to call for a full restart isn't in a function yet
 	theEmulator.emuReset(false);

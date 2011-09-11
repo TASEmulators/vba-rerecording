@@ -2621,7 +2621,7 @@ int main(int argc, char **argv)
     soundInit();
 
   autoFrameSkipLastTime = throttleLastTime = systemGetClock();
-  
+
   switch(useMovie)
   {
     case 1: // --recordMovie
@@ -2640,7 +2640,6 @@ int main(int argc, char **argv)
     default:
   	  break;
   }
-  
   SDL_WM_SetCaption("VisualBoyAdvance", NULL);
   
   char *moviefile = getenv("AUTODEMO");
