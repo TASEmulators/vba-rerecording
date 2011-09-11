@@ -1484,7 +1484,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame	 = current_frame;
 		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
-
+		
 		change_state(MOVIE_STATE_PLAY);
 	}
 	else
@@ -1514,14 +1514,14 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	// necessary!
 	resetSignaled	  = false;
 	resetSignaledLast = false;
-
+	
 	// necessary to check if there's a reset signal at the previous frame
 	if (current_frame > 0)
 	{
 		const u8 NEW_RESET = u8(BUTTON_MASK_NEW_RESET >> 8);
 		for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 		{
-			if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(i)) && (Movie.inputBufferPtr[1 - Movie.bytesPerFrame] & NEW_RESET))
+			if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(i)) && (*(Movie.inputBufferPtr+1- Movie.bytesPerFrame) & NEW_RESET))
 			{
 				resetSignaledLast = true;
 				break;
