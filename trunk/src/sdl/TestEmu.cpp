@@ -31,8 +31,8 @@
 #include "common/unzip.h"
 #include "common/Util.h"
 #include "gba/GBA.h"
-#include "gba/Globals.h"
-#include "gba/Sound.h"
+#include "gba/GBAGlobals.h"
+#include "gba/GBASound.h"
 #include "gb/GB.h"
 #include "gb/gbGlobals.h"
 
@@ -248,7 +248,8 @@ int main(int argc, char **argv)
       cartridgeType = 0;
       emulator = GBASystem;
 
-      CPUInit(biosFileName, useBios);
+      //CPUInit(biosFileName, useBios);
+      CPUInit();
       CPUReset();
     } else {
       systemMessage(0, "Unknown file type %s", szFile);
@@ -279,7 +280,8 @@ int main(int argc, char **argv)
 
     emulator = GBASystem;
     
-    CPUInit(biosFileName, useBios);
+    //CPUInit(biosFileName, useBios);
+    CPUInit();
     CPUReset();    
   }
   
@@ -371,7 +373,7 @@ void systemSetTitle(const char *title)
 {
 }
 
-void systemScreenCapture(int a)
+int systemScreenCapture(int a)
 {
   char buffer[2048];
 

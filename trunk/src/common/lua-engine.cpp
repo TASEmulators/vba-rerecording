@@ -3914,15 +3914,19 @@ use_console:
 
 				    static int avi_pause(lua_State *L)
 				    {
+	#ifdef WIN32
 				        if (theApp.aviRecorder != NULL)
 							theApp.aviRecorder->Pause(true);
+	#endif
 				        return 1;
 					}
 
 				    static int avi_resume(lua_State *L)
 				    {
+	#ifdef WIN32
 				        if (theApp.aviRecorder != NULL)
 							theApp.aviRecorder->Pause(false);
+	#endif
 				        return 1;
 					}
 

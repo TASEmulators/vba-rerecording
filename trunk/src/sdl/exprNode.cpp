@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #include "Port.h"
-#include "gba/Globals.h"
+#include "gba/GBAGlobals.h"
 #include "gba/elf.h"
 #include "exprNode.h"
 

@@ -26,8 +26,8 @@
 #include <SDL.h>
 
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
-#include "../gba/Sound.h"
+#include "../gba/GBAGlobals.h"
+#include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
@@ -1449,7 +1449,8 @@ bool Window::bLoadROM(const std::string & _rsFile)
       m_stEmulator = GBASystem;
 
       useBios = m_poCoreConfig->oGetKey<bool>("use_bios_file");
-      CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), useBios);
+      //CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), useBios);
+      CPUInit();
       CPUReset();
 
       // If the bios file was rejected by CPUInit

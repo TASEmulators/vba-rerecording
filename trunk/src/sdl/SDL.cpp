@@ -29,11 +29,11 @@
 #include "SDL.h"
 #include "debugger.h"
 #include "gba/GBA.h"
-#include "gba/Globals.h"
+#include "gba/GBAGlobals.h"
 #include "gba/agbprint.h"
 #include "gba/Flash.h"
 #include "gba/RTC.h"
-#include "gba/Sound.h"
+#include "gba/GBASound.h"
 #include "gb/GB.h"
 #include "gb/gbGlobals.h"
 #include "common/Text.h"
@@ -42,6 +42,7 @@
 #include "common/movie.h"
 #include "common/System.h"
 #include "common/inputGlobal.h"
+#include "../common/vbalua.h"
 
 
 #define GBC_CAPABLE ((gbRom[0x143] & 0x80) != 0)
@@ -77,13 +78,13 @@ extern void Super2xSaI(u8*,u32,u8*,u8*,u32,int,int);
 extern void Super2xSaI32(u8*,u32,u8*,u8*,u32,int,int);
 extern void SuperEagle(u8*,u32,u8*,u8*,u32,int,int);
 extern void SuperEagle32(u8*,u32,u8*,u8*,u32,int,int);  
-extern void Pixelate(u8*,u32,u8*,u8*,u32,int,int);
-extern void Pixelate32(u8*,u32,u8*,u8*,u32,int,int);
+extern void Pixelate2x16(u8*,u32,u8*,u8*,u32,int,int);
+extern void Pixelate2x32(u8*,u32,u8*,u8*,u32,int,int);
 extern void MotionBlur(u8*,u32,u8*,u8*,u32,int,int);
 extern void MotionBlur32(u8*,u32,u8*,u8*,u32,int,int);
 extern void AdMame2x(u8*,u32,u8*,u8*,u32,int,int);
 extern void AdMame2x32(u8*,u32,u8*,u8*,u32,int,int);
-extern void Simple2x(u8*,u32,u8*,u8*,u32,int,int);
+extern void Simple2x16(u8*,u32,u8*,u8*,u32,int,int);
 extern void Simple2x32(u8*,u32,u8*,u8*,u32,int,int);
 extern void Bilinear(u8*,u32,u8*,u8*,u32,int,int);
 extern void Bilinear32(u8*,u32,u8*,u8*,u32,int,int);
@@ -118,7 +119,7 @@ extern void debuggerOutput(char *, u32);
 
 extern void CPUUpdateRenderBuffers(bool);
 
-struct EmulatedSystem emulator = {
+struct EmulatedSystem theEmulator = {
   NULL,
   NULL,
   NULL,
@@ -165,7 +166,7 @@ u8 *delta = NULL;
 int sdlPrintUsage = 0;
 int disableMMX = 0;
 
-int cartridgeType = 3;
+int systemCartridgeType = 3;
 int sizeOption = 0;
 int captureFormat = 0;
 int useMovie = 0;
@@ -200,7 +201,7 @@ static int rewindTimer = 0;
 
 #define _stricmp strcasecmp
 
-bool sdlButtons[4][12] = {
+/*bool sdlButtons[4][12] = {
   { false, false, false, false, false, false, 
     false, false, false, false, false, false },
   { false, false, false, false, false, false,
@@ -209,9 +210,19 @@ bool sdlButtons[4][12] = {
     false, false, false, false, false, false },
   { false, false, false, false, false, false,
     false, false, false, false, false, false }
-};
+};*/
+/*
+	I'm changing the way the SDL GUI handles the button
+	input to match the one in win32, this is needed in
+	order to be compatible with the format required by
+	common/movie.cpp
+	--Felipe
+*/
+
+u16 currentButtons[4] = {0, 0, 0, 0};
 
 bool sdlMotionButtons[4] = { false, false, false, false };
+const int32 INITIAL_SENSOR_VALUE = 2047;
 
 int sdlNumDevices = 0;
 SDL_Joystick **sdlDevices = NULL;
@@ -1154,8 +1165,8 @@ void sdlReadPreferences(FILE *f)
       soundOffFlag = sdlFromHex(value) ? true : false;
     } else if(!strcmp(key, "soundEnable")) {
       int res = sdlFromHex(value) & 0x30f;
-      soundEnable(res);
-      soundDisable(~res);
+      soundEnableChannels(res);
+      soundDisableChannels(~res);
     } else if(!strcmp(key, "soundEcho")) {
       soundEcho = sdlFromHex(value) ? true : false;
     } else if(!strcmp(key, "soundLowPass")) {
@@ -1356,8 +1367,8 @@ void sdlWriteState(int num)
             num+1);
   else
     sprintf(stateName,"%s%d.sgm", filename, num+1);
-  if(emulator.emuWriteState)
-    emulator.emuWriteState(stateName);
+  if(theEmulator.emuWriteState)
+    theEmulator.emuWriteState(stateName);
   sprintf(stateName, "Wrote state %d", num+1);
   systemScreenMessage(stateName);
 }
@@ -1372,8 +1383,8 @@ void sdlReadState(int num)
   else
     sprintf(stateName,"%s%d.sgm", filename, num+1);
 
-  if(emulator.emuReadState)
-    emulator.emuReadState(stateName);
+  if(theEmulator.emuReadState)
+    theEmulator.emuReadState(stateName);
 
   sprintf(stateName, "Loaded state %d", num+1);
   systemScreenMessage(stateName);
@@ -1388,7 +1399,7 @@ void sdlWriteBattery()
   else  
     sprintf(buffer, "%s.sav", filename);
 
-  emulator.emuWriteBattery(buffer);	
+  theEmulator.emuWriteBattery(buffer);	
 
   systemScreenMessage("Wrote battery");
 }
@@ -1404,7 +1415,7 @@ void sdlReadBattery()
   
   bool res = false;
 
-  res = emulator.emuReadBattery(buffer);
+  res = theEmulator.emuReadBattery(buffer);
 
   if(res)
     systemScreenMessage("Loaded battery");
@@ -1422,7 +1433,8 @@ void sdlUpdateKey(int key, bool down)
     for(i = 0 ; i < 12; i++) {
       if((joypad[j][i] & 0xf000) == 0) {
         if(key == joypad[j][i])
-          sdlButtons[j][i] = down;
+          if (down) currentButtons[j] |= 1<<i;
+          else currentButtons[j] ^= 1<<i;
       }
     }
   }
@@ -1447,7 +1459,8 @@ void sdlUpdateJoyButton(int which,
         dev--;
         
         if((dev == which) && (b >= 128) && (b == (button+128))) {
-          sdlButtons[j][i] = pressed;
+          if (pressed) currentButtons[j] |= 1<<i;
+          else currentButtons[j] ^= 1<<i;
         }
       }
     }
@@ -1494,7 +1507,8 @@ void sdlUpdateJoyHat(int which,
             v = value & SDL_HAT_LEFT;
             break;
           }
-          sdlButtons[j][i] = (v ? true : false);
+          if (v) currentButtons[j] |= 1<<i;
+          else currentButtons[j] ^= 1<<i;
         }
       }
     }
@@ -1541,7 +1555,15 @@ void sdlUpdateJoyAxis(int which,
         dev--;
         
         if((dev == which) && (a < 32) && ((a>>1) == axis)) {
-          sdlButtons[j][i] = (a & 1) ? (value > 16384) : (value < -16384);
+	  //I have no idea what this does, is this reimplementation correct? --Felipe
+	  if (value>16384) {
+	  	if (a&1) currentButtons[j] |= 1<<i;
+	  	else currentButtons[j] ^= 1<<i;
+	  }
+          else if (value<16384){
+          	if (a&1) currentButtons[j] ^= 1<<i;
+          	else currentButtons[j] |= 1<<i;
+          }
         }
       }
     }
@@ -1712,7 +1734,7 @@ void sdlPollEvents()
         if(!(event.key.keysym.mod & MOD_NOCTRL) &&
            (event.key.keysym.mod & KMOD_CTRL)) {
           if(emulating) {
-            emulator.emuReset(true);
+            theEmulator.emuReset(true);
 
             systemScreenMessage("Reset");
           }
@@ -1721,10 +1743,10 @@ void sdlPollEvents()
       case SDLK_b:
         if(!(event.key.keysym.mod & MOD_NOCTRL) &&
            (event.key.keysym.mod & KMOD_CTRL)) {
-          if(emulating && emulator.emuReadMemState && rewindMemory 
+          if(emulating && theEmulator.emuReadMemState && rewindMemory 
              && rewindCount) {
             rewindPos = --rewindPos & 7;
-            emulator.emuReadMemState(&rewindMemory[REWIND_SIZE*rewindPos], 
+            theEmulator.emuReadMemState(&rewindMemory[REWIND_SIZE*rewindPos], 
                                      REWIND_SIZE);
             rewindCount--;
             rewindCounter = 0;
@@ -1963,13 +1985,13 @@ void file_run()
       systemMessage(0, "Unknown file type %s", szFile);
       exit(-1);
     }
-    cartridgeType = (int)type;
+    systemCartridgeType = (int)type;
 
     if(type == IMAGE_GB) {
       failed = !gbLoadRom(szFile);
       if(!failed) {
-        cartridgeType = 1;
-        emulator = GBSystem;
+        systemCartridgeType = 1;
+        theEmulator = GBSystem;
         if(sdlAutoIPS) {
           int size = gbRomSize;
           utilApplyIPS(ipsname, &gbRom, &size);
@@ -1990,8 +2012,8 @@ void file_run()
 
         sdlApplyPerImagePreferences();
         
-        cartridgeType = 0;
-        emulator = GBASystem;
+        systemCartridgeType = 0;
+        theEmulator = GBASystem;
 
         /* disabled due to problems
         if(removeIntros && rom != NULL) {
@@ -1999,7 +2021,8 @@ void file_run()
         }
         */
         
-        CPUInit(biosFileName, useBios);
+        //CPUInit(biosFileName, useBios);
+	CPUInit();
         CPUReset();
         if(sdlAutoIPS) {
           int size = 0x2000000;
@@ -2301,7 +2324,7 @@ int main(int argc, char **argv)
   }
    else 
   {
-    cartridgeType = 0;
+    systemCartridgeType = 0;
     strcpy(filename, "gnu_stub");
     rom = (u8 *)malloc(0x2000000);
     workRAM = (u8 *)calloc(1, 0x40000);
@@ -2313,9 +2336,10 @@ int main(int argc, char **argv)
     pix = (u8 *)calloc(1, 4 * 240 * 160);
     ioMem = (u8 *)calloc(1, 0x400);
 
-    emulator = GBASystem;
+    theEmulator = GBASystem;
     
-    CPUInit(biosFileName, useBios);
+    //CPUInit(biosFileName, useBios);
+    CPUInit();
     CPUReset();    
   }
   
@@ -2341,11 +2365,11 @@ int main(int argc, char **argv)
   
   sdlCheckKeys();
   
-  if(cartridgeType == 0) {
+  if(systemCartridgeType == 0) {
     srcWidth = 240;
     srcHeight = 160;
     systemFrameSkip = frameSkip;
-  } else if (cartridgeType == 1) {
+  } else if (systemCartridgeType == 1) {
     if(gbBorderOn) {
       srcWidth = 256;
       srcHeight = 224;
@@ -2429,7 +2453,7 @@ int main(int argc, char **argv)
       Init_2xSaI(555);
       RGB_LOW_BITS_MASK = 0x421;      
     }
-    if(cartridgeType == 2) {
+    if(systemCartridgeType == 2) {
       for(int i = 0; i < 0x10000; i++) {
         systemColorMap16[i] = (((i >> 1) & 0x1f) << systemBlueShift) |
           (((i & 0x7c0) >> 6) << systemGreenShift) |
@@ -2479,7 +2503,7 @@ int main(int argc, char **argv)
       filterFunction = SuperEagle;
       break;
     case 5:
-      filterFunction = Pixelate;
+      filterFunction = Pixelate2x16;
       break;
     case 6:
       filterFunction = MotionBlur;
@@ -2488,7 +2512,7 @@ int main(int argc, char **argv)
       filterFunction = AdMame2x;
       break;
     case 8:
-      filterFunction = Simple2x;
+      filterFunction = Simple2x16;
       break;
     case 9:
       filterFunction = Bilinear;
@@ -2527,7 +2551,7 @@ int main(int argc, char **argv)
       filterFunction = SuperEagle32;
       break;
     case 5:
-      filterFunction = Pixelate32;
+      filterFunction = Pixelate2x32;
       break;
     case 6:
       filterFunction = MotionBlur32;
@@ -2605,7 +2629,7 @@ int main(int argc, char **argv)
         /*authorInfo*/"",
         /*startFlags*/0,
         /*controllerFlags*/MOVIE_CONTROLLER(0),
-        /*typeFlags*/(cartridgeType==IMAGE_GBA)?(MOVIE_TYPE_GBA):(GBC_CAPABLE?MOVIE_TYPE_GBC:MOVIE_TYPE_SGB));
+        /*typeFlags*/(systemCartridgeType==IMAGE_GBA)?(MOVIE_TYPE_GBA):(GBC_CAPABLE?MOVIE_TYPE_GBC:MOVIE_TYPE_SGB));
 	  break;
     case 2: // --playMovie
       VBAMovieOpen(movieFileName, false);
@@ -2629,16 +2653,16 @@ int main(int argc, char **argv)
 
   while(emulating) {
     if(!paused && active) {
-      if(debugger && emulator.emuHasDebugger)
+      if(debugger && theEmulator.emuHasDebugger)
         dbgMain();
       else {
-        emulator.emuMain(emulator.emuCount);
-        if(rewindSaveNeeded && rewindMemory && emulator.emuWriteMemState) {
+        theEmulator.emuMain(theEmulator.emuCount);
+        if(rewindSaveNeeded && rewindMemory && theEmulator.emuWriteMemState) {
           rewindCount++;
           if(rewindCount > 8)
             rewindCount = 8;
-          if(emulator.emuWriteMemState &&
-             emulator.emuWriteMemState(&rewindMemory[rewindPos*REWIND_SIZE], 
+          if(theEmulator.emuWriteMemState &&
+             theEmulator.emuWriteMemState(&rewindMemory[rewindPos*REWIND_SIZE], 
                                        REWIND_SIZE)) {
             rewindPos = ++rewindPos & 7;
             if(rewindCount == 8)
@@ -2666,7 +2690,7 @@ int main(int argc, char **argv)
 
   if(gbRom != NULL || rom != NULL) {
     sdlWriteBattery();
-    emulator.emuCleanUp();
+    theEmulator.emuCleanUp();
   }
 
   if(delta) {
@@ -2690,7 +2714,11 @@ void systemMessage(int num, const char *msg, ...)
   va_end(valist);
 }
 
-void systemDrawScreen()
+//On WIN32, this function messages requesting
+//the window to be redrawn. Can this be ignored here?
+void systemRefreshScreen(){}
+
+void systemRenderFrame()
 {
   renderedFrames++;
   
@@ -2704,7 +2732,7 @@ void systemDrawScreen()
   for(int slot = 0 ; slot < 8 ; slot++)
   {
 	if(screenMessage[slot]) {
-		if(cartridgeType == 1 && gbBorderOn) {
+		if(systemCartridgeType == 1 && gbBorderOn) {
 			gbSgbRenderBorder();
 		}
 		if(((systemGetClock() - screenMessageTime[slot]) < screenMessageDuration[slot]) &&
@@ -2825,35 +2853,53 @@ bool systemReadJoypads()
   return true;
 }
 
+// Kludge to make Lua call the right function.
+u32 systemGetOriginalJoypad(int which, bool sensor){
+	return systemGetJoypad(which,sensor);
+}
+
 u32 systemGetJoypad(int which, bool sensor)
 {
     sensorOn = sensor;
   if(which < 0 || which > 3)
     which = sdlDefaultJoypad;
   
-  VBAMovieUpdate(which);
+  //VBAMovieUpdate(which);
+  //VBAMovieUpdateState();
   u32 res = 0;
   
+  //----------------------------//
+  if (VBAMoviePlaying()){
+	// VBAMovieRead() overwrites currentButtons[i]
+	VBAMovieRead(which, sensor);
+	res = currentButtons[which];
+	return res;
+  }  
+  //---------------------------//
+  //Temporary implementation, not sure if it's correct --Felipe
+  
+  /*
   if(sdlButtons[which][KEY_BUTTON_A])
-    res |= 1;
+    res |= BUTTON_MASK_A;
   if(sdlButtons[which][KEY_BUTTON_B])
-    res |= 2;
+    res |= BUTTON_MASK_B;
   if(sdlButtons[which][KEY_BUTTON_SELECT])
-    res |= 4;
+    res |= BUTTON_MASK_SELECT;
   if(sdlButtons[which][KEY_BUTTON_START])
-    res |= 8;
+    res |= BUTTON_MASK_START;
   if(sdlButtons[which][KEY_RIGHT])
-    res |= 16;
+    res |= BUTTON_MASK_RIGHT;
   if(sdlButtons[which][KEY_LEFT])
-    res |= 32;
+    res |= BUTTON_MASK_LEFT;
   if(sdlButtons[which][KEY_UP])
-    res |= 64;
+    res |= BUTTON_MASK_UP;
   if(sdlButtons[which][KEY_DOWN])
-    res |= 128;
+    res |= BUTTON_MASK_DOWN;
   if(sdlButtons[which][KEY_BUTTON_R])
-    res |= 256;
+    res |= BUTTON_MASK_R;
   if(sdlButtons[which][KEY_BUTTON_L])
-    res |= 512;
+    res |= BUTTON_MASK_L;
+  */
 /*
   // disallow L+R or U+D of being pressed at the same time
   if((res & 48) == 48)
@@ -2861,10 +2907,13 @@ u32 systemGetJoypad(int which, bool sensor)
   if((res & 192) == 192)
     res &= ~128;
 */
-  if(sdlButtons[which][KEY_BUTTON_SPEED])
+/*  
+  if(sdlbuttons[which][KEY_BUTTON_SPEED])
     res |= 1024;
   if(sdlButtons[which][KEY_BUTTON_CAPTURE])
     res |= 2048;
+*/
+	res = currentButtons[which];
 
   if(autoFire) {
     res &= (~autoFire);
@@ -2873,6 +2922,8 @@ u32 systemGetJoypad(int which, bool sensor)
     autoFireToggle = !autoFireToggle;
   }
   
+  //if (res) fprintf(stdout,"%x\n",res);
+  
   return res;
 }
 
@@ -2880,7 +2931,7 @@ void systemSetJoypad(int which, u32 buttons)
 {
   if(which < 0 || which > 3)
     which = sdlDefaultJoypad;
-  
+/*  
   sdlButtons[which][KEY_BUTTON_A] = (buttons & 1) != 0;
   sdlButtons[which][KEY_BUTTON_B] = (buttons & 2) != 0;
   sdlButtons[which][KEY_BUTTON_SELECT] = (buttons & 4) != 0;
@@ -2891,6 +2942,16 @@ void systemSetJoypad(int which, u32 buttons)
   sdlButtons[which][KEY_DOWN] = (buttons & 128) != 0;
   sdlButtons[which][KEY_BUTTON_R] = (buttons & 256) != 0;
   sdlButtons[which][KEY_BUTTON_L] = (buttons & 512) != 0;
+*/
+	currentButtons[which]= buttons & 0x3ff;
+}
+
+void systemClearJoypads()
+{
+	for (int i = 0; i < 4; ++i)
+		currentButtons[i] = 0;
+
+	//lastKeys = 0;
 }
 
 void systemSetTitle(const char *title)
@@ -2919,7 +2980,7 @@ void systemShowSpeed(int speed)
 }
 
 // FIXME: the timing
-void systemFrame(int rate)
+void systemFrame(/*int rate*/) //Looking at System.cpp, it looks like rate should be 600
 {
   u32 time = systemGetClock();  
   if(!wasPaused && autoFrameSkip && !throttle) {
@@ -2927,7 +2988,7 @@ void systemFrame(int rate)
     int speed = 100;
 
     if(diff)
-      speed = (1000000/rate)/diff;
+      speed = (1000000/600)/diff;
     
     if(speed >= 98) {
       frameskipadjust++;
@@ -2954,7 +3015,7 @@ void systemFrame(int rate)
     if(!speedup) {
       u32 diff = time - throttleLastTime;
       
-      int target = (1000000/(rate*throttle));
+      int target = (1000000/(600*throttle));
       int d = (target - diff);
       
       if(d > 0) {
@@ -2981,7 +3042,11 @@ void systemFrame(int rate)
   autoFrameSkipLastTime = time;
 }
 
-void systemScreenCapture(int a)
+int systemFramesToSkip(){
+	return systemFrameSkip;
+}
+
+int systemScreenCapture(int a)
 {
   char buffer[2048];
 
@@ -2991,16 +3056,17 @@ void systemScreenCapture(int a)
     else
       sprintf(buffer, "%s%02d.bmp", filename, a);
 
-    emulator.emuWriteBMP(buffer);
+    theEmulator.emuWriteBMP(buffer);
   } else {
     if(captureDir[0])
       sprintf(buffer, "%s/%s%02d.png", captureDir, sdlGetFilename(filename), a);
     else
       sprintf(buffer, "%s%02d.png", filename, a);
-    emulator.emuWritePNG(buffer);
+    theEmulator.emuWritePNG(buffer);
   }
 
   systemScreenMessage("Screen capture");
+  return a;
 }
 
 void soundCallback(void *,u8 *stream,int len)
@@ -3026,7 +3092,7 @@ void soundCallback(void *,u8 *stream,int len)
     SDL_mutexV(mutex);
 }
 
-void systemWriteDataToSoundBuffer()
+void systemSoundWriteToBuffer()
 {
   if(SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)
     SDL_PauseAudio(0);
@@ -3065,6 +3131,49 @@ soundBufferLen);
   } else {
     //    printf("case 2\n");
     memcpy(&sdlBuffer[sdlSoundLen], soundFinalWave, soundBufferLen);
+    sdlSoundLen += soundBufferLen;
+  }
+}
+
+//Quick and dirty solution for the absense of this function
+//--Felipe
+void systemSoundClearBuffer()
+{
+  if(SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)
+    SDL_PauseAudio(0);
+  bool cont = true;
+  while(cont && !speedup && !throttle) {
+    SDL_mutexP(mutex);
+    //    printf("Waiting for len < 2048 (speed up %d)\n", speedup);
+    if(sdlSoundLen < 2048*2)
+      cont = false;
+    SDL_mutexV(mutex);
+  }
+
+  int len = soundBufferLen;
+  int copied = 0;
+  if((sdlSoundLen+len) >= 2048*2) {
+    //    printf("Case 1\n");
+    memset(&sdlBuffer[sdlSoundLen],0, 2048*2-sdlSoundLen);
+    copied = 2048*2 - sdlSoundLen;
+    sdlSoundLen = 2048*2;
+    SDL_CondSignal(cond);
+    cont = true;
+    if(!speedup && !throttle) {
+      while(cont) {
+        SDL_mutexP(mutex);
+        if(sdlSoundLen < 2048*2)
+          cont = false;
+        SDL_mutexV(mutex);
+      }
+      memset(&sdlBuffer[0],0,soundBufferLen-copied);
+      sdlSoundLen = soundBufferLen-copied;
+    } else {
+      memset(&sdlBuffer[0], 0, soundBufferLen);
+    }
+  } else {
+    //    printf("case 2\n");
+    memset(&sdlBuffer[sdlSoundLen], 0, soundBufferLen);
     sdlSoundLen += soundBufferLen;
   }
 }
@@ -3182,6 +3291,11 @@ void systemUpdateMotionSensor()
   }    
 }
 
+void systemResetSensor()
+{
+	sensorX = sensorY = INITIAL_SENSOR_VALUE;
+}
+
 int systemGetSensorX()
 {
   return sensorX;
@@ -3208,9 +3322,19 @@ void systemScreenMessage(const char *msg, int slot, int duration, const char *co
     strcpy(screenMessageBuffer[slot], msg);  
 }
 
-bool systemCanChangeSoundQuality()
+bool systemSoundCanChangeQuality()
 {
   return false;
+}
+
+bool systemSoundSetQuality(int quality)
+{
+	if (systemCartridgeType == 0)
+		soundSetQuality(quality);
+	else
+		gbSoundSetQuality(quality);
+
+	return true;
 }
 
 bool systemPauseOnFrame()
@@ -3459,6 +3583,11 @@ inline void Draw_Overlay(SDL_Surface *display, int size)
   SDL_UnlockYUVOverlay(overlay);
 }
 
+bool systemIsEmulating()
+{
+	return emulating != 0;
+}
+
 void systemGbBorderOn()
 {
   srcWidth = 256;
@@ -3500,7 +3629,7 @@ void systemGbBorderOn()
       Init_2xSaI(555);
       RGB_LOW_BITS_MASK = 0x421;      
     }
-    if(cartridgeType == 2) {
+    if(systemCartridgeType == 2) {
       for(int i = 0; i < 0x10000; i++) {
         systemColorMap16[i] = (((i >> 1) & 0x1f) << systemBlueShift) |
           (((i & 0x7c0) >> 6) << systemGreenShift) |
@@ -3583,3 +3712,29 @@ u16 checksumBIOS()
 
 	return biosCheck;
 }
+
+EmulatedSystemCounters systemCounters = {
+	0,	//framecount
+	0,	//lagcount
+	true,	//lagged
+	true	//laggedLast
+};
+
+void VBAOnEnteringFrameBoundary()
+{
+	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+
+	if (VBALuaRunning())
+	{
+		VBALuaFrameBoundary();
+	}
+
+	VBAMovieUpdateState();
+}
+
+void VBAOnExitingFrameBoundary()
+{
+	;
+}
+
+

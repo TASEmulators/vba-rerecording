@@ -26,9 +26,9 @@
 #include <SDL.h>
 
 #include "../gba/GBA.h"
-#include "../gba/Globals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/Flash.h"
-#include "../gba/Sound.h"
+#include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
@@ -374,7 +374,7 @@ void Window::vOnImportBatteryFile()
 
     if (m_stEmulator.emuReadBattery(oDialog.get_filename().c_str()))
     {
-      m_stEmulator.emuReset();
+      m_stEmulator.emuReset(false);
       break;
     }
     else
@@ -1003,7 +1003,7 @@ void Window::vOnSoundStatusToggled(Gtk::CheckMenuItem * _poCMI, int _iSoundStatu
     sSoundStatus = "off";
     break;
   case SoundMute:
-    soundDisable(0x30f);
+    soundDisableChannels(0x30f);
     sSoundStatus = "mute";
     break;
   case SoundOn:
@@ -1016,7 +1016,7 @@ void Window::vOnSoundStatusToggled(Gtk::CheckMenuItem * _poCMI, int _iSoundStatu
         return;
       }
     }
-    soundEnable(0x30f);
+    soundEnableChannels(0x30f);
     sSoundStatus = "on";
     break;
   }
@@ -1049,7 +1049,7 @@ void Window::vOnSoundChannelToggled(Gtk::CheckMenuItem * _poCMI, int _iSoundChan
     iShift += 4;
   }
   int iFlag = 1 << iShift;
-  int iActive = soundGetEnable() & 0x30f;
+  int iActive = soundGetEnabledChannels() & 0x30f;
   if (_poCMI->get_active())
   {
     iActive |= iFlag;
@@ -1058,8 +1058,8 @@ void Window::vOnSoundChannelToggled(Gtk::CheckMenuItem * _poCMI, int _iSoundChan
   {
     iActive &= ~iFlag;
   }
-  soundEnable(iActive);
-  soundDisable(~iActive & 0x30f);
+  soundEnableChannels(iActive);
+  soundDisableChannels(~iActive & 0x30f);
 
   const char * acsChannels[] =
   {
@@ -1285,7 +1285,8 @@ void Window::vOnGDBWait()
   ioMem       = (u8 *) calloc(1, 0x400);
 
   useBios = m_poCoreConfig->oGetKey<bool>("use_bios_file");
-  CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), useBios);
+  //CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), useBios);
+  CPUInit();
   CPUReset();
 
   for (std::list<Gtk::Widget *>::iterator it = m_listSensitiveWhenPlaying.begin();

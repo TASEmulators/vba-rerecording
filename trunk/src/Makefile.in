@@ -202,14 +202,15 @@ target_vendor = @target_vendor@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 CORE_SUBDIRS = gba gb common filters
-EXTRA_SUBDIRS = prof sdl gtk lua
+EXTRA_SUBDIRS = prof sdl lua #gtk
 SUBDIRS = $(CORE_SUBDIRS) @VBA_SRC_EXTRA@
 DIST_SUBDIRS = $(CORE_SUBDIRS) $(EXTRA_SUBDIRS)
 dist_sysconf_DATA = VisualBoyAdvance.cfg
 EXTRA_DIST = \
 	win32
+OBJDIR = $(top_srcdir)/src/obj
 
-all: all-recursive
+all: makeobjdir all-recursive VisualBoyAdvance$(EXEEXT)
 
 .SUFFIXES:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -258,6 +259,9 @@ uninstall-dist_sysconfDATA:
 	  echo " rm -f '$(DESTDIR)$(sysconfdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(sysconfdir)/$$f"; \
 	done
+	
+makeobjdir:
+	$(MKDIR_P) -p $(OBJDIR)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -458,6 +462,7 @@ install-strip:
 	  `test -z '$(STRIP)' || \
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
+	-rm -f $(OBJDIR)/*.$(OBJEXT)
 
 clean-generic:
 

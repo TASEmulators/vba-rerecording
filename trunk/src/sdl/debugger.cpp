@@ -25,8 +25,8 @@ extern "C" {
 
 #include "Port.h"
 #include "gba/GBA.h"
-#include "gba/Globals.h"
-#include "gba/Cheats.h"
+#include "gba/GBAGlobals.h"
+#include "gba/GBACheats.h"
 #include "gba/armdis.h"
 #include "gba/elf.h"
 #include "common/System.h"
@@ -35,7 +35,7 @@ extern "C" {
 extern bool debugger;
 extern int emulating;
 
-extern struct EmulatedSystem emulator;
+extern struct EmulatedSystem theEmulator;
 
 #define debuggerReadMemory(addr) \
   READ32LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
@@ -736,7 +736,7 @@ void debuggerNext(int n, char **args)
       debuggerContinueAfterBreakpoint();
       debuggerEnableBreakpoints(false);
     } else 
-      emulator.emuMain(1);
+      theEmulator.emuMain(1);
   }
   debuggerDisableBreakpoints();
   Function *f = NULL;
@@ -956,9 +956,9 @@ void debuggerBreakOnWrite(u32 *mem, u32 oldvalue, u32 value, int size)
 {
   u32 address = 0;
   if(mem >= (u32*)&workRAM[0] && mem <= (u32*)&workRAM[0x3ffff])
-    address = 0x2000000 + ((u32)mem - (u32)&workRAM[0]);
+    address = 0x2000000 + ((u64)mem - (u64)&workRAM[0]);
   else
-    address = 0x3000000 + ((u32)mem - (u32)&internalRAM[0]);
+    address = 0x3000000 + ((u64)mem - (u64)&internalRAM[0]);
 
   if(size == 2)
     printf("Breakpoint (on write) address %08x old:%08x new:%08x\n", 
@@ -1100,7 +1100,7 @@ void debuggerContinueAfterBreakpoint()
 {
   printf("Continuing after breakpoint\n");
   debuggerEnableBreakpoints(true);
-  emulator.emuMain(1);
+  theEmulator.emuMain(1);
   debuggerAtBreakpoint = false;
 }
 
@@ -1426,8 +1426,8 @@ void debuggerMain()
   char *commands[10];
   int commandCount = 0;
   
-  if(emulator.emuUpdateCPSR)
-    emulator.emuUpdateCPSR();
+  if(theEmulator.emuUpdateCPSR)
+    theEmulator.emuUpdateCPSR();
   debuggerRegisters(0, NULL);
   
   while(debugger) {

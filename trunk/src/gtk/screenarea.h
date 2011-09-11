@@ -66,7 +66,7 @@ private:
 
   bool             m_bShowCursor;
   Gdk::Cursor *    m_poEmptyCursor;
-  SigC::Connection m_oCursorSig;
+  SigC::connection m_oCursorSig;
 
   void vUpdateSize();
   void vStartCursorTimeout();
