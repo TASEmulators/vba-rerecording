@@ -3515,7 +3515,6 @@ void CPUReset(bool userReset)
 
 	// disable FIQ
 	reg[16].I |= 0x40;
-
 	CPUUpdateCPSR();
 
 	armNextPC  = reg[15].I;
