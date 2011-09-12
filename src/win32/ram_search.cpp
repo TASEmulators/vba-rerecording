@@ -47,6 +47,7 @@
 #include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 #include "../common/vbalua.h"
+#include "Reg.h"
 
 static inline u8* HardwareToSoftwareAddress(HWAddressType address)
 {
@@ -1432,30 +1433,8 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	{
 		case WM_INITDIALOG: {
 			RamSearchHWnd = hDlg;
-
-			GetWindowRect(hWnd, &r);
-			dx1 = (r.right - r.left) / 2;
-			dy1 = (r.bottom - r.top) / 2;
-
-			GetWindowRect(hDlg, &r2);
-			dx2 = (r2.right - r2.left) / 2;
-			dy2 = (r2.bottom - r2.top) / 2;
-
-			// push it away from the main window if we can
-			const int width = (r.right-r.left); 
-			const int width2 = (r2.right-r2.left); 
-			if(r.left+width2 + width < GetSystemMetrics(SM_CXSCREEN))
-			{
-				r.right += width;
-				r.left += width;
-			}
-			else if((int)r.left - (int)width2 > 0)
-			{
-				r.right -= width2;
-				r.left -= width2;
-			}
-
-			SetWindowPos(hDlg, NULL, r.left, r.top, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+			
+			SetWindowPos(hDlg, NULL, regQueryDwordValue("ramSearchX", 0), regQueryDwordValue("ramSearchY", 0), NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 			switch(rs_o)
 			{
 				case '<':
@@ -2049,6 +2028,10 @@ invalid_field:
 		}	break;
 
 		case WM_CLOSE:
+			RECT r;
+			GetWindowRect(hDlg, &r);
+			regSetDwordValue("ramSearchX", r.left);
+			regSetDwordValue("ramSearchY", r.top);
 			SendMessage(RamSearchHWnd, WM_DESTROY, 0, 0);
 			break;
 		case WM_DESTROY:
