@@ -1401,6 +1401,7 @@ void CPUCleanUp()
 
 	GBASystemCounters.frameCount = 0;
 	GBASystemCounters.lagCount	 = 0;
+	GBASystemCounters.extraCount = 0;
 	GBASystemCounters.lagged	 = true;
 	GBASystemCounters.laggedLast = true;
 
@@ -3359,6 +3360,7 @@ void CPUReset(bool userReset)
 	{
 		GBASystemCounters.frameCount = 0;
 		GBASystemCounters.lagCount	 = 0;
+		GBASystemCounters.extraCount = 0;
 		GBASystemCounters.lagged	 = true;
 		GBASystemCounters.laggedLast = true;
 	}

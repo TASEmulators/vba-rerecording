@@ -1424,9 +1424,6 @@ static BOOL SelectingByKeyboard()
 
 LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	RECT r;
-	RECT r2;
-	int dx1, dy1, dx2, dy2;
 	static int watchIndex=0;
 
 	switch(uMsg)

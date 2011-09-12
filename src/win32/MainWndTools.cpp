@@ -339,9 +339,20 @@ void MainWnd::OnUpdateToolsLagCounter(CCmdUI *pCmdUI)
 	pCmdUI->SetCheck(theApp.lagCounter);
 }
 
-void MainWnd::OnToolsLagCounterReset()
+void MainWnd::OnToolsExtraCounter()
 {
-	systemCounters.lagCount = 0;
+	theApp.extraCounter = !theApp.extraCounter;
+	extern void VBAUpdateFrameCountDisplay(); VBAUpdateFrameCountDisplay();
+}
+
+void MainWnd::OnUpdateToolsExtraCounter(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.extraCounter);
+}
+
+void MainWnd::OnToolsExtraCounterReset()
+{
+	systemCounters.extraCount = systemCounters.frameCount;
 }
 
 void MainWnd::OnToolsInputDisplay()

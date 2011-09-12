@@ -2083,6 +2083,8 @@ BEGIN
         BEGIN
             MENUITEM "&Frame Counter",              ID_TOOLS_FRAMECOUNTER
             MENUITEM "    &Lag Counter",            ID_TOOLS_LAGCOUNTER
+            MENUITEM "    &Extra Counter",          ID_TOOLS_EXTRACOUNTER
+            MENUITEM "    Extra Counter &Reset",    ID_TOOLS_EXTRACOUNTERRESET
             MENUITEM "&Input Display",              ID_TOOLS_INPUTDISPLAY
             MENUITEM SEPARATOR
             MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
