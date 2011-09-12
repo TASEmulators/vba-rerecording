@@ -273,7 +273,7 @@ u32  screenMessageDuration[8] = {0,0,0,0,0,0,0,0};
 
 SDL_cond *cond = NULL;
 SDL_mutex *mutex = NULL;
-u8 sdlBuffer[4096];
+u8* sdlBuffer;
 int sdlSoundLen = 0;
 
 char *arg0;
@@ -1151,14 +1151,10 @@ void sdlReadPreferences(FILE *f)
     } else if(!strcmp(key, "soundQuality")) {
       soundQuality = sdlFromHex(value);
       switch(soundQuality) {
-      case 1:
-      case 2:
-      case 4:
-        break;
+      case 1: break;
       default:
-        fprintf(stderr, "Unknown sound quality %d. Defaulting to 22Khz\n", 
-                soundQuality);
-        soundQuality = 2;
+        fprintf(stderr, "The rerecording version will run only sound at highest quality. Defaulting to 44.1 KHz\n");
+        soundQuality = 1;
         break;
       }
     } else if(!strcmp(key, "soundOff")) {
@@ -3077,7 +3073,7 @@ void soundCallback(void *,u8 *stream,int len)
   SDL_mutexP(mutex);
   //  printf("Locked mutex\n");
   if(!speedup && !throttle) {
-    while(sdlSoundLen < 2048*2) {
+    while(sdlSoundLen < soundBufferTotalLen) {
       if(emulating)
         SDL_CondWait(cond, mutex);
       else 
@@ -3101,24 +3097,24 @@ void systemSoundWriteToBuffer()
   while(cont && !speedup && !throttle) {
     SDL_mutexP(mutex);
     //    printf("Waiting for len < 2048 (speed up %d)\n", speedup);
-    if(sdlSoundLen < 2048*2)
+    if(sdlSoundLen < soundBufferTotalLen)
       cont = false;
     SDL_mutexV(mutex);
   }
 
   int len = soundBufferLen;
   int copied = 0;
-  if((sdlSoundLen+len) >= 2048*2) {
+  if((sdlSoundLen+len) >= soundBufferTotalLen) {
     //    printf("Case 1\n");
-    memcpy(&sdlBuffer[sdlSoundLen],soundFinalWave, 2048*2-sdlSoundLen);
-    copied = 2048*2 - sdlSoundLen;
-    sdlSoundLen = 2048*2;
+    memcpy(&sdlBuffer[sdlSoundLen],soundFinalWave, soundBufferTotalLen-sdlSoundLen);
+    copied = soundBufferTotalLen - sdlSoundLen;
+    sdlSoundLen = soundBufferTotalLen;
     SDL_CondSignal(cond);
     cont = true;
     if(!speedup && !throttle) {
       while(cont) {
         SDL_mutexP(mutex);
-        if(sdlSoundLen < 2048*2)
+        if(sdlSoundLen < soundBufferTotalLen)
           cont = false;
         SDL_mutexV(mutex);
       }
@@ -3136,47 +3132,13 @@ soundBufferLen);
   }
 }
 
-//Quick and dirty solution for the absense of this function
-//--Felipe
 void systemSoundClearBuffer()
 {
-  if(SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)
-    SDL_PauseAudio(0);
-  bool cont = true;
-  while(cont && !speedup && !throttle) {
-    SDL_mutexP(mutex);
-    //    printf("Waiting for len < 2048 (speed up %d)\n", speedup);
-    if(sdlSoundLen < 2048*2)
-      cont = false;
-    SDL_mutexV(mutex);
-  }
-
-  int len = soundBufferLen;
-  int copied = 0;
-  if((sdlSoundLen+len) >= 2048*2) {
-    //    printf("Case 1\n");
-    memset(&sdlBuffer[sdlSoundLen],0, 2048*2-sdlSoundLen);
-    copied = 2048*2 - sdlSoundLen;
-    sdlSoundLen = 2048*2;
-    SDL_CondSignal(cond);
-    cont = true;
-    if(!speedup && !throttle) {
-      while(cont) {
-        SDL_mutexP(mutex);
-        if(sdlSoundLen < 2048*2)
-          cont = false;
-        SDL_mutexV(mutex);
-      }
-      memset(&sdlBuffer[0],0,soundBufferLen-copied);
-      sdlSoundLen = soundBufferLen-copied;
-    } else {
-      memset(&sdlBuffer[0], 0, soundBufferLen);
-    }
-  } else {
-    //    printf("case 2\n");
-    memset(&sdlBuffer[sdlSoundLen], 0, soundBufferLen);
-    sdlSoundLen += soundBufferLen;
-  }
+	SDL_mutexP(mutex);
+	memset(sdlBuffer,0,soundBufferTotalLen);
+	sdlSoundLen=0;
+	printf("Hi\n");
+	SDL_mutexV(mutex);
 }
 
 bool systemSoundInit()
@@ -3199,7 +3161,7 @@ bool systemSoundInit()
   }
   audio.format=AUDIO_S16SYS;
   audio.channels = 2;
-  audio.samples = 1024;
+  audio.samples = 1470;
   audio.callback = soundCallback;
   audio.userdata = NULL;
   if(SDL_OpenAudio(&audio, NULL)) {
@@ -3207,6 +3169,7 @@ bool systemSoundInit()
     return false;
   }
   soundBufferTotalLen = soundBufferLen*10;
+  sdlBuffer = (u8*)malloc(soundBufferTotalLen*sizeof(u8));
   cond = SDL_CreateCond();
   mutex = SDL_CreateMutex();
   sdlSoundLen = 0;
@@ -3223,6 +3186,7 @@ void systemSoundShutdown()
   cond = NULL;
   SDL_DestroyMutex(mutex);
   mutex = NULL;
+  free(sdlBuffer);
   SDL_CloseAudio();
 }
 
