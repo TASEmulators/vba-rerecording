@@ -1646,6 +1646,7 @@ void gbReset(bool userReset)
 	{
 		GBSystemCounters.frameCount = 0;
 		GBSystemCounters.lagCount	= 0;
+		GBSystemCounters.extraCount = 0;
 		GBSystemCounters.lagged		= true;
 		GBSystemCounters.laggedLast = true;
 	}
@@ -2936,6 +2937,7 @@ void gbCleanUp()
 
 	GBSystemCounters.frameCount = 0;
 	GBSystemCounters.lagCount	= 0;
+	GBSystemCounters.extraCount = 0;
 	GBSystemCounters.lagged		= true;
 	GBSystemCounters.laggedLast = true;
 

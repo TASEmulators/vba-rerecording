@@ -153,6 +153,7 @@ public:
 	bool		 autoFireToggle;
 	bool		 frameCounter;
 	bool		 lagCounter;
+	bool		 extraCounter;
 	bool		 inputDisplay;
 	bool		 movieReadOnly;
 	bool		 movieOnEndPause;

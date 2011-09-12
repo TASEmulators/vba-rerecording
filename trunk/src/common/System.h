@@ -55,6 +55,7 @@ struct EmulatedSystemCounters
 {
 	int32 frameCount;
 	int32 lagCount;
+	int32 extraCount;
 	bool8 lagged;
 	bool8 laggedLast;
 };
