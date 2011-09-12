@@ -1921,10 +1921,10 @@ void gbWriteSaveMBC3(const char *name, bool extendedSave)
 
 	if (extendedSave)
 	{
-		assert(sizeof(time_t) == 4);
+		//assert(sizeof(time_t) == 4);
 		fwrite(&gbDataMBC3.mapperSeconds,
 		       1,
-		       10 * sizeof(int32) + sizeof(time_t),
+		       10 * sizeof(int32) + /*sizeof(time_t)*/4,
 		       gzFile);
 	}
 
@@ -2039,12 +2039,12 @@ bool gbReadSaveMBC3(const char *name)
 	}
 	else
 	{
-		assert(sizeof(time_t) == 4);
+		//assert(sizeof(time_t) == 4);
 		read = gzread(gzFile,
 		              &gbDataMBC3.mapperSeconds,
-		              sizeof(int32) * 10 + sizeof(time_t));
+		              sizeof(int32) * 10 + /*sizeof(time_t)*/4);
 
-		if (read != (sizeof(int32) * 10 + sizeof(time_t)) && read != 0)
+		if (read != (sizeof(int32) * 10 + /*sizeof(time_t)*/4) && read != 0)
 		{
 			systemMessage(MSG_FAILED_TO_READ_RTC,
 			              N_("Failed to read RTC from save game %s (continuing)"),
@@ -2471,7 +2471,7 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 
 	utilGzWrite(gzFile, &gbDataMBC1, sizeof(gbDataMBC1));
 	utilGzWrite(gzFile, &gbDataMBC2, sizeof(gbDataMBC2));
-	assert(sizeof(time_t) == 4);
+	//assert(sizeof(time_t) == 4);
 	utilGzWrite(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	utilGzWrite(gzFile, &gbDataMBC5, sizeof(gbDataMBC5));
 	utilGzWrite(gzFile, &gbDataHuC1, sizeof(gbDataHuC1));
@@ -2638,7 +2638,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(int32) * 10);
 	else
 	{
-		assert(sizeof(time_t) == 4);
+		//assert(sizeof(time_t) == 4);
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	}
 	utilGzRead(gzFile, &gbDataMBC5, sizeof(gbDataMBC5));
