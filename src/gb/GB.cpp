@@ -2235,18 +2235,22 @@ bool gbReadBatteryFile(const char *file)
 			if (!gbReadSaveMBC3(file))
 			{
 				struct tm *lt;
+				time_t tmp; //Small kludge to get it working on some systems where time_t has size 8.
 
 				if (VBAMovieActive() || VBAMovieLoading())
 				{
 					gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / 60;
-					lt = gmtime(&gbDataMBC3.mapperLastTime);
+					lt = gmtime(&tmp);
+					gbDataMBC3.mapperLastTime=(u32)tmp;
 				}
 				else
 				{
-					time(&gbDataMBC3.mapperLastTime);
-					lt = localtime(&gbDataMBC3.mapperLastTime);
+					time(&tmp);
+					gbDataMBC3.mapperLastTime=(u32)tmp;
+					lt = localtime(&tmp);
 				}
-				systemScreenMessage(ctime(&gbDataMBC3.mapperLastTime), 4);
+				systemScreenMessage(ctime(&tmp), 4);
+				gbDataMBC3.mapperLastTime=(u32)tmp;
 
 				gbDataMBC3.mapperSeconds = lt->tm_sec;
 				gbDataMBC3.mapperMinutes = lt->tm_min;
@@ -2257,7 +2261,9 @@ bool gbReadBatteryFile(const char *file)
 				res = false;
 				break;
 			}
-			systemScreenMessage(ctime(&gbDataMBC3.mapperLastTime), 4);
+			time_t tmp;
+			systemScreenMessage(ctime(&tmp), 4);
+			gbDataMBC3.mapperLastTime=(u32)tmp;
 			res = true;
 			break;
 		case 0x1b:
@@ -2639,6 +2645,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(int32) * 10);
 	else
 	{
+		//printf("OMG!\n");
 		//assert(sizeof(time_t) == 4);
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	}
