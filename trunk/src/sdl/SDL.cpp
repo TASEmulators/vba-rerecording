@@ -2339,8 +2339,6 @@ int main(int argc, char **argv)
     CPUReset();    
   }
   
-  sdlReadBattery();
-  
   if(debuggerStub) 
     remoteInit();
   
@@ -2634,6 +2632,7 @@ int main(int argc, char **argv)
       VBAMovieOpen(movieFileName, true);
   	  break;
     default:
+    	sdlReadBattery();
   	  break;
   }
   SDL_WM_SetCaption("VisualBoyAdvance", NULL);

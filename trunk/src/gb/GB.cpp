@@ -2645,7 +2645,6 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(int32) * 10);
 	else
 	{
-		//printf("OMG!\n");
 		//assert(sizeof(time_t) == 4);
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	}
