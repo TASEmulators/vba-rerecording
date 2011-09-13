@@ -3680,6 +3680,7 @@ u16 checksumBIOS()
 EmulatedSystemCounters systemCounters = {
 	0,	//framecount
 	0,	//lagcount
+	0,	//extracount
 	true,	//lagged
 	true	//laggedLast
 };
