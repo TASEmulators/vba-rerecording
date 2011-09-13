@@ -401,6 +401,9 @@ static void change_state(MovieState new_state)
 
 	if (new_state == MOVIE_STATE_END && Movie.state != MOVIE_STATE_END)
 	{
+#if defined(SDL)		
+		systemClearJoypads();
+#endif
 		systemScreenMessage("Movie end");
 	}
 
