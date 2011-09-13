@@ -335,11 +335,15 @@ void mapperMBC3RAM(u16 address, u8 value)
 		}
 		else
 		{
+			time_t tmp; //Small kludge to get it working on some 64 bit systems.
 			if (VBAMovieActive() || VBAMovieLoading())
 				gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter()/60;
-			else
-				time(&gbDataMBC3.mapperLastTime);
-			systemScreenMessage(ctime(&gbDataMBC3.mapperLastTime), 4);
+			else {
+				time(&tmp);
+				gbDataMBC3.mapperLastTime=(u32)tmp;
+			}
+			systemScreenMessage(ctime(&tmp), 4);
+			gbDataMBC3.mapperLastTime=(u32)tmp;
 
 			switch (gbDataMBC3.mapperClockRegister)
 			{
