@@ -57,7 +57,7 @@ am_TestEmu_OBJECTS = TestEmu.$(OBJEXT) debugger.$(OBJEXT) \
 TestEmu_OBJECTS = $(am_TestEmu_OBJECTS)
 am_VisualBoyAdvance_OBJECTS = SDL.$(OBJEXT) debugger.$(OBJEXT) \
 	expr-lex.$(OBJEXT) expr.$(OBJEXT) exprNode.$(OBJEXT) \
-	getopt.$(OBJEXT) getopt1.$(OBJEXT)
+	getopt.$(OBJEXT) getopt1.$(OBJEXT) SoundSDL.$(OBJEXT)
 VisualBoyAdvance_OBJECTS = $(patsubst %,$(OBJDIR)/%,$(am_VisualBoyAdvance_OBJECTS))
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -319,6 +319,7 @@ bilinear.o  GBACheats.o   gbMemory.o   lua-engine.o  movie.o        \
 bios.o      GBAGfx.o      GB.o         memgzio.o     pixel.o       Text.o \
 GBAGlobals.o  gbPrinter.o  Mode0.o       prof.o        unzip.o debugger.o\
 EEprom.o    GBA.o         gbSGB.o      Mode1.o       remote.o      Util.o \
+SoundSDL.o
 
 OBJECTS = $(patsubst %,$(OBJDIR)/%,$(OBJECTS_))
 

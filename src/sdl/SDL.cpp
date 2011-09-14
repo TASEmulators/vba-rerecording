@@ -43,6 +43,7 @@
 #include "common/System.h"
 #include "common/inputGlobal.h"
 #include "../common/vbalua.h"
+#include "SoundSDL.h"
 
 
 #define GBC_CAPABLE ((gbRom[0x143] & 0x80) != 0)
@@ -275,6 +276,7 @@ SDL_cond *cond = NULL;
 SDL_mutex *mutex = NULL;
 u8* sdlBuffer;
 int sdlSoundLen = 0;
+SoundSDL* soundDriver = NULL;
 
 char *arg0;
 
@@ -3011,7 +3013,7 @@ void systemFrame(/*int rate*/) //Looking at System.cpp, it looks like rate shoul
     if(!speedup) {
       u32 diff = time - throttleLastTime;
       
-      int target = (1000000/(600*throttle));
+      int target = (1000000.0/(600*throttle));
       int d = (target - diff);
       
       if(d > 0) {
@@ -3065,70 +3067,10 @@ int systemScreenCapture(int a)
   return a;
 }
 
-void soundCallback(void *,u8 *stream,int len)
-{
-  if(!emulating)
-    return;
-  SDL_mutexP(mutex);
-  //  printf("Locked mutex\n");
-  if(!speedup && !throttle) {
-    while(sdlSoundLen < soundBufferTotalLen) {
-      if(emulating)
-        SDL_CondWait(cond, mutex);
-      else 
-        break;
-    }
-  }
-  if(emulating) {
-    //  printf("Copying data\n");
-    memcpy(stream, sdlBuffer, len);
-  }
-  sdlSoundLen = 0;
-  if(mutex)
-    SDL_mutexV(mutex);
-}
+void soundCallback(void *,u8 *stream,int len){}
 
-void systemSoundWriteToBuffer()
-{
-  if(SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)
-    SDL_PauseAudio(0);
-  bool cont = true;
-  while(cont && !speedup && !throttle) {
-    SDL_mutexP(mutex);
-    //    printf("Waiting for len < 2048 (speed up %d)\n", speedup);
-    if(sdlSoundLen < soundBufferTotalLen)
-      cont = false;
-    SDL_mutexV(mutex);
-  }
-
-  int len = soundBufferLen;
-  int copied = 0;
-  if((sdlSoundLen+len) >= soundBufferTotalLen) {
-    //    printf("Case 1\n");
-    memcpy(&sdlBuffer[sdlSoundLen],soundFinalWave, soundBufferTotalLen-sdlSoundLen);
-    copied = soundBufferTotalLen - sdlSoundLen;
-    sdlSoundLen = soundBufferTotalLen;
-    SDL_CondSignal(cond);
-    cont = true;
-    if(!speedup && !throttle) {
-      while(cont) {
-        SDL_mutexP(mutex);
-        if(sdlSoundLen < soundBufferTotalLen)
-          cont = false;
-        SDL_mutexV(mutex);
-      }
-      memcpy(&sdlBuffer[0],&(((u8 *)soundFinalWave)[copied]),
-             soundBufferLen-copied);
-      sdlSoundLen = soundBufferLen-copied;
-    } else {
-      memcpy(&sdlBuffer[0], &(((u8 *)soundFinalWave)[copied]), 
-soundBufferLen);
-    }
-  } else {
-    //    printf("case 2\n");
-    memcpy(&sdlBuffer[sdlSoundLen], soundFinalWave, soundBufferLen);
-    sdlSoundLen += soundBufferLen;
-  }
+void systemSoundWriteToBuffer(){
+	soundDriver->write(soundFinalWave, soundBufferLen);  
 }
 
 void systemSoundClearBuffer()
@@ -3140,53 +3082,26 @@ void systemSoundClearBuffer()
 	SDL_mutexV(mutex);
 }
 
-bool systemSoundInit()
-{
-  SDL_AudioSpec audio;
+bool systemSoundInit(){
+	systemSoundShutdown();
+	soundDriver = new SoundSDL();
+	if ( !soundDriver )
+		return false;
 
-  switch(soundQuality) {
-  case 1:
-    audio.freq = 44100;
-    soundBufferLen = 1470*2;
-    break;
-  case 2:
-    audio.freq = 22050;
-    soundBufferLen = 736*2;
-    break;
-  case 4:
-    audio.freq = 11025;
-    soundBufferLen = 368*2;
-    break;
-  }
-  audio.format=AUDIO_S16SYS;
-  audio.channels = 2;
-  audio.samples = 1470;
-  audio.callback = soundCallback;
-  audio.userdata = NULL;
-  if(SDL_OpenAudio(&audio, NULL)) {
-    fprintf(stderr,"Failed to open audio: %s\n", SDL_GetError());
-    return false;
-  }
-  soundBufferTotalLen = soundBufferLen*10;
-  sdlBuffer = (u8*)malloc(soundBufferTotalLen*sizeof(u8));
-  cond = SDL_CreateCond();
-  mutex = SDL_CreateMutex();
-  sdlSoundLen = 0;
-  systemSoundOn = true;
-  return true;
+	if (!soundDriver->init(44100)) //<-- sound sample rate
+		return false;
+
+	soundPaused = true;
+	systemSoundOn = true;
+	return true;
 }
 
-void systemSoundShutdown()
-{
-  SDL_mutexP(mutex);
-  SDL_CondSignal(cond);
-  SDL_mutexV(mutex);
-  SDL_DestroyCond(cond);
-  cond = NULL;
-  SDL_DestroyMutex(mutex);
-  mutex = NULL;
-  free(sdlBuffer);
-  SDL_CloseAudio();
+void systemSoundShutdown(){
+	if (soundDriver)
+	{
+		delete soundDriver;
+		soundDriver = 0;
+	}
 }
 
 void systemSoundPause()
