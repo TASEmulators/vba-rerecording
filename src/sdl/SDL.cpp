@@ -2244,8 +2244,6 @@ int main(int argc, char **argv)
     case 'T':
       if(optarg) {
         int t = atoi(optarg);
-        if(t < 5 || t > 1000)
-          t = 0;
         throttle = t;
       }
       break;
@@ -3010,7 +3008,7 @@ void systemFrame(/*int rate*/) //Looking at System.cpp, it looks like rate shoul
     }    
   }
   if(!wasPaused && throttle) {
-    if(!speedup) {
+    /*if(!speedup) {
       u32 diff = time - throttleLastTime;
       
       int target = (1000000.0/(600*throttle));
@@ -3021,6 +3019,7 @@ void systemFrame(/*int rate*/) //Looking at System.cpp, it looks like rate shoul
       }
     }
     throttleLastTime = systemGetClock();
+    */
   }
   if(rewindMemory) {
     if(++rewindCounter >= rewindTimer) {
@@ -3088,9 +3087,13 @@ bool systemSoundInit(){
 	if ( !soundDriver )
 		return false;
 
-	if (!soundDriver->init(44100)) //<-- sound sample rate
+	if (!soundDriver->init()) //<-- sound sample rate
 		return false;
-
+	
+	if (!(soundDriver->setThrottle(throttle))){
+        	fprintf(stderr,"Failed to set desired throttle, defaulting to 100 %%.\n");
+        	if (!soundDriver->setThrottle(100)) return false;
+        }
 	soundPaused = true;
 	systemSoundOn = true;
 	return true;

@@ -37,7 +37,7 @@ public:
 	 * Initialize the sound driver.
 	 * @param sampleRate In Hertz
 	 */
-	virtual bool init(long sampleRate) = 0;
+	virtual bool init() = 0;
 
 	/**
 	 * Tell the driver that the sound stream has paused
@@ -59,7 +59,7 @@ public:
 	 */
 	virtual void write(u16 * finalWave, int length) = 0;
 
-	virtual void setThrottle(unsigned short throttle) { };
+	virtual bool setThrottle(unsigned short throttle) = 0;
 };
 
 #endif // __VBA_SOUND_DRIVER_H__
