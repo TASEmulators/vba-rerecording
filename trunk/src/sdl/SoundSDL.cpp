@@ -41,7 +41,6 @@ void SoundSDL::read(u16 * stream, int length)
 		return;
 
 	SDL_mutexP(_mutex);
-
 	_rbuf.read(stream, std::min(static_cast<std::size_t>(length) / 2, _rbuf.used()));
 
 	SDL_CondSignal(_cond);
@@ -67,12 +66,10 @@ void SoundSDL::write(u16 * finalWave, int length)
 
 		finalWave += avail * 2;
 		samples -= avail;
-		
-		extern int throttle;
 
 		// If emulating and not in speed up mode, synchronize to audio
 		// by waiting till there is enough room in the buffer
-		if (emulating && throttle==100)
+		if (emulating && !speedup)
 		{
 			SDL_CondWait(_cond,_mutex);
 		}
@@ -90,10 +87,10 @@ void SoundSDL::write(u16 * finalWave, int length)
 }
 
 
-bool SoundSDL::init(long sampleRate)
+bool SoundSDL::init()
 {
 	SDL_AudioSpec audio;
-	audio.freq = sampleRate;
+	audio.freq = SDL_SAMPLE_RATE;
 	audio.format = AUDIO_S16SYS;
 	audio.channels = 2;
 	audio.samples = 1024;
@@ -106,7 +103,7 @@ bool SoundSDL::init(long sampleRate)
 		return false;
 	}
 
-	_rbuf.reset(_delay * sampleRate * 2);
+	_rbuf.reset(_delay * SDL_SAMPLE_RATE * 2);
 
 	_cond  = SDL_CreateCond();
 	_mutex = SDL_CreateMutex();
@@ -155,4 +152,27 @@ void SoundSDL::resume()
 
 void SoundSDL::reset()
 {
+}
+
+bool SoundSDL::setThrottle(unsigned short throttle){
+	switch(throttle){
+		case 25:
+		case 50:
+		case 100:
+		case 200:
+		case 400:
+			break;
+		default:
+			return false;
+	}
+	SDL_CloseAudio();
+	SDL_AudioSpec audio;
+	audio.freq = SDL_SAMPLE_RATE*throttle/100;
+	audio.format = AUDIO_S16SYS;
+	audio.channels = 2;
+	audio.samples = 1024;
+	audio.callback = soundCallback;
+	audio.userdata = this;
+	_rbuf.reset((_delay * SDL_SAMPLE_RATE * throttle * 2)/100);
+	return !SDL_OpenAudio(&audio,NULL);
 }

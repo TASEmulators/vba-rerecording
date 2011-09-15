@@ -23,17 +23,20 @@
 
 #include <SDL.h>
 
+const int SDL_SAMPLE_RATE = 44100;
+
 class SoundSDL: public SoundDriver
 {
 public:
 	SoundSDL();
 	virtual ~SoundSDL();
 
-	virtual bool init(long sampleRate);
+	virtual bool init();
 	virtual void pause();
 	virtual void reset();
 	virtual void resume();
 	virtual void write(u16 * finalWave, int length);
+	virtual bool setThrottle(unsigned short throttle);
 
 //private:
 	RingBuffer<u16> _rbuf;
