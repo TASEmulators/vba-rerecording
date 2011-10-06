@@ -1,3 +1,28 @@
+---VBA-rr v23.5---
+09-13-2011 felipe_lopes - SDL: Finished fixing sound.
+09-13-2011 felipe_lopes - SDL: Fixed movie input persisting after movie end.
+09-13-2011 felipe_lopes - SDL: Fixed SDL loading SRAM before playing some no-SRAM movies.
+09-12-2011 felipe_lopes - Fixed some GB savestate problems in SDL/Linux.
+09-12-2011 felipe_lopes - SDL: Improved sound in SDL and orced the SDL port to always start with the highest quality.
+09-12-2011 gcupcakekid - Added another frame counter that doesn't affect savestates.
+09-12-2011 gcupcakekid - Cheat Search dialog now remembers its position.
+09-12-2011 gcupcakekid - Fixed the Lua window being inaccessible after full screen. Made it so Lua scripts don't rely on the window.
+09-11-2011 felipe_lopes - SDL: Frame counter and input display now show up correctly on Linux.
+09-11-2011 felipe_lopes - SDL: Fixed a bug where loading a movie from clear SRAM would cause a SIGSEGV.
+09-11-2011 felipe_lopes - SDL: Got to compile.
+08-14-2011 aquanull - Now sound channel settings are no longer loaded from save states.
+07-18-2011 gcupcakekid - Added option to align memory viewer by the 16-byte boundary.
+07-05-2011 aquanull - Resolved a performance issue regarding movie-recording.
+04-16-2011 aquanull - Fixed several rare leak problems.
+04-12-2011 aquanull - Fixed the error that opcodes LDSB and LDRH in Format 8 were misinterpreted as each other in the GBA dissamble window.
+04-12-2011 aquanull - Resolved the unexplainable crashing issue with the GB Disassemble Dialog, by re-ordering some variables in src/win32/GBDisassemble.h, seriously?
+04-11-2011 aquanull - Fixed version info.
+03-20-2011 gochaism - RAM Search: fix reset code and update the current values for every addresses.
+03-20-2011 gochaism - RAM Search: workaround for auto search restart.
+03-17-2011 gochaism - Lua: add sound.get().
+01-17-2011 aquanull - Disabled an intended "feature" which created inconsistency and thus turned out to be a "bug". Now the movie is closed one frame after it ends.
+01-02-2011 aquanull - Fixed the bug that it would cause an error to create a new GBA movie using the emulator's BIOS. 
+
 ---VBA-rr v23.4---
 12-08-2010 gcupcakekid - Added memory.gbromreadxxxx() functions.
 12-08-2010 aquanull - Fixed when the movie being played is closed right at the frame equal to "Pause at frame".
