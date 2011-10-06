@@ -453,12 +453,18 @@ protected:
 	afx_msg void OnToolsOnMovieEndKeep();
 	afx_msg void OnUpdateToolsOnMovieEndKeep(CCmdUI*pCmdUI);
 
+	afx_msg void OnToolsMovieSetPauseAt();
+	afx_msg void OnUpdateToolsSetMoviePauseAt(CCmdUI*pCmdUI);
 	afx_msg void OnToolsMovieConvertCurrent();
 	afx_msg void OnUpdateToolsMovieConvertCurrent(CCmdUI*pCmdUI);
 	afx_msg void OnToolsMovieAutoConvert();
 	afx_msg void OnUpdateToolsMovieAutoConvert(CCmdUI*pCmdUI);
-	afx_msg void OnToolsMovieExtractFromSnapshot();
-	afx_msg void OnUpdateToolsMovieExtractFromSnapshot(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieFixHeader();
+	afx_msg void OnUpdateToolsMovieFixHeader(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieTruncateAtCurrent();
+	afx_msg void OnUpdateToolsMovieTruncateAtCurrent(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieExtractFromSavegame();
+	afx_msg void OnUpdateToolsMovieExtractFromSavegame(CCmdUI*pCmdUI);
 
 	afx_msg void OnToolsRewind();
 	afx_msg void OnUpdateToolsRewind(CCmdUI*pCmdUI);

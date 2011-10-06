@@ -2201,11 +2201,13 @@ BEGIN
             MENUITEM SEPARATOR
             POPUP "Advanced &Tools"
             BEGIN
-                MENUITEM "Convert Current &Movie",      ID_MOVIE_TOOL_CONVERT_CURRENT
+                MENUITEM "&Convert Current To VBM 1.1", ID_MOVIE_TOOL_CONVERT
                 MENUITEM SEPARATOR
-                MENUITEM "&Auto Convert When Playing",  ID_MOVIE_TOOL_AUTO_CONVERT
+                MENUITEM "&Auto Convert Opened Movie",  ID_MOVIE_TOOL_AUTO_CONVERT
                 MENUITEM SEPARATOR
-                MENUITEM "Extract Movie From &Snapshot...", ID_MOVIE_TOOL_EXTRACT_FROM_SNAPSHOT, INACTIVE
+                MENUITEM "Fix &Header",                 ID_MOVIE_TOOL_FIX_HEADER
+                MENUITEM SEPARATOR
+                MENUITEM "&Truncate At Current Frame",  ID_MOVIE_TOOL_TRUNCATE
             END
             MENUITEM "&Associate With Savestates",  ID_MOVIE_ASSC_WITH_SAVESTATE
         END

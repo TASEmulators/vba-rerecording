@@ -838,9 +838,24 @@ void MainWnd::OnUpdateToolsOnMovieEndKeep(CCmdUI *pCmdUI)
 	pCmdUI->SetRadio(theApp.movieOnEndBehavior == 3);
 }
 
-// temporary
+/////////////////////////////////
+
+void MainWnd::OnToolsMovieSetPauseAt()
+{
+	// TODO
+	VBAMovieSetPauseAt(-1);
+}
+
+void MainWnd::OnUpdateToolsSetMoviePauseAt(CCmdUI *pCmdUI)
+{
+	// TODO
+	pCmdUI->SetCheck(VBAMovieGetPauseAt() >= 0);
+	pCmdUI->Enable(FALSE && VBAMovieActive());
+}
+
 void MainWnd::OnToolsMovieConvertCurrent()
 {
+	// temporary
 	int result = VBAMovieConvertCurrent();
 	switch (result)
 	{
@@ -889,17 +904,48 @@ void MainWnd::OnUpdateToolsMovieAutoConvert(CCmdUI *pCmdUI)
 	pCmdUI->SetCheck(autoConvertMovieWhenPlaying);
 }
 
-// TODO
-void MainWnd::OnToolsMovieExtractFromSnapshot()
+void MainWnd::OnToolsMovieTruncateAtCurrent()
 {
-	extern void VBAMovieExtractFromSnapshot();
-	VBAMovieExtractFromSnapshot();
+	if (VBAMovieReadOnly())
+		systemScreenMessage("Cannot truncate movie in this mode");
+	else
+		VBAMovieTuncateAtCurrentFrame();
 }
 
-void MainWnd::OnUpdateToolsMovieExtractFromSnapshot(CCmdUI *pCmdUI)
+void MainWnd::OnUpdateToolsMovieTruncateAtCurrent(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieActive());
+}
+
+void MainWnd::OnToolsMovieFixHeader()
+{
+	VBAMovieFixHeader();
+}
+
+void MainWnd::OnUpdateToolsMovieFixHeader(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieActive());
+}
+
+// TODO
+void MainWnd::OnToolsMovieExtractFromSavegame()
+{
+	// Currently, snapshots taken from a movie don't contain the initial SRAM or savestate of the movie,
+	// even if the movie was recorded from either of them. If a snapshot was taken at the first frame
+	// i.e. Frame 0, it can be safely assumed that the snapshot reflects the initial state of such a movie.
+	// However, if it was taken after the first frame, the SRAM contained might either be still the same
+	// as the original (usually true if no write operations on the SRAM occured) or have been modified,
+	// while the exact original state could hardly, if not impossibly, be safely worked out.
+
+	// TODO
+}
+
+void MainWnd::OnUpdateToolsMovieExtractFromSavegame(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(FALSE);
 }
+
+///////////////////////////////////////////////////////////
 
 void MainWnd::OnToolsRewind()
 {

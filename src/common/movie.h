@@ -110,14 +110,14 @@ struct SMovieFileHeader
 
 struct SMovie
 {
-	enum MovieState state;
-	char  filename[/*_MAX_PATH*/ 260]; // FIXME: should use a string instead
-	FILE* file;
-	uint8 readOnly;
-	int   pauseFrame;
+	enum   MovieState state;
+	char   filename[/*_MAX_PATH*/ 260]; // FIXME: should use a string instead
+	FILE*  file;
+	uint8  readOnly;
+	int32  pauseFrame;	// FIXME: byte size
 
 	SMovieFileHeader header;
-	char authorInfo[MOVIE_METADATA_SIZE];
+	char  authorInfo[MOVIE_METADATA_SIZE];
 
 	uint32 currentFrame;    // should == length_frame when recording, and be < length_frames when playing
 	uint32 bytesPerFrame;
@@ -181,7 +181,10 @@ bool VBAMovieEnded();
 bool VBAMovieAllowsRerecording();
 bool VBAMovieSwitchToPlaying();
 bool VBAMovieSwitchToRecording();
+int  VBAMovieGetPauseAt();
 void VBAMovieSetPauseAt(int at);
-int VBAMovieConvertCurrent();
+int  VBAMovieConvertCurrent();
+bool VBAMovieTuncateAtCurrentFrame();
+bool VBAMovieFixHeader();
 
 #endif // VBA_MOVIE_H
