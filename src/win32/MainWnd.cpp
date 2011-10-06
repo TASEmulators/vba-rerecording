@@ -551,7 +551,6 @@ END_MESSAGE_MAP()
 // MainWnd message handlers
 
 bool vbaShuttingDown = false;
-bool reopenTheSameImage = false;
 
 void MainWnd::OnClose()
 {
@@ -1283,13 +1282,12 @@ void MainWnd::winFileClose(bool reopening)
 	systemSetTitle(VBA_NAME_AND_VERSION);
 }
 
-bool MainWnd::winFileRun()
+bool MainWnd::winFileRun(bool reopening)
 {
 	int prevCartridgeType = systemCartridgeType;
 
-	bool requiresInitRAMSearch = (rom == NULL && gbRom == NULL) || !reopenTheSameImage;
-	winFileClose(reopenTheSameImage);
-	reopenTheSameImage = false;
+	//bool requiresInitRAMSearch = (rom == NULL && gbRom == NULL) || !reopening;
+	winFileClose(reopening);
 
 	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
 	if (theApp.romFilename.GetLength() > 2048) theApp.romFilename.Truncate(2048);
@@ -1336,12 +1334,17 @@ bool MainWnd::winFileRun()
 			{
 				extern bool gbUpdateSizes();
 				gbUpdateSizes();
-				//gbReset();
 				theApp.romSize = size;
 			}
 		}
 
 		useBios = false;    // FIXME
+		
+		if (reopening)
+		{
+			bool winGbCheatReaddress();
+			winGbCheatReaddress();
+		}
 	}
 	else
 	{
@@ -1389,16 +1392,18 @@ bool MainWnd::winFileRun()
 			CString ipsname = winGetDestFilename(logicalName, IDS_IPS_DIR, ".ips");
 			int		size	= 0x2000000;
 			utilApplyIPS(ipsname, &rom, &size);
-//			if (size != 0x2000000
-//			{
-//				CPUReset();	// will reset below anyway
-//			}
 		}
 
 		skipBios = theApp.skipBiosFile ? true : false;
 		CPUInit();
 		CPULoadBios(theApp.biosFileName, theApp.useBiosFile ? true : false);
 		CPUReset();
+
+		if (reopening)
+		{
+			bool winGbaCheatReaddress();
+			winGbaCheatReaddress();
+		}
 	}
 
 	if (theApp.soundInitialized)
@@ -1488,11 +1493,13 @@ bool MainWnd::winFileRun()
 
 	theApp.winCheckFullscreen();
 	ReopenRamWindows();
-	if (requiresInitRAMSearch)
+
+	// FIXME
+	reset_address_info();
+	//if (requiresInitRAMSearch)
 	{
-		reset_address_info();
-//		void soft_reset_address_info (bool resetPrevValues = false);
-//		soft_reset_address_info();
+		// extern void soft_reset_address_info();
+		// soft_reset_address_info();
 	}
 
 	VBAUpdateButtonPressDisplay();

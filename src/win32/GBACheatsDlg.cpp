@@ -14,6 +14,23 @@
 #include "../gba/GBAGlobals.h"
 #include "../common/CheatSearch.h"
 
+////////////////////////////////
+
+bool winGbaCheatReaddress()
+{
+	if (cheatSearchData.count != 2)
+		return false;
+
+	CheatSearchBlock *block = &cheatSearchData.blocks[0];
+	block->data   = workRAM;
+
+	block         = &cheatSearchData.blocks[1];
+	block->data   = internalRAM;
+	
+	cheatSearchData.count = 2;
+	return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // GBACheatSearch dialog
 
@@ -107,18 +124,18 @@ void GBACheatSearch::OnStart()
 	if (cheatSearchData.count == 0)
 	{
 		CheatSearchBlock *block = &cheatSearchData.blocks[0];
-		block->size   = 0x40000;
-		block->offset = 0x2000000;
-		block->bits   = (u8 *)malloc(0x40000>>3);
 		block->data   = workRAM;
+		block->offset = 0x2000000;
+		block->size   = 0x40000;
 		block->saved  = (u8 *)malloc(0x40000);
+		block->bits   = (u8 *)malloc(0x40000>>3);
 
 		block         = &cheatSearchData.blocks[1];
-		block->size   = 0x8000;
-		block->offset = 0x3000000;
-		block->bits   = (u8 *)malloc(0x8000>>3);
 		block->data   = internalRAM;
+		block->offset = 0x3000000;
+		block->size   = 0x8000;
 		block->saved  = (u8 *)malloc(0x8000);
+		block->bits   = (u8 *)malloc(0x8000>>3);
 
 		cheatSearchData.count = 2;
 	}
