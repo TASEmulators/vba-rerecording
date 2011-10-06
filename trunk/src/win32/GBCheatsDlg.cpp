@@ -14,15 +14,66 @@
 #include "../gb/gbCheats.h"
 #include "../gb/gbGlobals.h"
 
-static bool winGbCheatAddVerifyGs(const char *code, const char *desc)
+static inline bool winGbCheatAddVerifyGs(const char *code, const char *desc)
 {
 	gbAddGsCheat(code, desc);
 	return true;
 }
 
-static bool winGbCheatAddVerifyGg(const char *code, const char *desc)
+static inline bool winGbCheatAddVerifyGg(const char *code, const char *desc)
 {
 	gbAddGgCheat(code, desc);
+	return true;
+}
+
+////////////////////////////////
+
+bool winGbCheatReaddress()
+{
+	if (cheatSearchData.count != 3)
+		return false;
+
+	CheatSearchBlock *block = &cheatSearchData.blocks[0];
+	if (gbRamSize > 0)
+	{
+		if (gbRam)
+			block->data = gbRam;
+		else
+			block->data = &gbMemory[0xa000];
+		block->offset = 0xa000;
+		block->size  = gbRamSize;
+		cheatSearchSetSavedAndBits(block);
+	}
+	else
+	{
+		cheatSearchZeroBlock(&cheatSearchData.blocks[0]);
+	}
+
+	block = &cheatSearchData.blocks[1];
+	if (gbCgbMode)
+	{
+		block->data   = &gbMemory[0xc000];
+		block->offset = 0xc000;
+		block->size   = 0x1000;
+		cheatSearchSetSavedAndBits(block);
+
+		block         = &cheatSearchData.blocks[2];
+		block->data   = gbWram;
+		block->offset = 0xd000;
+		block->size   = 0x8000;
+		cheatSearchSetSavedAndBits(block);
+	}
+	else
+	{
+		block->data   = &gbMemory[0xc000];
+		block->offset = 0xc000;
+		block->size   = 0x2000;
+		cheatSearchSetSavedAndBits(block);
+
+		cheatSearchZeroBlock(&cheatSearchData.blocks[2]);
+	}
+
+	cheatSearchData.count = 3;
 	return true;
 }
 
@@ -188,49 +239,51 @@ void GBCheatSearch::OnStart()
 {
 	if (cheatSearchData.count == 0)
 	{
-		int i = 0;
-
 		CheatSearchBlock *block = &cheatSearchData.blocks[0];
-
-		if (gbRamSize)
+		if (gbRamSize > 0)
 		{
-			block->offset = 0xa000;
 			if (gbRam)
 				block->data = gbRam;
 			else
 				block->data = &gbMemory[0xa000];
-			block->saved = (u8 *)malloc(gbRamSize);
 			block->size  = gbRamSize;
+			block->offset = 0xa000;
+			block->saved = (u8 *)malloc(gbRamSize);
 			block->bits  = (u8 *)malloc(gbRamSize >> 3);
-			i++;
-		}
-		block = &cheatSearchData.blocks[i];
-		if (gbCgbMode)
-		{
-			block->offset = 0xc000;
-			block->data   = &gbMemory[0xc000];
-			block->saved  = (u8 *)malloc(0x1000);
-			block->size   = 0x1000;
-			block->bits   = (u8 *)malloc(0x1000 >> 3);
-			i++;
-			block         = &cheatSearchData.blocks[i];
-			block->offset = 0xd000;
-			block->data   = gbWram;
-			block->saved  = (u8 *)malloc(0x8000);
-			block->size   = 0x8000;
-			block->bits   = (u8 *)malloc(0x8000 >> 3);
-			i++;
 		}
 		else
 		{
-			block->offset = 0xc000;
-			block->data   = &gbMemory[0xc000];
-			block->saved  = (u8 *)malloc(0x2000);
-			block->size   = 0x2000;
-			block->bits   = (u8 *)malloc(0x2000 >> 3);
-			i++;
+			cheatSearchZeroBlock(&cheatSearchData.blocks[0]);
 		}
-		cheatSearchData.count = i;
+
+		block = &cheatSearchData.blocks[1];
+		if (gbCgbMode)
+		{
+			block->data   = &gbMemory[0xc000];
+			block->size   = 0x1000;
+			block->offset = 0xc000;
+			block->saved  = (u8 *)malloc(0x1000);
+			block->bits   = (u8 *)malloc(0x1000 >> 3);
+
+			block         = &cheatSearchData.blocks[2];
+			block->data   = gbWram;
+			block->size   = 0x8000;
+			block->offset = 0xd000;
+			block->saved  = (u8 *)malloc(0x8000);
+			block->bits   = (u8 *)malloc(0x8000 >> 3);
+		}
+		else
+		{
+			block->data   = &gbMemory[0xc000];
+			block->size   = 0x2000;
+			block->offset = 0xc000;
+			block->saved  = (u8 *)malloc(0x2000);
+			block->bits   = (u8 *)malloc(0x2000 >> 3);
+
+			cheatSearchZeroBlock(&cheatSearchData.blocks[2]);
+		}
+
+		cheatSearchData.count = 3;
 	}
 
 	cheatSearchStart(&cheatSearchData);

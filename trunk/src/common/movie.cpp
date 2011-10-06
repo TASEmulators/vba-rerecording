@@ -624,9 +624,12 @@ static void SetPlayEmuSettings()
 static void HardResetAndSRAMClear()
 {
 #if (defined(WIN32) && !defined(SDL))
-	winEraseBatteryFile(); // delete the damn SRAM file
-	extern bool reopenTheSameImage; reopenTheSameImage = true;     // keep it from being resurrected from RAM
-	((MainWnd *)theApp.m_pMainWnd)->winFileRun();     // start running the game
+	winEraseBatteryFile(); // delete the damn SRAM file and keep it from being resurrected from RAM
+	MainWnd *temp = ((MainWnd *)theApp.m_pMainWnd);
+	if (!temp->winFileRun(true)) // restart running the game
+	{
+		temp->winFileClose();
+	}
 #else
 	char fname [1024];
 	GetBatterySaveName(fname);

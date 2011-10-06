@@ -88,14 +88,42 @@ static bool (*cheatSearchSignedFunc[])(s32, s32) = {
 	cheatSearchSignedGE
 };
 
+void cheatSearchSetSavedAndBits(CheatSearchBlock *block)
+{
+	if (!block->saved)
+	{
+		block->saved = (u8 *)malloc(block->size);
+		memcpy(block->saved, block->data, block->size);
+	}
+	if (!block->bits)
+	{
+		block->bits  = (u8 *)malloc(block->size >> 3);
+		memset(block->bits, 0xff, block->size >> 3);
+	}
+}
+
+void cheatSearchZeroBlock(CheatSearchBlock *block)
+{
+	block->data	  = 0;
+	block->offset = 0;
+	block->size	  = 0;
+	free(block->saved);
+	free(block->bits);
+	block->saved  = 0;
+	block->bits	  = 0;
+}
+
 void cheatSearchCleanup(CheatSearchData *cs)
 {
 	int count = cs->count;
 
 	for (int i = 0; i < count; i++)
 	{
-		free(cs->blocks[i].saved);
-		free(cs->blocks[i].bits);
+		CheatSearchBlock &block = cs->blocks[i];
+		free(block.saved);
+		free(block.bits);
+		block.saved = 0;
+		block.bits  = 0;
 	}
 	cs->count = 0;
 }
@@ -341,4 +369,3 @@ void cheatSearchUpdateValues(const CheatSearchData *cs)
 		memcpy(block->saved, block->data, block->size);
 	}
 }
-
