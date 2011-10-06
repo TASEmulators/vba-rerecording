@@ -1049,6 +1049,7 @@ void VBAUpdateFrameCountDisplay()
 	const int MAGICAL_NUMBER = 64;  // FIXME: this won't do any better, but only to remind you of sz issues
 	char	  frameDisplayString[MAGICAL_NUMBER];
 	char	  lagFrameDisplayString[MAGICAL_NUMBER];
+	char      extraCountDisplayString[MAGICAL_NUMBER];
 
 #if (defined(WIN32) && !defined(SDL))
 	if (theApp.frameCounter)
@@ -1087,6 +1088,16 @@ void VBAUpdateFrameCountDisplay()
 //			sprintf(lagFrameDisplayString, " %c %d", systemCounters.laggedLast ? '*' : '|', systemCounters.lagCount);
 			sprintf(lagFrameDisplayString, " | %d%s", systemCounters.lagCount, systemCounters.laggedLast ? " *" : "");
 			strcat(frameDisplayString, lagFrameDisplayString);
+		}
+
+#if (defined(WIN32) && !defined(SDL))
+		if (theApp.extraCounter)
+#else
+		/// SDL FIXME
+#endif
+		{
+			sprintf(extraCountDisplayString, " | %d", systemCounters.frameCount - systemCounters.extraCount);
+			strcat(frameDisplayString, extraCountDisplayString);
 		}
 	}
 #if (defined(WIN32) && !defined(SDL))

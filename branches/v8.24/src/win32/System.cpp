@@ -890,6 +890,8 @@ EmulatedSystemCounters systemCounters =
 	0,
 	// lagCount
 	0,
+	// extraCount
+	0,
 	// lagged
 	true,
 	// laggedLast

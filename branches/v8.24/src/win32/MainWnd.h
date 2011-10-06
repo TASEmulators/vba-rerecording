@@ -403,7 +403,9 @@ protected:
 	afx_msg void OnUpdateToolsFrameCounter(CCmdUI*pCmdUI);
 	afx_msg void OnToolsLagCounter();
 	afx_msg void OnUpdateToolsLagCounter(CCmdUI*pCmdUI);
-	afx_msg void OnToolsLagCounterReset();
+	afx_msg void OnToolsExtraCounter();
+	afx_msg void OnUpdateToolsExtraCounter(CCmdUI*pCmdUI);
+	afx_msg void OnToolsExtraCounterReset();
 	afx_msg void OnToolsInputDisplay();
 	afx_msg void OnUpdateToolsInputDisplay(CCmdUI*pCmdUI);
 	afx_msg void OnToolsDebugGdb();
