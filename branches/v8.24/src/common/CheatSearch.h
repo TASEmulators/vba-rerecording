@@ -9,11 +9,11 @@
 
 struct CheatSearchBlock
 {
+	u8 *data;
 	int size;
 	u32 offset;
-	u8 *bits;
-	u8 *data;
 	u8 *saved;
+	u8 *bits;
 };
 
 struct CheatSearchData
@@ -49,6 +49,8 @@ enum
     (bits)[(off) >> 3] & (1 << ((off) & 7))
 
 extern CheatSearchData cheatSearchData;
+extern void cheatSearchSetSavedAndBits(CheatSearchBlock *block);
+extern void cheatSearchZeroBlock(CheatSearchBlock *block);
 extern void cheatSearchCleanup(CheatSearchData *cs);
 extern void cheatSearchStart(const CheatSearchData *cs);
 extern void cheatSearch(const CheatSearchData *cs, int compare, int size,
