@@ -154,6 +154,8 @@ static void reserve_buffer_space(uint32 space_needed)
 		uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
 		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
 		Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
+		// FIXME: this only fixes the random input problem during dma-frame-skip, but not the skip
+		memset(Movie.inputBuffer, 0, Movie.inputBufferSize);
 		Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
 	}
 }
@@ -323,13 +325,6 @@ static void remember_input_state()
 
 static void change_state(MovieState new_state)
 {
-#if 0
-	if (Movie.state == MOVIE_STATE_RECORD)
-	{
-		truncate_movie(Movie.header.length_frames);
-	}
-#endif
-
 #if (defined(WIN32) && !defined(SDL))
 	theApp.frameSearching	   = false;
 	theApp.frameSearchSkipping = false;
@@ -1628,6 +1623,11 @@ void VBAMovieRestart()
 	}
 }
 
+int VBAMovieGetPauseAt()
+{
+	return Movie.pauseFrame;
+}
+
 void VBAMovieSetPauseAt(int at)
 {
 	Movie.pauseFrame = at;
@@ -1700,16 +1700,24 @@ int VBAMovieConvertCurrent()
 	return MOVIE_SUCCESS;
 }
 
-void VBAMovieExtractFromSnapshot()
+bool VBAMovieTuncateAtCurrentFrame()
 {
-	// Currently, snapshots taken from a movie don't contain the initial SRAM or savestate of the movie,
-	// even if the movie was recorded from either of them. If a snapshot was taken at the first frame
-	// i.e. Frame 0, it can be safely assumed that the snapshot reflects the initial state of such a movie.
-	// However, if it was taken after the first frame, the SRAM contained might either be still the same
-	// as the original (usually true if no write operations on the SRAM occured) or have been modified,
-	// while the exact original state could hardly, if not impossibly, be safely worked out.
+	if (!VBAMovieActive())
+		return false;
 
-	// TODO
-	;
+	truncate_movie(Movie.currentFrame);
+	change_state(MOVIE_STATE_END);
+	systemScreenMessage("Movie truncated");
+
+	return true;
 }
 
+bool VBAMovieFixHeader()
+{
+	if (!VBAMovieActive())
+		return false;
+
+	flush_movie_header();
+	systemScreenMessage("Movie header fixed");
+	return true;
+}
