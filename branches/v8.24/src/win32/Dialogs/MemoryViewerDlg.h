@@ -31,6 +31,7 @@ public:
 	void setCurrentAddress(u32 address);
 	int autoUpdate;
 	int decimalDisplay;
+	int align;
 	void update();
 	MemoryViewerDlg(CWnd*pParent = NULL);  // standard constructor
 
@@ -63,6 +64,7 @@ protected:
 	afx_msg void On32Bit();
 	afx_msg void OnAutoUpdate();
 	afx_msg void OnDecimalDisplay();
+	afx_msg void OnAlign();
 	afx_msg void OnGo();
 	afx_msg void OnSelchangeAddresses();
 	afx_msg void OnSave();

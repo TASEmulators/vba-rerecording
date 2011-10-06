@@ -108,6 +108,7 @@ ON_BN_CLICKED(IDC_16_BIT, On16Bit)
 ON_BN_CLICKED(IDC_32_BIT, On32Bit)
 ON_BN_CLICKED(IDC_AUTO_UPDATE, OnAutoUpdate)
 ON_BN_CLICKED(IDC_DECIMAL_DISPLAY, OnDecimalDisplay)
+ON_BN_CLICKED(IDC_ALIGN, OnAlign)
 ON_BN_CLICKED(IDC_GO, OnGo)
 ON_CBN_SELCHANGE(IDC_ADDRESSES, OnSelchangeAddresses)
 ON_BN_CLICKED(IDC_SAVE, OnSave)
@@ -128,6 +129,9 @@ BOOL GBMemoryViewerDlg::OnInitDialog()
 	decimalDisplay = !regQueryDwordValue("memViewerDecimalDisplay", 0);
 	OnDecimalDisplay();
 
+	align = !regQueryDwordValue("memViewerAlign", 0);
+	OnAlign();
+
 	DIALOG_SIZER_START(sz)
 	DIALOG_SIZER_ENTRY(IDC_VIEWER, DS_SizeX | DS_SizeY)
 	DIALOG_SIZER_ENTRY(IDC_REFRESH, DS_MoveY)
@@ -136,6 +140,7 @@ BOOL GBMemoryViewerDlg::OnInitDialog()
 	DIALOG_SIZER_ENTRY(IDC_SAVE, DS_MoveY)
 	DIALOG_SIZER_ENTRY(IDC_AUTO_UPDATE, DS_MoveY)
 	DIALOG_SIZER_ENTRY(IDC_DECIMAL_DISPLAY, DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_ALIGN, DS_MoveY)
 	DIALOG_SIZER_ENTRY(IDC_CURRENT_ADDRESS_LABEL, DS_MoveY | DS_MoveX)
 	DIALOG_SIZER_ENTRY(IDC_CURRENT_ADDRESS, DS_MoveY | DS_MoveX)
 	DIALOG_SIZER_END()
@@ -260,6 +265,15 @@ void GBMemoryViewerDlg::OnDecimalDisplay()
 	regSetDwordValue("memViewerDecimalDisplay", decimalDisplay);
 }
 
+void GBMemoryViewerDlg::OnAlign()
+{
+	align = !align;
+	if (GetDlgItem(IDC_ALIGN))
+		((CButton *)GetDlgItem(IDC_ALIGN))->SetCheck(align ? TRUE : FALSE);
+
+	regSetDwordValue("memViewerAlign", align);
+}
+
 void GBMemoryViewerDlg::OnGo()
 {
 	CString buffer;
@@ -268,10 +282,15 @@ void GBMemoryViewerDlg::OnGo()
 
 	u32 address;
 	sscanf(buffer, "%x", &address);
-	if (m_viewer.getSize() == 1)
-		address &= ~1;
-	else if (m_viewer.getSize() == 2)
-		address &= ~3;
+	if (align)
+		address &= ~0xF;
+	else
+	{
+		if (m_viewer.getSize() == 1)
+			address &= ~1;
+		else if (m_viewer.getSize() == 2)
+			address &= ~3;
+	}
 	m_viewer.setAddress(address);
 }
 
