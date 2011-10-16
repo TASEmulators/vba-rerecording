@@ -156,10 +156,11 @@ static void reserve_buffer_space(uint32 space_needed)
 	{
 		uint32 ptr_offset	= Movie.inputBufferPtr - Movie.inputBuffer;
 		uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
+		uint32 old_size     = Movie.inputBufferSize;
 		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
 		Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
 		// FIXME: this only fixes the random input problem during dma-frame-skip, but not the skip
-		memset(Movie.inputBuffer, 0, Movie.inputBufferSize);
+		memset(Movie.inputBuffer + old_size, 0, Movie.inputBufferSize - old_size);
 		Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
 	}
 }
