@@ -1273,7 +1273,10 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 
 	// read header
 	if ((result = (read_movie_header(file, local_movie))) != MOVIE_SUCCESS)
+	{
+		fclose(file);
 		return result;
+	}
 
 	// read the metadata / author info from file
 	fread(local_movie.authorInfo, 1, sizeof(char) * MOVIE_METADATA_SIZE, file);
