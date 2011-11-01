@@ -1405,6 +1405,7 @@ void CPUCleanUp()
 	newFrame	  = true;
 
 	GBASystemCounters.frameCount = 0;
+	GBASystemCounters.extraCount = 0;
 	GBASystemCounters.lagCount	 = 0;
 	GBASystemCounters.lagged	 = true;
 	GBASystemCounters.laggedLast = true;
@@ -3131,6 +3132,7 @@ void CPUReset(bool userReset)
 	if (!VBAMovieActive())
 	{
 		GBASystemCounters.frameCount = 0;
+		GBASystemCounters.extraCount = 0;
 		GBASystemCounters.lagCount	 = 0;
 		GBASystemCounters.lagged	 = true;
 		GBASystemCounters.laggedLast = true;

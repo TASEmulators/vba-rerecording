@@ -2326,6 +2326,7 @@ void gbReset(bool userReset)
 	if (!VBAMovieActive())
 	{
 		systemCounters.frameCount = 0;
+		systemCounters.extraCount = 0;
 		systemCounters.lagCount	  = 0;
 		systemCounters.lagged	  = true;
 		systemCounters.laggedLast = true;
@@ -4625,6 +4626,7 @@ void gbCleanUp()
 	pauseAfterFrameAdvance = false;
 
 	systemCounters.frameCount = 0;
+	systemCounters.extraCount = 0;
 	systemCounters.lagCount	  = 0;
 	systemCounters.lagged	  = true;
 	systemCounters.laggedLast = true;
