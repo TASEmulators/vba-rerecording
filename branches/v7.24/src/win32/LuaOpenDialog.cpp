@@ -333,7 +333,11 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 		break;
 
 	case WM_CLOSE: {
-		VBALuaStop();
+		SendMessage(hDlg, WM_DESTROY, 0, 0);
+	}	break;
+
+	case WM_DESTROY: {
+		//VBALuaStop();
 		DragAcceptFiles(hDlg, FALSE);
 		if (hFont) {
 			DeleteObject(hFont);
