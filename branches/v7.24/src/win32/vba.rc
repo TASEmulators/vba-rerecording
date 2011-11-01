@@ -2048,7 +2048,7 @@ BEGIN
             END
             MENUITEM SEPARATOR
             MENUITEM "GBA &Lag Reduction",          ID_EMULATOR_GBALAG
-            MENUITEM "Mimic v20 &Frame Timing",     ID_EMULATOR_USE_OLD_FRAME_TIMING
+            MENUITEM "Mimic v20 GB &Frame Timing",  ID_EMULATOR_USE_OLD_FRAME_TIMING
             MENUITEM SEPARATOR
             MENUITEM "&Use BIOS File",              ID_OPTIONS_EMULATOR_USEBIOSFILE
             MENUITEM "Skip BIOS &Intro",            ID_OPTIONS_EMULATOR_SKIPBIOS
