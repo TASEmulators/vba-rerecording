@@ -101,6 +101,7 @@ void MemoryViewerDlg::DoDataExchange(CDataExchange*pDX)
 	DDX_Control(pDX, IDC_ADDRESSES, m_addresses);
 	DDX_Check(pDX, IDC_AUTO_UPDATE, autoUpdate);
 	DDX_Check(pDX, IDC_DECIMAL_DISPLAY, decimalDisplay);
+	DDX_Check(pDX, IDC_ALIGN, align);
 	DDX_Radio(pDX, IDC_8_BIT, m_size);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_VIEWER, m_viewer);
@@ -115,6 +116,7 @@ ON_BN_CLICKED(IDC_16_BIT, On16Bit)
 ON_BN_CLICKED(IDC_32_BIT, On32Bit)
 ON_BN_CLICKED(IDC_AUTO_UPDATE, OnAutoUpdate)
 ON_BN_CLICKED(IDC_DECIMAL_DISPLAY, OnDecimalDisplay)
+ON_BN_CLICKED(IDC_ALIGN, OnAlign)
 ON_BN_CLICKED(IDC_GO, OnGo)
 ON_CBN_SELCHANGE(IDC_ADDRESSES, OnSelchangeAddresses)
 ON_BN_CLICKED(IDC_SAVE, OnSave)
@@ -137,6 +139,7 @@ BOOL MemoryViewerDlg::OnInitDialog()
 	DIALOG_SIZER_ENTRY(IDC_SAVE, DS_MoveY)
 	DIALOG_SIZER_ENTRY(IDC_AUTO_UPDATE, DS_MoveY)
 	DIALOG_SIZER_ENTRY(IDC_DECIMAL_DISPLAY, DS_MoveY)
+	DIALOG_SIZER_ENTRY(IDC_ALIGN, DS_MoveY)
 	DIALOG_SIZER_ENTRY(IDC_CURRENT_ADDRESS_LABEL, DS_MoveY | DS_MoveX)
 	DIALOG_SIZER_ENTRY(IDC_CURRENT_ADDRESS, DS_MoveY | DS_MoveX)
 	DIALOG_SIZER_END()
@@ -158,6 +161,7 @@ BOOL MemoryViewerDlg::OnInitDialog()
 
 	decimalDisplay = regQueryDwordValue("memViewerDecimalDisplay", 0);
 	m_viewer.setDecimal(decimalDisplay ? true : false);
+	align = regQueryDwordValue("memViewerAlign", 0);
 
 	m_viewer.setDialog(this);
 	m_viewer.ShowScrollBar(SB_VERT, TRUE);
@@ -269,6 +273,12 @@ void MemoryViewerDlg::OnDecimalDisplay()
 	regSetDwordValue("memViewerDecimalDisplay", decimalDisplay);
 }
 
+void MemoryViewerDlg::OnAlign()
+{
+	align = !align;
+	regSetDwordValue("memViewerAlign", align);
+}
+
 void MemoryViewerDlg::OnGo()
 {
 	CString buffer;
@@ -277,11 +287,15 @@ void MemoryViewerDlg::OnGo()
 
 	u32 address;
 	sscanf(buffer, "%x", &address);
-	//if (m_viewer.getSize() == 1)
-	//	address &= ~1;
-	//else if (m_viewer.getSize() == 2)
-	//	address &= ~3;
-	address &= ~0xf;
+	if (align)
+		address &= ~0xF;
+	else
+	{
+		if (m_viewer.getSize() == 1)
+			address &= ~1;
+		else if (m_viewer.getSize() == 2)
+			address &= ~3;
+	}
 	m_viewer.setAddress(address);
 }
 
