@@ -42,9 +42,11 @@ u8 gbInvertTab[256] = {
 
 u16		   gbLineMix[160];
 u16		   gbWindowColor[160];
+
 extern int inUseRegister_WY;
 extern int inUseRegister_WX;
-extern int layerSettings;
+
+extern int32 layerSettings;
 
 void gbRenderLine()
 {
