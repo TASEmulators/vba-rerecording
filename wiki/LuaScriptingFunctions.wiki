@@ -139,7 +139,7 @@ Stops the movie. Cannot be used if there is no movie.
 
 Before the next frame is drawn, one may draw to the buffer. The buffer is cleared each frame. 
 
-All functions assume that the width is 256 and the height of the image is 239, regardless of the tyoe of game. GB(C) resolution = 160x144, SGB = 256x224, GBA = 240x160
+All functions assume that the width is 256 and the height of the image is 239, regardless of the type of game. GB(C) resolution = 160x144, SGB = 256x224, GBA = 240x160
 
 Color can be given as 0xRRGGBBAA; like HTML ("#RRGGBBAA"); as a string (white, black, clear, gray, grey, red, orange, yellow, chatreuse, green, teal, cyan, blue, purple, magenta); a random colour ("rand"); or as a table, where the keys are 'r', 'g', 'b', and 'a' repsectively. For alpha, 00 is transparent, FF is opaque.
 
