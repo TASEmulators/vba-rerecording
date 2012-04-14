@@ -31,7 +31,7 @@
 #include "stdafx.h"
 #include "KeyboardEdit.h"
 
-extern TCHAR *mapVirtKeysStringFromWORD(WORD wKey);
+extern const TCHAR *mapVirtKeysStringFromWORD(WORD wKey);
 
 IMPLEMENT_DYNAMIC(CKeyboardEdit, CEdit)
 
