@@ -2610,7 +2610,7 @@ defcase: default:
 
 						case LUA_TNUMBER:
 							{
-							    uint32 colour = (uint32) lua_tointeger(L, offset);
+							    uint32 colour = (uint32)lua_tonumber(L, offset);
 							    return colour;
 							}
 

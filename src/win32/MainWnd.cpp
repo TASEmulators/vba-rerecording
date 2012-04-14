@@ -972,6 +972,21 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 		_splitpath(szFile, NULL, NULL, NULL, ext);
 		if (strcasecmp(ext, ".lua") == 0)
 		{
+			if (!systemIsEmulating())
+			{
+				theApp.winCheckFullscreen();
+
+				// FIXME: should give the user choices
+				int cartType = 0;
+				if (winFileOpenSelect(cartType))
+				{
+					if (!winFileRun())
+						return;
+				}
+				else
+					return;
+			}
+
 			if (VBALoadLuaCode(szFile))
 			{
 				// success, there is nothing to do
@@ -996,14 +1011,12 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			}
 
 			int cartType = movieInfo.header.typeFlags & 1 ? 0 : 1;
-
 			if (!emulating)
 			{
 				theApp.winCheckFullscreen();
+
 				if (winFileOpenSelect(cartType))
 				{
-					if (VBAMovieActive())
-						VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
 					if (!winFileRun())
 						return;
 				}
@@ -1117,7 +1130,6 @@ romcheck_exit:
 			bool useBIOSFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
 			if (useBIOSFile)
 			{
-				extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
 				if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
 				{
 					systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
