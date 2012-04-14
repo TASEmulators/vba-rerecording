@@ -115,6 +115,7 @@ extern bool systemIsSpedUp();
 extern bool systemIsPaused();
 extern void systemSetPause(bool pause);
 extern bool systemPauseOnFrame();
+extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
 
 extern int	systemCartridgeType;
 extern int  systemSpeed;

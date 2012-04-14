@@ -240,9 +240,12 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			case IDC_BUTTON_LUARUN:
 			{
-				char filename[MAX_PATH];
-				GetDlgItemText(hDlg, IDC_EDIT_LUAPATH, filename, MAX_PATH);
-				VBALoadLuaCode(filename);
+				if (systemIsEmulating())
+				{
+					char filename[MAX_PATH];
+					GetDlgItemText(hDlg, IDC_EDIT_LUAPATH, filename, MAX_PATH);
+					VBALoadLuaCode(filename);
+				}
 			}	break;
 
 			case IDC_BUTTON_LUASTOP:

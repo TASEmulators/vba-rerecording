@@ -37,7 +37,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern TCHAR *mapVirtKeysStringFromWORD(WORD wKey);
+extern const TCHAR *mapVirtKeysStringFromWORD(WORD wKey);
 
 IMPLEMENT_DYNAMIC(CKeyboardEdit, CEdit)
 

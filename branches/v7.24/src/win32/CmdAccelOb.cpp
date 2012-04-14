@@ -198,12 +198,14 @@ MAPVIRTKEYS mapVirtSysKeys[] = {
 ////////////////////////////////////////////////////////////////////////
 //
 //
-TCHAR *mapVirtKeysStringFromWORD(WORD wKey)
+const TCHAR *mapVirtKeysStringFromWORD(WORD wKey)
 {
 	for (int index = 0; index < sizeof(mapVirtKeys) / sizeof(mapVirtKeys[0]); index++)
 	{
 		if (mapVirtKeys[index].wKey == wKey)
+		{
 			return mapVirtKeys[index].szKey;
+		}
 	}
 	return NULL;
 }
