@@ -89,7 +89,7 @@ public:
 			audioFramesWritten++;
 			audioSecondsWritten += (double)nsamples / (double)rate; // += bytes times seconds per byte
 			char temp [64];
-			sprintf(temp, "A: %.2lf s, %d f", audioSecondsWritten, audioFramesWritten);
+			sprintf(temp, "A: %.2lf s, %u f", audioSecondsWritten, audioFramesWritten);
 			debugAudioMessageFunc(temp);
 		}
 
@@ -122,7 +122,7 @@ public:
 			videoFramesWritten++;
 			videoSecondsWritten += (double)FPS_SCALE / (double)fps_scaled; // += seconds per frame
 			char temp [64];
-			sprintf(temp, "V: %.2lf s, %d f", videoSecondsWritten, videoFramesWritten);
+			sprintf(temp, "V: %.2lf s, %u f", videoSecondsWritten, videoFramesWritten);
 			debugVideoMessageFunc(temp);
 		}
 

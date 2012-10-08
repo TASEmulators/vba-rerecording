@@ -496,7 +496,9 @@ void utilApplyIPS(const char *ips, u8 * *r, int *s)
 			if ((offset + len) >= size)
 			{
 				size *= 2;
-				rom	  = (u8 *)realloc(rom, size);
+				void *tmp = realloc(rom, size);
+				if (!tmp) free(rom);	// crash is better than a security hole
+				rom	  = (u8 *)tmp;
 				*r	  = rom;
 				*s	  = size;
 			}
@@ -976,7 +978,6 @@ static u8 *utilLoadGzipFile(const char *file,
 		{
 			systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
 			              "data");
-			fclose(f);
 			return NULL;
 		}
 		size = fileSize;

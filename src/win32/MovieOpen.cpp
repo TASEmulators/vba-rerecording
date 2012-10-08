@@ -252,7 +252,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 			uint32 minutes = l % 60;
 			l /= 60;
 			uint32 hours = l % 60;
-			sprintf(buffer, "%02d:%02d:%02d", hours, minutes, seconds);
+			sprintf(buffer, "%02u:%02u:%02u", hours, minutes, seconds);
 			GetDlgItem(IDC_LABEL_LENGTH)->SetWindowText(buffer);
 			sprintf(buffer, "%ld", movieInfo.header.length_frames);
 			GetDlgItem(IDC_LABEL_FRAMES)->SetWindowText(buffer);

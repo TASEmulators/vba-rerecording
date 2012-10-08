@@ -460,7 +460,7 @@ inline void CPUWriteMemoryWrapped(u32 address, u32 value)
 		}
 		goto unwritable;
 	case 0x0E:
-		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
+		if (!eepromInUse || cpuSramEnabled || cpuFlashEnabled)
 		{
 			(*cpuSaveGameFunc)(address, (u8)value);
 			break;
