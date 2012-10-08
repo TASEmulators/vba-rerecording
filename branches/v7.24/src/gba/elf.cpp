@@ -1149,7 +1149,7 @@ void elfParseCFA(u8 *top)
 		if (id == 0xffffffff)
 		{
 			// skip version
-			*data++;
+			data++;
 
 			ELFcie *cie = (ELFcie *)calloc(1, sizeof(ELFcie));
 
@@ -1213,8 +1213,9 @@ void elfParseCFA(u8 *top)
 
 			if ((elfFdeCount % 10) == 0)
 			{
-				elfFdes = (ELFfde * *)realloc(elfFdes, (elfFdeCount + 10) *
-				                              sizeof(ELFfde *));
+				void *tmp = realloc(elfFdes, (elfFdeCount + 10) * sizeof(ELFfde *));
+				if (!tmp) free(elfFdes);
+				elfFdes = (ELFfde **)tmp;
 			}
 			elfFdes[elfFdeCount++] = fde;
 		}
@@ -1228,8 +1229,10 @@ void elfAddLine(LineInfo *l, u32 a, int file, int line, int *max)
 {
 	if (l->number == *max)
 	{
-		*max	+= 1000;
-		l->lines = (LineInfoItem *)realloc(l->lines, *max * sizeof(LineInfoItem));
+		*max	 += 1000;
+		void *tmp = realloc(l->lines, *max * sizeof(LineInfoItem));
+		if (!tmp) free(l->lines);
+		l->lines  = (LineInfoItem *)tmp;
 	}
 	LineInfoItem *li = &l->lines[l->number];
 	li->file	= l->files[file - 1];
@@ -1303,7 +1306,9 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 		if (index == count)
 		{
 			count	+= 4;
-			l->files = (char * *)realloc(l->files, sizeof(char *) * count);
+			void *tmp = realloc(l->files, sizeof(char *) * count);
+			if (!tmp) free(l->files);
+			l->files = (char **)tmp;
 		}
 	}
 	l->fileCount = index;
@@ -1388,7 +1393,9 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 			}
 		}
 	}
-	l->lines = (LineInfoItem *)realloc(l->lines, l->number * sizeof(LineInfoItem));
+	void *tmp = realloc(l->lines, l->number * sizeof(LineInfoItem));
+	if (!tmp) free(l->lines);
+	l->lines = (LineInfoItem *)tmp;
 }
 
 u8 *elfSkipData(u8 *data, ELFAbbrev *abbrev, ELFAbbrev * *abbrevs)
@@ -1544,8 +1551,11 @@ void elfParseType(u8 *data, u32 offset, ELFAbbrev *abbrev, CompileUnit *unit,
 				case DW_TAG_member:
 				{
 					if ((index % 4) == 0)
-						s->members = (Member *)realloc(s->members,
-						                               sizeof(Member) * (index + 4));
+					{
+						void *tmp = realloc(s->members, sizeof(Member) * (index + 4));
+						if (!tmp) free(s->members);
+						s->members = (Member *)tmp;
+					}
 					Member *m = &s->members[index];
 					m->location	 = NULL;
 					m->bitOffset = 0;
@@ -1817,8 +1827,9 @@ CASE_TYPE_TAG:
 				case DW_TAG_enumerator:
 				{
 					count++;
-					e->members = (EnumMember *)realloc(e->members,
-					                                   count * sizeof(EnumMember));
+					void *tmp = realloc(e->members, count * sizeof(EnumMember));
+					if (!tmp) free(e->members);
+					e->members = (EnumMember *)tmp;
 					EnumMember *m = &e->members[count - 1];
 					for (int i = 0; i < abbr->numAttrs; i++)
 					{
@@ -1963,8 +1974,9 @@ CASE_TYPE_TAG:
 					if (maxBounds == index)
 					{
 						maxBounds	 += 4;
-						array->bounds = (int *)realloc(array->bounds,
-						                               sizeof(int) * maxBounds);
+						void *tmp = realloc(array->bounds, sizeof(int) * maxBounds);
+						if (!tmp) free(array->bounds);
+						array->bounds = (int *)tmp;
 					}
 					for (int i = 0; i < abbr->numAttrs; i++)
 					{
@@ -2634,13 +2646,13 @@ CompileUnit *elfParseCompUnit(u8 *data, u8 *abbrevData)
 
 	if (version != 2)
 	{
-		fprintf(stderr, "Unsupported debugging information version %d\n", version);
+		fprintf(stderr, "Unsupported debugging information version %u\n", version);
 		return NULL;
 	}
 
 	if (addrSize != 4)
 	{
-		fprintf(stderr, "Unsupported address size %d\n", addrSize);
+		fprintf(stderr, "Unsupported address size %u\n", addrSize);
 		return NULL;
 	}
 
@@ -2751,7 +2763,9 @@ void elfParseAranges(u8 *data)
 		if (index == max)
 		{
 			max	  += 4;
-			ranges = (ARanges *)realloc(ranges, max * sizeof(ARanges));
+			void *tmp = realloc(ranges, max * sizeof(ARanges));
+			if (!tmp) free(ranges);
+			ranges = (ARanges *)tmp;
 		}
 	}
 	elfDebugInfo->numRanges = index;

@@ -184,10 +184,6 @@ void MainWnd::OnFileLoad()
 
 		if (res)
 		{
-			if (VBAMovieActive() && !VBAMovieReadOnly())
-			{
-				VBAMovieSwitchToRecording();
-			}
 			systemScreenMessage(winResLoadString(IDS_LOADED_STATE));
 		}
 	}
@@ -222,7 +218,6 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 			}
 			else
 			{
-				VBAMovieSwitchToRecording();
 				format = winResLoadString(IDS_RERECORDED_STATE_N);
 			}
 		}

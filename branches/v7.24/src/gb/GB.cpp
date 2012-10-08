@@ -4502,8 +4502,8 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 			goto failedLoadGB;
 		}
 
-		if (movieSnapshot) // even if a movie isn't active we still want to parse through this in case other stuff is added
-		                   // later on in the save format
+		if (movieSnapshot) // even if a movie isn't active we still want to parse through this
+						   // because we have already got stuff added in this save format
 		{
 			uint32 movieInputDataSize = 0;
 			utilGzRead(gzFile, &movieInputDataSize, sizeof(movieInputDataSize));
@@ -4512,13 +4512,11 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 			if (readBytes != movieInputDataSize)
 			{
 				systemMessage(0, N_("Corrupt movie snapshot."));
-				if (local_movie_data)
-					delete [] local_movie_data;
+				delete [] local_movie_data;
 				goto failedLoadGB;
 			}
 			int code = VBAMovieUnfreeze(local_movie_data, movieInputDataSize);
-			if (local_movie_data)
-				delete [] local_movie_data;
+			delete [] local_movie_data;
 			if (code != MOVIE_SUCCESS && VBAMovieActive())
 			{
 				char errStr [1024];
