@@ -1153,7 +1153,7 @@ void elfParseCFA(u8 *top)
 		if (id == 0xffffffff)
 		{
 			// skip version
-			*data++;
+			data++;
 
 			ELFcie *cie = (ELFcie *)calloc(1, sizeof(ELFcie));
 
@@ -2638,13 +2638,13 @@ CompileUnit *elfParseCompUnit(u8 *data, u8 *abbrevData)
 
 	if (version != 2)
 	{
-		fprintf(stderr, "Unsupported debugging information version %d\n", version);
+		fprintf(stderr, "Unsupported debugging information version %u\n", version);
 		return NULL;
 	}
 
 	if (addrSize != 4)
 	{
-		fprintf(stderr, "Unsupported address size %d\n", addrSize);
+		fprintf(stderr, "Unsupported address size %u\n", addrSize);
 		return NULL;
 	}
 

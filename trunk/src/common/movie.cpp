@@ -130,7 +130,7 @@ static inline void Write16(uint16 v, uint8 *ptr)
 	ptr[1] = uint8((v >> 8) & 0xff);
 }
 
-static long file_length(FILE *fp)
+static long get_movie_file_size(FILE *fp)
 {
 	long cur_pos = ftell(fp);
 	fseek(fp, 0, SEEK_END);
@@ -139,7 +139,7 @@ static long file_length(FILE *fp)
 	return length;
 }
 
-static int bytes_per_frame(SMovie &mov)
+static int get_movie_frame_size(SMovie &mov)
 {
 	int num_controllers = 0;
 
@@ -150,7 +150,7 @@ static int bytes_per_frame(SMovie &mov)
 	return CONTROLLER_DATA_SIZE * num_controllers;
 }
 
-static void reserve_buffer_space(uint32 space_needed)
+static void reserve_movie_buffer_space(uint32 space_needed)
 {
 	if (space_needed > Movie.inputBufferSize)
 	{
@@ -158,7 +158,9 @@ static void reserve_buffer_space(uint32 space_needed)
 		uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
 		uint32 old_size     = Movie.inputBufferSize;
 		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
-		Movie.inputBuffer	  = (uint8 *)realloc(Movie.inputBuffer, Movie.inputBufferSize);
+		void *tmp			  = realloc(Movie.inputBuffer, Movie.inputBufferSize);
+		if (!tmp) free(tmp);
+		Movie.inputBuffer = (uint8 *)tmp;
 		// FIXME: this only fixes the random input problem during dma-frame-skip, but not the skip
 		memset(Movie.inputBuffer + old_size, 0, Movie.inputBufferSize - old_size);
 		Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
@@ -305,13 +307,13 @@ static void truncate_movie(long length)
 	Movie.header.length_frames = length;
 	flush_movie_header();
 	const long truncLen = long(Movie.header.offset_to_controller_data + Movie.bytesPerFrame * length);
-	if (file_length(Movie.file) != truncLen)
+	if (get_movie_file_size(Movie.file) != truncLen)
 	{
 		ftruncate(fileno(Movie.file), truncLen);
 	}
 }
 
-static void remember_input_state()
+static void preserve_init_movie_input()
 {
 	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 	{
@@ -328,7 +330,7 @@ static void remember_input_state()
 	}
 }
 
-static void change_state(MovieState new_state)
+static void change_movie_state(MovieState new_state)
 {
 #if (defined(WIN32) && !defined(SDL))
 	theApp.frameSearching	   = false;
@@ -343,10 +345,11 @@ static void change_state(MovieState new_state)
 			return;
 
 		truncate_movie(Movie.header.length_frames);
-
 		fclose(Movie.file);
 		Movie.file		   = NULL;
 		Movie.currentFrame = 0;
+		Movie.RecordedNewRerecord = false;
+		Movie.RecordedThisSession = false;
 #if (defined(WIN32) && !defined(SDL))
 		// undo changes to border settings
 		{
@@ -382,6 +385,11 @@ static void change_state(MovieState new_state)
 			new_state = MOVIE_STATE_END;
 			Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.header.length_frames;
 		}
+		else if (Movie.state == MOVIE_STATE_RECORD)
+		{
+			Movie.RecordedNewRerecord = false;
+			systemScreenMessage("Movie replay (continue)");
+		}
 	}
 	else if (new_state == MOVIE_STATE_RECORD)
 	{
@@ -393,8 +401,13 @@ static void change_state(MovieState new_state)
 			new_state = MOVIE_STATE_END;
 			Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * Movie.header.length_frames;
 		}
-
+		else
+		{
+			Movie.RecordedNewRerecord = true;
+		}
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
+		
+		systemScreenMessage("Movie re-record");
 	}
 
 	if (new_state == MOVIE_STATE_END && Movie.state != MOVIE_STATE_END)
@@ -510,6 +523,9 @@ void VBAMovieInit()
 
 	resetSignaled	  = false;
 	resetSignaledLast = false;
+
+	Movie.RecordedNewRerecord = false;
+	Movie.RecordedThisSession = false;
 }
 
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
@@ -672,7 +688,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 //	bool alreadyOpen = (Movie.file != NULL && _stricmp(movie_filename, Movie.filename) == 0);
 
 //	if (alreadyOpen)
-	change_state(MOVIE_STATE_NONE);     // have to stop current movie before trying to re-open it
+	change_movie_state(MOVIE_STATE_NONE);     // have to stop current movie before trying to re-open it
 
 	if (!(file = fopen(movie_filename, "rb+")))
 		if (!(file = fopen(movie_filename, "rb")))
@@ -681,7 +697,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	//	movieReadOnly = 2; // we have to open the movie twice, no need to do this both times
 
 //	if (!alreadyOpen)
-//		change_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
+//		change_movie_state(MOVIE_STATE_NONE); // stop current movie when we're able to open the other one
 //
 //	if (!(file = fopen(movie_filename, "rb+")))
 //		if(!(file = fopen(movie_filename, "rb")))
@@ -726,7 +742,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 		result = theEmulator.emuReadStateFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
 
 		// FIXME: Kludge for conversion
-		remember_input_state();
+		preserve_init_movie_input();
 	}
 	else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
 	{
@@ -758,7 +774,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 			movieReadOnly = 2;
 
 	// recalculate length of movie from the file size
-	Movie.bytesPerFrame = bytes_per_frame(Movie);
+	Movie.bytesPerFrame = get_movie_frame_size(Movie);
 	fseek(file, 0, SEEK_END);
 	long fileSize = ftell(file);
 	Movie.header.length_frames = (fileSize - Movie.header.offset_to_controller_data) / Movie.bytesPerFrame;
@@ -771,14 +787,13 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	Movie.inputBufferPtr	  = Movie.inputBuffer;
 	Movie.currentFrame		  = 0;
 	Movie.readOnly			  = movieReadOnly;
-	Movie.RecordedThisSession = false;
 
 	// read controller data
 	uint32 to_read = Movie.bytesPerFrame * Movie.header.length_frames;
-	reserve_buffer_space(to_read);
+	reserve_movie_buffer_space(to_read);
 	fread(Movie.inputBuffer, 1, to_read, file);
 
-	change_state(MOVIE_STATE_PLAY);
+	change_movie_state(MOVIE_STATE_PLAY);
 
 	char messageString[64] = "Movie ";
 	bool converted		   = false;
@@ -912,7 +927,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	bool alreadyOpen = (Movie.file != NULL && stricmp(movie_filename, Movie.filename) == 0);
 
 	if (alreadyOpen)
-		change_state(MOVIE_STATE_NONE);  // have to stop current movie before trying to re-open it
+		change_movie_state(MOVIE_STATE_NONE);  // have to stop current movie before trying to re-open it
 
 	if (movie_filename[0] == '\0')
 	{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
@@ -921,7 +936,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	{ loadingMovie = false; return MOVIE_FILE_NOT_FOUND; }
 
 	if (!alreadyOpen)
-		change_state(MOVIE_STATE_NONE);  // stop current movie when we're able to open the other one
+		change_movie_state(MOVIE_STATE_NONE);  // stop current movie when we're able to open the other one
 
 	// clear out the current movie
 	VBAMovieInit();
@@ -1007,13 +1022,12 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
-	Movie.bytesPerFrame		  = bytes_per_frame(Movie);
+	Movie.bytesPerFrame		  = get_movie_frame_size(Movie);
 	Movie.inputBufferPtr	  = Movie.inputBuffer;
 	Movie.currentFrame		  = 0;
 	Movie.readOnly			  = false;
-	Movie.RecordedThisSession = true;
 
-	change_state(MOVIE_STATE_RECORD);
+	change_movie_state(MOVIE_STATE_RECORD);
 
 	systemScreenMessage("Recording movie...");
 	{ loadingMovie = false; return MOVIE_SUCCESS; }
@@ -1163,7 +1177,7 @@ void VBAMovieUpdateState()
 		if (Movie.currentFrame >= Movie.header.length_frames)
 		{
 			// the movie ends anyway; what to do next depends on the settings
-			change_state(MOVIE_STATE_END);
+			change_movie_state(MOVIE_STATE_END);
 		}
 	}
 	else if (Movie.state == MOVIE_STATE_RECORD)
@@ -1172,12 +1186,18 @@ void VBAMovieUpdateState()
 		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
 		Movie.header.length_frames = Movie.currentFrame;
 		Movie.inputBufferPtr	 += Movie.bytesPerFrame;
+		if (Movie.RecordedNewRerecord)
+		{
+			if (!VBALuaRerecordCountSkip())
+				++Movie.header.rerecord_count;
+			Movie.RecordedNewRerecord = false;
+		}
 		Movie.RecordedThisSession = true;
 		flush_movie_header();
 	}
 	else if (Movie.state == MOVIE_STATE_END)
 	{
-		change_state(MOVIE_STATE_END);
+		change_movie_state(MOVIE_STATE_END);
 	}
 }
 
@@ -1210,7 +1230,7 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
 		return;      // not a controller we're recognizing
 
-	reserve_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
+	reserve_movie_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
 
 	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 	{
@@ -1249,7 +1269,7 @@ void VBAMovieStop(bool8 suppress_message)
 {
 	if (Movie.state != MOVIE_STATE_NONE)
 	{
-		change_state(MOVIE_STATE_NONE);
+		change_movie_state(MOVIE_STATE_NONE);
 		if (!suppress_message)
 			systemScreenMessage("Movie stop");
 	}
@@ -1281,8 +1301,8 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 	// read the metadata / author info from file
 	fread(local_movie.authorInfo, 1, sizeof(char) * MOVIE_METADATA_SIZE, file);
 
-	strncpy(local_movie.filename, filename, _MAX_PATH);
-	local_movie.filename[_MAX_PATH - 1] = '\0';
+	strncpy(local_movie.filename, filename, SMovie::MAX_FILENAME_LENGTH);
+	local_movie.filename[SMovie::MAX_FILENAME_LENGTH - 1] = '\0';
 
 	if (Movie.file != NULL && stricmp(local_movie.filename, Movie.filename) == 0) // alreadyOpen
 	{
@@ -1292,7 +1312,7 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 	else
 	{
 		// recalculate length of movie from the file size
-		local_movie.bytesPerFrame = bytes_per_frame(local_movie);
+		local_movie.bytesPerFrame = get_movie_frame_size(local_movie);
 		fseek(file, 0, SEEK_END);
 		int fileSize = ftell(file);
 		local_movie.header.length_frames =
@@ -1502,6 +1522,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		Movie.currentFrame	 = current_frame;
 		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
+
+		change_movie_state(MOVIE_STATE_PLAY);	// check for movie end
 	}
 	else
 	{
@@ -1510,22 +1532,18 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		// writing new input data at the currentFrame pointer
 		Movie.currentFrame		   = current_frame;
 		Movie.header.length_frames = end_frame;
-		if (!VBALuaRerecordCountSkip())
-			++Movie.header.rerecord_count;
 
-		Movie.RecordedThisSession = true;
-
-		// do this before calling reserve_buffer_space()
+		// do this before calling reserve_movie_buffer_space()
 		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
-		reserve_buffer_space(space_needed);
+		reserve_movie_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
 		// for consistency, no auto movie conversion here since we don't auto convert the corresponding savestate
 		flush_movie_header();
 		flush_movie_frames();
-	}
 
-	change_state(MOVIE_STATE_PLAY);	// check for movie end
+		change_movie_state(MOVIE_STATE_RECORD);
+	}
 
 	// necessary!
 	resetSignaled	  = false;
@@ -1570,11 +1588,7 @@ bool VBAMovieSwitchToPlaying()
 		VBAMovieToggleReadOnly();
 	}
 
-	change_state(MOVIE_STATE_PLAY);
-	if (Movie.state == MOVIE_STATE_PLAY)
-		systemScreenMessage("Movie replay (continue)");
-	else
-		systemScreenMessage("Movie end");
+	change_movie_state(MOVIE_STATE_PLAY);
 
 	return true;
 }
@@ -1589,11 +1603,7 @@ bool VBAMovieSwitchToRecording()
 		VBAMovieToggleReadOnly();
 	}
 
-	if (!VBALuaRerecordCountSkip())
-		++Movie.header.rerecord_count;
-
-	change_state(MOVIE_STATE_RECORD);
-	systemScreenMessage("Movie re-record");
+	change_movie_state(MOVIE_STATE_RECORD);
 
 	//truncate_movie(Movie.currentFrame);
 
@@ -1755,7 +1765,7 @@ bool VBAMovieTuncateAtCurrentFrame()
 		return false;
 
 	truncate_movie(Movie.currentFrame);
-	change_state(MOVIE_STATE_END);
+	change_movie_state(MOVIE_STATE_END);
 	systemScreenMessage("Movie truncated");
 
 	return true;

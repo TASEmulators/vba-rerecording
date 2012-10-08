@@ -110,8 +110,9 @@ struct SMovieFileHeader
 
 struct SMovie
 {
+	enum   {MAX_FILENAME_LENGTH = 260};
 	enum   MovieState state;
-	char   filename[/*_MAX_PATH*/ 260]; // FIXME: should use a string instead
+	char   filename[MAX_FILENAME_LENGTH]; // FIXME: should use a string instead
 	FILE*  file;
 	uint8  readOnly;
 	int32  pauseFrame;	// FIXME: byte size
@@ -131,6 +132,7 @@ struct SMovie
 	//   the more reliable (and faster!) way to maintain cross-platform I/O compatibility is
 	//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
 	//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
+	bool8 RecordedNewRerecord;
 	bool8 RecordedThisSession;
 };
 
