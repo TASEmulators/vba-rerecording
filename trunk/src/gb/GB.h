@@ -45,8 +45,6 @@ bool gbWritePNGFile(const char *);
 bool gbWriteBMPFile(const char *);
 bool gbReadGSASnapshot(const char *);
 
-extern int gbHardware;
-
 extern struct EmulatedSystem GBSystem;
 
 #endif // VBA_GB_H

@@ -1,43 +1,38 @@
-
 // what the hell? all this file does is cause enigmatic build errors...
 
-/*
 #ifndef _MAC
-#include "../AutoBuild.h"
+
+#include "VersionInfo.h"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION FILEVER
- PRODUCTVERSION PRODUCTVER
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x29L
-#else
- FILEFLAGS 0x28L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
+ FILEVERSION    VBA_VERSIONINFO_FILEVER
+ PRODUCTVERSION VBA_VERSIONINFO_PRODUCTVER
+ FILEFLAGSMASK  0x3fL
+ FILEFLAGS      VBA_VERSIONINFO_FILEFLAGS
+ FILEOS         0x40004L
+ FILETYPE       0x1L
+ FILESUBTYPE    0x0L
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "VisualBoyAdvance comes with NO WARRANTY. Use it at your own risk.\0"
-            VALUE "CompanyName", "None\0"
-            VALUE "FileDescription", "VisualBoyAdvance emulator\0"
-            VALUE "FileVersion", STRFILEVER
-            VALUE "InternalName", "VisualBoyAdvance\0"
-            VALUE "LegalCopyright", "Copyright © 2004 Forgotten and the VBA team\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "VisualBoyAdvance.exe\0"
-            VALUE "PrivateBuild", "0\0"
-            VALUE "ProductName", "VisualBoyAdvance emulator\0"
-            VALUE "ProductVersion", STRPRODUCTVER
-            VALUE "SpecialBuild", "0\0"
+            VALUE "Comments", "VBA-RR comes with NO WARRANTY. Use it at your own risk."
+            VALUE "CompanyName", VBA_VERSIONINFO_ORGANIZATION
+            VALUE "FileDescription", "VisualBoyAdvance-ReRecording Emulator"
+            VALUE "FileVersion", VBA_VERSIONINFO_STRFILEVER
+            VALUE "InternalName", "VBA-RR"
+            VALUE "LegalCopyright", VBA_VERSIONINFO_STRCOPYRIGHT
+            VALUE "OriginalFilename", "VisualBoyAdvance.exe"
+            VALUE "ProductName", "GB/C/A emulator for Windows"
+            VALUE "ProductVersion", VBA_VERSIONINFO_STRPRODUCTVER
+            VALUE "PrivateBuild", "0"
+            VALUE "SpecialBuild", "0"
         END
     END
     BLOCK "VarFileInfo"
@@ -47,4 +42,3 @@ BEGIN
 END
 
 #endif    // !_MAC
-*/

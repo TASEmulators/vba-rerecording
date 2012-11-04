@@ -34,6 +34,7 @@ u16	  gbColorFilter[32768];
 int32 gbColorOption		 = 0;
 int32 gbPaletteOption	 = 0;
 int32 gbEmulatorType	 = 0;
+int32 gbHardware		 = 0;
 int32 gbBorderOn		 = 1;
 int32 gbBorderAutomatic	 = 0;
 int32 gbBorderLineSkip	 = 160;

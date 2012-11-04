@@ -49,7 +49,7 @@ protected:
 	afx_msg void OnBnClickedCheckPauseframe();
 	afx_msg void OnBnClickedHideborder();
 	afx_msg void OnEnChangeMovieFilename();
-	virtual BOOL OnInitDialog() ;
+	virtual BOOL OnInitDialog();
 	virtual BOOL OnWndMsg(UINT, WPARAM, LPARAM, LRESULT *);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

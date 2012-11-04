@@ -15,7 +15,7 @@ public:
 	TextOptions(CWnd* pParent = NULL);   // standard constructor
 	virtual ~TextOptions();
 
-	virtual BOOL OnInitDialog() ;
+	virtual BOOL OnInitDialog();
 
 // Dialog Data
 	enum { IDD = IDD_TEXTCONFIG };

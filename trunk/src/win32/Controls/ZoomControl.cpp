@@ -59,7 +59,7 @@ void ZoomControl::OnPaint()
 	int w = rect.right - rect.left;
 	int h = rect.bottom - rect.top;
 
-	CDC memDC ;
+	CDC memDC;
 	memDC.CreateCompatibleDC(&dc);
 	CBitmap bitmap, *pOldBitmap;
 	bitmap.CreateCompatibleBitmap(&dc, w, h);

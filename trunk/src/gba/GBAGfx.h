@@ -935,7 +935,7 @@ static inline void gfxDrawSprites(u32 *lineOBJ)
 
 									if (xxx < 0 || xxx >= sizeX ||
 									    yyy < 0 || yyy >= sizeY ||
-									    sx >= 240) ;
+									    sx >= 240);
 									else
 									{
 										u32 color = vram[0x10000 + ((((c + (yyy >> 3) * inc) << 5)
@@ -991,7 +991,7 @@ static inline void gfxDrawSprites(u32 *lineOBJ)
 									int yyy = realY >> 8;
 									if (xxx < 0 || xxx >= sizeX ||
 									    yyy < 0 || yyy >= sizeY ||
-									    sx >= 240) ;
+									    sx >= 240);
 									else
 									{
 										u32 color = vram[0x10000 + ((((c + (yyy >> 3) * inc) << 5)

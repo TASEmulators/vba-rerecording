@@ -1,3 +1,4 @@
+// extended opcode
 switch (opcode)
 {
 case 0x00:
