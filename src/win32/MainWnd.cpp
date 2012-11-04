@@ -27,6 +27,7 @@
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 #include "../gba/GBASound.h"
+#include "../common/SystemGlobals.h"
 #include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
 
@@ -889,6 +890,11 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 	theApp.active = activated || !theApp.pauseWhenInactive;
 
+	if (theApp.muteWhenInactive)
+	{
+		theApp.winMuteForNow = !activated;
+	}
+
 	extern bool inputActive;
 	inputActive = activated || (!theApp.pauseWhenInactive && theApp.enableBackgroundInput);
 
@@ -898,32 +904,28 @@ void MainWnd::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 		{
 			theApp.input->activate();
 		}
-
-		if (!theApp.paused && emulating)
-		{
-			systemSoundResume();
-		}
 	}
 	else
 	{
 		theApp.wasPaused = true;
 
-		if (!theApp.paused && emulating)
-		{
-			systemSoundPause();
-		}
-
 		memset(theApp.delta, 255, sizeof(theApp.delta));
 	}
 
-	if (theApp.muteWhenInactive)
+	if (emulating)
 	{
-		theApp.winMuteForNow = !activated;
-	}
-
-	if (theApp.paused && emulating)
-	{
-		systemRefreshScreen();
+		if (theApp.paused)
+		{
+			systemRefreshScreen();
+		}
+		else if (theApp.active)
+		{
+			systemSoundResume();
+		}
+		else
+		{
+			systemSoundPause();
+		}
 	}
 }
 
@@ -1272,7 +1274,7 @@ void MainWnd::winFileClose(bool reopening)
 			// save battery file before we change the filename...
 			winWriteBatteryFile();
 			cheatSearchCleanup(&cheatSearchData);
-			capturePrevious = 0;
+			capturePrevious = false;
 			captureNumber	= 0;
 		}
 
@@ -1392,6 +1394,12 @@ bool MainWnd::winFileRun(bool reopening)
 		if (i != (UINT)-1 && (i <= 5))
 			cpuSaveType = (int)i;
 
+#ifndef USE_GBA_CORE_V7
+		i = GetPrivateProfileInt(buffer, "mirroringEnabled", -1, vbaOverINI);
+		if (i != (UINT)-1)
+			CPUDoMirroring(i != 0);
+#endif
+
 		/* disabled due to problems
 		   if(theApp.removeIntros && rom != NULL) {
 		   *((u32 *)rom)= 0xea00002e;
@@ -1408,7 +1416,7 @@ bool MainWnd::winFileRun(bool reopening)
 
 		skipBios = theApp.skipBiosFile ? true : false;
 		CPUInit();
-		CPULoadBios(theApp.biosFileName, theApp.useBiosFile ? true : false);
+		systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile ? true : false);
 		CPUReset();
 
 		if (reopening)

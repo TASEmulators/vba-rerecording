@@ -20,10 +20,10 @@ enum LocationType
 struct ELFHeader
 {
 	u32 magic;
-	u8  clazz;
-	u8  data;
-	u8  version;
-	u8  pad[9];
+	u8	clazz;
+	u8	data;
+	u8	version;
+	u8	pad[9];
 	u16 e_type;
 	u16 e_machine;
 	u32 e_version;
@@ -70,8 +70,8 @@ struct ELFSymbol
 	u32 name;
 	u32 value;
 	u32 size;
-	u8  info;
-	u8  other;
+	u8	info;
+	u8	other;
 	u16 shndx;
 };
 
@@ -87,20 +87,20 @@ struct ELFAttr
 	u32 form;
 	union
 	{
-		u32       value;
-		char *    string;
-		u8 *      data;
-		bool      flag;
+		u32		  value;
+		char *	  string;
+		u8 *	  data;
+		bool	  flag;
 		ELFBlock *block;
 	};
 };
 
 struct ELFAbbrev
 {
-	u32        number;
-	u32        tag;
-	bool       hasChildren;
-	int        numAttrs;
+	u32		   number;
+	u32		   tag;
+	bool	   hasChildren;
+	int		   numAttrs;
 	ELFAttr *  attrs;
 	ELFAbbrev *next;
 };
@@ -123,86 +123,86 @@ struct Object;
 
 struct FunctionType
 {
-	Type *  returnType;
+	Type *	returnType;
 	Object *args;
 };
 
 struct Member
 {
-	char *    name;
-	Type *    type;
-	int       bitSize;
-	int       bitOffset;
-	int       byteSize;
+	char *	  name;
+	Type *	  type;
+	int		  bitSize;
+	int		  bitOffset;
+	int		  byteSize;
 	ELFBlock *location;
 };
 
 struct Struct
 {
-	int     memberCount;
+	int		memberCount;
 	Member *members;
 };
 
 struct Array
 {
 	Type *type;
-	int   maxBounds;
+	int	  maxBounds;
 	int * bounds;
 };
 
 struct EnumMember
 {
 	char *name;
-	u32   value;
+	u32	  value;
 };
 
 struct Enum
 {
-	int         count;
+	int count;
 	EnumMember *members;
 };
 
 struct Type
 {
-	u32      offset;
-	TypeEnum type;
-	char *   name;
-	int      encoding;
-	int      size;
-	int      bitSize;
+	u32			offset;
+	TypeEnum	type;
+	const char *name;
+	int			encoding;
+	int			size;
+	int			bitSize;
 	union
 	{
-		Type *        pointer;
+		Type *pointer;
 		FunctionType *function;
-		Array *       array;
-		Struct *      structure;
-		Enum *        enumeration;
+		Array *		  array;
+		Struct *	  structure;
+		Enum *		  enumeration;
 	};
 	Type *next;
 };
 
 struct Object
 {
-	char *    name;
-	int       file;
-	int       line;
-	bool      external;
-	Type *    type;
+	char *	  name;
+	int		  file;
+	int		  line;
+	bool	  external;
+	Type *	  type;
 	ELFBlock *location;
-	u32       startScope;
-	u32       endScope;
+	u32		  startScope;
+	u32		  endScope;
 	Object *  next;
 };
 
 struct Function
 {
-	char *    name;
-	u32       lowPC;
-	u32       highPC;
-	int       file;
-	int       line;
-	bool      external;
-	Type *    returnType;
+	char *	  name;
+	u32		  lowPC;
+	u32		  highPC;
+	int		  file;
+	int		  line;
+	bool	  external;
+	Type *	  returnType;
 	Object *  parameters;
 	Object *  variables;
 	ELFBlock *frameBase;
@@ -211,16 +211,16 @@ struct Function
 
 struct LineInfoItem
 {
-	u32   address;
+	u32	  address;
 	char *file;
-	int   line;
+	int	  line;
 };
 
 struct LineInfo
 {
-	int           fileCount;
-	char **       files;
-	int           number;
+	int			  fileCount;
+	char * *	  files;
+	int			  number;
 	LineInfoItem *lines;
 };
 
@@ -232,65 +232,66 @@ struct ARange
 
 struct ARanges
 {
-	u32     offset;
-	int     count;
+	u32		offset;
+	int		count;
 	ARange *ranges;
 };
 
 struct CompileUnit
 {
-	u32          length;
-	u8 *         top;
-	u32          offset;
-	ELFAbbrev ** abbrevs;
-	ARanges *    ranges;
-	char *       name;
-	char *       compdir;
-	u32          lowPC;
-	u32          highPC;
-	bool         hasLineInfo;
-	u32          lineInfo;
-	LineInfo *   lineInfoTable;
-	Function *   functions;
-	Function *   lastFunction;
-	Object *     variables;
-	Type *       types;
+	u32 length;
+	u8 *top;
+	u32 offset;
+	ELFAbbrev * *abbrevs;
+	ARanges *	 ranges;
+	char *		 name;
+	char *		 compdir;
+	u32			 lowPC;
+	u32			 highPC;
+	bool		 hasLineInfo;
+	u32			 lineInfo;
+	LineInfo *	 lineInfoTable;
+	Function *	 functions;
+	Function *	 lastFunction;
+	Object *	 variables;
+	Type *		 types;
 	CompileUnit *next;
 };
 
 struct DebugInfo
 {
-	u8 *     debugfile;
-	u8 *     abbrevdata;
-	u8 *     debugdata;
-	u8 *     infodata;
-	int      numRanges;
+	u8 *	 debugfile;
+	u8 *	 abbrevdata;
+	u8 *	 debugdata;
+	u8 *	 infodata;
+	int		 numRanges;
 	ARanges *ranges;
 };
 
 struct Symbol
 {
-	char *name;
-	int   type;
-	int   binding;
-	u32   address;
-	u32   value;
-	u32   size;
+	const char *name;
+	int			type;
+	int			binding;
+	u32			address;
+	u32			value;
+	u32			size;
 };
 
 extern u32 elfReadLEB128(u8 *, int *);
 extern s32 elfReadSignedLEB128(u8 *, int *);
 extern bool elfRead(const char *, int &, FILE *f);
-extern bool elfGetSymbolAddress(char *, u32 *, u32 *, int *);
-extern char *elfGetAddressSymbol(u32);
-extern char *elfGetSymbol(int, u32 *, u32 *, int *);
+extern bool elfGetSymbolAddress(const char *, u32 *, u32 *, int *);
+extern const char *elfGetAddressSymbol(u32);
+extern const char *elfGetSymbol(int, u32 *, u32 *, int *);
 extern void elfCleanUp();
-extern bool elfGetCurrentFunction(u32, Function **, CompileUnit **c);
-extern bool elfGetObject(char *, Function *, CompileUnit *, Object * *);
+extern bool elfGetCurrentFunction(u32, Function * *, CompileUnit * *c);
+extern bool elfGetObject(const char *, Function *, CompileUnit *, Object * *);
 extern bool elfFindLineInUnit(u32 *, CompileUnit *, int);
-extern bool elfFindLineInModule(u32 *, char *, int);
+extern bool elfFindLineInModule(u32 *, const char *, int);
 u32 elfDecodeLocation(Function *, ELFBlock *, LocationType *);
 u32 elfDecodeLocation(Function *, ELFBlock *, LocationType *, u32);
-int elfFindLine(CompileUnit *unit, Function *func, u32 addr, char * *);
+int elfFindLine(CompileUnit *unit, Function *func, u32 addr, const char * *);
 
 #endif // VBA_ELF_H
+

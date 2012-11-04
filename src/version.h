@@ -21,8 +21,14 @@
 #endif
 
 #define VBA_NAME "VBA-RR"
-#define VBA_RR_MAJOR_VERSION_NO 23
-#define VBA_RR_MINOR_VERSION_NO 5
+
+#ifdef USE_GBA_CORE_V7
+#	define VBA_RR_MAJOR_VERSION_NO 23
+#	define VBA_RR_MINOR_VERSION_NO 5
+#else
+#	define VBA_RR_MAJOR_VERSION_NO 24
+#	define VBA_RR_MINOR_VERSION_NO 0
+#endif
 
 #if !defined(_DEBUG) && (defined(WIN32) || defined(RC_INVOKED))
 #	include "../win32/userconfig/svnrev.h"

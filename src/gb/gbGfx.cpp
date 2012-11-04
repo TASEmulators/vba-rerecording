@@ -78,7 +78,6 @@ void gbRenderLine()
 	int sy = register_SCY;
 
 	sy += y;
-
 	sy &= 255;
 
 	int tx = sx >> 3;
@@ -101,13 +100,10 @@ void gbRenderLine()
 
 	if ((register_LCDC & 16) == 0)
 	{
-		if (tile < 128)
-			tile += 128;
-		else
-			tile -= 128;
+		tile ^= 0x80;
 	}
 
-	int tile_pattern_address = tile_pattern + tile * 16 + by*2;
+	int tile_pattern_address = tile_pattern + tile * 16 + by * 2;
 
 	if (register_LCDC & 0x80)
 	{
@@ -120,7 +116,7 @@ void gbRenderLine()
 
 				if (attrs & 0x40)
 				{
-					tile_pattern_address = tile_pattern + tile * 16 + (7-by)*2;
+					tile_pattern_address = tile_pattern + tile * 16 + (7 - by) * 2;
 				}
 
 				if (attrs & 0x08)
@@ -152,7 +148,7 @@ void gbRenderLine()
 
 					if (gbCgbMode)
 					{
-						c = c + (attrs & 7)*4;
+						c = c + (attrs & 7) * 4;
 					}
 					else
 					{
@@ -167,7 +163,7 @@ void gbRenderLine()
 							if (c == 0)
 								palette = 0;
 
-							c = c + 4*palette;
+							c = c + 4 * palette;
 						}
 					}
 					gbLineMix[x] = gbColorOption ? gbColorFilter[gbPalette[c]] :
@@ -189,10 +185,7 @@ void gbRenderLine()
 
 				if ((register_LCDC & 16) == 0)
 				{
-					if (tile < 128)
-						tile += 128;
-					else
-						tile -= 128;
+					tile^= 0x80;
 				}
 				tile_pattern_address = tile_pattern + tile * 16 + by * 2;
 			}
@@ -201,7 +194,7 @@ void gbRenderLine()
 		{
 			for (int i = 0; i < 160; i++)
 			{
-				gbLineMix[i]    = gbPalette[0];
+				gbLineMix[i]	= gbPalette[0];
 				gbLineBuffer[i] = 0;
 			}
 		}
@@ -237,7 +230,7 @@ void gbRenderLine()
 					if (wx < 0)
 					{
 						bx >>= (-wx);
-						wx   = 0;
+						wx	 = 0;
 					}
 
 					tile_map_line_y = tile_map + ty * 32;
@@ -254,13 +247,10 @@ void gbRenderLine()
 
 					if ((register_LCDC & 16) == 0)
 					{
-						if (tile < 128)
-							tile += 128;
-						else
-							tile -= 128;
+						tile ^= 0x80;
 					}
 
-					tile_pattern_address = tile_pattern + tile * 16 + by*2;
+					tile_pattern_address = tile_pattern + tile * 16 + by * 2;
 
 					while (x < 160)
 					{
@@ -269,7 +259,7 @@ void gbRenderLine()
 
 						if (attrs & 0x40)
 						{
-							tile_pattern_address = tile_pattern + tile * 16 + (7-by)*2;
+							tile_pattern_address = tile_pattern + tile * 16 + (7 - by) * 2;
 						}
 
 						if (attrs & 0x08)
@@ -316,7 +306,7 @@ void gbRenderLine()
 									if (c == 0)
 										palette = 0;
 
-									c = c + 4*palette;
+									c = c + 4 * palette;
 								}
 							}
 							gbLineMix[x] = gbColorOption ? gbColorFilter[gbPalette[c]] :
@@ -329,17 +319,14 @@ void gbRenderLine()
 						tx++;
 						if (tx == 32)
 							tx = 0;
-						bx   = 128;
+						bx	 = 128;
 						tile = bank0[tile_map_line_y + tx];
 						if (bank1)
 							attrs = bank1[tile_map_line_y + tx];
 
 						if ((register_LCDC & 16) == 0)
 						{
-							if (tile < 128)
-								tile += 128;
-							else
-								tile -= 128;
+							tile ^= 0x80;
 						}
 						tile_pattern_address = tile_pattern + tile * 16 + by * 2;
 					}
@@ -352,7 +339,7 @@ void gbRenderLine()
 	{
 		for (int i = 0; i < 160; i++)
 		{
-			gbLineMix[i]    = gbPalette[0];
+			gbLineMix[i]	= gbPalette[0];
 			gbLineBuffer[i] = 0;
 		}
 	}
@@ -401,9 +388,9 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 
 	int prio =  flags & 0x80;
 
-	int address = init + tile * 16 + 2*t;
-	int a       = 0;
-	int b       = 0;
+	int address = init + tile * 16 + 2 * t;
+	int a		= 0;
+	int b		= 0;
 
 	if (gbCgbMode && flags & 0x08)
 	{
@@ -418,8 +405,8 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 
 	for (int xx = 0; xx < 8; xx++)
 	{
-		u8 mask = 1 << (7-xx);
-		u8 c    = 0;
+		u8 mask = 1 << (7 - xx);
+		u8 c	= 0;
 		if ((a & mask))
 			c++;
 		if ((b & mask))
@@ -428,9 +415,9 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 		if (c == 0)
 			continue;
 
-		int xxx = xx+x;
+		int xxx = xx + x;
 		if (flipx)
-			xxx = (7-xx+x);
+			xxx = (7 - xx + x);
 
 		if (xxx < 0 || xxx > 159)
 			continue;
@@ -464,7 +451,7 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 				}
 				else
 				{
-					if (spriteX < x+8)
+					if (spriteX < x + 8)
 						continue;
 				}
 			}
@@ -475,7 +462,7 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 		// make sure that sprites will work even in CGB mode
 		if (gbCgbMode)
 		{
-			c = c + (flags & 0x07)*4 + 32;
+			c = c + (flags & 0x07) * 4 + 32;
 		}
 		else
 		{
@@ -491,7 +478,7 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 				if (c == 0)
 					palette = 0;
 
-				c = c + 4*palette;
+				c = c + 4 * palette;
 			}
 			else
 			{
@@ -506,8 +493,8 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 
 void gbDrawSprites()
 {
-	int x     = 0;
-	int y     = 0;
+	int x	  = 0;
+	int y	  = 0;
 	int count = 0;
 
 	int size = (register_LCDC & 4);
@@ -532,15 +519,15 @@ void gbDrawSprites()
 			if (x > 0 && y > 0 && x < 168 && y < 160)
 			{
 				// check if sprite intersects current line
-				int t = yc -y + 16;
+				int t = yc - y + 16;
 				if (size && t >= 0 && t < 16)
 				{
-					gbDrawSpriteTile(tile, x-8, yc, t, flags, size, i);
+					gbDrawSpriteTile(tile, x - 8, yc, t, flags, size, i);
 					count++;
 				}
 				else if (!size && t >= 0 && t < 8)
 				{
-					gbDrawSpriteTile(tile, x-8, yc, t, flags, size, i);
+					gbDrawSpriteTile(tile, x - 8, yc, t, flags, size, i);
 					count++;
 				}
 			}
@@ -550,3 +537,4 @@ void gbDrawSprites()
 		}
 	}
 }
+

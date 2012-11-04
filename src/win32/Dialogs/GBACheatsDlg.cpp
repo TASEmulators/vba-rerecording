@@ -766,7 +766,12 @@ bool AddCheat::addCheat()
 		break;
 	}
 
+#ifdef USE_GBA_CORE_V7
 	cheatsAdd(code, buffer, address, value, -1, sizeType);
+#else
+	cheatsAdd(code, buffer, address, address, value, -1, sizeType);
+#endif
+
 	return true;
 }
 

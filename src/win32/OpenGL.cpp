@@ -8,6 +8,7 @@
 
 #include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
 
@@ -259,10 +260,8 @@ void OpenGLDisplay::render()
 /*
     if(textMethod == 1)
     {
-        int copyX = 240, copyY = 160;
-        if(systemCartridgeType == 1)
-            if(gbBorderOn) copyX = 256, copyY = 224;
-            else           copyX = 160, copyY = 144;
+        int copyX, copyY;
+        systemGetLCDResolution(copyX, copyY);
 
         extern void Simple1x(u8*,u32,u8*,u8*,u32,int,int);
         filterFunction = Simple1x;

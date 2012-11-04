@@ -1,11 +1,7 @@
-#include <cstdio>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-#include <algorithm>
-
-using namespace std;
 
 #ifdef HAVE_STRINGS_H
 #   include <strings.h>
@@ -35,13 +31,13 @@ using namespace std;
 
 #include "movie.h"
 #include "System.h"
+#include "SystemGlobals.h"
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
 #include "../gba/RTC.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "inputGlobal.h"
-#include "unzip.h"
 #include "Util.h"
 
 #include "vbalua.h"
@@ -361,6 +357,7 @@ static void change_movie_state(MovieState new_state)
 #endif
 		gbEmulatorType = prevEmulatorType;
 
+#ifdef USE_GB_CORE_V7
 		extern int32 gbDMASpeedVersion;
 		gbDMASpeedVersion = 1;
 
@@ -368,6 +365,7 @@ static void change_movie_state(MovieState new_state)
 		gbEchoRAMFixOn = 1;
 
 		gbNullInputHackTempEnabled = gbNullInputHackEnabled;
+#endif
 
 		if (Movie.inputBuffer)
 		{
@@ -532,7 +530,7 @@ void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &rom
 {
 	if (systemCartridgeType == 0) // GBA
 	{
-		extern u8 *bios, *rom;
+		extern u8 *rom;
 		memcpy(romTitle, &rom[0xa0], 12); // GBA TITLE
 		memcpy(&romGameCode, &rom[0xac], 4); // GBA ROM GAME CODE
 		if ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0)
@@ -582,16 +580,20 @@ static void SetPlayEmuSettings()
 	removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
 #endif
 
+#ifdef USE_GBA_CORE_V7
 	extern void SetPrefetchHack(bool);
 	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
-
+#endif
+#ifdef USE_GB_CORE_V7
 	gbNullInputHackTempEnabled = ((Movie.header.optionFlags & MOVIE_SETTING_GBINPUTHACK) != 0);
+#endif
 
 	// some GB/GBC games depend on the sound rate, so just use the highest one
 	systemSoundSetQuality(1);
 	useOldFrameTiming = false;
 
+#ifdef USE_GB_CORE_V7
 	extern int32 gbDMASpeedVersion;
 	if ((Movie.header.optionFlags & MOVIE_SETTING_GBCFF55FIX) != 0)
 		gbDMASpeedVersion = 1;
@@ -603,6 +605,7 @@ static void SetPlayEmuSettings()
 		gbEchoRAMFixOn = 1;
 	else
 		gbEchoRAMFixOn = 0;
+#endif
 
 #if (defined(WIN32) && !defined(SDL))
 	rtcEnable((Movie.header.optionFlags & MOVIE_SETTING_RTCENABLE) != 0);
@@ -656,7 +659,7 @@ static void HardResetAndSRAMClear()
 	//theEmulator.emuCleanUp();     // keep it from being resurrected from RAM <--This is wrong, it'll deallocate all variables --Felipe
 
 	/// FIXME the correct SDL code to call for a full restart isn't in a function yet
-	theEmulator.emuReset(false);
+	theEmulator.emuReset();
 #endif
 }
 
@@ -747,7 +750,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
 	{
 		// 'soft' reset:
-		theEmulator.emuReset(false);
+		theEmulator.emuReset();
 
 		// load the SRAM
 		result = theEmulator.emuReadBatteryFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
@@ -849,19 +852,27 @@ static void SetRecordEmuSettings()
 #endif
 	prevEmulatorType = Movie.header.gbEmulatorType = gbEmulatorType;
 
+#ifdef USE_GBA_CORE_V7
 	if (!memLagTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
+#endif
 
+#ifdef USE_GB_CORE_V7
 	if (gbNullInputHackTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_GBINPUTHACK;
+#endif
 
 	Movie.header.optionFlags |= MOVIE_SETTING_GBCFF55FIX;
+#ifdef USE_GB_CORE_V7
 	extern int32 gbDMASpeedVersion;
 	gbDMASpeedVersion = 1;
+#endif
 
 	Movie.header.optionFlags |= MOVIE_SETTING_GBECHORAMFIX;
+#ifdef USE_GB_CORE_V7
 	extern int32 gbEchoRAMFixOn;
 	gbEchoRAMFixOn = 1;
+#endif
 
 	// some GB/GBC games depend on the sound rate, so just use the highest one
 	systemSoundSetQuality(1);
@@ -1001,7 +1012,7 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 			}
 
 			// 'soft' reset:
-			theEmulator.emuReset(false);
+			theEmulator.emuReset();
 		}
 
 		utilGzClose(stream);
@@ -1629,7 +1640,7 @@ void VBAMovieResetIfRequested()
 {
 	if (resetSignaled)
 	{
-		theEmulator.emuReset(false);
+		theEmulator.emuReset();
 		resetSignaled	  = false;
 		resetSignaledLast = true;
 	}

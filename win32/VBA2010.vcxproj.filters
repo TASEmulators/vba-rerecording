@@ -141,6 +141,9 @@
     <ClCompile Include="..\src\gba\GBAGlobals.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\gba\GBAMemory.cpp">
+      <Filter>Source Files\GBA</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\gba\Mode0.cpp">
       <Filter>Source Files\GBA</Filter>
     </ClCompile>
@@ -453,7 +456,7 @@
     <ClCompile Include="lib\zlib\zutil.c">
       <Filter>Source Files\zlib</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\System.cpp">
+    <ClCompile Include="..\src\win32\WinSystem.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\WinMiscUtil.cpp">
@@ -475,6 +478,12 @@
       <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\src\common\nesvideos-piece.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\System.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\SystemGlobals.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\src\common\Text.cpp">
@@ -702,6 +711,9 @@
     <ClInclude Include="..\src\gba\GBA.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\gba\GBACpu.h">
+      <Filter>Header Files\GBA</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\gba\GBAGfx.h">
       <Filter>Header Files\GBA</Filter>
     </ClInclude>
@@ -901,6 +913,9 @@
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\src\common\System.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\SystemGlobals.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\src\common\Text.h">

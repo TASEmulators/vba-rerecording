@@ -21,30 +21,32 @@ typedef union
 	u16 W;
 } gbRegister;
 
-extern bool gbLoadRom(const char *);
-extern void gbEmulate(int);
-extern bool gbIsGameboyRom(const char *);
-extern void gbSoundReset();
-extern void gbSoundSetQuality(int);
-extern void gbReset(bool userReset = false);
-extern void gbCleanUp();
-extern bool gbWriteBatteryFile(const char *);
-extern bool gbWriteBatteryFile(const char *, bool);
-extern bool gbWriteBatteryToStream(gzFile);
-extern bool gbReadBatteryFile(const char *);
-extern bool gbReadBatteryFromStream(gzFile);
-extern bool gbWriteSaveState(const char *);
-extern bool gbWriteMemSaveState(char *, int);
-extern bool gbReadSaveState(const char *);
-extern bool gbReadMemSaveState(char *, int);
-extern bool gbReadSaveStateFromStream(gzFile);
-extern bool gbWriteSaveStateToStream(gzFile);
-extern void gbSgbRenderBorder();
-extern bool gbWritePNGFile(const char *);
-extern bool gbWriteBMPFile(const char *);
-extern bool gbReadGSASnapshot(const char *);
+void gbSoundReset();
+void gbSoundSetQuality(int);
+
+bool gbLoadRom(const char *);
+void gbEmulate(int);
+void gbWriteMemory(register u16, register u8);
+void gbDrawLine();
+void gbGetHardwareType();
+void gbInit();
+void gbReset();
+void gbCleanUp();
+void gbLoadInternalBios();
+bool gbWriteBatteryFile(const char *);
+bool gbWriteBatteryFile(const char *, bool);
+bool gbReadBatteryFile(const char *);
+bool gbWriteSaveState(const char *);
+bool gbWriteMemSaveState(const char *, int);
+bool gbReadSaveState(const char *);
+bool gbReadMemSaveState(char *, int);
+void gbSgbRenderBorder();
+bool gbWritePNGFile(const char *);
+bool gbWriteBMPFile(const char *);
+bool gbReadGSASnapshot(const char *);
+
+extern int gbHardware;
 
 extern struct EmulatedSystem GBSystem;
-extern struct EmulatedSystemCounters &GBSystemCounters;
 
 #endif // VBA_GB_H

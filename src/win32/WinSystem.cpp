@@ -10,23 +10,22 @@
 #include "VBA.h"
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
+#include "../gba/GBAinline.h"
 #include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 //#include "../common/System.h"
-#include "../common/movie.h"
-#include "../common/vbalua.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Text.h"
 #include "../common/Util.h"
+#include "../common/movie.h"
 #include "../common/nesvideos-piece.h"
+#include "../common/vbalua.h"
 #include "../version.h"
 #include "Dialogs/ram_search.h"
 #include <cassert>
 
-struct EmulatedSystem theEmulator;
-
 u32	 RGB_LOW_BITS_MASK		 = 0;
-int	 emulating				 = 0;
 int	 systemCartridgeType	 = 0;
 int	 systemSpeed			 = 0;
 bool systemSoundOn			 = false;
@@ -42,13 +41,6 @@ int	 systemVerbose			 = 0;
 int	 systemFrameSkip		 = 0;
 int	 systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
-const int32 INITIAL_SENSOR_VALUE = 2047;
-
-int32 sensorX = INITIAL_SENSOR_VALUE;
-int32 sensorY = INITIAL_SENSOR_VALUE;
-u16	  currentButtons [4] = { 0, 0, 0, 0 };	// constrain: never contains hacked buttons, only the lower 16 bits of each are used
-u16   lastKeys = 0;
-
 // static_assertion that BUTTON_REGULAR_RECORDING_MASK should be an u16 constant
 namespace { const void * const s_STATIC_ASSERTION_(static_cast<void *>(BUTTON_REGULAR_RECORDING_MASK & 0xFFFF0000)); }
 
@@ -61,100 +53,80 @@ static int s_stockThrottleValues[] = {
 	6, 15, 25, 25, 37, 50, 75, 87, 100, 112, 125, 150, 200, 300, 400, 600, 800, 1000
 };
 
-// systemXYZ: Win32 stuff
+extern bool vbaShuttingDown;
+
+void winSignal(int, int);
+void winOutput(const char *, u32);
+
+void (*dbgSignal)(int, int)	= &winSignal;
+void (*dbgOutput)(const char *, u32) = &winOutput;
+
+// Win32 stuff
+
+//////////////////////////////////////////////
+// ultility
+
+void winSignal(int, int)
+{}
+
+void winOutput(const char *s, u32 addr)
+{
+	if (s)
+	{
+		log(s);
+	}
+	else
+	{
+		CString str;
+		while (char c = CPUReadByteQuick(addr++))
+		{
+			str += c;
+		}
+		log(str);
+	}
+}
+
+#ifdef SDL
+void log(const char *defaultMsg, ...)
+{
+	char	buffer[2048];
+	va_list valist;
+
+	va_start(valist, defaultMsg);
+	vsprintf(buffer, defaultMsg, valist);
+
+	if (out == NULL)
+	{
+		out = fopen("trace.log", "w");
+	}
+
+	fputs(buffer, out);
+
+	va_end(valist);
+}
+#else
+void log(const char *msg, ...)
+{
+	va_list valist;
+	va_start(valist, msg);
+
+#if 1
+	CString buffer;
+	buffer.FormatV(msg, valist);
+	extern void toolsLog(const char *);
+	toolsLog(buffer);
+#else
+	extern void winlog(const char *msg, ...);
+	winlog(msg, valist);
+#endif
+
+	va_end(valist);
+}
+#endif
+
+////////////////////////////////////
 
 // input
-
-void systemSetSensorX(int32 x)
-{
-	sensorX = x;
-}
-
-void systemSetSensorY(int32 y)
-{
-	sensorY = y;
-}
-
-void systemResetSensor()
-{
-	sensorX = sensorY = INITIAL_SENSOR_VALUE;
-}
-
-int32 systemGetSensorX()
-{
-	return sensorX;
-}
-
-int32 systemGetSensorY()
-{
-	return sensorY;
-}
-
-// handles motion sensor input
-void systemUpdateMotionSensor(int i)
-{
-	if (i < 0 || i > 3)
-		i = 0;
-
-	if (currentButtons[i] & BUTTON_MASK_LEFT_MOTION)
-	{
-		sensorX += 3;
-		if (sensorX > 2197)
-			sensorX = 2197;
-		if (sensorX < 2047)
-			sensorX = 2057;
-	}
-	else if (currentButtons[i] & BUTTON_MASK_RIGHT_MOTION)
-	{
-		sensorX -= 3;
-		if (sensorX < 1897)
-			sensorX = 1897;
-		if (sensorX > 2047)
-			sensorX = 2037;
-	}
-	else if (sensorX > 2047)
-	{
-		sensorX -= 2;
-		if (sensorX < 2047)
-			sensorX = 2047;
-	}
-	else
-	{
-		sensorX += 2;
-		if (sensorX > 2047)
-			sensorX = 2047;
-	}
-
-	if (currentButtons[i] & BUTTON_MASK_UP_MOTION)
-	{
-		sensorY += 3;
-		if (sensorY > 2197)
-			sensorY = 2197;
-		if (sensorY < 2047)
-			sensorY = 2057;
-	}
-	else if (currentButtons[i] & BUTTON_MASK_DOWN_MOTION)
-	{
-		sensorY -= 3;
-		if (sensorY < 1897)
-			sensorY = 1897;
-		if (sensorY > 2047)
-			sensorY = 2037;
-	}
-	else if (sensorY > 2047)
-	{
-		sensorY -= 2;
-		if (sensorY < 2047)
-			sensorY = 2047;
-	}
-	else
-	{
-		sensorY += 2;
-		if (sensorY > 2047)
-			sensorY = 2047;
-	}
-}
-
 int systemGetDefaultJoypad()
 {
 	return theApp.joypadDefault;
@@ -226,63 +198,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 			res &= ~BUTTON_GBA_ONLY;
 	}
 
-	currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-
 	return res;
-}
-
-u32 systemGetJoypad(int i, bool sensor)
-{
-	if (i < 0 || i > 3)
-		i = 0;
-
-	// input priority: original+auto < Lua < frame search < movie, correct this if wrong
-
-	// get original+auto input
-	u32 hackedButtons = systemGetOriginalJoypad(i, sensor) & BUTTON_NONRECORDINGONLY_MASK;
-	u32 res = currentButtons[i];
-
-	// since movie input has the highest priority, there's no point to read from other input
-	if (VBAMoviePlaying())
-	{
-		// VBAMovieRead() overwrites currentButtons[i]
-		VBAMovieRead(i, sensor);
-		res = currentButtons[i];
-	}
-	else
-	{
-		// Lua input, shouldn't have any side effect within them
-		if (VBALuaUsingJoypad(i))
-			res = VBALuaReadJoypad(i);
-
-		// override input above
-		if (theApp.frameSearchSkipping)
-			res = theApp.frameSearchOldInput[i];
-
-		// flush non-hack buttons into the "current buttons" input buffer, which will be read by the movie routine
-		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-		VBAMovieWrite(i, sensor);
-	}
-
-	return res | hackedButtons;
-}
-
-void systemSetJoypad(int which, u32 buttons)
-{
-	if (which < 0 || which > 3)
-		which = 0;
-
-	currentButtons[which] = buttons;
-
-	lastKeys = 0;
-}
-
-void systemClearJoypads()
-{
-	for (int i = 0; i < 3; ++i)
-		currentButtons[i] = 0;
-
-	lastKeys = 0;
 }
 
 // screen
@@ -296,37 +212,10 @@ void systemRefreshScreen()
 	}
 }
 
-extern bool vbaShuttingDown;
-
-void systemRenderFrame()
+static void systemRecordAviFrame(int width, int height)
 {
 	extern long linearSoundFrameCount;
 	extern long linearFrameCount;
-
-	if (vbaShuttingDown)
-		return;
-
-	++theApp.renderedFrames;
-
-	VBAUpdateFrameCountDisplay();
-	VBAUpdateButtonPressDisplay();
-
-	// "in-game" text rendering
-	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
-	{
-		extern void DrawLuaGui();
-		DrawLuaGui();
-
-		int copyX = 240, copyY = 160;
-		if (systemCartridgeType == 1)
-			if (gbBorderOn)
-				copyX = 256, copyY = 224;
-			else
-				copyX = 160, copyY = 144;
-		int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);  // FIXME: sure?
-
-		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
-	}
 
 	++linearFrameCount;
 	if (!theApp.sound)
@@ -337,28 +226,6 @@ void systemRenderFrame()
 	}
 
 	// record avi
-	int width  = 240;
-	int height = 160;
-	switch (systemCartridgeType)
-	{
-	case 0:
-		width  = 240;
-		height = 160;
-		break;
-	case 1:
-		if (gbBorderOn)
-		{
-			width  = 256;
-			height = 224;
-		}
-		else
-		{
-			width  = 160;
-			height = 144;
-		}
-		break;
-	}
-
 	bool firstFrameLogged = false;
 	--linearFrameCount;
 	do
@@ -394,8 +261,8 @@ void systemRenderFrame()
 			if (theApp.aviRecorder != NULL && !theApp.aviRecorder->IsPaused())
 			{
 				assert(
-				    width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT && systemColorDepth <=
-				    BMP_BUFFER_MAX_DEPTH * 8);
+					width <= BMP_BUFFER_MAX_WIDTH && height <= BMP_BUFFER_MAX_HEIGHT
+					&& systemColorDepth <= BMP_BUFFER_MAX_DEPTH * 8);
 				utilWriteBMP(bmpBuffer, width, height, systemColorDepth, pix);
 				theApp.aviRecorder->AddFrame(bmpBuffer);
 			}
@@ -412,11 +279,42 @@ void systemRenderFrame()
 		firstFrameLogged = true;
 	}
 	while (linearFrameCount < linearSoundFrameCount); // compensate for frames lost due to frame skip being nonzero, etc.
+}
+
+void systemRenderFrame()
+{
+	if (vbaShuttingDown)
+		return;
+
+	++theApp.renderedFrames;
+
+	VBAUpdateFrameCountDisplay();
+	VBAUpdateButtonPressDisplay();
+
+	int copyX, copyY;
+	int screenX, screenY;
+	int copyOffsetX, copyOffsetY;
+	systemGetLCDResolution(copyX, copyY);
+	systemGetLCDBaseSize(screenX, screenY);
+	systemGetLCDBaseOffset(copyOffsetX, copyOffsetY);
+
+	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);  // FIXME: sure?
+	++copyOffsetY; // FIXME: don't know why it's needed
+
+	// "in-game" text rendering
+	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
+	{
+		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
+		VBALuaClearGui();
+		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
+	}
+
+	systemRecordAviFrame(copyX, copyY);
 
 	if (textMethod != 0) // do not draw Lua HUD to a video dump
 	{
-		extern void DrawLuaGui();
-		DrawLuaGui();
+		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
+		VBALuaClearGui();
 	}
 
 	// interframe blending
@@ -810,6 +708,11 @@ bool systemIsEmulating()
 	return emulating != 0;
 }
 
+bool systemIsGbBorderOn()
+{
+	return gbBorderOn != 0;
+}
+
 void systemGbBorderOn()
 {
 	if (vbaShuttingDown)
@@ -868,69 +771,4 @@ bool systemPauseOnFrame()
 	}
 
 	return false;
-}
-
-bool systemLoadBIOS(const char *biosFileName, bool useBiosFile)
-{
-	bool use = false;
-	if (systemCartridgeType == 0)
-		use = CPULoadBios(biosFileName, useBiosFile);
-	else
-		use = false;
-	return use;
-}
-
-// FIXME: now platform-independant stuff
-// it should be admitted that the naming schema/code organization is a whole mess
-// these things should be moved somewhere else
-
-EmulatedSystemCounters systemCounters =
-{
-	// frameCount
-	0,
-	// lagCount
-	0,
-	// extraCount
-	0,
-	// lagged
-	true,
-	// laggedLast
-	true,
-};
-
-// VBAxyz stuff are not part of the core.
-
-void VBAOnEnteringFrameBoundary()
-{
-	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-
-	if (VBALuaRunning())
-	{
-		VBALuaFrameBoundary();
-	}
-
-	VBAMovieUpdateState();
-}
-
-void VBAOnExitingFrameBoundary()
-{
-	;
-}
-
-//////////////////////////////////////////////
-// ultility
-
-extern void toolsLog(const char *);
-
-void log(const char *msg, ...)
-{
-	CString buffer;
-	va_list valist;
-
-	va_start(valist, msg);
-	buffer.FormatV(msg, valist);
-
-	toolsLog(buffer);
-
-	va_end(valist);
 }

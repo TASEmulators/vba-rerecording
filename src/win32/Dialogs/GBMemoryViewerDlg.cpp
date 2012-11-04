@@ -10,7 +10,7 @@
 #include "../WinResUtil.h"
 #include "../VBA.h"
 
-//#include "../common/System.h"
+#include "../../common/SystemGlobals.h"
 #include "../../gb/gbGlobals.h"
 
 GBMemoryViewer::GBMemoryViewer()

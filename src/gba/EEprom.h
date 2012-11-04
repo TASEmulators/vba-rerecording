@@ -8,10 +8,12 @@
 #include "zlib.h"
 #include "../Port.h"
 
-extern void eepromSaveGame(gzFile gzFile);
-extern void eepromReadGame(gzFile gzFile, int version);
-extern int eepromRead(u32 address);
+extern void eepromSaveGame(gzFile file);
+extern void eepromReadGame(gzFile file, int version);
+extern void eepromReadGameSkip(gzFile file, int version);
+extern int	eepromRead(u32 address);
 extern void eepromWrite(u32 address, u8 value);
+extern void eepromInit();
 extern void eepromReset();
 extern void eepromErase();
 extern u8    eepromData[0x2000];

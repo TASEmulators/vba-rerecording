@@ -1,46 +1,33 @@
 #include "GBAGlobals.h"
 
+#ifdef BKPT_SUPPORT
+int	 oldreg[18];
+char oldbuffer[10];
+#endif
+
+/// settings
+bool8	  speedHack			   = false;
+int32	  saveType			   = 0;
+int32	  cpuSaveType		   = 0;
+
+// internals
 reg_pair  reg[45];
-memoryMap map[256];
 bool8	  ioReadable[0x400];
-bool8	  N_FLAG			   = 0;
-bool8	  C_FLAG			   = 0;
-bool8	  Z_FLAG			   = 0;
-bool8	  V_FLAG			   = 0;
-bool8	  armState			   = true;
+bool8	  N_FLAG = 0;
+bool8	  C_FLAG = 0;
+bool8	  Z_FLAG = 0;
+bool8	  V_FLAG = 0;
+bool8	  armState = true;
 bool8	  armIrqEnable		   = true;
 u32		  armNextPC			   = 0x00000000;
 int32	  armMode			   = 0x1f;
 u32		  stop				   = 0x08000568;
-int32	  saveType			   = 0;
-bool8	  useBios			   = false;
-bool8	  skipBios			   = false;
-int32	  frameSkip			   = 1;
-u32		  extButtons		   = 0;
-bool8	  capturePrevious	   = false;
-int32	  captureNumber		   = 0;
-bool8	  speedup			   = false;
-bool8	  synchronize		   = true;
-bool8	  cpuDisableSfx		   = false;
-bool8	  cpuIsMultiBoot	   = false;
-bool8	  parseDebug		   = true;
-int32	  layerSettings		   = 0xff00;
-int32	  layerEnable		   = 0xff00;
-bool8	  speedHack			   = false;
-bool8	  memLagEnabled		   = false;
-bool8	  memLagTempEnabled	   = false;
-bool8	  useOldFrameTiming	   = false;
-int32	  cpuSaveType		   = 0;
-bool8	  cpuEnhancedDetection = true;
-bool8	  cheatsEnabled		   = true;
 
-u8 *bios		= NULL;
 u8 *rom			= NULL;
 u8 *internalRAM = NULL;
 u8 *workRAM		= NULL;
 u8 *paletteRAM	= NULL;
 u8 *vram		= NULL;
-u8 *pix			= NULL;
 u8 *oam			= NULL;
 u8 *ioMem		= NULL;
 

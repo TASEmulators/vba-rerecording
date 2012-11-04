@@ -19,43 +19,48 @@
 #define FLASH_PROGRAM            8
 #define FLASH_SETBANK            9
 
-u8    flashSaveMemory[0x20000 + 4];
-int32 flashState          = FLASH_READ_ARRAY;
-int32 flashReadState      = FLASH_READ_ARRAY;
-int32 flashSize           = 0x10000;
-int32 flashDeviceID       = 0x1b;
+u8	  flashSaveMemory[0x20000];
+int32 flashState		  = FLASH_READ_ARRAY;
+int32 flashReadState	  = FLASH_READ_ARRAY;
+int32 flashSize			  = 0x10000;
+int32 flashDeviceID		  = 0x1b;
 int32 flashManufacturerID = 0x32;
-int32 flashBank           = 0;
+int32 flashBank			  = 0;
 
 static variable_desc flashSaveData[] = {
-	{ &flashState,         sizeof(int32) },
-	{ &flashReadState,     sizeof(int32) },
-	{ &flashSaveMemory[0],       0x10000 },
-	{ NULL,                            0 }
+	{ &flashState,		   sizeof(int32) },
+	{ &flashReadState,	   sizeof(int32) },
+	{ &flashSaveMemory[0], 0x10000		 },
+	{ NULL,				   0			 }
 };
 
 static variable_desc flashSaveData2[] = {
-	{ &flashState,         sizeof(int32) },
-	{ &flashReadState,     sizeof(int32) },
-	{ &flashSize,          sizeof(int32) },
-	{ &flashSaveMemory[0],       0x20000 },
-	{ NULL,                            0 }
+	{ &flashState,		   sizeof(int32) },
+	{ &flashReadState,	   sizeof(int32) },
+	{ &flashSize,		   sizeof(int32) },
+	{ &flashSaveMemory[0], 0x20000		 },
+	{ NULL,				   0			 }
 };
 
 static variable_desc flashSaveData3[] = {
-	{ &flashState,         sizeof(int32) },
-	{ &flashReadState,     sizeof(int32) },
-	{ &flashSize,          sizeof(int32) },
-	{ &flashBank,          sizeof(int32) },
-	{ &flashSaveMemory[0],       0x20000 },
-	{ NULL,                            0 }
+	{ &flashState,		   sizeof(int32) },
+	{ &flashReadState,	   sizeof(int32) },
+	{ &flashSize,		   sizeof(int32) },
+	{ &flashBank,		   sizeof(int32) },
+	{ &flashSaveMemory[0], 0x20000		 },
+	{ NULL,				   0			 }
 };
+
+void flashInit()
+{
+	memset(flashSaveMemory, 0xff, sizeof(flashSaveMemory));
+}
 
 void flashReset()
 {
-	flashState     = FLASH_READ_ARRAY;
+	flashState	   = FLASH_READ_ARRAY;
 	flashReadState = FLASH_READ_ARRAY;
-	flashBank      = 0;
+	flashBank	   = 0;
 }
 
 void flashErase()
@@ -90,20 +95,39 @@ void flashReadGame(gzFile gzFile, int version)
 	}
 }
 
+void flashReadGameSkip(gzFile gzFile, int version)
+{
+	// skip the flash data in a save game
+	if (version < SAVE_GAME_VERSION_5)
+		utilReadDataSkip(gzFile, flashSaveData);
+	else if (version < SAVE_GAME_VERSION_7)
+	{
+		utilReadDataSkip(gzFile, flashSaveData2);
+	}
+	else
+	{
+		utilReadDataSkip(gzFile, flashSaveData3);
+	}
+}
+
 void flashSetSize(int size)
 {
 	//  log("Setting flash size to %d\n", size);
-	flashSize = size;
 	if (size == 0x10000)
 	{
-		flashDeviceID       = 0x1b;
+		flashDeviceID		= 0x1b;
 		flashManufacturerID = 0x32;
 	}
 	else
 	{
-		flashDeviceID       = 0x13; //0x09;
+		flashDeviceID		= 0x13; //0x09;
 		flashManufacturerID = 0x62; //0xc2;
 	}
+	// Added to make 64k saves compatible with 128k ones
+	// (allow wrongfuly set 64k saves to work for Pokemon games)
+	if ((size == 0x20000) && (flashSize == 0x10000))
+		memcpy((u8 *)(flashSaveMemory + 0x10000), (u8 *)(flashSaveMemory), 0x10000);
+	flashSize = size;
 }
 
 u8 flashRead(u32 address)
@@ -128,7 +152,7 @@ u8 flashRead(u32 address)
 		}
 		break;
 	case FLASH_ERASE_COMPLETE:
-		flashState     = FLASH_READ_ARRAY;
+		flashState	   = FLASH_READ_ARRAY;
 		flashReadState = FLASH_READ_ARRAY;
 		return 0xFF;
 	}
@@ -141,16 +165,23 @@ void flashSaveDecide(u32 address, u8 byte)
 	//  log("Deciding save type %08x\n", address);
 	if (address == 0x0e005555)
 	{
-		saveType        = 2;
+		saveType		= 2;
 		cpuSaveGameFunc = flashWrite;
 	}
 	else
 	{
-		saveType        = 1;
+		saveType		= 1;
 		cpuSaveGameFunc = sramWrite;
 	}
 
 	(*cpuSaveGameFunc)(address, byte);
+}
+
+void flashDelayedWrite(u32 address, u8 byte)
+{
+	saveType		= 2;
+	cpuSaveGameFunc = flashWrite;
+	flashWrite(address, byte);
 }
 
 void flashWrite(u32 address, u8 byte)
@@ -175,7 +206,7 @@ void flashWrite(u32 address, u8 byte)
 		{
 			if (byte == 0x90)
 			{
-				flashState     = FLASH_AUTOSELECT;
+				flashState	   = FLASH_AUTOSELECT;
 				flashReadState = FLASH_AUTOSELECT;
 			}
 			else if (byte == 0x80)
@@ -184,7 +215,7 @@ void flashWrite(u32 address, u8 byte)
 			}
 			else if (byte == 0xF0)
 			{
-				flashState     = FLASH_READ_ARRAY;
+				flashState	   = FLASH_READ_ARRAY;
 				flashReadState = FLASH_READ_ARRAY;
 			}
 			else if (byte == 0xA0)
@@ -197,13 +228,13 @@ void flashWrite(u32 address, u8 byte)
 			}
 			else
 			{
-				flashState     = FLASH_READ_ARRAY;
+				flashState	   = FLASH_READ_ARRAY;
 				flashReadState = FLASH_READ_ARRAY;
 			}
 		}
 		else
 		{
-			flashState     = FLASH_READ_ARRAY;
+			flashState	   = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
 		}
 		break;
@@ -214,7 +245,7 @@ void flashWrite(u32 address, u8 byte)
 		}
 		else
 		{
-			flashState     = FLASH_READ_ARRAY;
+			flashState	   = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
 		}
 		break;
@@ -225,7 +256,7 @@ void flashWrite(u32 address, u8 byte)
 		}
 		else
 		{
-			flashState     = FLASH_READ_ARRAY;
+			flashState	   = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
 		}
 		break;
@@ -248,28 +279,28 @@ void flashWrite(u32 address, u8 byte)
 		}
 		else
 		{
-			flashState     = FLASH_READ_ARRAY;
+			flashState	   = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
 		}
 		break;
 	case FLASH_AUTOSELECT:
 		if (byte == 0xF0)
 		{
-			flashState     = FLASH_READ_ARRAY;
+			flashState	   = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
 		}
 		else if (address == 0x5555 && byte == 0xAA)
 			flashState = FLASH_CMD_1;
 		else
 		{
-			flashState     = FLASH_READ_ARRAY;
+			flashState	   = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
 		}
 		break;
 	case FLASH_PROGRAM:
-		flashSaveMemory[(flashBank<<16)+address] = byte;
+		flashSaveMemory[(flashBank << 16) + address] = byte;
 		systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
-		flashState     = FLASH_READ_ARRAY;
+		flashState	   = FLASH_READ_ARRAY;
 		flashReadState = FLASH_READ_ARRAY;
 		break;
 	case FLASH_SETBANK:
@@ -277,7 +308,7 @@ void flashWrite(u32 address, u8 byte)
 		{
 			flashBank = (byte & 1);
 		}
-		flashState     = FLASH_READ_ARRAY;
+		flashState	   = FLASH_READ_ARRAY;
 		flashReadState = FLASH_READ_ARRAY;
 		break;
 	}

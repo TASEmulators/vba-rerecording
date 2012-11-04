@@ -21,7 +21,7 @@ extern u16	 soundFinalWave[1470];
 extern u16	 soundFrameSound[735 * 30 * 2];
 extern int32 soundVolume;
 
-soundtick_t GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
+extern int32 GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
@@ -31,14 +31,14 @@ extern int32 speed;
 
 extern u8 soundWavePattern[4][32];
 
-extern u32		   soundBufferLen;
-extern u32		   soundBufferTotalLen;
-extern int32	   soundQuality;
-extern int32	   soundPaused;
-extern int32	   soundPlay;
-extern soundtick_t soundTicks;
-extern soundtick_t SOUND_CLOCK_TICKS;
-extern u32		   soundNextPosition;
+extern u32	 soundBufferLen;
+extern u32	 soundBufferTotalLen;
+extern int32 soundQuality;
+extern int32 soundPaused;
+extern int32 soundPlay;
+extern int32 soundTicks;
+extern int32 SOUND_CLOCK_TICKS;
+extern u32	 soundNextPosition;
 
 extern int32 soundLevel1;
 extern int32 soundLevel2;
@@ -1021,62 +1021,62 @@ void gbSoundSetQuality(int quality)
 static int32 soundTicks_int32;
 static int32 SOUND_CLOCK_TICKS_int32;
 variable_desc gbSoundSaveStruct[] = {
-	{ &soundPaused,				sizeof(int32)					  },
-	{ &soundPlay,				sizeof(int32)					  },
-	{ &soundTicks_int32,		sizeof(int32)					  },
-	{ &SOUND_CLOCK_TICKS_int32, sizeof(int32)					  },
-	{ &soundLevel1,				sizeof(int32)					  },
-	{ &soundLevel2,				sizeof(int32)					  },
-	{ &soundBalance,			sizeof(int32)					  },
-	{ &soundMasterOn,			sizeof(int32)					  },
-	{ &soundIndex,				sizeof(int32)					  },
-	{ &soundVIN,				sizeof(int32)					  },
-	{ &sound1On,				sizeof(int32)					  },
-	{ &sound1ATL,				sizeof(int32)					  },
-	{ &sound1Skip,				sizeof(int32)					  },
-	{ &sound1Index,				sizeof(int32)					  },
-	{ &sound1Continue,			sizeof(int32)					  },
-	{ &sound1EnvelopeVolume,	sizeof(int32)					  },
-	{ &sound1EnvelopeATL,		sizeof(int32)					  },
-	{ &sound1EnvelopeATLReload, sizeof(int32)					  },
-	{ &sound1EnvelopeUpDown,	sizeof(int32)					  },
-	{ &sound1SweepATL,			sizeof(int32)					  },
-	{ &sound1SweepATLReload,	sizeof(int32)					  },
-	{ &sound1SweepSteps,		sizeof(int32)					  },
-	{ &sound1SweepUpDown,		sizeof(int32)					  },
-	{ &sound1SweepStep,			sizeof(int32)					  },
-	{ &sound2On,				sizeof(int32)					  },
-	{ &sound2ATL,				sizeof(int32)					  },
-	{ &sound2Skip,				sizeof(int32)					  },
-	{ &sound2Index,				sizeof(int32)					  },
-	{ &sound2Continue,			sizeof(int32)					  },
-	{ &sound2EnvelopeVolume,	sizeof(int32)					  },
-	{ &sound2EnvelopeATL,		sizeof(int32)					  },
-	{ &sound2EnvelopeATLReload, sizeof(int32)					  },
-	{ &sound2EnvelopeUpDown,	sizeof(int32)					  },
-	{ &sound3On,				sizeof(int32)					  },
-	{ &sound3ATL,				sizeof(int32)					  },
-	{ &sound3Skip,				sizeof(int32)					  },
-	{ &sound3Index,				sizeof(int32)					  },
-	{ &sound3Continue,			sizeof(int32)					  },
-	{ &sound3OutputLevel,		sizeof(int32)					  },
-	{ &sound4On,				sizeof(int32)					  },
-	{ &sound4ATL,				sizeof(int32)					  },
-	{ &sound4Skip,				sizeof(int32)					  },
-	{ &sound4Index,				sizeof(int32)					  },
-	{ &sound4Clock,				sizeof(int32)					  },
-	{ &sound4ShiftRight,		sizeof(int32)					  },
-	{ &sound4ShiftSkip,			sizeof(int32)					  },
-	{ &sound4ShiftIndex,		sizeof(int32)					  },
-	{ &sound4NSteps,			sizeof(int32)					  },
-	{ &sound4CountDown,			sizeof(int32)					  },
-	{ &sound4Continue,			sizeof(int32)					  },
-	{ &sound4EnvelopeVolume,	sizeof(int32)					  },
-	{ &sound4EnvelopeATL,		sizeof(int32)					  },
-	{ &sound4EnvelopeATLReload, sizeof(int32)					  },
-	{ &sound4EnvelopeUpDown,	sizeof(int32)					  },
-	{ &soundEnableFlag,			sizeof(int32)					  },
-	{ NULL,						0								  }
+	{ &soundPaused,				sizeof(int32) },
+	{ &soundPlay,				sizeof(int32) },
+	{ &soundTicks_int32,		sizeof(int32) },
+	{ &SOUND_CLOCK_TICKS_int32, sizeof(int32) },
+	{ &soundLevel1,				sizeof(int32) },
+	{ &soundLevel2,				sizeof(int32) },
+	{ &soundBalance,			sizeof(int32) },
+	{ &soundMasterOn,			sizeof(int32) },
+	{ &soundIndex,				sizeof(int32) },
+	{ &soundVIN,				sizeof(int32) },
+	{ &sound1On,				sizeof(int32) },
+	{ &sound1ATL,				sizeof(int32) },
+	{ &sound1Skip,				sizeof(int32) },
+	{ &sound1Index,				sizeof(int32) },
+	{ &sound1Continue,			sizeof(int32) },
+	{ &sound1EnvelopeVolume,	sizeof(int32) },
+	{ &sound1EnvelopeATL,		sizeof(int32) },
+	{ &sound1EnvelopeATLReload, sizeof(int32) },
+	{ &sound1EnvelopeUpDown,	sizeof(int32) },
+	{ &sound1SweepATL,			sizeof(int32) },
+	{ &sound1SweepATLReload,	sizeof(int32) },
+	{ &sound1SweepSteps,		sizeof(int32) },
+	{ &sound1SweepUpDown,		sizeof(int32) },
+	{ &sound1SweepStep,			sizeof(int32) },
+	{ &sound2On,				sizeof(int32) },
+	{ &sound2ATL,				sizeof(int32) },
+	{ &sound2Skip,				sizeof(int32) },
+	{ &sound2Index,				sizeof(int32) },
+	{ &sound2Continue,			sizeof(int32) },
+	{ &sound2EnvelopeVolume,	sizeof(int32) },
+	{ &sound2EnvelopeATL,		sizeof(int32) },
+	{ &sound2EnvelopeATLReload, sizeof(int32) },
+	{ &sound2EnvelopeUpDown,	sizeof(int32) },
+	{ &sound3On,				sizeof(int32) },
+	{ &sound3ATL,				sizeof(int32) },
+	{ &sound3Skip,				sizeof(int32) },
+	{ &sound3Index,				sizeof(int32) },
+	{ &sound3Continue,			sizeof(int32) },
+	{ &sound3OutputLevel,		sizeof(int32) },
+	{ &sound4On,				sizeof(int32) },
+	{ &sound4ATL,				sizeof(int32) },
+	{ &sound4Skip,				sizeof(int32) },
+	{ &sound4Index,				sizeof(int32) },
+	{ &sound4Clock,				sizeof(int32) },
+	{ &sound4ShiftRight,		sizeof(int32) },
+	{ &sound4ShiftSkip,			sizeof(int32) },
+	{ &sound4ShiftIndex,		sizeof(int32) },
+	{ &sound4NSteps,			sizeof(int32) },
+	{ &sound4CountDown,			sizeof(int32) },
+	{ &sound4Continue,			sizeof(int32) },
+	{ &sound4EnvelopeVolume,	sizeof(int32) },
+	{ &sound4EnvelopeATL,		sizeof(int32) },
+	{ &sound4EnvelopeATLReload, sizeof(int32) },
+	{ &sound4EnvelopeUpDown,	sizeof(int32) },
+	{ &soundEnableFlag,			sizeof(int32) },
+	{ NULL,						0			  }
 };
 
 //variable_desc gbSoundSaveStructV2[] = {
@@ -1132,8 +1132,8 @@ void gbSoundReadGame(int version, gzFile gzFile)
 	//  utilReadData(gzFile, gbSoundSaveStructV2);
 	//}
 	//else {
-	soundTicks		  = (soundtick_t) soundTicks_int32;
-	SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
+	soundTicks		  = (int32) soundTicks_int32;
+	SOUND_CLOCK_TICKS = (int32) SOUND_CLOCK_TICKS_int32;
 	//}
 }
 

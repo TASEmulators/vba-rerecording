@@ -72,7 +72,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO;USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -89,6 +89,7 @@
       <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ExceptionHandling>Sync</ExceptionHandling>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <Link>
       <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcw.lib;libcmt.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -123,24 +124,20 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO;USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)vc80.pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MinimalRebuild>true</MinimalRebuild>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcwd.lib;libcmtd.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -148,15 +145,13 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libci.lib;nafxcwd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <TargetMachine>MachineX86</TargetMachine>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -179,6 +174,8 @@
     <ClCompile Include="..\src\common\memgzio.c" />
     <ClCompile Include="..\src\common\movie.cpp" />
     <ClCompile Include="..\src\common\nesvideos-piece.cpp" />
+    <ClCompile Include="..\src\common\System.cpp" />
+    <ClCompile Include="..\src\common\SystemGlobals.cpp" />
     <ClCompile Include="..\src\common\Text.cpp" />
     <ClCompile Include="..\src\common\unzip.cpp" />
     <ClCompile Include="..\src\common\Util.cpp" />
@@ -192,6 +189,7 @@
     <ClCompile Include="..\src\gba\GBA.cpp" />
     <ClCompile Include="..\src\gba\GBAGfx.cpp" />
     <ClCompile Include="..\src\gba\GBAGlobals.cpp" />
+    <ClCompile Include="..\src\gba\GBAMemory.cpp" />
     <ClCompile Include="..\src\gba\Mode0.cpp" />
     <ClCompile Include="..\src\gba\Mode1.cpp" />
     <ClCompile Include="..\src\gba\Mode2.cpp" />
@@ -413,8 +411,8 @@
     <ClCompile Include="..\src\win32\Dialogs\Throttle.cpp" />
     <ClCompile Include="..\src\win32\Dialogs\TileView.cpp" />
     <ClCompile Include="..\src\win32\Dialogs\VideoMode.cpp" />
-    <ClCompile Include="..\src\win32\System.cpp" />
     <ClCompile Include="..\src\win32\WinMiscUtil.cpp" />
+    <ClCompile Include="..\src\win32\WinSystem.cpp" />
     <ClCompile Include="lib\libpng\png.c">
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
     </ClCompile>
@@ -570,7 +568,9 @@
     <ClInclude Include="..\src\common\memgzio.h" />
     <ClInclude Include="..\src\common\movie.h" />
     <ClInclude Include="..\src\common\nesvideos-piece.h" />
+    <ClInclude Include="..\src\common\SystemGlobals.h" />
     <ClInclude Include="..\src\filters\filters.h" />
+    <ClInclude Include="..\src\gba\GBACpu.h" />
     <ClInclude Include="..\src\NLS.h" />
     <ClInclude Include="..\src\Port.h" />
     <ClInclude Include="..\src\common\System.h" />

@@ -8,15 +8,6 @@
 #include "zlib.h"
 #include "../Port.h"
 
-#if (defined(WIN32) && !defined(SDL))
-#include "../win32/stdafx.h" // for HANDLE
-//#include <windows.h> // for HANDLE
-// NOTE: if you get this error:
-// #error WINDOWS.H already included.  MFC apps must not #include <windows.h>
-// it is probably because stdafx.h is getting included at the wrong place
-// (i.e. after anything else) in a file, or your precompiled headers are otherwise wrong
-#endif
-
 #define SAVE_GAME_VERSION_1 1
 #define SAVE_GAME_VERSION_2 2
 #define SAVE_GAME_VERSION_3 3
@@ -30,36 +21,23 @@
 #define SAVE_GAME_VERSION_11 11
 #define SAVE_GAME_VERSION_12 12
 #define SAVE_GAME_VERSION_13 13
-#define SAVE_GAME_VERSION  SAVE_GAME_VERSION_13
+#define SAVE_GAME_VERSION_14 14
 
-#if (defined(WIN32) && !defined(SDL))
-extern HANDLE mapROM;        // shared memory handles
-extern HANDLE mapWORKRAM;
-extern HANDLE mapBIOS;
-extern HANDLE mapIRAM;
-extern HANDLE mapPALETTERAM;
-extern HANDLE mapVRAM;
-extern HANDLE mapOAM;
-extern HANDLE mapPIX;
-extern HANDLE mapIOMEM;
+#ifdef USE_GBA_CORE_V7
+#define SAVE_GAME_VERSION  SAVE_GAME_VERSION_13
+#else
+#define SAVE_GAME_VERSION  SAVE_GAME_VERSION_14
+#endif
+extern void (*cpuSaveGameFunc)(u32, u8);
+
+#ifdef BKPT_SUPPORT
+extern u8 freezeWorkRAM[0x40000];
+extern u8 freezeInternalRAM[0x8000];
+extern u8 freezeVRAM[0x18000];
+extern u8 freezePRAM[0x400];
+extern u8 freezeOAM[0x400];
 #endif
 
-/*
-extern reg_pair reg[45];
-extern u8       biosProtected[4];
-
-extern bool8 N_FLAG;
-extern bool8 Z_FLAG;
-extern bool8 C_FLAG;
-extern bool8 V_FLAG;
-extern bool8 armIrqEnable;
-extern bool8 armState;
-extern int32 armMode;
-*/
-extern void  (*cpuSaveGameFunc)(u32, u8);
-
-extern bool8 freezeWorkRAM[0x40000];
-extern bool8 freezeInternalRAM[0x8000];
 extern bool CPUReadGSASnapshot(const char *);
 extern bool CPUWriteGSASnapshot(const char *, const char *, const char *, const char *);
 extern bool CPUWriteBatteryFile(const char *);
@@ -79,13 +57,13 @@ extern bool CPUWriteMemState(char *, int);
 extern bool CPUWriteState(const char *);
 extern bool CPUReadStateFromStream(gzFile);
 extern bool CPUWriteStateToStream(gzFile);
-extern int CPULoadRom(const char *);
+extern int  CPULoadRom(const char *);
+extern void CPUMasterCodeCheck();
+extern void CPUDoMirroring(bool);
 extern void CPUUpdateRegister(u32, u16);
-extern void CPUWriteHalfWord(u32, u16);
-extern void CPUWriteByte(u32, u8);
-extern bool CPULoadBios(const char *, bool);
+extern void CPULoadInternalBios();
 extern void CPUInit();
-extern void CPUReset(bool userReset = false);
+extern void CPUReset();
 extern void CPULoop(int);
 extern void CPUCheckDMA(int, int);
 #ifdef PROFILING
@@ -93,8 +71,18 @@ extern void cpuProfil(char *buffer, int, u32, int);
 extern void cpuEnableProfiling(int hz);
 #endif
 
+u32 CPUReadMemory(u32 address);
+u32 CPUReadHalfWord(u32 address);
+u8 CPUReadByte(u32 address);
+void CPUWriteMemory(u32 address, u32 value);
+void CPUWriteHalfWord(u32 address, u16 value);
+u16 CPUReadHalfWordSigned(u32 address);
+void CPUWriteByte(u32 address, u8 b);
+void CPUWriteMemoryWrapped(u32 address, u32 value);
+void CPUWriteHalfWordWrapped(u32 address, u16 value);
+void CPUWriteByteWrapped(u32 address, u8 b);
+
 extern struct EmulatedSystem GBASystem;
-extern struct EmulatedSystemCounters &GBASystemCounters;
 
 #define R13_IRQ  18
 #define R14_IRQ  19

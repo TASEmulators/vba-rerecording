@@ -17,35 +17,14 @@
 #define VERBOSE_DMA3               128
 #define VERBOSE_UNDEFINED          256
 #define VERBOSE_AGBPRINT           512
+#define VERBOSE_SOUNDOUTPUT       1024
 
-// moved from armdis.cpp
-#define debuggerReadMemory(addr) \
-    READ32LE(&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask])
-
-#define debuggerReadHalfWord(addr) \
-    READ16LE(&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask])
-
-#define debuggerReadByte(addr) \
-    READ8LE(&map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask])
-
-#define debuggerWriteMemory(addr, value) \
-    WRITE32LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]), (value))
-
-#define debuggerWriteHalfWord(addr, value) \
-    WRITE16LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]), (value))
-
-#define debuggerWriteByte(addr, value) \
-    WRITE8LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]), (value))
-
-// moved from GBA.h
-typedef struct
-{
-	u8 *address;
-	u32 mask;
-} memoryMap;
-
-#ifndef NO_GBA_MAP
-extern memoryMap map[256];
+#ifdef BKPT_SUPPORT
+extern int	oldreg[18];
+extern char oldbuffer[10];
+extern void (*dbgSignal)(int, int);
+extern void (*dbgOutput)(const char *, u32);
+extern bool debugger_last;
 #endif
 
 // moved from GBA.h
@@ -82,6 +61,7 @@ typedef union
 #endif
 } reg_pair;
 
+// internal...
 extern reg_pair reg[45];
 extern u8		biosProtected[4];
 extern bool8	ioReadable[0x400];
@@ -94,36 +74,17 @@ extern bool8	armIrqEnable;
 extern u32		armNextPC;
 extern int32	armMode;
 extern u32		stop;
-extern int32	saveType;
-extern bool8	useBios;
-extern bool8	skipBios;
-extern int32	frameSkip;
-extern u32		extButtons;
-extern bool8	capturePrevious;
-extern int32	captureNumber;
-extern bool8	speedup;
-extern bool8	synchronize;
-extern bool8	cpuDisableSfx;
-extern bool8	cpuIsMultiBoot;
-extern bool8	parseDebug;
-extern int32	layerSettings;
-extern int32	layerEnable;
+
+// ?
 extern bool8	speedHack;
-extern bool8	memLagEnabled, memLagTempEnabled;
-extern bool8	useOldFrameTiming;
+extern int32	saveType;
 extern int32	cpuSaveType;
-extern bool8	cpuEnhancedDetection;
-extern bool8	cheatsEnabled;
 
-extern int emulating;
-
-extern u8 *bios;
 extern u8 *rom;
 extern u8 *internalRAM;
 extern u8 *workRAM;
 extern u8 *paletteRAM;
 extern u8 *vram;
-extern u8 *pix;
 extern u8 *oam;
 extern u8 *ioMem;
 

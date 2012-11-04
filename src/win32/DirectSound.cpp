@@ -10,6 +10,7 @@
 
 #include "../gba/GBAGlobals.h"
 #include "../gba/GBASound.h"
+#include "../common/SystemGlobals.h"
 #include "../common/nesvideos-piece.h"
 
 extern void directXMessage(const char *);

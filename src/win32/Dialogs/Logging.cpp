@@ -155,7 +155,7 @@ void Logging::OnSave()
 			FILE *f = fopen(dlg.GetPathName(), "w");
 			if (f)
 			{
-				fwrite(mem, 1, len, f);
+				fwrite(mem, 1, len - 1, f);
 				fclose(f);
 			}
 		}

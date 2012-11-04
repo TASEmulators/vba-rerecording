@@ -23,6 +23,7 @@
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
+#include "../common/SystemGlobals.h"
 #include "../common/inputGlobal.h"
 #include "../common/movie.h"
 #include "../version.h"
@@ -458,6 +459,7 @@ void MainWnd::OnUpdateOptionsVideoFullscreenstretchtofit(CCmdUI*pCmdUI)
 BOOL MainWnd::OnVideoLayer(UINT nID)
 {
 	layerSettings ^= 0x0100 << ((nID & 0xFFFF) - ID_OPTIONS_VIDEO_LAYERS_BG0);
+	extern int32 layerEnable;
 	layerEnable = DISPCNT & layerSettings;
 	CPUUpdateRenderBuffers(false);
 	return TRUE;
@@ -1029,30 +1031,38 @@ void MainWnd::OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsEmulatorUseGBNullInputKludge()
 {
+#ifdef USE_GB_CORE_V7
 	if (VBAMovieActive())
 		gbNullInputHackTempEnabled = !gbNullInputHackTempEnabled;
 	else
 		gbNullInputHackTempEnabled = gbNullInputHackEnabled = !gbNullInputHackEnabled;
+#endif
 }
 
 void MainWnd::OnUpdateOptionsEmulatorUseGBNullInputKludge(CCmdUI*pCmdUI)
 {
+#ifdef USE_GB_CORE_V7
 	pCmdUI->SetCheck(VBAMovieActive() || GetAsyncKeyState(VK_CONTROL) ? gbNullInputHackTempEnabled : gbNullInputHackEnabled);
 	pCmdUI->Enable((!VBAMovieActive() && !useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
+#endif
 }
 
 void MainWnd::OnOptionsEmulatorGBALag()
 {
+#ifdef USE_GBA_CORE_V7
 	extern void TogglePrefetchHack();
 	TogglePrefetchHack();
 	memLagEnabled = memLagTempEnabled; // memLagEnabled is only to hold the last value that the user chose, so temporary changes
                                        // don't get into the registry
+#endif
 }
 
 void MainWnd::OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI)
 {
+#ifdef USE_GBA_CORE_V7
 	pCmdUI->SetCheck(!memLagTempEnabled);
 	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+#endif
 }
 
 void MainWnd::OnOptionsEmulatorSelectbiosfile()

@@ -5,6 +5,7 @@
 #include "../NLS.h"
 #include "VBA.h"
 #include "Reg.h"
+#include "../common/SystemGlobals.h"
 #include "../common/movie.h"
 #include <direct.h>
 

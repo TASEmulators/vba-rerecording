@@ -18,13 +18,13 @@ void gbSgbSaveGame(gzFile);
 void gbSgbReadGame(gzFile, int version);
 void gbSgbRenderBorder();
 
-extern u8    gbSgbATF[20*18];
+extern u8	 gbSgbATF[20*18];
 extern int32 gbSgbMode;
 extern int32 gbSgbMask;
 extern int32 gbSgbMultiplayer;
-extern u8    gbSgbNextController;
+extern u8	 gbSgbNextController;
 extern int32 gbSgbPacketTimeout;
-extern u8    gbSgbReadingController;
+extern u8	 gbSgbReadingController;
 extern int32 gbSgbFourPlayers;
 
 #endif // VBA_GB_SGB_H

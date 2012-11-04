@@ -42,6 +42,7 @@ extern void	 utilPutDword(u8 *, u32);
 extern void	 utilPutWord(u8 *, u16);
 extern void	 utilWriteData(gzFile, variable_desc *);
 extern void	 utilReadData(gzFile, variable_desc *);
+extern void	 utilReadDataSkip(gzFile, variable_desc *);
 extern int32 utilReadInt(gzFile);
 extern void	 utilWriteInt(gzFile, int32);
 extern gzFile utilGzOpen(const char *file, const char *mode);
@@ -58,7 +59,5 @@ extern bool utilLoadBIOS(u8 *bios, const char *biosFileName, int systemType);
 extern bool utilCheckBIOS(const char *biosFileName, int systemType);
 extern u16 utilCalcBIOSChecksum(const u8 *bios, int systemType);
 extern u16 utilCalcBIOSFileChecksum(const char *biosFileName, int systemType);
-
-extern int gzWrite(gzFile file, void* buf, unsigned len);
 
 #endif // VBA_UTIL_H

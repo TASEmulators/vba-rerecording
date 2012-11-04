@@ -1,7 +1,7 @@
 noinst_LIBRARIES = libgba.a
 
 libgba_a_SOURCES = \
-	agbprint.cpp		\
+	agbprint.cpp	\
 	agbprint.h		\
 	arm-new.h		\
 	armdis.cpp		\
@@ -10,19 +10,25 @@ libgba_a_SOURCES = \
 	bios.h			\
 	elf.cpp			\
 	elf.h			\
-	Cheats.cpp		\
-	Cheats.h		\
+	GBACheats.cpp	\
+	GBACheats.h		\
 	EEprom.cpp		\
 	EEprom.h		\
 	Flash.cpp		\
 	Flash.h			\
 	GBA.cpp			\
 	GBA.h			\
-	GBAinline.h		\
+	GBA-arm.h		\
+	GBA-thumb.h	\
+	GBACpu.h		\
 	GBAGfx.cpp		\
 	GBAGfx.h		\
-	Globals.cpp		\
-	Globals.h		\
+	GBAGlobals.cpp	\
+	GBAGlobals.h	\
+	GBAinline.h		\
+	GBAMemory.cpp	\
+	GBASound.cpp	\
+	GBASound.h		\
 	Mode0.cpp		\
 	Mode1.cpp		\
 	Mode2.cpp		\
@@ -32,11 +38,8 @@ libgba_a_SOURCES = \
 	remote.cpp		\
 	RTC.cpp			\
 	RTC.h			\
-	Sound.cpp		\
-	Sound.h			\
 	Sram.cpp		\
 	Sram.h			\
-	thumb.h
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src		\

@@ -35,17 +35,15 @@ extern void gbSoundPause();
 extern void gbSoundResume();
 extern void gbSoundEnable(int);
 extern void gbSoundDisable(int);
-extern int gbSoundGetEnable();
+extern int32 gbSoundGetEnable();
 extern void gbSoundReset();
 extern void gbSoundSaveGame(gzFile);
 extern void gbSoundReadGame(int, gzFile);
 extern void gbSoundEvent(register u16, register int);
 extern void gbSoundSetQuality(int);
 
-typedef int32 soundtick_t;
-
-extern soundtick_t soundTicks;
-extern int32       soundQuality;
-extern soundtick_t SOUND_CLOCK_TICKS;
+extern int32 soundTicks;
+extern int32 soundQuality;
+extern int32 SOUND_CLOCK_TICKS;
 
 #endif // VBA_GB_SOUND_H

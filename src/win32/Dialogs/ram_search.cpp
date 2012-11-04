@@ -44,8 +44,10 @@
 
 #include "ram_search.h"
 #include "ramwatch.h"
+#include "../../gba/GBAinline.h"
 #include "../../gba/GBAGlobals.h"
 #include "../../gb/gbGlobals.h"
+#include "../../common/SystemGlobals.h"
 #include "../../common/vbalua.h"
 #include "../Reg.h"
 

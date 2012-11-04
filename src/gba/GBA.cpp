@@ -6,8 +6,8 @@
 #include "../Port.h"
 #include "../NLS.h"
 #include "GBA.h"
-//#include "GBAGlobals.h"
-#include "GBACheats.h" // FIXME: SDL requires this included before "GBAinline.h"
+#include "GBAGlobals.h"
+#include "GBACpu.h"
 #include "GBAinline.h"
 #include "GBAGfx.h"
 #include "GBASound.h"
@@ -16,8 +16,10 @@
 #include "Sram.h"
 #include "bios.h"
 #include "elf.h"
+#include "rtc.h"
 #include "agbprint.h"
-#include "../common/unzip.h"
+#include "../common/System.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Util.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
@@ -26,20 +28,9 @@
 #include "../prof/prof.h"
 #endif
 
-#define UPDATE_REG(address, value) WRITE16LE(((u16 *)&ioMem[address]), value)
-
 #ifdef __GNUC__
 #define _stricmp strcasecmp
 #endif
-
-#define CPU_BREAK_LOOP \
-    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
-    *extCpuLoopTicks = *extClockTicks;
-
-#define CPU_BREAK_LOOP_2 \
-    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
-    *extCpuLoopTicks = *extClockTicks; \
-    *extTicks		 = *extClockTicks;
 
 int32 cpuDmaTicksToUpdate = 0;
 int32 cpuDmaCount		  = 0;
@@ -51,18 +42,6 @@ int32 *extCpuLoopTicks = NULL;
 int32 *extClockTicks   = NULL;
 int32 *extTicks		   = NULL;
 
-#if (defined(WIN32) && !defined(SDL))
-HANDLE mapROM;        // shared memory handles
-HANDLE mapWORKRAM;
-HANDLE mapBIOS;
-HANDLE mapIRAM;
-HANDLE mapPALETTERAM;
-HANDLE mapVRAM;
-HANDLE mapOAM;
-HANDLE mapPIX;
-HANDLE mapIOMEM;
-#endif
-
 int32 gbaSaveType = 0;      // used to remember the save type on reset
 bool8 intState	  = false;
 bool8 stopState	  = false;
@@ -73,6 +52,9 @@ bool8 cpuFlashEnabled		 = true;
 bool8 cpuEEPROMEnabled		 = true;
 bool8 cpuEEPROMSensorEnabled = false;
 
+//int cpuLoopTicks = 0;
+int cpuSavedTicks = 0;
+
 #ifdef PROFILING
 int profilingTicks		  = 0;
 int profilingTicksReload  = 0;
@@ -81,8 +63,7 @@ static int	 profilSize	  = 0;
 static u32	 profilLowPC  = 0;
 static int	 profilScale  = 0;
 #endif
-bool8 freezeWorkRAM[0x40000];
-bool8 freezeInternalRAM[0x8000];
+
 int32 lcdTicks = 960;
 bool8 timer0On = false;
 int32 timer0Ticks		= 0;
@@ -112,15 +93,9 @@ void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
 bool8 fxOn = false;
 bool8 windowOn		 = false;
-int32 frameSkipCount = 0;
-u32	  gbaLastTime	 = 0;
-int32 gbaFrameCount	 = 0;
 bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
 char  buffer[1024];
 FILE *out = NULL;
-
-static bool newFrame = true;
-static bool pauseAfterFrameAdvance = false;
 
 const int32 TIMER_TICKS[4] = {
 	1,
@@ -129,7 +104,8 @@ const int32 TIMER_TICKS[4] = {
 	1024
 };
 
-const int32 thumbCycles[] = {
+extern bool8 cpuIsMultiBoot;
+extern const int32 thumbCycles[] = {
 //  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 0
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 1
@@ -367,126 +343,174 @@ u32 myROM[] = {
 };
 
 variable_desc saveGameStruct[] = {
-	{ &DISPCNT,			  sizeof(u16)				 },
-	{ &DISPSTAT,		  sizeof(u16)				 },
-	{ &VCOUNT,			  sizeof(u16)				 },
-	{ &BG0CNT,			  sizeof(u16)				 },
-	{ &BG1CNT,			  sizeof(u16)				 },
-	{ &BG2CNT,			  sizeof(u16)				 },
-	{ &BG3CNT,			  sizeof(u16)				 },
-	{ &BG0HOFS,			  sizeof(u16)				 },
-	{ &BG0VOFS,			  sizeof(u16)				 },
-	{ &BG1HOFS,			  sizeof(u16)				 },
-	{ &BG1VOFS,			  sizeof(u16)				 },
-	{ &BG2HOFS,			  sizeof(u16)				 },
-	{ &BG2VOFS,			  sizeof(u16)				 },
-	{ &BG3HOFS,			  sizeof(u16)				 },
-	{ &BG3VOFS,			  sizeof(u16)				 },
-	{ &BG2PA,			  sizeof(u16)				 },
-	{ &BG2PB,			  sizeof(u16)				 },
-	{ &BG2PC,			  sizeof(u16)				 },
-	{ &BG2PD,			  sizeof(u16)				 },
-	{ &BG2X_L,			  sizeof(u16)				 },
-	{ &BG2X_H,			  sizeof(u16)				 },
-	{ &BG2Y_L,			  sizeof(u16)				 },
-	{ &BG2Y_H,			  sizeof(u16)				 },
-	{ &BG3PA,			  sizeof(u16)				 },
-	{ &BG3PB,			  sizeof(u16)				 },
-	{ &BG3PC,			  sizeof(u16)				 },
-	{ &BG3PD,			  sizeof(u16)				 },
-	{ &BG3X_L,			  sizeof(u16)				 },
-	{ &BG3X_H,			  sizeof(u16)				 },
-	{ &BG3Y_L,			  sizeof(u16)				 },
-	{ &BG3Y_H,			  sizeof(u16)				 },
-	{ &WIN0H,			  sizeof(u16)				 },
-	{ &WIN1H,			  sizeof(u16)				 },
-	{ &WIN0V,			  sizeof(u16)				 },
-	{ &WIN1V,			  sizeof(u16)				 },
-	{ &WININ,			  sizeof(u16)				 },
-	{ &WINOUT,			  sizeof(u16)				 },
-	{ &MOSAIC,			  sizeof(u16)				 },
-	{ &BLDMOD,			  sizeof(u16)				 },
-	{ &COLEV,			  sizeof(u16)				 },
-	{ &COLY,			  sizeof(u16)				 },
-	{ &DM0SAD_L,		  sizeof(u16)				 },
-	{ &DM0SAD_H,		  sizeof(u16)				 },
-	{ &DM0DAD_L,		  sizeof(u16)				 },
-	{ &DM0DAD_H,		  sizeof(u16)				 },
-	{ &DM0CNT_L,		  sizeof(u16)				 },
-	{ &DM0CNT_H,		  sizeof(u16)				 },
-	{ &DM1SAD_L,		  sizeof(u16)				 },
-	{ &DM1SAD_H,		  sizeof(u16)				 },
-	{ &DM1DAD_L,		  sizeof(u16)				 },
-	{ &DM1DAD_H,		  sizeof(u16)				 },
-	{ &DM1CNT_L,		  sizeof(u16)				 },
-	{ &DM1CNT_H,		  sizeof(u16)				 },
-	{ &DM2SAD_L,		  sizeof(u16)				 },
-	{ &DM2SAD_H,		  sizeof(u16)				 },
-	{ &DM2DAD_L,		  sizeof(u16)				 },
-	{ &DM2DAD_H,		  sizeof(u16)				 },
-	{ &DM2CNT_L,		  sizeof(u16)				 },
-	{ &DM2CNT_H,		  sizeof(u16)				 },
-	{ &DM3SAD_L,		  sizeof(u16)				 },
-	{ &DM3SAD_H,		  sizeof(u16)				 },
-	{ &DM3DAD_L,		  sizeof(u16)				 },
-	{ &DM3DAD_H,		  sizeof(u16)				 },
-	{ &DM3CNT_L,		  sizeof(u16)				 },
-	{ &DM3CNT_H,		  sizeof(u16)				 },
-	{ &TM0D,			  sizeof(u16)				 },
-	{ &TM0CNT,			  sizeof(u16)				 },
-	{ &TM1D,			  sizeof(u16)				 },
-	{ &TM1CNT,			  sizeof(u16)				 },
-	{ &TM2D,			  sizeof(u16)				 },
-	{ &TM2CNT,			  sizeof(u16)				 },
-	{ &TM3D,			  sizeof(u16)				 },
-	{ &TM3CNT,			  sizeof(u16)				 },
-	{ &P1,				  sizeof(u16)				 },
-	{ &IE,				  sizeof(u16)				 },
-	{ &IF,				  sizeof(u16)				 },
-	{ &IME,				  sizeof(u16)				 },
-	{ &holdState,		  sizeof(bool8)				 },
-	{ &holdType,		  sizeof(int32)				 },
-	{ &lcdTicks,		  sizeof(int32)				 },
-	{ &timer0On,		  sizeof(bool8)				 },
-	{ &timer0Ticks,		  sizeof(int32)				 },
-	{ &timer0Reload,	  sizeof(int32)				 },
-	{ &timer0ClockReload, sizeof(int32)				 },
-	{ &timer1On,		  sizeof(bool8)				 },
-	{ &timer1Ticks,		  sizeof(int32)				 },
-	{ &timer1Reload,	  sizeof(int32)				 },
-	{ &timer1ClockReload, sizeof(int32)				 },
-	{ &timer2On,		  sizeof(bool8)				 },
-	{ &timer2Ticks,		  sizeof(int32)				 },
-	{ &timer2Reload,	  sizeof(int32)				 },
-	{ &timer2ClockReload, sizeof(int32)				 },
-	{ &timer3On,		  sizeof(bool8)				 },
-	{ &timer3Ticks,		  sizeof(int32)				 },
-	{ &timer3Reload,	  sizeof(int32)				 },
-	{ &timer3ClockReload, sizeof(int32)				 },
-	{ &dma0Source,		  sizeof(u32)				 },
-	{ &dma0Dest,		  sizeof(u32)				 },
-	{ &dma1Source,		  sizeof(u32)				 },
-	{ &dma1Dest,		  sizeof(u32)				 },
-	{ &dma2Source,		  sizeof(u32)				 },
-	{ &dma2Dest,		  sizeof(u32)				 },
-	{ &dma3Source,		  sizeof(u32)				 },
-	{ &dma3Dest,		  sizeof(u32)				 },
-	{ &fxOn,			  sizeof(bool8)				 },
-	{ &windowOn,		  sizeof(bool8)				 },
-	{ &N_FLAG,			  sizeof(bool8)				 },
-	{ &C_FLAG,			  sizeof(bool8)				 },
-	{ &Z_FLAG,			  sizeof(bool8)				 },
-	{ &V_FLAG,			  sizeof(bool8)				 },
-	{ &armState,		  sizeof(bool8)				 },
-	{ &armIrqEnable,	  sizeof(bool8)				 },
-	{ &armNextPC,		  sizeof(u32)				 },
-	{ &armMode,			  sizeof(int32)				 },
-	{ &saveType,		  sizeof(int32)				 },
-	{ NULL,				  0							 }
+	{ &DISPCNT,			  sizeof(u16) },
+	{ &DISPSTAT,		  sizeof(u16) },
+	{ &VCOUNT,			  sizeof(u16) },
+	{ &BG0CNT,			  sizeof(u16) },
+	{ &BG1CNT,			  sizeof(u16) },
+	{ &BG2CNT,			  sizeof(u16) },
+	{ &BG3CNT,			  sizeof(u16) },
+	{ &BG0HOFS,			  sizeof(u16) },
+	{ &BG0VOFS,			  sizeof(u16) },
+	{ &BG1HOFS,			  sizeof(u16) },
+	{ &BG1VOFS,			  sizeof(u16) },
+	{ &BG2HOFS,			  sizeof(u16) },
+	{ &BG2VOFS,			  sizeof(u16) },
+	{ &BG3HOFS,			  sizeof(u16) },
+	{ &BG3VOFS,			  sizeof(u16) },
+	{ &BG2PA,			  sizeof(u16) },
+	{ &BG2PB,			  sizeof(u16) },
+	{ &BG2PC,			  sizeof(u16) },
+	{ &BG2PD,			  sizeof(u16) },
+	{ &BG2X_L,			  sizeof(u16) },
+	{ &BG2X_H,			  sizeof(u16) },
+	{ &BG2Y_L,			  sizeof(u16) },
+	{ &BG2Y_H,			  sizeof(u16) },
+	{ &BG3PA,			  sizeof(u16) },
+	{ &BG3PB,			  sizeof(u16) },
+	{ &BG3PC,			  sizeof(u16) },
+	{ &BG3PD,			  sizeof(u16) },
+	{ &BG3X_L,			  sizeof(u16) },
+	{ &BG3X_H,			  sizeof(u16) },
+	{ &BG3Y_L,			  sizeof(u16) },
+	{ &BG3Y_H,			  sizeof(u16) },
+	{ &WIN0H,			  sizeof(u16) },
+	{ &WIN1H,			  sizeof(u16) },
+	{ &WIN0V,			  sizeof(u16) },
+	{ &WIN1V,			  sizeof(u16) },
+	{ &WININ,			  sizeof(u16) },
+	{ &WINOUT,			  sizeof(u16) },
+	{ &MOSAIC,			  sizeof(u16) },
+	{ &BLDMOD,			  sizeof(u16) },
+	{ &COLEV,			  sizeof(u16) },
+	{ &COLY,			  sizeof(u16) },
+	{ &DM0SAD_L,		  sizeof(u16) },
+	{ &DM0SAD_H,		  sizeof(u16) },
+	{ &DM0DAD_L,		  sizeof(u16) },
+	{ &DM0DAD_H,		  sizeof(u16) },
+	{ &DM0CNT_L,		  sizeof(u16) },
+	{ &DM0CNT_H,		  sizeof(u16) },
+	{ &DM1SAD_L,		  sizeof(u16) },
+	{ &DM1SAD_H,		  sizeof(u16) },
+	{ &DM1DAD_L,		  sizeof(u16) },
+	{ &DM1DAD_H,		  sizeof(u16) },
+	{ &DM1CNT_L,		  sizeof(u16) },
+	{ &DM1CNT_H,		  sizeof(u16) },
+	{ &DM2SAD_L,		  sizeof(u16) },
+	{ &DM2SAD_H,		  sizeof(u16) },
+	{ &DM2DAD_L,		  sizeof(u16) },
+	{ &DM2DAD_H,		  sizeof(u16) },
+	{ &DM2CNT_L,		  sizeof(u16) },
+	{ &DM2CNT_H,		  sizeof(u16) },
+	{ &DM3SAD_L,		  sizeof(u16) },
+	{ &DM3SAD_H,		  sizeof(u16) },
+	{ &DM3DAD_L,		  sizeof(u16) },
+	{ &DM3DAD_H,		  sizeof(u16) },
+	{ &DM3CNT_L,		  sizeof(u16) },
+	{ &DM3CNT_H,		  sizeof(u16) },
+	{ &TM0D,			  sizeof(u16) },
+	{ &TM0CNT,			  sizeof(u16) },
+	{ &TM1D,			  sizeof(u16) },
+	{ &TM1CNT,			  sizeof(u16) },
+	{ &TM2D,			  sizeof(u16) },
+	{ &TM2CNT,			  sizeof(u16) },
+	{ &TM3D,			  sizeof(u16) },
+	{ &TM3CNT,			  sizeof(u16) },
+	{ &P1,				  sizeof(u16) },
+	{ &IE,				  sizeof(u16) },
+	{ &IF,				  sizeof(u16) },
+	{ &IME,				  sizeof(u16) },
+	{ &holdState,		  sizeof(bool8) },
+	{ &holdType,		  sizeof(int32) },
+	{ &lcdTicks,		  sizeof(int32) },
+	{ &timer0On,		  sizeof(bool8) },
+	{ &timer0Ticks,		  sizeof(int32) },
+	{ &timer0Reload,	  sizeof(int32) },
+	{ &timer0ClockReload, sizeof(int32) },
+	{ &timer1On,		  sizeof(bool8) },
+	{ &timer1Ticks,		  sizeof(int32) },
+	{ &timer1Reload,	  sizeof(int32) },
+	{ &timer1ClockReload, sizeof(int32) },
+	{ &timer2On,		  sizeof(bool8) },
+	{ &timer2Ticks,		  sizeof(int32) },
+	{ &timer2Reload,	  sizeof(int32) },
+	{ &timer2ClockReload, sizeof(int32) },
+	{ &timer3On,		  sizeof(bool8) },
+	{ &timer3Ticks,		  sizeof(int32) },
+	{ &timer3Reload,	  sizeof(int32) },
+	{ &timer3ClockReload, sizeof(int32) },
+	{ &dma0Source,		  sizeof(u32)	},
+	{ &dma0Dest,		  sizeof(u32)	},
+	{ &dma1Source,		  sizeof(u32)	},
+	{ &dma1Dest,		  sizeof(u32)	},
+	{ &dma2Source,		  sizeof(u32)	},
+	{ &dma2Dest,		  sizeof(u32)	},
+	{ &dma3Source,		  sizeof(u32)	},
+	{ &dma3Dest,		  sizeof(u32)	},
+	{ &fxOn,			  sizeof(bool8) },
+	{ &windowOn,		  sizeof(bool8) },
+	{ &N_FLAG,			  sizeof(bool8) },
+	{ &C_FLAG,			  sizeof(bool8) },
+	{ &Z_FLAG,			  sizeof(bool8) },
+	{ &V_FLAG,			  sizeof(bool8) },
+	{ &armState,		  sizeof(bool8) },
+	{ &armIrqEnable,	  sizeof(bool8) },
+	{ &armNextPC,		  sizeof(u32)	},
+	{ &armMode,			  sizeof(int32) },
+	{ &saveType,		  sizeof(int32) },
+	{ NULL,				  0				}
 };
 
-//int cpuLoopTicks = 0;
-int cpuSavedTicks = 0;
+#define CPU_BREAK_LOOP \
+    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
+    *extCpuLoopTicks = *extClockTicks;
+
+#define CPU_BREAK_LOOP_2 \
+    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
+    *extCpuLoopTicks = *extClockTicks; \
+    *extTicks		 = *extClockTicks;
+
+#ifdef BKPT_SUPPORT
+bool8 freezeWorkRAM[0x40000];
+bool8 freezeInternalRAM[0x8000];
+
+#	ifdef SDL
+extern void debuggerBreakOnWrite(u32 *, u32, u32, int);
+
+void cheatsWriteMemory(u32 *address, u32 value, u32 mask)
+{
+	if (cheatsNumber == 0)
+	{
+		debuggerBreakOnWrite(address, *address, value, 2);
+		CPU_BREAK_LOOP2;
+		*address = value;
+		return;
+	}
+}
+
+void cheatsWriteHalfWord(u16 *address, u16 value, u16 mask)
+{
+	if (cheatsNumber == 0)
+	{
+		debuggerBreakOnWrite((u32 *)address, *address, value, 1);
+		CPU_BREAK_LOOP2;
+		*address = value;
+		return;
+	}
+}
+
+void cheatsWriteByte(u8 *address, u8 value)
+{
+	if (cheatsNumber == 0)
+	{
+		debuggerBreakOnWrite((u32 *)address, *address, value, 0);
+		CPU_BREAK_LOOP2;
+		*address = value;
+		return;
+	}
+}
+#	endif
+#endif
 
 #ifdef PROFILING
 void cpuProfil(char *buf, int size, u32 lowPC, int scale)
@@ -504,28 +528,7 @@ void cpuEnableProfiling(int hz)
 	profilingTicks = profilingTicksReload = 16777216 / hz;
 	profSetHertz(hz);
 }
-
 #endif
-
-inline int CPUUpdateTicksAccess32(u32 address)
-{
-	return memoryWait32[(address >> 24) & 15];
-}
-
-inline int CPUUpdateTicksAccess16(u32 address)
-{
-	return memoryWait[(address >> 24) & 15];
-}
-
-inline int CPUUpdateTicksAccessSeq32(u32 address)
-{
-	return memoryWaitSeq32[(address >> 24) & 15];
-}
-
-inline int CPUUpdateTicksAccessSeq16(u32 address)
-{
-	return memoryWaitSeq[(address >> 24) & 15];
-}
 
 inline int CPUUpdateTicks()
 {
@@ -636,13 +639,9 @@ void CPUUpdateRenderBuffers(bool force)
 bool CPUWriteStateToStream(gzFile gzFile)
 {
 	utilWriteInt(gzFile, SAVE_GAME_VERSION);
-
 	utilGzWrite(gzFile, &rom[0xa0], 16);
-
 	utilWriteInt(gzFile, useBios);
-
 	utilGzWrite(gzFile, &reg[0], sizeof(reg));
-
 	utilWriteData(gzFile, saveGameStruct);
 
 	// new to version 0.7.1
@@ -692,7 +691,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 				return false;
 			}
 		}
-		utilGzWrite(gzFile, &GBASystemCounters.frameCount, sizeof(GBASystemCounters.frameCount));
+		utilGzWrite(gzFile, &systemCounters.frameCount, sizeof(systemCounters.frameCount));
 	}
 
 	// SAVE_GAME_VERSION_10
@@ -720,9 +719,9 @@ bool CPUWriteStateToStream(gzFile gzFile)
 
 	// SAVE_GAME_VERSION_13
 	{
-		utilGzWrite(gzFile, &GBASystemCounters.lagCount, sizeof(GBASystemCounters.lagCount));
-		utilGzWrite(gzFile, &GBASystemCounters.lagged, sizeof(GBASystemCounters.lagged));
-		utilGzWrite(gzFile, &GBASystemCounters.laggedLast, sizeof(GBASystemCounters.laggedLast));
+		utilGzWrite(gzFile, &systemCounters.lagCount, sizeof(systemCounters.lagCount));
+		utilGzWrite(gzFile, &systemCounters.lagged, sizeof(systemCounters.lagged));
+		utilGzWrite(gzFile, &systemCounters.laggedLast, sizeof(systemCounters.laggedLast));
 	}
 
 	return true;
@@ -731,7 +730,6 @@ bool CPUWriteStateToStream(gzFile gzFile)
 bool CPUWriteState(const char *file)
 {
 	gzFile gzFile = utilGzOpen(file, "wb");
-
 	if (gzFile == NULL)
 	{
 		systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"), file);
@@ -748,7 +746,6 @@ bool CPUWriteState(const char *file)
 bool CPUWriteMemState(char *memory, int available)
 {
 	gzFile gzFile = utilMemGzOpen(memory, available, "w");
-
 	if (gzFile == NULL)
 	{
 		return false;
@@ -757,7 +754,6 @@ bool CPUWriteMemState(char *memory, int available)
 	bool res = CPUWriteStateToStream(gzFile);
 
 	long pos = utilGzTell(gzFile) + 8;
-
 	if (pos >= (available))
 		res = false;
 
@@ -766,22 +762,16 @@ bool CPUWriteMemState(char *memory, int available)
 	return res;
 }
 
-static int	tempStateID	  = 0;
-static int	tempFailCount = 0;
-static bool backupSafe	  = true;
-
 bool CPUReadStateFromStream(gzFile gzFile)
 {
-	bool8 ub;
-	char  tempBackupName [128];
-	if (backupSafe)
+	char tempBackupName[128];
+ 	if (tempSaveSafe)
 	{
-		sprintf(tempBackupName, "gbatempsave%d.sav", tempStateID++);
+		sprintf(tempBackupName, "gbatempsave%d.sav", tempSaveID++);
 		CPUWriteState(tempBackupName);
 	}
 
 	int version = utilReadInt(gzFile);
-
 	if (version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_1)
 	{
 		systemMessage(MSG_UNSUPPORTED_VBA_SGM,
@@ -791,9 +781,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	}
 
 	u8 romname[17];
-
 	utilGzRead(gzFile, romname, 16);
-
 	if (memcmp(&rom[0xa0], romname, 16) != 0)
 	{
 		romname[16] = 0;
@@ -804,8 +792,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		goto failedLoad;
 	}
 
-	ub = utilReadInt(gzFile) ? true : false;
-
+	bool8 ub = utilReadInt(gzFile) ? true : false;
 	if (ub != useBios)
 	{
 		if (useBios)
@@ -954,7 +941,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 				goto failedLoad;
 			}
 		}
-		utilGzRead(gzFile, &GBASystemCounters.frameCount, sizeof(GBASystemCounters.frameCount));
+		utilGzRead(gzFile, &systemCounters.frameCount, sizeof(systemCounters.frameCount));
 	}
 	if (version >= SAVE_GAME_VERSION_10)
 	{
@@ -980,15 +967,15 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	}
 	if (version >= SAVE_GAME_VERSION_13)
 	{
-		utilGzRead(gzFile, &GBASystemCounters.lagCount, sizeof(GBASystemCounters.lagCount));
-		utilGzRead(gzFile, &GBASystemCounters.lagged, sizeof(GBASystemCounters.lagged));
-		utilGzRead(gzFile, &GBASystemCounters.laggedLast, sizeof(GBASystemCounters.laggedLast));
+		utilGzRead(gzFile, &systemCounters.lagCount, sizeof(systemCounters.lagCount));
+		utilGzRead(gzFile, &systemCounters.lagged, sizeof(systemCounters.lagged));
+		utilGzRead(gzFile, &systemCounters.laggedLast, sizeof(systemCounters.laggedLast));
 	}
 
-	if (backupSafe)
+	if (tempSaveSafe)
 	{
 		remove(tempBackupName);
-		tempFailCount = 0;
+		tempSaveAttempts = 0;
 	}
 	systemSetJoypad(0, ~P1 & 0x3FF);
 	VBAUpdateButtonPressDisplay();
@@ -997,10 +984,10 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	return true;
 
 failedLoad:
-	if (backupSafe)
+	if (tempSaveSafe)
 	{
-		tempFailCount++;
-		if (tempFailCount < 3) // fail no more than 2 times in a row
+		tempSaveAttempts++;
+		if (tempSaveAttempts < 3) // fail no more than 2 times in a row
 			CPUReadState(tempBackupName);
 		remove(tempBackupName);
 	}
@@ -1011,9 +998,9 @@ bool CPUReadMemState(char *memory, int available)
 {
 	gzFile gzFile = utilMemGzOpen(memory, available, "r");
 
-	backupSafe = false;
+	tempSaveSafe = false;
 	bool res = CPUReadStateFromStream(gzFile);
-	backupSafe = true;
+	tempSaveSafe = true;
 
 	utilGzClose(gzFile);
 
@@ -1395,14 +1382,6 @@ bool CPUWriteBMPFile(const char *fileName)
 
 void CPUCleanUp()
 {
-	newFrame	  = true;
-
-	GBASystemCounters.frameCount = 0;
-	GBASystemCounters.lagCount	 = 0;
-	GBASystemCounters.extraCount = 0;
-	GBASystemCounters.lagged	 = true;
-	GBASystemCounters.laggedLast = true;
-
 #ifdef PROFILING
 	if (profilingTicksReload)
 	{
@@ -1410,42 +1389,41 @@ void CPUCleanUp()
 	}
 #endif
 
-#if (defined(WIN32) && !defined(SDL))
-	#define FreeMappedMem(name, mapName, offset) \
-	if (name != NULL) { \
-		UnmapViewOfFile((name) - (offset)); \
-		name = NULL; \
-		CloseHandle(mapName); \
-	}
-#else
-	#define FreeMappedMem(name, mapName, offset) \
-	if (name != NULL) { \
-		free(name); \
-		name = NULL; \
-	}
-#endif
+	free(rom);
+	rom = NULL;
 
-	FreeMappedMem(rom, mapROM, 0);
-	FreeMappedMem(vram, mapVRAM, 0);
-	FreeMappedMem(paletteRAM, mapPALETTERAM, 0);
-	FreeMappedMem(internalRAM, mapIRAM, 0);
-	FreeMappedMem(workRAM, mapWORKRAM, 0);
-	FreeMappedMem(bios, mapBIOS, 0);
-	FreeMappedMem(pix, mapPIX, 4);
-	FreeMappedMem(oam, mapOAM, 0);
-	FreeMappedMem(ioMem, mapIOMEM, 0);
+	free(vram);
+	vram = NULL;
+
+	free(paletteRAM);
+	paletteRAM = NULL;
+
+	free(internalRAM);
+	internalRAM = NULL;
+
+	free(workRAM);
+	workRAM = NULL;
+
+	free(bios);
+	bios = NULL;
+
+	free(pix);
+	pix = NULL;
+
+	free(oam);
+	oam = NULL;
+
+	free(ioMem);
+	ioMem = NULL;
 
 	eepromErase();
 	flashErase();
 
+#ifndef NO_DEBUGGER
 	elfCleanUp();
+#endif
 
-	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-	systemClearJoypads();
-	systemResetSensor();
-
-//	gbaLastTime = gbaFrameCount = 0;
+	systemCleanUp();
 	systemRefreshScreen();
 }
 
@@ -1461,37 +1439,22 @@ int CPULoadRom(const char *szFile)
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
 	// size+4 is so RAM search and watch are safe to read any byte in the allocated region as a 4-byte int
-#if (defined(WIN32) && !defined(SDL))
-	#define AllocMappedMem(name, mapName, nameStr, size, useCalloc, offset) \
-	mapName = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (size) + (offset) + (4), nameStr); \
-	if ((mapName) && GetLastError() == ERROR_ALREADY_EXISTS) { \
-		CloseHandle(mapName); \
-		mapName = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (size) + (offset) + (4), NULL); \
-	} \
-	name = (u8 *)MapViewOfFile(mapName, FILE_MAP_WRITE, 0, 0, 0) + (offset); \
-	if ((name) == NULL) { \
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"), nameStr); \
-		CPUCleanUp(); \
-		return 0; \
-	} \
-	memset(name, 0, size + 4);
-#else
-	#define AllocMappedMem(name, mapName, nameStr, size, useCalloc, offset) \
-	name = (u8 *)(useCalloc ? calloc(1, size + 4) : malloc(size + 4)); \
-	if ((name) == NULL) { \
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"), nameStr); \
-		CPUCleanUp(); \
-		return 0; \
-	} \
-	memset(name, 0, size + 4);
-#endif
+	rom = (u8 *)malloc(0x2000000 + 4);
+	if (rom == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "ROM");
+		return 0;
+	}
+	workRAM = (u8 *)calloc(1, 0x40000 + 4);
+	if (workRAM == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "WRAM");
+		return 0;
+	}
 
-	AllocMappedMem(rom, mapROM, "vbaROM", 0x2000000, false, 0);
-	AllocMappedMem(workRAM, mapWORKRAM, "vbaWORKRAM", 0x40000, true, 0);
-
-	u8 *whereToLoad = rom;
-	if (cpuIsMultiBoot)
-		whereToLoad = workRAM;
+	u8 *whereToLoad = cpuIsMultiBoot ? workRAM : rom;
 
 	if (utilIsELF(szFile))
 	{
@@ -1500,15 +1463,20 @@ int CPULoadRom(const char *szFile)
 		{
 			systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"),
 			              szFile);
-			FreeMappedMem(rom, mapROM, 0);
-			FreeMappedMem(workRAM, mapWORKRAM, 0);
+			free(rom);
+			rom = NULL;
+			free(workRAM);
+			workRAM = NULL;
 			return 0;
 		}
 		bool res = elfRead(szFile, size, f);
 		if (!res || size == 0)
 		{
-			FreeMappedMem(rom, mapROM, 0);
-			FreeMappedMem(workRAM, mapWORKRAM, 0);
+			free(rom);
+			rom = NULL;
+			free(workRAM);
+			workRAM = NULL;
+			elfCleanUp();
 			elfCleanUp();
 			return 0;
 		}
@@ -1518,8 +1486,11 @@ int CPULoadRom(const char *szFile)
 	                   whereToLoad,
 	                   size))
 	{
-		FreeMappedMem(rom, mapROM, 0);
-		FreeMappedMem(workRAM, mapWORKRAM, 0);
+			free(rom);
+			rom = NULL;
+			free(workRAM);
+			workRAM = NULL;
+			elfCleanUp();
 		return 0;
 	}
 
@@ -1531,15 +1502,62 @@ int CPULoadRom(const char *szFile)
 		temp++;
 	}
 
-	AllocMappedMem(bios, mapBIOS, "vbaBIOS", 0x4000, true, 0);
-	AllocMappedMem(internalRAM, mapIRAM, "vbaIRAM", 0x8000, true, 0);
-	AllocMappedMem(paletteRAM, mapPALETTERAM, "vbaPALETTERAM", 0x400, true, 0);
-	AllocMappedMem(vram, mapVRAM, "vbaVRAM", 0x20000, true, 0);
-	AllocMappedMem(oam, mapOAM, "vbaOAM", 0x400, true, 0);
-
-	// HACK: +4 at start to accomodate the 2xSaI filter reading out of bounds of the leftmost pixel
-	AllocMappedMem(pix, mapPIX, "vbaPIX", 4 * 241 * 162, true, 4);
-	AllocMappedMem(ioMem, mapIOMEM, "vbaIOMEM", 0x400, true, 0);
+	bios = (u8 *)calloc(1, 0x4000);
+	if (bios == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "BIOS");
+		CPUCleanUp();
+		return 0;
+	}
+	internalRAM = (u8 *)calloc(1, 0x8000);
+	if (internalRAM == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "IRAM");
+		CPUCleanUp();
+		return 0;
+	}
+	paletteRAM = (u8 *)calloc(1, 0x400);
+	if (paletteRAM == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "PRAM");
+		CPUCleanUp();
+		return 0;
+	}
+	vram = (u8 *)calloc(1, 0x20000);
+	if (vram == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "VRAM");
+		CPUCleanUp();
+		return 0;
+	}
+	oam = (u8 *)calloc(1, 0x400);
+	if (oam == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "OAM");
+		CPUCleanUp();
+		return 0;
+	}
+	pix = (u8 *)calloc(1, 4 * 241 * 162);
+	if (pix == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "PIX");
+		CPUCleanUp();
+		return 0;
+	}
+	ioMem = (u8 *)calloc(1, 0x400);
+	if (ioMem == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "IO");
+		CPUCleanUp();
+		return 0;
+	}
 
 	CPUUpdateRenderBuffers(true);
 
@@ -1824,7 +1842,7 @@ void CPUSoftwareInterrupt(int comment)
 #ifdef BKPT_SUPPORT
 	if (comment == 0xff)
 	{
-		extern void (*dbgOutput)(char *, u32);
+		extern void (*dbgOutput)(const char *, u32);
 		dbgOutput(NULL, reg[0].I);
 		return;
 	}
@@ -2058,7 +2076,7 @@ void CPUCompareVCOUNT()
 	}
 }
 
-void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
+static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 {
 	int sm = s >> 24;
 	int dm = d >> 24;
@@ -3021,6 +3039,7 @@ void CPUWriteHalfWordWrapped(u32 address, u16 value)
 	switch (address >> 24)
 	{
 	case 2:
+#ifdef BKPT_SUPPORT
 #ifdef SDL
 		if (*((u16 *)&freezeWorkRAM[address & 0x3FFFE]))
 			cheatsWriteHalfWord((u16 *)&workRAM[address & 0x3FFFE],
@@ -3028,15 +3047,18 @@ void CPUWriteHalfWordWrapped(u32 address, u16 value)
 			                    *((u16 *)&freezeWorkRAM[address & 0x3FFFE]));
 		else
 #endif
+#endif
 		WRITE16LE(((u16 *)&workRAM[address & 0x3FFFE]), value);
 		break;
 	case 3:
+#ifdef BKPT_SUPPORT
 #ifdef SDL
 		if (*((u16 *)&freezeInternalRAM[address & 0x7ffe]))
 			cheatsWriteHalfWord((u16 *)&internalRAM[address & 0x7ffe],
 			                    value,
 			                    *((u16 *)&freezeInternalRAM[address & 0x7ffe]));
 		else
+#endif
 #endif
 		WRITE16LE(((u16 *)&internalRAM[address & 0x7ffe]), value);
 		break;
@@ -3105,18 +3127,22 @@ void CPUWriteByteWrapped(u32 address, u8 b)
 	switch (address >> 24)
 	{
 	case 2:
+#ifdef BKPT_SUPPORT
 #ifdef SDL
 		if (freezeWorkRAM[address & 0x3FFFF])
 			cheatsWriteByte(&workRAM[address & 0x3FFFF], b);
 		else
 #endif
+#endif
 		workRAM[address & 0x3FFFF] = b;
 		break;
 	case 3:
+#ifdef BKPT_SUPPORT
 #ifdef SDL
 		if (freezeInternalRAM[address & 0x7fff])
 			cheatsWriteByte(&internalRAM[address & 0x7fff], b);
 		else
+#endif
 #endif
 		internalRAM[address & 0x7fff] = b;
 		break;
@@ -3235,25 +3261,17 @@ void CPUWriteByte(u32 address, u8 b)
 	CallRegisteredLuaMemHook(address, 1, b, LUAMEMHOOK_WRITE);
 }
 
-bool CPULoadBios(const char *biosFileName, bool useBiosFile)
+void CPULoadInternalBios()
 {
-	useBios = false;
-	if (useBiosFile)
-	{
-		useBios = utilLoadBIOS(bios, biosFileName, 4);
-		if (!useBios)
+	// load internal BIOS
+#ifdef WORDS_BIGENDIAN
+		for (size_t i = 0; i < sizeof(myROM) / 4; ++i)
 		{
-			systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid GBA BIOS file"));
+			WRITE32LE(&bios[i], myROM[i]);
 		}
-	}
-
-	if (!useBios)
-	{
-		// load internal BIOS
-		memcpy(bios, myROM, sizeof(myROM));
-	}
-
-	return useBios;
+#else
+	memcpy(bios, myROM, sizeof(myROM));
+#endif
 }
 
 void CPUInit()
@@ -3345,23 +3363,13 @@ void CPUInit()
 	}
 }
 
-void CPUReset(bool userReset)
+void CPUReset()
 {
-	// movie must be closed while opening/creating a movie
-	if (userReset && VBAMovieRecording())
-	{
-		VBAMovieSignalReset();
-		return;
-	}
+	// FIXME: This should also be state-saved/state-loaded
+	cpuSavedTicks = 0;
+	gbaSaveType = 0;
 
-	if (!VBAMovieActive())
-	{
-		GBASystemCounters.frameCount = 0;
-		GBASystemCounters.lagCount	 = 0;
-		GBASystemCounters.extraCount = 0;
-		GBASystemCounters.lagged	 = true;
-		GBASystemCounters.laggedLast = true;
-	}
+	systemReset();
 
 	if (gbaSaveType == 0)
 	{
@@ -3379,7 +3387,6 @@ void CPUReset(bool userReset)
 			}
 	}
 
-	rtcReset();
 	// clean registers
 	memset(&reg[0], 0, sizeof(reg));
 	// clean OAM
@@ -3560,7 +3567,6 @@ void CPUReset(bool userReset)
 	renderLine		  = mode0RenderLine;
 	fxOn			  = false;
 	windowOn		  = false;
-	frameSkipCount	  = 0;
 	saveType		  = 0;
 	layerEnable		  = DISPCNT & layerSettings;
 
@@ -3599,8 +3605,7 @@ void CPUReset(bool userReset)
 
 	eepromReset();
 	flashReset();
-
-	soundReset();
+	rtcReset();
 
 	CPUUpdateWindow0();
 	CPUUpdateWindow1();
@@ -3661,13 +3666,7 @@ void CPUReset(bool userReset)
 		break;
 	}
 
-	systemResetSensor();
-
-	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-	gbaLastTime	  = systemGetClock();
-	gbaFrameCount = 0;
-
+	soundReset();
 	systemRefreshScreen();
 }
 
@@ -3699,13 +3698,11 @@ void TogglePrefetchHack()
 
 	if (emulating)
 	{
-		extern bool8 prefetchActive, prefetchPrevActive, prefetchApplies;
 		if (prefetchApplies && prefetchActive == memLagTempEnabled)
 		{
 			prefetchActive = !prefetchActive;
 			//if(prefetchActive && !prefetchPrevActive) systemScreenMessage("pre-fetch enabled",3,600);
 			//if(!prefetchActive && prefetchPrevActive) systemScreenMessage("pre-fetch disabled",3,600);
-			extern int32 memoryWaitFetch [16];
 			if (prefetchActive)
 				memoryWaitFetch[8]--;
 			else
@@ -3721,28 +3718,57 @@ void SetPrefetchHack(bool set)
 		TogglePrefetchHack();
 }
 
-#ifdef SDL
-void log(const char *defaultMsg, ...)
+static void CPUGetUserInput()
 {
-	char	buffer[2048];
-	va_list valist;
+	// update joystick information
+	systemReadJoypads();
 
-	va_start(valist, defaultMsg);
-	vsprintf(buffer, defaultMsg, valist);
+	u32 joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
+	//		if (cpuEEPROMSensorEnabled)
+	//			systemUpdateMotionSensor(0);
 
-	if (out == NULL)
+	P1 = 0x03FF ^ (joy & 0x3FF);
+	UPDATE_REG(0x130, P1);
+	u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
+
+	// this seems wrong, but there are cases where the game
+	// can enter the stop state without requesting an IRQ from
+	// the joypad.
+	// FIXME: where is the right place???
+	if ((P1CNT & 0x4000) || stopState)
 	{
-		out = fopen("trace.log", "w");
+		u16 p1 = (0x3FF ^ P1) & 0x3FF;
+		if (P1CNT & 0x8000)
+		{
+			if (p1 == (P1CNT & 0x3FF))
+			{
+				IF |= 0x1000;
+				UPDATE_REG(0x202, IF);
+			}
+		}
+		else
+		{
+			if (p1 & P1CNT)
+			{
+				IF |= 0x1000;
+				UPDATE_REG(0x202, IF);
+			}
+		}
 	}
 
-	fputs(buffer, out);
-
-	va_end(valist);
+	// HACK: some special "buttons"
+	extButtons = (joy >> 18);
+	speedup	   = (extButtons & 1) != 0;
 }
 
-#else
-extern void winlog(const char *, ...);
-#endif
+static void CPUFrameBoundaryWork()
+{
+	// HACK: some special "buttons"
+	if (cheatsEnabled)
+		cheatsCheckKeys(P1 ^ 0x3FF, extButtons);
+
+	systemFrameBoundaryWork();
+}
 
 void CPULoop(int _ticks)
 {
@@ -3771,56 +3797,16 @@ void CPULoop(int _ticks)
 
 	if (newFrame)
 	{
-		extern void VBAOnExitingFrameBoundary();
-		VBAOnExitingFrameBoundary();
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
-		// update joystick information
-		systemReadJoypads();
-
-		u32 joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
-
-//		if (cpuEEPROMSensorEnabled)
-//			systemUpdateMotionSensor(0);
-
-		P1 = 0x03FF ^ (joy & 0x3FF);
-		UPDATE_REG(0x130, P1);
-		u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
-		// this seems wrong, but there are cases where the game
-		// can enter the stop state without requesting an IRQ from
-		// the joypad.
-		if ((P1CNT & 0x4000) || stopState)
-		{
-			u16 p1 = (0x3FF ^ P1) & 0x3FF;
-			if (P1CNT & 0x8000)
-			{
-				if (p1 == (P1CNT & 0x3FF))
-				{
-					IF |= 0x1000;
-					UPDATE_REG(0x202, IF);
-				}
-			}
-			else
-			{
-				if (p1 & P1CNT)
-				{
-					IF |= 0x1000;
-					UPDATE_REG(0x202, IF);
-				}
-			}
-		}
-
-		// HACK: some special "buttons"
-		extButtons = (joy >> 18);
-		speedup	   = (extButtons & 1) != 0;
+		CPUGetUserInput();
 
 		VBAMovieResetIfRequested();
-
-		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 		newFrame = false;
 	}
 
-	for (;; )
+	for (;;)
 	{
 #ifndef FINAL_VERSION
 		if (systemDebug)
@@ -3828,9 +3814,7 @@ void CPULoop(int _ticks)
 			if (systemDebug >= 10 && !holdState)
 			{
 				CPUUpdateCPSR();
-				sprintf(
-				    buffer,
-				    "R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x"
+				log("R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x"
 				    "R09=%08x R10=%08x R11=%08x R12=%08x R13=%08x R14=%08x R15=%08x R16=%08x R17=%08x\n",
 				    reg[0].I,
 				    reg[1].I,
@@ -3850,20 +3834,10 @@ void CPULoop(int _ticks)
 				    reg[15].I,
 				    reg[16].I,
 				    reg[17].I);
-#ifdef SDL
-				log(buffer);
-#else
-				winlog(buffer);
-#endif
 			}
 			else if (!holdState)
 			{
-				sprintf(buffer, "PC=%08x\n", armNextPC);
-#ifdef SDL
-				log(buffer);
-#else
-				winlog(buffer);
-#endif
+				log("PC=%08x\n", armNextPC);
 			}
 		}
 #endif
@@ -3963,8 +3937,6 @@ updateLoop:
 				}
 				else
 				{
-					int framesToSkip = systemFramesToSkip();
-
 					if (DISPSTAT & 2)
 					{
 						// if in H-Blank, leave it and move to drawing mode
@@ -3985,56 +3957,7 @@ updateLoop:
 							}
 							CPUCheckDMA(1, 0x0f);
 
-							systemFrame();
-
-							++gbaFrameCount;
-							u32 gbaCurrentTime = systemGetClock();
-							if (gbaCurrentTime - gbaLastTime >= 1000)
-							{
-								systemShowSpeed(int(float(gbaFrameCount) * 100000 / (float(gbaCurrentTime - gbaLastTime) * 60) + .5f));
-								gbaLastTime	  = gbaCurrentTime;
-								gbaFrameCount = 0;
-							}
-
-							++GBASystemCounters.frameCount;
-							if (GBASystemCounters.lagged)
-							{
-								++GBASystemCounters.lagCount;
-							}
-							GBASystemCounters.laggedLast = GBASystemCounters.lagged;
-							GBASystemCounters.lagged	 = true;
-
-							if (cheatsEnabled)
-								cheatsCheckKeys(P1 ^ 0x3FF, extButtons);
-
-							extern void VBAOnEnteringFrameBoundary();
-							VBAOnEnteringFrameBoundary();
-
-							newFrame = true;
-
-							pauseAfterFrameAdvance = systemPauseOnFrame();
-
-							if (frameSkipCount >= framesToSkip || pauseAfterFrameAdvance)
-							{
-								systemRenderFrame();
-								frameSkipCount = 0;
-
-								bool capturePressed = (extButtons & 2) != 0;
-								if (capturePressed && !capturePrevious)
-								{
-									captureNumber = systemScreenCapture(captureNumber);
-								}
-								capturePrevious = capturePressed && !pauseAfterFrameAdvance;
-							}
-							else
-							{
-								++frameSkipCount;
-							}
-
-							if (pauseAfterFrameAdvance)
-							{
-								systemSetPause(true);
-							}
+							CPUFrameBoundaryWork();
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);
@@ -4042,7 +3965,7 @@ updateLoop:
 					}
 					else
 					{
-						if (frameSkipCount >= framesToSkip || pauseAfterFrameAdvance)
+						if (systemFrameDrawingRequired())
 						{
 							(*renderLine)();
 
@@ -4483,21 +4406,19 @@ updateLoop:
 				if (ticks <= 0)
 				{
 					newFrame = true;
-					break;
+					return;
 				}
 			}
 			else if (newFrame)
 			{
-				// FIXME: it should be enough to use frameBoundary only if there were no need for supporting the old timing
-				// but is there still any GBA .vbm that uses the old timing?
-///				extern void VBAOnEnteringFrameBoundary();
-///				VBAOnEnteringFrameBoundary();
-
-				break;
+				return;
 			}
 		}
 	}
 }
+
+#undef CPU_BREAK_LOOP
+#undef CPU_BREAK_LOOP_2
 
 struct EmulatedSystem GBASystem =
 {
@@ -4542,24 +4463,3 @@ struct EmulatedSystem GBASystem =
 	5000,
 #endif
 };
-
-// is there a reason to use more than one set of counters?
-EmulatedSystemCounters &GBASystemCounters = systemCounters;
-
-/*
-   EmulatedSystemCounters GBASystemCounters =
-   {
-    // frameCount
-    0,
-    // lagCount
-    0,
-    // lagged
-    true,
-    // laggedLast
-    true,
-   };
- */
-
-
-#undef CPU_BREAK_LOOP
-#undef CPU_BREAK_LOOP2
