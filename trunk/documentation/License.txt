@@ -3,11 +3,17 @@ Lua, SFMT, unRAR, modified files from zlib, or when stated otherwise
 in the source file:
   VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator
   Copyright (C) 1999-2003 Forgotten
-  Copyright (C) 2004-2005 Forgotten and the VBA development team
+  Copyright (C) 2004-2006 Forgotten and the VBA development team
 
 Copyright for the modifications to the files mentioned above:
+  VisualBoyAdvance-M GB/GBA emulator
+  Copyright (C) 2007-2008 VBA-M development team
+
+  VisualBoyAdvance ReL GB/GBA emulator
+  Copyright (C) 2009-2010 aquanull
+
   VisualBoyAdvance Rerecording GB/GBA emulator
-  Copyright (C) 2005-2011 nitsuja and the VBA-rr development team
+  Copyright (C) 2005-2012 nitsuja and the VBA-rr development team
 
 All files excluding precompiled libraries or executables in win32,
 7-zip files under the restrictions of unRAR license, libjpeg, libpng,
@@ -27,5 +33,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-This software is based in part on the work of the Independent JPEG Group.
