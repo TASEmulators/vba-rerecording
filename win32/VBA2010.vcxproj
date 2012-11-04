@@ -1,24 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>V82XDebug</Configuration>
+    <ProjectConfiguration Include="V82XD|Win32">
+      <Configuration>V82XD</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="V82XR|Win32">
+      <Configuration>V82XR</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Template|Win32">
       <Configuration>Template</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="V72XDebug|Win32">
-      <Configuration>V72XDebug</Configuration>
+    <ProjectConfiguration Include="V72XD|Win32">
+      <Configuration>V72XD</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="V72XRelease|Win32">
-      <Configuration>V7Release</Configuration>
+    <ProjectConfiguration Include="V72XR|Win32">
+      <Configuration>V72XR</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -29,91 +29,93 @@
     <Keyword>MFCProj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>Static</UseOfMfc>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)__bins\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">$(SolutionDir)__bins\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">$(SolutionDir)__bins\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">$(SolutionDir)__bins\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">$(ProjectName)_debug</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">$(ProjectName)_debugV7</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)_release</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">$(ProjectName)_release</TargetName>
-    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">false</EmbedManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">$(SolutionDir)__bins\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">$(ProjectName)_releaseV7</TargetName>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(SolutionDir)__bins\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir)__bins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(SolutionDir)__bins\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(SolutionDir)__bins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(ProjectName)_$(Configuration)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(ProjectName)_$(Configuration)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(ProjectName)_$(Configuration)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(ProjectName)_release</TargetName>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir)__bins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(ProjectName)_$(Configuration)</TargetName>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(SolutionDir)__bins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -124,10 +126,12 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <MinimalRebuild>true</MinimalRebuild>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <UndefinePreprocessorDefinitions>USE_GB_CORE_V7;USE_GBA_CORE_V7</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcw.lib;libcmt.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(ProjectName)_release.exe</OutputFile>
+      <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libci.lib;nafxcw.lib;libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <SubSystem>Windows</SubSystem>
@@ -149,9 +153,10 @@
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_AFXDLL;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <UndefinePreprocessorDefinitions>USE_GB_CORE_V7;USE_GBA_CORE_V7</UndefinePreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -161,8 +166,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -198,13 +202,12 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -212,10 +215,11 @@
       <StringPooling>true</StringPooling>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
+      <UndefinePreprocessorDefinitions>USE_GB_CORE_V7;USE_GBA_CORE_V7</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcwd.lib;libcmtd.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(ProjectName)_debug.exe</OutputFile>
+      <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libci.lib;nafxcwd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -234,16 +238,16 @@
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_AFXDLL;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <UndefinePreprocessorDefinitions>USE_GB_CORE_V7;USE_GBA_CORE_V7</UndefinePreprocessorDefinitions>
     </ResourceCompile>
     <PreBuildEvent />
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;LUA_USE_APICHECK;EXTRACT_ONLY;_NO_CRYPTO;USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -254,7 +258,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcwd.lib;libcmtd.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(ProjectName)_debugV7.exe</OutputFile>
+      <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libci.lib;nafxcwd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -276,7 +280,7 @@
     </ResourceCompile>
     <PreBuildEvent />
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;HAVE_STDINT_H;OEMRESOURCE;MMX;FINAL_VERSION;BKPT_SUPPORT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;EXTRACT_ONLY;_NO_CRYPTO;USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -290,12 +294,12 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <DisableSpecificWarnings>4244;4996;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <OutputFile>$(OutDir)$(ProjectName)_releaseV7.exe</OutputFile>
+      <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>directx/d3dx8.lib;wsock32.lib;directx/ddraw.lib;directx/dxguid.lib;winmm.lib;directx/dinput.lib;vfw32.lib;opengl32.lib;nafxcw.lib;libcmt.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libci.lib;nafxcw.lib;libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -310,6 +314,16 @@
     <PreBuildEvent>
       <Command>defaultconfig\SubWCRev.bat</Command>
     </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>directx;lib/zlib;lib/libpng;../src/lua/src;defaultconfig</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\common\CheatSearch.cpp" />
@@ -355,214 +369,184 @@
     <ClCompile Include="..\src\gb\gbSGB.cpp" />
     <ClCompile Include="..\src\gb\gbSound.cpp" />
     <ClCompile Include="..\src\lua\src\lapi.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lauxlib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lbaselib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lcode.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ldblib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ldebug.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ldo.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ldump.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lfunc.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lgc.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\linit.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\liolib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\llex.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lmathlib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lmem.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\loadlib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lobject.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lopcodes.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\loslib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lparser.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lstate.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lstring.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lstrlib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ltable.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ltablib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\ltm.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lundump.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lvm.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\lzio.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\lua\src\print.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\src\win32\Commands.cpp" />
     <ClCompile Include="..\src\win32\Controls\BitmapControl.cpp" />
@@ -619,132 +603,132 @@
     <ClCompile Include="..\src\win32\WinSystem.cpp" />
     <ClCompile Include="..\src\win32\WinMiscUtil.cpp" />
     <ClCompile Include="lib\libpng\png.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngerror.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pnggccrd.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngget.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngmem.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngpread.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngread.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngrio.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngrtran.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngrutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngset.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngtrans.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngvcrd.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngwio.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngwrite.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngwtran.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngwutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\adler32.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\compress.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\crc32.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\deflate.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\example.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\gzio.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\infblock.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\infcodes.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\inffast.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\inflate.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\inftrees.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\infutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\trees.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\uncompr.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\zlib\zutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="..\src\filters\2xSaI.cpp" />
     <ClCompile Include="..\src\filters\admame.cpp" />
@@ -784,20 +768,20 @@
   <ItemGroup>
     <CustomBuild Include="..\src\filters\2xSaImmx.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
 </Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='V82XDebug|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='V72XDebug|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"
 </Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='V7Release|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='V72XRelease|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">nasm.exe -D__DJGPP__ -f win32 -o "$(IntDir)%(FileName).obj" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(IntDir)%(FileName).obj;%(Outputs)</Outputs>
     </CustomBuild>
     <None Include="..\documentation\Changelog.txt" />
     <None Include="..\documentation\License.txt" />
