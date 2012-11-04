@@ -8,8 +8,6 @@
 #include "WavWriter.h"
 #include "VBA.h"
 
-#include "../gba/GBAGlobals.h"
-#include "../gba/GBASound.h"
 #include "../common/SystemGlobals.h"
 #include "../common/nesvideos-piece.h"
 
@@ -504,8 +502,7 @@ void DirectSound::write()
 		}
 
 		// Release the data back to DirectSound.
-		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2,
-		                          dwBytes2);
+		hr = dsbSecondary->Unlock(lpvPtr1, dwBytes1, lpvPtr2, dwBytes2);
 	}
 
 	soundNextPosition += soundBufferLen;

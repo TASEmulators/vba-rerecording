@@ -67,42 +67,72 @@ extern u8 *pix;
 extern u16 currentButtons[4];
 extern u16 lastKeys;
 
-extern int32	sensorX, sensorY;
-extern bool		newFrame;
-extern bool8	speedup;
-extern u32		extButtons;
-extern bool8	capturePrevious;
-extern int32	captureNumber;
+extern int32 sensorX, sensorY;
+
+extern bool	 newFrame;
+extern bool8 speedup;
+extern u32	 extButtons;
+extern bool8 capturePrevious;
+extern int32 captureNumber;
+
+typedef int32 soundtick_t;
+
+extern soundtick_t USE_TICKS_AS;
+extern soundtick_t soundTickStep;
+extern soundtick_t soundTicks;
+
+extern u32	 soundIndex;
+extern int32 soundPaused;
+extern int32 soundPlay;
+extern u32	 soundNextPosition;
+
+extern u8	 soundBuffer[6][735];
+extern u32	 soundBufferLen;
+extern u32	 soundBufferTotalLen;
+extern u32	 soundBufferIndex;
+
+extern u16	 soundFinalWave[1470];
+extern u16	 soundFrameSound[735 * 30 * 2];
+extern int32 soundFrameSoundWritten;
+
+extern bool	 tempSaveSafe;
+extern int	 tempSaveID;
+extern int	 tempSaveAttempts;
 
 //settings
-extern bool8	synchronize;
-extern int32	gbFrameSkip;
-extern int32	frameSkip;
+extern bool8 synchronize;
+extern int32 gbFrameSkip;
+extern int32 frameSkip;
 
-extern bool8	cpuDisableSfx;
-extern int32	layerSettings;
+extern bool8 cpuDisableSfx;
+extern int32 layerSettings;
 
 #ifdef USE_GB_CORE_V7
-extern bool8	gbNullInputHackEnabled;
-extern bool8	gbNullInputHackTempEnabled;
+extern bool8 gbNullInputHackEnabled;
+extern bool8 gbNullInputHackTempEnabled;
 #endif
 
 #ifdef USE_GBA_CORE_V7
-extern bool8	memLagEnabled;
-extern bool8	memLagTempEnabled;
+extern bool8 memLagEnabled;
+extern bool8 memLagTempEnabled;
 #endif
 
-extern bool8	useOldFrameTiming;
-extern bool8	useBios;
-extern bool8	skipBios;
-extern bool8	skipSaveGameBattery; // skip battery data when reading save states
-extern bool8	skipSaveGameCheats; // skip cheat list data when reading save states
-extern bool8	cheatsEnabled;
-extern bool8	mirroringEnable;
+extern bool8 useOldFrameTiming;
+extern bool8 useBios;
+extern bool8 skipBios;
+extern bool8 skipSaveGameBattery; // skip battery data when reading save states
+extern bool8 skipSaveGameCheats; // skip cheat list data when reading save states
+extern bool8 cheatsEnabled;
+extern bool8 mirroringEnable;
 
-extern bool8	cpuEnhancedDetection;
+extern bool8 cpuEnhancedDetection;
 
-extern bool		tempSaveSafe;
-extern int		tempSaveID;
-extern int		tempSaveAttempts;
+extern int32 soundVolume;
+extern int32 soundQuality;
+extern bool8 soundEcho;
+extern bool8 soundLowPass;
+extern bool8 soundReverse;
+extern bool8 soundOffFlag;
+extern int32 soundEnableFlag;
+
 #endif

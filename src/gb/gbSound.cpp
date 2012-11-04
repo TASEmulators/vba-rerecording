@@ -1,52 +1,22 @@
-#ifdef WIN32
-#   include "../win32/stdafx.h"
-#   include "../win32/VBA.h"
-#endif
-
 #include <cstring>
-#include <cassert>
 
 #include "../common/System.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Util.h"
 //#include "../Blip_Buffer.h"
 #include "gbGlobals.h"
 #include "gbSound.h"
 
-#ifndef countof
-#define countof(a)  (sizeof(a) / sizeof(a[0]))
-#endif
-
-extern u8	 soundBuffer[6][735];
-extern u16	 soundFinalWave[1470];
-extern u16	 soundFrameSound[735 * 30 * 2];
-extern int32 soundVolume;
-
-extern int32 GB_USE_TICKS_AS = 24; // (1048576.0/44100.0); // FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
-
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
 #define NOISE_MAGIC   (2097152.0 / 44100.0)
 
-extern int32 speed;
-
 extern u8 soundWavePattern[4][32];
-
-extern u32	 soundBufferLen;
-extern u32	 soundBufferTotalLen;
-extern int32 soundQuality;
-extern int32 soundPaused;
-extern int32 soundPlay;
-extern int32 soundTicks;
-extern int32 SOUND_CLOCK_TICKS;
-extern u32	 soundNextPosition;
 
 extern int32 soundLevel1;
 extern int32 soundLevel2;
 extern int32 soundBalance;
 extern int32 soundMasterOn;
-extern u32	 soundIndex;
-extern u32	 soundBufferIndex;
-extern int32 soundFrameSoundWritten;
 int32		 soundVIN = 0;
 extern int32 soundDebug;
 
@@ -101,20 +71,8 @@ extern int32 sound4EnvelopeATL;
 extern int32 sound4EnvelopeUpDown;
 extern int32 sound4EnvelopeATLReload;
 
-extern int32 soundEnableFlag;
-extern int32 soundMutedFlag;
-
 extern int32 soundFreqRatio[8];
 extern int32 soundShiftClock[16];
-
-extern s16	 soundFilter[4000];
-extern s16	 soundLeft[5];
-extern s16	 soundRight[5];
-extern int32 soundEchoIndex;
-extern bool8 soundEcho;
-extern bool8 soundLowPass;
-extern bool8 soundReverse;
-extern bool8 soundOffFlag;
 
 bool8 gbDigitalSound = false;
 
@@ -572,8 +530,7 @@ void gbSoundChannel4()
 	{
 		if (sound4On && (sound4ATL || !sound4Continue))
 		{
-	  #define NOISE_ONE_SAMP_SCALE  0x200000
-
+#define NOISE_ONE_SAMP_SCALE  0x200000
 			sound4Index		 += soundQuality * sound4Skip;
 			sound4ShiftIndex += soundQuality * sound4ShiftSkip;
 
@@ -599,9 +556,9 @@ void gbSoundChannel4()
 				}
 			}
 
-			sound4Index		 %= NOISE_ONE_SAMP_SCALE;
-			sound4ShiftIndex %= NOISE_ONE_SAMP_SCALE;
-
+			sound4Index		 &= (NOISE_ONE_SAMP_SCALE - 1);
+			sound4ShiftIndex &= (NOISE_ONE_SAMP_SCALE - 1);
+#undef NOISE_ONE_SAMP_SCALE
 			value = ((sound4ShiftRight & 1) * 2 - 1) * vol;
 		}
 		else
@@ -649,185 +606,57 @@ void gbSoundChannel4()
 
 void gbSoundMix()
 {
-	int res = 0;
-
 	if (gbMemory)
-		soundBalance = (gbMemory[NR51] & soundEnableFlag & ~soundMutedFlag);
+		soundBalance = (gbMemory[NR51] & soundEnableFlag);
 
+	int cgbResL = 0;
 	if (soundBalance & 16)
 	{
-		res += ((s8)soundBuffer[0][soundIndex]);
+		cgbResL += ((s8)soundBuffer[0][soundIndex]);
 	}
 	if (soundBalance & 32)
 	{
-		res += ((s8)soundBuffer[1][soundIndex]);
+		cgbResL += ((s8)soundBuffer[1][soundIndex]);
 	}
 	if (soundBalance & 64)
 	{
-		res += ((s8)soundBuffer[2][soundIndex]);
+		cgbResL += ((s8)soundBuffer[2][soundIndex]);
 	}
 	if (soundBalance & 128)
 	{
-		res += ((s8)soundBuffer[3][soundIndex]);
+		cgbResL += ((s8)soundBuffer[3][soundIndex]);
 	}
 
-	if (gbDigitalSound)
-		res = soundLevel1 * 256;
-	else
-		res *= soundLevel1 * 60;
-
-	if (soundEcho)
-	{
-		res *= 2;
-		res += soundFilter[soundEchoIndex];
-		res /= 2;
-		soundFilter[soundEchoIndex++] = res;
-	}
-
-	if (soundLowPass)
-	{
-		soundLeft[4] = soundLeft[3];
-		soundLeft[3] = soundLeft[2];
-		soundLeft[2] = soundLeft[1];
-		soundLeft[1] = soundLeft[0];
-		soundLeft[0] = res;
-		res = (soundLeft[4] + 2 * soundLeft[3] + 8 * soundLeft[2] + 2 * soundLeft[1] +
-		       soundLeft[0]) / 14;
-	}
-
-	bool noSpecialEffects = false;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog)
-		noSpecialEffects = true;
-#endif
-
-	if (!noSpecialEffects)
-	{
-		switch (soundVolume)
-		{
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			res *= (soundVolume + 1);
-			break;
-		case 4:
-			res >>= 2;
-			break;
-		case 5:
-			res >>= 1;
-			break;
-		}
-	}
-
-	if (res > 32767)
-		res = 32767;
-	if (res < -32768)
-		res = -32768;
-
-	if (soundReverse && !noSpecialEffects)
-	{
-		soundFinalWave[++soundBufferIndex] = res;
-		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[++soundFrameSoundWritten] = res;
-	}
-	else
-	{
-		soundFinalWave[soundBufferIndex++] = res;
-		if (soundFrameSoundWritten >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[soundFrameSoundWritten++] = res;
-	}
-
-	res = 0;
-
+	int cgbResR = 0;
 	if (soundBalance & 1)
 	{
-		res += ((s8)soundBuffer[0][soundIndex]);
+		cgbResR += ((s8)soundBuffer[0][soundIndex]);
 	}
 	if (soundBalance & 2)
 	{
-		res += ((s8)soundBuffer[1][soundIndex]);
+		cgbResR += ((s8)soundBuffer[1][soundIndex]);
 	}
 	if (soundBalance & 4)
 	{
-		res += ((s8)soundBuffer[2][soundIndex]);
+		cgbResR += ((s8)soundBuffer[2][soundIndex]);
 	}
 	if (soundBalance & 8)
 	{
-		res += ((s8)soundBuffer[3][soundIndex]);
+		cgbResR += ((s8)soundBuffer[3][soundIndex]);
 	}
 
 	if (gbDigitalSound)
-		res = soundLevel2 * 256;
-	else
-		res *= soundLevel2 * 60;
-
-	if (soundEcho)
 	{
-		res *= 2;
-		res += soundFilter[soundEchoIndex];
-		res /= 2;
-		soundFilter[soundEchoIndex++] = res;
-
-		if (soundEchoIndex >= 4000)
-			soundEchoIndex = 0;
-	}
-
-	if (soundLowPass)
-	{
-		soundRight[4] = soundRight[3];
-		soundRight[3] = soundRight[2];
-		soundRight[2] = soundRight[1];
-		soundRight[1] = soundRight[0];
-		soundRight[0] = res;
-		res = (soundRight[4] + 2 * soundRight[3] + 8 * soundRight[2] + 2 * soundRight[1] +
-		       soundRight[0]) / 14;
-	}
-
-	if (!noSpecialEffects)
-	{
-		switch (soundVolume)
-		{
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			res *= (soundVolume + 1);
-			break;
-		case 4:
-			res >>= 2;
-			break;
-		case 5:
-			res >>= 1;
-			break;
-		}
-	}
-
-	if (res > 32767)
-		res = 32767;
-	if (res < -32768)
-		res = -32768;
-
-	if (soundReverse && !noSpecialEffects)
-	{
-		soundFinalWave[-1 + soundBufferIndex++]		   = res;
-		if ((soundFrameSoundWritten) >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[-1 + soundFrameSoundWritten++] = res;
+		cgbResL = soundLevel1 * 256;
+		cgbResR = soundLevel2 * 256;
 	}
 	else
 	{
-		soundFinalWave[soundBufferIndex++]			  = res;
-		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[soundFrameSoundWritten++] = res;
+		cgbResL *= soundLevel1 * 60;
+		cgbResR *= soundLevel2 * 60;
 	}
+
+	systemSoundMix(cgbResL, cgbResR);
 }
 
 void gbSoundTick()
@@ -845,56 +674,33 @@ void gbSoundTick()
 		}
 		else
 		{
-			soundFinalWave[soundBufferIndex++] = 0;
-			soundFinalWave[soundBufferIndex++] = 0;
-			if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
-				/*assert(false)*/;
-			else
-			{
-				soundFrameSound[soundFrameSoundWritten++] = 0;
-				soundFrameSound[soundFrameSoundWritten++] = 0;
-			}
+			systemSoundMixSilence();
 		}
-
-		soundIndex++;
-
-		if (2 * soundBufferIndex >= soundBufferLen)
-		{
-			if (systemSoundOn)
-			{
-				if (soundPaused)
-				{
-					extern void soundResume();
-					soundResume();
-				}
-
-				systemSoundWriteToBuffer();
-			}
-			soundIndex		 = 0;
-			soundBufferIndex = 0;
-		}
+		systemSoundNext();
 	}
 }
 
 void gbSoundReset()
 {
+	systemSoundMixReset();
+
+	soundIndex		  = 0;
 	soundPaused		  = 1;
 	soundPlay		  = 0;
-	SOUND_CLOCK_TICKS = soundQuality * GB_USE_TICKS_AS;
-//  soundTicks = SOUND_CLOCK_TICKS;
+	USE_TICKS_AS	  = GB_SOUNDTICKS_AS;
+	soundTickStep	  = soundQuality * USE_TICKS_AS;
+//  soundTicks = soundTickStep;
 	soundTicks		  = 0;
 	soundNextPosition = 0;
 	soundMasterOn	  = 1;
-	soundIndex		  = 0;
-	soundBufferIndex  = 0;
 	soundLevel1		  = 7;
 	soundLevel2		  = 7;
 	soundVIN = 0;
 
-	sound1On = 0;
-	sound1ATL = 0;
-	sound1Skip = 0;
-	sound1Index = 0;
+	sound1On	   = 0;
+	sound1ATL	   = 0;
+	sound1Skip	   = 0;
+	sound1Index	   = 0;
 	sound1Continue = 0;
 	sound1EnvelopeVolume	= 0;
 	sound1EnvelopeATL		= 0;
@@ -907,10 +713,10 @@ void gbSoundReset()
 	sound1SweepStep			= 0;
 	sound1Wave				= soundWavePattern[2];
 
-	sound2On = 0;
-	sound2ATL = 0;
-	sound2Skip = 0;
-	sound2Index = 0;
+	sound2On	   = 0;
+	sound2ATL	   = 0;
+	sound2Skip	   = 0;
+	sound2Index	   = 0;
 	sound2Continue = 0;
 	sound2EnvelopeVolume	= 0;
 	sound2EnvelopeATL		= 0;
@@ -925,10 +731,10 @@ void gbSoundReset()
 	sound3Continue	  = 0;
 	sound3OutputLevel = 0;
 
-	sound4On = 0;
+	sound4On	= 0;
 	sound4Clock = 0;
-	sound4ATL = 0;
-	sound4Skip = 0;
+	sound4ATL	= 0;
+	sound4Skip	= 0;
 	sound4Index = 0;
 	sound4ShiftRight		= 0x7f;
 	sound4NSteps			= 0;
@@ -985,46 +791,16 @@ void gbSoundReset()
 		gbMemory[addr++] = 0x00;
 		gbMemory[addr++] = 0xff;
 	}
-
-	memset(soundFinalWave, 0x00, soundBufferLen);
-
-	memset(soundFilter, 0, sizeof(soundFilter));
-	soundEchoIndex = 0;
 }
 
-extern bool soundInit();
-extern void soundShutdown();
-
-void gbSoundSetQuality(int quality)
-{
-	if (soundQuality != quality && systemSoundCanChangeQuality())
-	{
-		if (!soundOffFlag)
-			soundShutdown();
-		soundQuality	  = quality;
-		soundNextPosition = 0;
-		if (!soundOffFlag)
-			soundInit();
-		SOUND_CLOCK_TICKS = (gbSpeed ? 2 : 1) * GB_USE_TICKS_AS * soundQuality;
-		soundIndex		  = 0;
-		soundBufferIndex  = 0;
-	}
-	else
-	{
-		soundNextPosition = 0;
-		SOUND_CLOCK_TICKS = (gbSpeed ? 2 : 1) * GB_USE_TICKS_AS * soundQuality;
-		soundIndex		  = 0;
-		soundBufferIndex  = 0;
-	}
-}
-
+// dummy
 static int32 soundTicks_int32;
-static int32 SOUND_CLOCK_TICKS_int32;
+static int32 soundTickStep_int32;
 variable_desc gbSoundSaveStruct[] = {
 	{ &soundPaused,				sizeof(int32) },
 	{ &soundPlay,				sizeof(int32) },
 	{ &soundTicks_int32,		sizeof(int32) },
-	{ &SOUND_CLOCK_TICKS_int32, sizeof(int32) },
+	{ &soundTickStep_int32,		sizeof(int32) },
 	{ &soundLevel1,				sizeof(int32) },
 	{ &soundLevel2,				sizeof(int32) },
 	{ &soundBalance,			sizeof(int32) },
@@ -1081,15 +857,15 @@ variable_desc gbSoundSaveStruct[] = {
 
 //variable_desc gbSoundSaveStructV2[] = {
 //  { &soundTicks, sizeof(soundtick_t) },
-//  { &SOUND_CLOCK_TICKS, sizeof(soundtick_t) },
-//  { &GB_USE_TICKS_AS, sizeof(soundtick_t) },
+//  { &soundTickStep, sizeof(soundtick_t) },
+//  { &USE_TICKS_AS, sizeof(soundtick_t) },
 //  { NULL, 0 }
 //};
 
 void gbSoundSaveGame(gzFile gzFile)
 {
-	soundTicks_int32		= (int32) soundTicks;
-	SOUND_CLOCK_TICKS_int32 = (int32) SOUND_CLOCK_TICKS;
+	soundTicks_int32	= (int32) soundTicks;
+	soundTickStep_int32 = (int32) soundTickStep;
 
 	utilWriteData(gzFile, gbSoundSaveStruct);
 
@@ -1104,25 +880,26 @@ void gbSoundReadGame(int version, gzFile gzFile)
 {
 	int32 oldSoundPaused = soundPaused;
 	int32 oldSoundEnableFlag = soundEnableFlag;
+
 	utilReadData(gzFile, gbSoundSaveStruct);
 	soundPaused = oldSoundPaused;
 	soundEnableFlag = oldSoundEnableFlag;
-
 	soundBufferIndex = soundIndex * 2;
 
 	utilGzRead(gzFile, soundBuffer, 4 * 735);
 	utilGzRead(gzFile, soundFinalWave, 2 * 735);
 
+	// note: this resets the value of soundIndex to 0
 	if (version >= 7)
 	{
 		int quality = 1;
 		utilGzRead(gzFile, &quality, sizeof(int32));
-		gbSoundSetQuality(quality);
+		systemSoundSetQuality(quality);
 	}
 	else
 	{
 		soundQuality = -1;
-		gbSoundSetQuality(1);
+		systemSoundSetQuality(1);
 	}
 
 	sound1Wave = soundWavePattern[gbMemory[NR11] >> 6];
@@ -1132,8 +909,8 @@ void gbSoundReadGame(int version, gzFile gzFile)
 	//  utilReadData(gzFile, gbSoundSaveStructV2);
 	//}
 	//else {
-	soundTicks		  = (int32) soundTicks_int32;
-	SOUND_CLOCK_TICKS = (int32) SOUND_CLOCK_TICKS_int32;
+	soundTicks	  = (int32) soundTicks_int32;
+	soundTickStep = (int32) soundTickStep_int32;
 	//}
 }
 

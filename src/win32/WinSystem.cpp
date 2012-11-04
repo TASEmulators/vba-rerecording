@@ -11,7 +11,6 @@
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
 #include "../gba/GBAinline.h"
-#include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 //#include "../common/System.h"
@@ -674,7 +673,7 @@ void systemSoundClearBuffer()
 		theApp.sound->clearAudioBuffer();
 }
 
-void systemSoundReset()
+void systemSoundResetBuffer()
 {
 	if (theApp.sound)
 		theApp.sound->reset();
@@ -686,19 +685,9 @@ void systemSoundWriteToBuffer()
 		theApp.sound->write();
 }
 
-bool systemSoundCanChangeQuality()
+bool systemSoundAppliesDSP()
 {
-	return true;
-}
-
-bool systemSoundSetQuality(int quality)
-{
-	if (systemCartridgeType == 0)
-		soundSetQuality(quality);
-	else
-		gbSoundSetQuality(quality);
-
-	return true;
+	return !(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog);
 }
 
 // emulation

@@ -18,11 +18,11 @@
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
 #include "../gba/Flash.h"
-#include "../gba/GBASound.h"
 #include "../gba/agbprint.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
 #include "../gb/gbPrinter.h"
+#include "../common/System.h"
 #include "../common/SystemGlobals.h"
 #include "../common/inputGlobal.h"
 #include "../common/movie.h"
@@ -1113,12 +1113,12 @@ void MainWnd::OnOptionsSoundDisable()
 	if (soundOffFlag)
 	{
 		soundOffFlag = false;
-		soundInit();
+		systemSoundCleanInit();
 	}
 	else
 	{
 		soundOffFlag = true;
-		soundShutdown();
+		systemSoundShutdown();
 	}
 }
 
@@ -1130,47 +1130,47 @@ void MainWnd::OnUpdateOptionsSoundDisable(CCmdUI*pCmdUI)
 
 static void OnSoundToggleEnabled(int c)
 {
-	if (soundGetEnabledChannels() & c)
+	if (systemSoundGetEnabledChannels() & c)
 	{
-		soundDisableChannels(c);
+		systemSoundDisableChannels(c);
 	}
 	else
 	{
-		soundEnableChannels(c);
+		systemSoundEnableChannels(c);
 	}
 }
 
 void MainWnd::OnOptionsSoundMute()
 {
-	if ((soundGetEnabledChannels() & 0x030f) == 0)
-		soundEnableChannels(0x030f);
+	if ((systemSoundGetEnabledChannels() & 0x030f) == 0)
+		systemSoundEnableChannels(0x030f);
 	else
-		soundDisableChannels(0x030f);
+		systemSoundDisableChannels(0x030f);
 }
 
 void MainWnd::OnUpdateOptionsSoundMute(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck((soundGetEnabledChannels() & 0x030f) == 0);
+	pCmdUI->SetCheck((systemSoundGetEnabledChannels() & 0x030f) == 0);
 }
 
 void MainWnd::OnOptionsSoundOff()
 {
-	soundDisableChannels(0x030f);
+	systemSoundDisableChannels(0x030f);
 }
 
 void MainWnd::OnUpdateOptionsSoundOff(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck((soundGetEnabledChannels() & 0x030f) == 0);
+	pCmdUI->SetCheck((systemSoundGetEnabledChannels() & 0x030f) == 0);
 }
 
 void MainWnd::OnOptionsSoundOn()
 {
-	soundEnableChannels(0x030f);
+	systemSoundEnableChannels(0x030f);
 }
 
 void MainWnd::OnUpdateOptionsSoundOn(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() == 0x030f);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() == 0x030f);
 }
 
 void MainWnd::OnOptionsSoundUseoldsynchronization()
@@ -1237,10 +1237,7 @@ void MainWnd::OnUpdateOptionsSoundMuteWhenInactive(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSound11khz()
 {
-	if (systemCartridgeType == 0)
-		soundSetQuality(4);
-	else
-		gbSoundSetQuality(4);
+	systemSoundSetQuality(4);
 }
 
 void MainWnd::OnUpdateOptionsSound11khz(CCmdUI*pCmdUI)
@@ -1252,10 +1249,7 @@ void MainWnd::OnUpdateOptionsSound11khz(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsSound22khz()
 {
-	if (systemCartridgeType == 0)
-		soundSetQuality(2);
-	else
-		gbSoundSetQuality(2);
+	systemSoundSetQuality(2);
 }
 
 void MainWnd::OnUpdateOptionsSound22khz(CCmdUI*pCmdUI)
@@ -1314,7 +1308,7 @@ void MainWnd::OnOptionsSoundChannel1()
 
 void MainWnd::OnUpdateOptionsSoundChannel1(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x01);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() & 0x01);
 }
 
 void MainWnd::OnOptionsSoundChannel2()
@@ -1324,7 +1318,7 @@ void MainWnd::OnOptionsSoundChannel2()
 
 void MainWnd::OnUpdateOptionsSoundChannel2(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x02);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() & 0x02);
 }
 
 void MainWnd::OnOptionsSoundChannel3()
@@ -1334,7 +1328,7 @@ void MainWnd::OnOptionsSoundChannel3()
 
 void MainWnd::OnUpdateOptionsSoundChannel3(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x04);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() & 0x04);
 }
 
 void MainWnd::OnOptionsSoundChannel4()
@@ -1344,7 +1338,7 @@ void MainWnd::OnOptionsSoundChannel4()
 
 void MainWnd::OnUpdateOptionsSoundChannel4(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x08);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() & 0x08);
 }
 
 void MainWnd::OnOptionsSoundDirectsounda()
@@ -1354,7 +1348,7 @@ void MainWnd::OnOptionsSoundDirectsounda()
 
 void MainWnd::OnUpdateOptionsSoundDirectsounda(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x0100);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() & 0x0100);
 	//pCmdUI->Enable(systemCartridgeType == 0);
 }
 
@@ -1365,7 +1359,7 @@ void MainWnd::OnOptionsSoundDirectsoundb()
 
 void MainWnd::OnUpdateOptionsSoundDirectsoundb(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(soundGetEnabledChannels() & 0x0200);
+	pCmdUI->SetCheck(systemSoundGetEnabledChannels() & 0x0200);
 	//pCmdUI->Enable(systemCartridgeType == 0);
 }
 

@@ -1,22 +1,11 @@
-#if (defined(WIN32) && !defined(SDL))
-#   include "../win32/stdafx.h"
-#   include "../win32/VBA.h"
-#endif
-
 #include <cstring>
-#include <cassert>
 
-#include "GBASound.h"
 #include "../common/System.h" // SDL build needs this
+#include "../common/SystemGlobals.h"
 #include "../common/Util.h"
 #include "GBA.h"
 #include "GBAGlobals.h"
-
-#ifndef countof
-#define countof(a)  (sizeof(a) / sizeof(a[0]))
-#endif
-
-soundtick_t USE_TICKS_AS = 380; // (16777216.0/44100.0); // FIXME: (16777216.0/280896.0)(fps) vs 60.0fps?
+#include "GBASound.h"
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000
@@ -89,29 +78,11 @@ int32 soundShiftClock[16] = {
 	1    // 15
 };
 
-u8	soundBuffer[6][735];
-u16 soundFinalWave[1470];
-u16 soundFrameSound[735 * 30 * 2]; // for avi logging
-
-int32		soundVolume			= 0;
-int32		soundQuality		= 2;
-u32			soundBufferLen		= 1470;
-u32			soundBufferTotalLen = 14700;
-int32		soundPaused			= 1;
-int32		soundPlay			= 0;
-soundtick_t soundTicks			= soundQuality * USE_TICKS_AS;
-soundtick_t SOUND_CLOCK_TICKS	= soundQuality * USE_TICKS_AS;
-u32			soundNextPosition	= 0;
-
 int32 soundLevel1 = 0;
 int32 soundLevel2 = 0;
 int32 soundBalance = 0;
 int32 soundMasterOn = 0;
-u32	  soundIndex = 0;
-u32	  soundBufferIndex		 = 0;
-int32 soundFrameSoundWritten = 0;
-int32 soundDebug			 = 0;
-bool8 soundOffFlag			 = false;
+int32 soundDebug = 0;
 
 int32 sound1On = 0;
 int32 sound1ATL = 0;
@@ -187,19 +158,10 @@ u8	  soundDSFifoB[32];
 u8	  soundDSBValue = 0;
 
 int32 soundEnableFlag = 0x3ff;
-int32 soundMutedFlag  = 0;
-
-s16	  soundFilter[4000];
-s16	  soundRight[5] = { 0, 0, 0, 0, 0 };
-s16	  soundLeft[5] = { 0, 0, 0, 0, 0 };
-int32 soundEchoIndex = 0;
-bool8 soundEcho		 = false;
-bool8 soundLowPass	 = false;
-bool8 soundReverse	 = false;
 
 // dummy variables
 static int32  soundTicks_int32;
-static int32  SOUND_CLOCK_TICKS_int32;
+static int32  soundTickStep_int32;
 static int32  soundDSBValue_int32;
 static int32  soundDSBEnabled_int32;
 
@@ -207,7 +169,7 @@ variable_desc soundSaveStruct[] = {
 	{ &soundPaused,				sizeof(int32) },
 	{ &soundPlay,				sizeof(int32) },
 	{ &soundTicks_int32,		sizeof(int32) },
-	{ &SOUND_CLOCK_TICKS_int32, sizeof(int32) },
+	{ &soundTickStep_int32,		sizeof(int32) },
 	{ &soundLevel1,				sizeof(int32) },
 	{ &soundLevel2,				sizeof(int32) },
 	{ &soundBalance,			sizeof(int32) },
@@ -288,7 +250,7 @@ variable_desc soundSaveStructV2[] = {
 
 //variable_desc soundSaveStructV3[] = {
 //  { &soundTicks, sizeof(soundtick_t) },
-//  { &SOUND_CLOCK_TICKS, sizeof(soundtick_t) },
+//  { &soundTickStep, sizeof(soundtick_t) },
 //  { &USE_TICKS_AS, sizeof(soundtick_t) },
 //  { NULL, 0 }
 //};
@@ -1016,248 +978,103 @@ void soundTimerOverflow(int timer)
 
 void soundMix()
 {
-	int res		 = 0;
-	int cgbRes	 = 0;
-	int ratio	 = ioMem[0x82] & 3;
+	if (ioMem)
+		soundBalance = (ioMem[NR51] & soundEnableFlag);
+
+	int cgbRatio = ioMem[0x82] & 3;
 	int dsaRatio = ioMem[0x82] & 4;
 	int dsbRatio = ioMem[0x82] & 8;
 
-	if (ioMem)
-		soundBalance = (ioMem[NR51] & soundEnableFlag & ~soundMutedFlag);
-
+	int cgbResL = 0;
 	if (soundBalance & 16)
 	{
-		cgbRes = ((s8)soundBuffer[0][soundIndex]);
+		cgbResL += ((s8)soundBuffer[0][soundIndex]);
 	}
 	if (soundBalance & 32)
 	{
-		cgbRes += ((s8)soundBuffer[1][soundIndex]);
+		cgbResL += ((s8)soundBuffer[1][soundIndex]);
 	}
 	if (soundBalance & 64)
 	{
-		cgbRes += ((s8)soundBuffer[2][soundIndex]);
+		cgbResL += ((s8)soundBuffer[2][soundIndex]);
 	}
 	if (soundBalance & 128)
 	{
-		cgbRes += ((s8)soundBuffer[3][soundIndex]);
+		cgbResL += ((s8)soundBuffer[3][soundIndex]);
 	}
 
-	if ((soundControl & 0x0200) && (soundEnableFlag & 0x100))
-	{
-		if (!dsaRatio)
-			res = ((s8)soundBuffer[4][soundIndex]) >> 1;
-		else
-			res = ((s8)soundBuffer[4][soundIndex]);
-	}
-
-	if ((soundControl & 0x2000) && (soundEnableFlag & 0x200))
-	{
-		if (!dsbRatio)
-			res += ((s8)soundBuffer[5][soundIndex]) >> 1;
-		else
-			res += ((s8)soundBuffer[5][soundIndex]);
-	}
-
-	res	   = (res * 170);
-	cgbRes = (cgbRes * 52 * soundLevel1);
-
-	switch (ratio)
-	{
-	case 0:
-	case 3: // prohibited, but 25%
-		cgbRes >>= 2;
-		break;
-	case 1:
-		cgbRes >>= 1;
-		break;
-	case 2:
-		break;
-	}
-
-	res += cgbRes;
-
-	if (soundEcho)
-	{
-		res *= 2;
-		res += soundFilter[soundEchoIndex];
-		res /= 2;
-		soundFilter[soundEchoIndex++] = res;
-	}
-
-	if (soundLowPass)
-	{
-		soundLeft[4] = soundLeft[3];
-		soundLeft[3] = soundLeft[2];
-		soundLeft[2] = soundLeft[1];
-		soundLeft[1] = soundLeft[0];
-		soundLeft[0] = res;
-		res = (soundLeft[4] + 2 * soundLeft[3] + 8 * soundLeft[2] + 2 * soundLeft[1] +
-		       soundLeft[0]) / 14;
-	}
-
-	bool noSpecialEffects = false;
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog)
-		noSpecialEffects = true;
-#endif
-
-	if (!noSpecialEffects)
-	{
-		switch (soundVolume)
-		{
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			res *= (soundVolume + 1);
-			break;
-		case 4:
-			res >>= 2;
-			break;
-		case 5:
-			res >>= 1;
-			break;
-		}
-	}
-
-	if (res > 32767)
-		res = 32767;
-	if (res < -32768)
-		res = -32768;
-
-	if (soundReverse && !noSpecialEffects)
-	{
-		soundFinalWave[++soundBufferIndex] = res;
-		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[++soundFrameSoundWritten] = res;
-	}
-	else
-	{
-		soundFinalWave[soundBufferIndex++] = res;
-		if (soundFrameSoundWritten >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[soundFrameSoundWritten++] = res;
-	}
-
-	res	   = 0;
-	cgbRes = 0;
-
+	int cgbResR = 0;
 	if (soundBalance & 1)
 	{
-		cgbRes = ((s8)soundBuffer[0][soundIndex]);
+		cgbResR += ((s8)soundBuffer[0][soundIndex]);
 	}
 	if (soundBalance & 2)
 	{
-		cgbRes += ((s8)soundBuffer[1][soundIndex]);
+		cgbResR += ((s8)soundBuffer[1][soundIndex]);
 	}
 	if (soundBalance & 4)
 	{
-		cgbRes += ((s8)soundBuffer[2][soundIndex]);
+		cgbResR += ((s8)soundBuffer[2][soundIndex]);
 	}
 	if (soundBalance & 8)
 	{
-		cgbRes += ((s8)soundBuffer[3][soundIndex]);
+		cgbResR += ((s8)soundBuffer[3][soundIndex]);
 	}
 
+	int dsResL = 0;
+	if ((soundControl & 0x0200) && (soundEnableFlag & 0x100))
+	{
+		if (!dsaRatio)
+			dsResL = ((s8)soundBuffer[4][soundIndex]) >> 1;
+		else
+			dsResL = ((s8)soundBuffer[4][soundIndex]);
+	}
+	if ((soundControl & 0x2000) && (soundEnableFlag & 0x200))
+	{
+		if (!dsbRatio)
+			dsResL += ((s8)soundBuffer[5][soundIndex]) >> 1;
+		else
+			dsResL += ((s8)soundBuffer[5][soundIndex]);
+	}
+
+	int dsResR = 0;
 	if ((soundControl & 0x0100) && (soundEnableFlag & 0x100))
 	{
 		if (!dsaRatio)
-			res = ((s8)soundBuffer[4][soundIndex]) >> 1;
+			dsResR = ((s8)soundBuffer[4][soundIndex]) >> 1;
 		else
-			res = ((s8)soundBuffer[4][soundIndex]);
+			dsResR = ((s8)soundBuffer[4][soundIndex]);
 	}
 
 	if ((soundControl & 0x1000) && (soundEnableFlag & 0x200))
 	{
 		if (!dsbRatio)
-			res += ((s8)soundBuffer[5][soundIndex]) >> 1;
+			dsResR += ((s8)soundBuffer[5][soundIndex]) >> 1;
 		else
-			res += ((s8)soundBuffer[5][soundIndex]);
+			dsResR += ((s8)soundBuffer[5][soundIndex]);
 	}
 
-	res	   = (res * 170);
-	cgbRes = (cgbRes * 52 * soundLevel1);
+	dsResL  *= 170;
+	dsResR	*= 170;
+	cgbResL *= 52 * soundLevel1;
+	cgbResR *= 52 * soundLevel1;
 
-	switch (ratio)
+	switch (cgbRatio)
 	{
 	case 0:
 	case 3: // prohibited, but 25%
-		cgbRes >>= 2;
+		cgbResL >>= 2;
+		cgbResR >>= 2;
 		break;
 	case 1:
-		cgbRes >>= 1;
+		cgbResL >>= 1;
+		cgbResR >>= 1;
 		break;
 	case 2:
 		break;
 	}
 
-	res += cgbRes;
-
-	if (soundEcho)
-	{
-		res *= 2;
-		res += soundFilter[soundEchoIndex];
-		res /= 2;
-		soundFilter[soundEchoIndex++] = res;
-
-		if (soundEchoIndex >= 4000)
-			soundEchoIndex = 0;
-	}
-
-	if (soundLowPass)
-	{
-		soundRight[4] = soundRight[3];
-		soundRight[3] = soundRight[2];
-		soundRight[2] = soundRight[1];
-		soundRight[1] = soundRight[0];
-		soundRight[0] = res;
-		res = (soundRight[4] + 2 * soundRight[3] + 8 * soundRight[2] + 2 * soundRight[1] +
-		       soundRight[0]) / 14;
-	}
-
-	if (!noSpecialEffects)
-	{
-		switch (soundVolume)
-		{
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			res *= (soundVolume + 1);
-			break;
-		case 4:
-			res >>= 2;
-			break;
-		case 5:
-			res >>= 1;
-			break;
-		}
-	}
-
-	if (res > 32767)
-		res = 32767;
-	if (res < -32768)
-		res = -32768;
-
-	if (soundReverse && !noSpecialEffects)
-	{
-		soundFinalWave[-1 + soundBufferIndex++]		   = res;
-		if ((soundFrameSoundWritten) >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[-1 + soundFrameSoundWritten++] = res;
-	}
-	else
-	{
-		soundFinalWave[soundBufferIndex++]			  = res;
-		if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
-			/*assert(false)*/;
-		else
-			soundFrameSound[soundFrameSoundWritten++] = res;
-	}
+	systemSoundMix(cgbResL + dsResL, cgbResR + dsResR);
 }
 
 void soundTick()
@@ -1276,80 +1093,25 @@ void soundTick()
 		}
 		else
 		{
-			soundFinalWave[soundBufferIndex++] = 0;
-			soundFinalWave[soundBufferIndex++] = 0;
-			if ((soundFrameSoundWritten + 1) >= countof(soundFrameSound))
-				/*assert(false)*/;
-			else
-			{
-				soundFrameSound[soundFrameSoundWritten++] = 0;
-				soundFrameSound[soundFrameSoundWritten++] = 0;
-			}
+			systemSoundMixSilence();
 		}
-
-		soundIndex++;
-
-		if (2 * soundBufferIndex >= soundBufferLen)
-		{
-			if (systemSoundOn)
-			{
-				if (soundPaused && !systemIsPaused())	// this checking is for the old frame timing
-				{
-					soundResume();
-				}
-
-				systemSoundWriteToBuffer();
-			}
-			soundIndex		 = 0;
-			soundBufferIndex = 0;
-		}
+		systemSoundNext();
 	}
-}
-
-void soundShutdown()
-{
-	systemSoundShutdown();
-}
-
-void soundPause()
-{
-	systemSoundPause();
-}
-
-void soundResume()
-{
-	systemSoundResume();
-}
-
-void soundEnableChannels(int channels)
-{
-	int c = (channels & 0x0f) << 4;
-	soundEnableFlag |= ((channels & 0x30f) | c);
-}
-
-void soundDisableChannels(int channels)
-{
-	int c = (channels & 0x0f) << 4;
-	soundEnableFlag &= ~((channels & 0x30f) | c);
-}
-
-int soundGetEnabledChannels()
-{
-	return (soundEnableFlag & 0x30f);
 }
 
 void soundReset()
 {
-	systemSoundReset();
+	systemSoundMixReset();
 
+	soundIndex		  = 0;
 	soundPaused		  = 1;
 	soundPlay		  = 0;
-	SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;
-	soundTicks		  = SOUND_CLOCK_TICKS;
+	USE_TICKS_AS	  = GBA_SOUNDTICK_AS;
+	soundTickStep	  = soundQuality * USE_TICKS_AS;
+	soundTicks		  = soundTickStep;
+	//soundTicks		  = 0;
 	soundNextPosition = 0;
 	soundMasterOn	  = 1;
-	soundIndex		  = 0;
-	soundBufferIndex  = 0;
 	soundLevel1		  = 7;
 	soundLevel2		  = 7;
 
@@ -1424,57 +1186,12 @@ void soundReset()
 		sound3WaveRam[addr++] = 0x00;
 		sound3WaveRam[addr++] = 0xff;
 	}
-
-	memset(soundFinalWave, 0, soundBufferLen);
-
-	memset(soundFilter, 0, sizeof(soundFilter));
-	soundEchoIndex = 0;
-}
-
-bool soundInit()
-{
-	if (systemSoundInit())
-	{
-		memset(soundBuffer[0], 0, 735 * 2);
-		memset(soundBuffer[1], 0, 735 * 2);
-		memset(soundBuffer[2], 0, 735 * 2);
-		memset(soundBuffer[3], 0, 735 * 2);
-
-		memset(soundFinalWave, 0, soundBufferLen);
-
-		soundPaused = 1;
-		return true;
-	}
-	return false;
-}
-
-void soundSetQuality(int quality)
-{
-	if (soundQuality != quality && systemSoundCanChangeQuality())
-	{
-		if (!soundOffFlag)
-			soundShutdown();
-		soundQuality	  = quality;
-		soundNextPosition = 0;
-		if (!soundOffFlag)
-			soundInit();
-		SOUND_CLOCK_TICKS = USE_TICKS_AS * soundQuality;
-		soundIndex		  = 0;
-		soundBufferIndex  = 0;
-	}
-	else if (soundQuality != quality)
-	{
-		soundNextPosition = 0;
-		SOUND_CLOCK_TICKS = USE_TICKS_AS * soundQuality;
-		soundIndex		  = 0;
-		soundBufferIndex  = 0;
-	}
 }
 
 void soundSaveGame(gzFile gzFile)
 {
 	soundTicks_int32		= (int32) soundTicks;
-	SOUND_CLOCK_TICKS_int32 = (int32) SOUND_CLOCK_TICKS;
+	soundTickStep_int32		= (int32) soundTickStep;
 	soundDSBEnabled_int32	= (int32) soundDSBEnabled;
 	soundDSBValue_int32		= (int32) soundDSBValue;
 
@@ -1489,9 +1206,11 @@ void soundReadGame(gzFile gzFile, int version)
 {
 	int32 oldSoundPaused = soundPaused;
 	int32 oldSoundEnableFlag = soundEnableFlag;
+
 	utilReadData(gzFile, soundSaveStruct);
-	soundPaused = oldSoundPaused;
-	soundEnableFlag = oldSoundEnableFlag;
+	soundPaused		 = oldSoundPaused;
+	soundEnableFlag	 = oldSoundEnableFlag;
+	soundBufferIndex = soundIndex * 2;
 
 	if (version >= SAVE_GAME_VERSION_3)
 	{
@@ -1506,11 +1225,10 @@ void soundReadGame(gzFile gzFile, int version)
 		memcpy(&sound3WaveRam[0x00], &ioMem[0x90], 0x10);
 		memcpy(&sound3WaveRam[0x10], &ioMem[0x90], 0x10);
 	}
-	soundBufferIndex = soundIndex * 2;
 
 	int quality = 1;
 	utilGzRead(gzFile, &quality, sizeof(int32));
-	soundSetQuality(quality);
+	systemSoundSetQuality(quality);
 
 	sound1Wave = soundWavePattern[ioMem[NR11] >> 6];
 	sound2Wave = soundWavePattern[ioMem[NR21] >> 6];
@@ -1519,10 +1237,10 @@ void soundReadGame(gzFile gzFile, int version)
 	//  utilReadData(gzFile, soundSaveStructV3);
 	//}
 	//else {
-	soundTicks		  = (soundtick_t) soundTicks_int32;
-	SOUND_CLOCK_TICKS = (soundtick_t) SOUND_CLOCK_TICKS_int32;
+	soundTicks		 = (soundtick_t) soundTicks_int32;
+	soundTickStep	 = (soundtick_t) soundTickStep_int32;
 	//}
-	soundDSBEnabled = (u8) (soundDSBEnabled_int32 & 0xFF);
-	soundDSBValue   = (u8) (soundDSBValue_int32 & 0xFF);
+	soundDSBEnabled	 = (u8) (soundDSBEnabled_int32 & 0xFF);
+	soundDSBValue	 = (u8) (soundDSBValue_int32 & 0xFF);
 }
 

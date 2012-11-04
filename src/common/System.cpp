@@ -6,11 +6,21 @@
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
+// evil macros
+#ifndef countof
+#define countof(a)  (sizeof(a) / sizeof(a[0]))
+#endif
+
 // evil static variables
-static u32		lastFrameTime	= 0;
-static int32	frameSkipCount	= 0;
-static int32	frameCount		= 0;
-static bool		pauseAfterFrameAdvance = false;
+static u32	 lastFrameTime	= 0;
+static int32 frameSkipCount	= 0;
+static int32 frameCount		= 0;
+static bool	 pauseAfterFrameAdvance = false;
+
+static s16	 soundFilter[4000];
+static s16	 soundRight[5]  = { 0, 0, 0, 0, 0 };
+static s16	 soundLeft[5]   = { 0, 0, 0, 0, 0 };
+static int32 soundEchoIndex = 0;
 
 // systemABC stuff are core-related
 
@@ -348,5 +358,185 @@ void systemGetLCDBaseOffset(int32 &xofs, int32 &yofs)
 		xofs = 48;
 		yofs = 40;
 		break;
+	}
+}
+
+// sound
+
+bool systemSoundCleanInit()
+{
+	if (systemSoundInit())
+	{
+		memset(soundBuffer[0], 0, 735);
+		memset(soundBuffer[1], 0, 735);
+		memset(soundBuffer[2], 0, 735);
+		memset(soundBuffer[3], 0, 735);
+		memset(soundFinalWave, 0, soundBufferLen);
+
+		soundPaused = 1;
+		return true;
+	}
+	return false;
+}
+
+void systemSoundEnableChannels(int channels)
+{
+	int c = (channels & 0x0f) << 4;
+	soundEnableFlag |= ((channels & 0x30f) | c);
+}
+
+void systemSoundDisableChannels(int channels)
+{
+	int c = (channels & 0x0f) << 4;
+	soundEnableFlag &= ~((channels & 0x30f) | c);
+}
+
+int systemSoundGetEnabledChannels()
+{
+	return (soundEnableFlag & 0x30f);
+}
+
+void systemSoundSetQuality(int quality)
+{
+	if (soundQuality != quality)
+	{
+		if (!soundOffFlag)
+			systemSoundShutdown();
+		soundQuality = quality;
+		if (!soundOffFlag)
+			systemSoundCleanInit();
+	}
+	else if (soundQuality != quality)
+	{
+		soundNextPosition = 0;
+	}
+	soundNextPosition = 0;
+	soundTickStep	  = USE_TICKS_AS * soundQuality;
+	soundIndex		  = 0;
+	soundBufferIndex  = 0;
+}
+
+void systemSoundMixReset()
+{
+	soundBufferIndex  = 0;
+	memset(soundFinalWave, 0, soundBufferLen);
+	memset(soundFilter, 0, sizeof(soundFilter));
+	soundEchoIndex = 0;
+}
+
+void systemSoundMixSilence()
+{
+	soundFinalWave[soundBufferIndex++] = 0;
+	soundFinalWave[soundBufferIndex++] = 0;
+	if ((soundFrameSoundWritten + 1) < countof(soundFrameSound))
+	{
+		soundFrameSound[soundFrameSoundWritten++] = 0;
+		soundFrameSound[soundFrameSoundWritten++] = 0;
+	}
+}
+
+void systemSoundMix(int resL, int resR)
+{
+	bool usesDSP = systemSoundAppliesDSP();
+	if (soundEcho)
+	{
+		if (soundEchoIndex >= countof(soundFilter))
+			soundEchoIndex = 0;
+
+		resL += soundFilter[soundEchoIndex] / 2;
+		soundFilter[soundEchoIndex++] = resL;
+
+		resR += soundFilter[soundEchoIndex] / 2;
+		soundFilter[soundEchoIndex++] = resR;
+	}
+
+	if (soundLowPass)
+	{
+		soundLeft[4] = soundLeft[3];
+		soundLeft[3] = soundLeft[2];
+		soundLeft[2] = soundLeft[1];
+		soundLeft[1] = soundLeft[0];
+		soundLeft[0] = resL;
+		resL = (soundLeft[4] + 2 * soundLeft[3] + 8 * soundLeft[2] + 2 * soundLeft[1] + soundLeft[0]) / 14;
+
+		soundRight[4] = soundRight[3];
+		soundRight[3] = soundRight[2];
+		soundRight[2] = soundRight[1];
+		soundRight[1] = soundRight[0];
+		soundRight[0] = resR;
+		resR = (soundRight[4] + 2 * soundRight[3] + 8 * soundRight[2] + 2 * soundRight[1] +  soundRight[0]) / 14;
+	}
+
+	if (usesDSP)
+	{
+		switch (soundVolume)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			resL *= (soundVolume + 1);
+			resR *= (soundVolume + 1);
+			break;
+		case 4:
+			resL >>= 2;
+			resR >>= 2;
+			break;
+		case 5:
+			resL >>= 1;
+			resR >>= 1;
+			break;
+		}
+	}
+
+	if (resL > 32767)
+		resL = 32767;
+	else if (resL < -32768)
+		resL = -32768;
+
+	if (resR > 32767)
+		resR = 32767;
+	else if (resR < -32768)
+		resR = -32768;
+
+	if (soundReverse && usesDSP)
+	{
+		soundFinalWave[soundBufferIndex++] = resR;
+		soundFinalWave[soundBufferIndex++] = resL;
+		if ((soundFrameSoundWritten + 1) < countof(soundFrameSound))
+		{
+			soundFrameSound[soundFrameSoundWritten++] = resR;
+			soundFrameSound[soundFrameSoundWritten++] = resL;
+		}
+	}
+	else
+	{
+		soundFinalWave[soundBufferIndex++] = resL;
+		soundFinalWave[soundBufferIndex++] = resR;
+		if (soundFrameSoundWritten + 1 < countof(soundFrameSound))
+		{
+			soundFrameSound[soundFrameSoundWritten++] = resL;
+			soundFrameSound[soundFrameSoundWritten++] = resR;
+		}
+	}
+}
+
+void systemSoundNext()
+{
+	soundIndex++;
+
+	if (2 * soundBufferIndex >= soundBufferLen)
+	{
+		if (systemSoundOn)
+		{
+			if (soundPaused && !systemIsPaused())	// this checking is for the old frame timing
+			{
+				systemSoundResume();
+			}
+
+			systemSoundWriteToBuffer();
+		}
+		soundIndex		 = 0;
+		soundBufferIndex = 0;
 	}
 }

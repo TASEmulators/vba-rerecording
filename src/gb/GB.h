@@ -21,9 +21,6 @@ typedef union
 	u16 W;
 } gbRegister;
 
-void gbSoundReset();
-void gbSoundSetQuality(int);
-
 bool gbLoadRom(const char *);
 void gbEmulate(int);
 void gbWriteMemory(register u16, register u8);
