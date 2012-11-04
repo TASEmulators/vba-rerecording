@@ -8,6 +8,7 @@
 
 #include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
 

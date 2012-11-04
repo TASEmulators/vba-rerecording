@@ -2,8 +2,10 @@
 #include <cstring>
 
 #include "GBAGlobals.h"
+#include "GBAinline.h"
 
-extern void (*dbgOutput)(char *, u32);
+extern void (*dbgSignal)(int, int);
+extern void (*dbgOutput)(const char *, u32);
 extern int systemVerbose;
 
 static bool agbPrintEnabled = false;
@@ -16,7 +18,7 @@ bool agbPrintWrite(u32 address, u16 value)
 		if (address == 0x9fe2ffe) // protect
 		{
 			agbPrintProtect = (value != 0);
-			debuggerWriteHalfWord(address, value);
+			CPUWriteHalfWordQuick(address, value);
 			return true;
 		}
 		else
@@ -26,7 +28,7 @@ bool agbPrintWrite(u32 address, u16 value)
 			     || (address >= 0x8fd0000 && address <= 0x8fdffff)
 			     || (address >= 0x9fd0000 && address <= 0x9fdffff)))
 			{
-				debuggerWriteHalfWord(address, value);
+				CPUWriteHalfWordQuick(address, value);
 				return true;
 			}
 		}
@@ -51,15 +53,15 @@ bool agbPrintIsEnabled()
 
 void agbPrintFlush()
 {
-	u16 get = debuggerReadHalfWord(0x9fe20fc);
-	u16 put = debuggerReadHalfWord(0x9fe20fe);
+	u16 get = CPUReadHalfWordQuick(0x9fe20fc);
+	u16 put = CPUReadHalfWordQuick(0x9fe20fe);
 
-	u32 address = (debuggerReadHalfWord(0x9fe20fa) << 16);
+	u32 address = (CPUReadHalfWordQuick(0x9fe20fa) << 16);
 	if (address != 0xfd0000 && address != 0x1fd0000)
 	{
 		dbgOutput("Did you forget to call AGBPrintInit?\n", 0);
 		// get rid of the text otherwise we will continue to be called
-		debuggerWriteHalfWord(0x9fe20fc, put);
+		CPUWriteHalfWordQuick(0x9fe20fc, put);
 		return;
 	}
 
@@ -77,6 +79,6 @@ void agbPrintFlush()
 		if (c == '\n')
 			break;
 	}
-	debuggerWriteHalfWord(0x9fe20fc, get);
+	CPUWriteHalfWordQuick(0x9fe20fc, get);
 }
 

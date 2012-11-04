@@ -1580,8 +1580,6 @@ void cheatsSaveGame(gzFile file)
 
 void cheatsReadGame(gzFile file)
 {
-	cheatsNumber = 0;
-
 	cheatsNumber = utilReadInt(file);
 
 	utilGzRead(file, cheatsList, sizeof(cheatsList));
@@ -1757,66 +1755,3 @@ bool cheatsLoadCheatList(const char *file)
 	fclose(f);
 	return true;
 }
-
-extern int *extCpuLoopTicks;
-extern int *extClockTicks;
-extern int *extTicks;
-extern int  cpuSavedTicks;
-
-extern void debuggerBreakOnWrite(u32 *, u32, u32, int);
-
-#define CPU_BREAK_LOOP2 \
-    cpuSavedTicks    = cpuSavedTicks - *extCpuLoopTicks; \
-    *extCpuLoopTicks = *extClockTicks; \
-    *extTicks        = *extClockTicks;
-
-void cheatsWriteMemory(u32 *address, u32 value, u32 mask)
-{
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-	if (cheatsNumber == 0)
-	{
-		debuggerBreakOnWrite(address, *address, value, 2);
-		CPU_BREAK_LOOP2;
-		*address = value;
-		return;
-	}
-#endif
-#endif
-}
-
-void cheatsWriteHalfWord(u16 *address, u16 value, u16 mask)
-{
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-	if (cheatsNumber == 0)
-	{
-		debuggerBreakOnWrite((u32 *)address, *address, value, 1);
-		CPU_BREAK_LOOP2;
-		*address = value;
-		return;
-	}
-#endif
-#endif
-}
-
-#if defined BKPT_SUPPORT && defined SDL
-void cheatsWriteByte(u8 *address, u8 value)
-#else
-void cheatsWriteByte(u8 *, u8)
-#endif
-{
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-	if (cheatsNumber == 0)
-	{
-		debuggerBreakOnWrite((u32 *)address, *address, value, 0);
-		CPU_BREAK_LOOP2;
-		*address = value;
-		return;
-	}
-#endif
-#endif
-}
-
-#undef CPU_BREAK_LOOP2

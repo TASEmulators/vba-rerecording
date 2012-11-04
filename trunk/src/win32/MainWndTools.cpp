@@ -30,13 +30,12 @@
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
 #include "../gb/GB.h"
+#include "../common/SystemGlobals.h"
 
-extern int32 gbBorderOn;
 extern int32 soundQuality;
 
 extern bool debugger;
-extern int	emulating;
-extern int	remoteSocket;
+extern SOCKET	remoteSocket;
 
 extern void remoteCleanUp();
 extern void remoteSetSockets(SOCKET, SOCKET);
@@ -213,7 +212,6 @@ void MainWnd::OnUpdateDebugNextframeAccountForLag(CCmdUI *pCmdUI)
 
 void MainWnd::OnDebugFramesearch()
 {
-	extern u16	  currentButtons [4];  // from System.cpp
 	extern SMovie Movie;
 	if (!theApp.frameSearching)
 	{
@@ -228,10 +226,6 @@ void MainWnd::OnDebugFramesearch()
 		                                                                                           // forward),
 		                                                                                           // 2 is end state
 		theApp.emulator.emuWriteMemState(&theApp.frameSearchMemory[REWIND_SIZE * 1], REWIND_SIZE);
-
-		// store old buttons from frame before the search
-		for (int i = 0; i < 4; i++)
-			theApp.frameSearchOldInput[i] = currentButtons[i];
 	}
 	else
 	{
@@ -395,7 +389,7 @@ void MainWnd::OnToolsDebugGdb()
 			theApp.emulator = GBASystem;
 
 			CPUInit();
-			CPULoadBios(theApp.biosFileName, theApp.useBiosFile ? true : false);
+			systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile ? true : false);
 			CPUReset();
 		}
 	}
@@ -584,31 +578,11 @@ void MainWnd::OnToolsStartAVIRecording()
 
 	if (theApp.aviRecorder == NULL)
 	{
-		int width  = 240;
-		int height = 160;
-		switch (systemCartridgeType)
-		{
-		case 0:
-			width  = 240;
-			height = 160;
-			break;
-		case 1:
-			if (gbBorderOn)
-			{
-				width  = 256;
-				height = 224;
-			}
-			else
-			{
-				width  = 160;
-				height = 144;
-			}
-			break;
-		}
-
 		theApp.aviRecorder = new AVIWrite();
-
 		theApp.aviRecorder->SetFPS(60);
+
+		int width, height;
+		systemGetLCDResolution(width, height);
 
 		BITMAPINFOHEADER bi;
 		memset(&bi, 0, sizeof(bi));

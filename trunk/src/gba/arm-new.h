@@ -1,6 +1,6 @@
 #ifdef BKPT_SUPPORT
 #define CONSOLE_OUTPUT(a, b) \
-    extern void (*dbgOutput)(char *, u32); \
+    extern void (*dbgOutput)(const char *, u32); \
     if ((opcode == 0xe0000000) && (reg[0].I == 0xC0DED00D)) { \
 		dbgOutput((a), (b)); \
 	}

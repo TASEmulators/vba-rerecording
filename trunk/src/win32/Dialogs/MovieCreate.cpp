@@ -13,6 +13,7 @@
 #include "../../NLS.h"
 #include "../../common/Util.h"
 #include "../../common/movie.h"
+#include "../../common/SystemGlobals.h"
 #include "../../gba/GBAGlobals.h"
 #include "../../gb/gbGlobals.h"
 

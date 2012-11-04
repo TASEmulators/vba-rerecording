@@ -1,12 +1,15 @@
 noinst_LIBRARIES = libgbcom.a
 
 libgbcom_a_SOURCES = \
-	lua-engine.cpp		\
+	lua-engine.cpp	\
 	memgzio.c		\
 	memgzio.h		\
 	movie.cpp		\
 	movie.h			\
+	System.cpp		\
 	System.h		\
+	SystemGlobals.cpp	\
+	SystemGlobals.h		\
 	Text.cpp		\
 	Text.h			\
 	unzip.cpp		\

@@ -5,7 +5,6 @@
 #include "bios.h"
 #include "../common/System.h"
 #include "GBA.h"
-#include "GBACheats.h" // FIXME: SDL build requires this
 #include "GBAinline.h"
 #include "GBAGlobals.h"
 

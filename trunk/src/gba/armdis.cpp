@@ -4,6 +4,7 @@
 #include <cstdio>
 
 #include "GBAGlobals.h"
+#include "GBAinline.h"
 #include "armdis.h"
 #include "elf.h"
 
@@ -209,7 +210,7 @@ char *addHex(char *dest, int siz, u32 val)
 
 int disArm(u32 offset, char *dest, int flags)
 {
-	u32 opcode = debuggerReadMemory(offset);
+	u32 opcode = CPUReadMemoryQuick(offset);
 
 	const Opcodes *sp = armOpcodes;
 	while (sp->cval != (opcode & sp->mask))
@@ -341,7 +342,7 @@ int disArm(u32 offset, char *dest, int flags)
 					*dest++ = ']';
 					dest	= addStr(dest, " (=");
 					*dest++ = '$';
-					dest	= addHex(dest, 32, debuggerReadMemory(adr));
+					dest	= addHex(dest, 32, CPUReadMemoryQuick(adr));
 					*dest++ = ')';
 				}
 				if ((opcode & 0x072f0000) == 0x050f0000)
@@ -357,7 +358,7 @@ int disArm(u32 offset, char *dest, int flags)
 					*dest++ = ']';
 					dest	= addStr(dest, " (=");
 					*dest++ = '$';
-					dest	= addHex(dest, 32, debuggerReadMemory(adr));
+					dest	= addHex(dest, 32, CPUReadMemoryQuick(adr));
 					*dest++ = ')';
 				}
 				else
@@ -564,7 +565,7 @@ int disArm(u32 offset, char *dest, int flags)
 
 int disThumb(u32 offset, char *dest, int flags)
 {
-	u32 opcode = debuggerReadHalfWord(offset);
+	u32 opcode = CPUReadHalfWordQuick(offset);
 
 	const Opcodes *sp = thumbOpcodes;
 	int ret = 2;
@@ -640,7 +641,7 @@ int disThumb(u32 offset, char *dest, int flags)
 				break;
 			case 'J':
 			{
-				u32 value = debuggerReadMemory((offset & 0xfffffffc) + 4 +
+				u32 value = CPUReadMemoryQuick((offset & 0xfffffffc) + 4 +
 				                               ((opcode & 0xff) << 2));
 				*dest++ = '$';
 				dest	= addHex(dest, 32, value);
@@ -746,7 +747,7 @@ int disThumb(u32 offset, char *dest, int flags)
 				break;
 			case 'A':
 			{
-				int nopcode = debuggerReadHalfWord(offset + 2);
+				int nopcode = CPUReadHalfWordQuick(offset + 2);
 				int add		= opcode & 0x7ff;
 				if (add & 0x400)
 					add |= 0xfff800;

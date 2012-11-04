@@ -26,6 +26,7 @@
 #include "../common/CheatSearch.h"
 #include "../gba/RTC.h"
 #include "../gba/GBASound.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Util.h"
 #include "../common/Text.h"
 #include "../common/movie.h"
@@ -47,7 +48,7 @@ extern void remoteStubMain();
 extern void remoteSetProtocol(int);
 extern void remoteCleanUp();
 
-void winlog(const char *msg, ...);
+extern void winlog(const char *msg, ...);
 
 bool debugger = false;
 
@@ -60,12 +61,6 @@ bool outputAVIFile	= false;
 bool flagHideMenu	= false;
 int	 quitAfterTime	= -1;
 int	 pauseAfterTime = -1;
-
-void winSignal(int, int);
-void winOutput(char *, u32);
-
-void (*dbgSignal)(int, int)	   = winSignal;
-void (*dbgOutput)(char *, u32) = winOutput;
 
 #ifdef MMX
 extern "C" bool cpu_mmx;
@@ -96,33 +91,6 @@ void DrawTextMessages(u8 *dest, int pitch, int left, int bottom)
 			}
 		}
 	}
-}
-
-// draw Lua graphics in game screen
-void DrawLuaGui()
-{
-	int copyX		= 240, copyY       = 160;
-	int screenX		= 240, screenY     = 160;
-	int copyOffsetX = 0,   copyOffsetY = 0;
-	if (systemCartridgeType == 1)
-	{
-		if (gbBorderOn)
-		{
-			copyX		= 256, copyY       = 224;
-			copyOffsetX = 48,  copyOffsetY = 40;
-		}
-		else
-		{
-			copyX = 160, copyY = 144;
-		}
-		screenX = 160, screenY = 144;
-	}
-	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
-
-	++copyOffsetY; // don't know why it's needed
-
-	VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
-	VBALuaClearGui();
 }
 
 void directXMessage(const char *msg)
@@ -224,35 +192,6 @@ static void debugSystemScreenMessage1(const char *msg)
 static void debugSystemScreenMessage2(const char *msg)
 {
 	systemScreenMessage(msg, 4);
-}
-
-static void winSignal(int, int)
-{}
-
-#define CPUReadByteQuick(addr) \
-    map[(addr) >> 24].address[(addr) & map[(addr) >> 24].mask]
-
-static void winOutput(char *s, u32 addr)
-{
-	if (s)
-	{
-		log(s);
-	}
-	else
-	{
-		CString str;
-		char	c;
-
-		c = CPUReadByteQuick(addr);
-		addr++;
-		while (c)
-		{
-			str += c;
-			c	 = CPUReadByteQuick(addr);
-			addr++;
-		}
-		log(str);
-	}
 }
 
 typedef BOOL (WINAPI * GETMENUBARINFO)(HWND, LONG, LONG, PMENUBARINFO);
@@ -1347,30 +1286,9 @@ void VBA::updateWindowSize(int value)
 
 	videoOption = value;
 
-	if (systemCartridgeType == 1)
-	{
-		if (gbBorderOn)
-		{
-			sizeX = 256;
-			sizeY = 224;
-			gbBorderLineSkip   = 256;
-			gbBorderColumnSkip = 48;
-			gbBorderRowSkip	   = 40;
-		}
-		else
-		{
-			sizeX = 160;
-			sizeY = 144;
-			gbBorderLineSkip   = 160;
-			gbBorderColumnSkip = 0;
-			gbBorderRowSkip	   = 0;
-		}
-	}
-	else
-	{
-		sizeX = 240;
-		sizeY = 160;
-	}
+	systemGetLCDResolution(sizeX, sizeY);
+	systemGetLCDBaseOffset(gbBorderColumnSkip, gbBorderRowSkip);
+	gbBorderLineSkip = sizeX;
 
 	switch (videoOption)
 	{
@@ -1948,10 +1866,14 @@ void VBA::loadSettings()
 	muteWhenInactive = regQueryDwordValue("muteWhenInactive", 0) ? TRUE : FALSE;
 
 	// emulation
+#ifdef USE_GBA_CORE_V7
 	memLagEnabled	  = regQueryDwordValue("memLagEnabled", false) ? true : false;
 	memLagTempEnabled = memLagEnabled;
+#endif
+#ifdef USE_GB_CORE_V7
 	gbNullInputHackEnabled	   = regQueryDwordValue("gbNullInputHackEnabled", false) ? true : false;
 	gbNullInputHackTempEnabled = gbNullInputHackEnabled;
+#endif
 	useOldSync		  = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 	useOldFrameTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
 
@@ -2183,8 +2105,12 @@ void VBA::saveSettings()
 
 	regSetDwordValue("autoIPS", autoIPS);
 
+#ifdef USE_GBA_CORE_V7
 	regSetDwordValue("memLagEnabled", memLagEnabled);
+#endif
+#ifdef USE_GB_CORE_V7
 	regSetDwordValue("gbNullInputHackEnabled", gbNullInputHackEnabled);
+#endif
 	regSetDwordValue("useOldGBTiming", useOldFrameTiming);
 	regSetDwordValue("useOldSync", useOldSync);
 

@@ -11,22 +11,22 @@ enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 
 typedef struct
 {
-	u8       byte0;
-	u8       byte1;
-	u8       byte2;
-	u8       command;
-	int      dataLen;
-	int      bits;
+	u8		 byte0;
+	u8		 byte1;
+	u8		 byte2;
+	u8		 command;
+	int		 dataLen;
+	int		 bits;
 	RTCSTATE state;
-	u8       data[12];
+	u8		 data[12];
 	// reserved variables for future
-	u8   reserved[12];
+	u8	 reserved[12];
 	bool reserved2;
-	u32  reserved3;
+	u32	 reserved3;
 } RTCCLOCKDATA;
 
 static RTCCLOCKDATA rtcClockData;
-static bool         rtcEnabled = false;
+static bool			rtcEnabled = false;
 
 void rtcEnable(bool enable)
 {
@@ -42,12 +42,13 @@ u16 rtcRead(u32 address)
 {
 	if (rtcEnabled)
 	{
-		if (address == 0x80000c8)
-			return rtcClockData.byte2;
-		else if (address == 0x80000c6)
-			return rtcClockData.byte1;
-		else if (address == 0x80000c4)
+		switch (address)
 		{
+		case 0x80000c8:
+			return rtcClockData.byte2;
+		case 0x80000c6:
+			return rtcClockData.byte1;
+		case 0x80000c4:
 			return rtcClockData.byte0;
 		}
 	}
@@ -82,8 +83,8 @@ bool rtcWrite(u32 address, u16 value)
 		{
 			if (rtcClockData.state == IDLE && rtcClockData.byte0 == 1 && value == 5)
 			{
-				rtcClockData.state   = COMMAND;
-				rtcClockData.bits    = 0;
+				rtcClockData.state	 = COMMAND;
+				rtcClockData.bits	 = 0;
 				rtcClockData.command = 0;
 			}
 			else if (!(rtcClockData.byte0 & 1) && (value & 1)) // bit transfer
@@ -92,7 +93,7 @@ bool rtcWrite(u32 address, u16 value)
 				switch (rtcClockData.state)
 				{
 				case COMMAND:
-					rtcClockData.command |= ((value & 2) >> 1) << (7-rtcClockData.bits);
+					rtcClockData.command |= ((value & 2) >> 1) << (7 - rtcClockData.bits);
 					rtcClockData.bits++;
 					if (rtcClockData.bits == 8)
 					{
@@ -107,18 +108,22 @@ bool rtcWrite(u32 address, u16 value)
 							break;
 						case 0x62:
 							// this sets the control state but not sure what those values are
-							rtcClockData.state   = READDATA;
+							rtcClockData.state	 = READDATA;
 							rtcClockData.dataLen = 1;
 							break;
 						case 0x63:
 							rtcClockData.dataLen = 1;
 							rtcClockData.data[0] = 0x40;
-							rtcClockData.state   = DATA;
+							rtcClockData.state	 = DATA;
 							break;
+#ifndef USE_GBA_CORE_V7
+						case 0x64:
+							break;
+#endif
 						case 0x65:
 						{
 							struct tm *newtime;
-							time_t     long_time;
+							time_t	   long_time;
 
 							if (VBAMovieActive() || VBAMovieLoading())
 							{
@@ -133,19 +138,23 @@ bool rtcWrite(u32 address, u16 value)
 
 							rtcClockData.dataLen = 7;
 							rtcClockData.data[0] = toBCD(newtime->tm_year);
-							rtcClockData.data[1] = toBCD(newtime->tm_mon+1);
+							rtcClockData.data[1] = toBCD(newtime->tm_mon + 1);
 							rtcClockData.data[2] = toBCD(newtime->tm_mday);
+#ifdef USE_GBA_CORE_V7
 							rtcClockData.data[3] = 0;
+#else
+							rtcClockData.data[3] = toBCD(newtime->tm_wday);
+#endif
 							rtcClockData.data[4] = toBCD(newtime->tm_hour);
 							rtcClockData.data[5] = toBCD(newtime->tm_min);
 							rtcClockData.data[6] = toBCD(newtime->tm_sec);
-							rtcClockData.state   = DATA;
+							rtcClockData.state	 = DATA;
 							break;
 						}
 						case 0x67:
 						{
 							struct tm *newtime;
-							time_t     long_time;
+							time_t	   long_time;
 
 							if (VBAMovieActive() || VBAMovieLoading())
 							{
@@ -162,7 +171,7 @@ bool rtcWrite(u32 address, u16 value)
 							rtcClockData.data[0] = toBCD(newtime->tm_hour);
 							rtcClockData.data[1] = toBCD(newtime->tm_min);
 							rtcClockData.data[2] = toBCD(newtime->tm_sec);
-							rtcClockData.state   = DATA;
+							rtcClockData.state	 = DATA;
 							break;
 						}
 						default:
@@ -179,9 +188,9 @@ bool rtcWrite(u32 address, u16 value)
 					{
 						rtcClockData.byte0 = (rtcClockData.byte0 & ~2) |
 						                     ((rtcClockData.data[rtcClockData.bits >> 3] >>
-						                       (rtcClockData.bits & 7)) & 1)*2;
+						                       (rtcClockData.bits & 7)) & 1) * 2;
 						rtcClockData.bits++;
-						if (rtcClockData.bits == 8*rtcClockData.dataLen)
+						if (rtcClockData.bits == 8 * rtcClockData.dataLen)
 						{
 							rtcClockData.bits  = 0;
 							rtcClockData.state = IDLE;
@@ -197,7 +206,7 @@ bool rtcWrite(u32 address, u16 value)
 						    (rtcClockData.data[rtcClockData.bits >> 3] >> 1) |
 						    ((value << 6) & 128);
 						rtcClockData.bits++;
-						if (rtcClockData.bits == 8*rtcClockData.dataLen)
+						if (rtcClockData.bits == 8 * rtcClockData.dataLen)
 						{
 							rtcClockData.bits  = 0;
 							rtcClockData.state = IDLE;
@@ -219,13 +228,13 @@ void rtcReset()
 {
 	memset(&rtcClockData, 0, sizeof(rtcClockData));
 
-	rtcClockData.byte0   = 0;
-	rtcClockData.byte1   = 0;
-	rtcClockData.byte2   = 0;
+	rtcClockData.byte0	 = 0;
+	rtcClockData.byte1	 = 0;
+	rtcClockData.byte2	 = 0;
 	rtcClockData.command = 0;
 	rtcClockData.dataLen = 0;
-	rtcClockData.bits    = 0;
-	rtcClockData.state   = IDLE;
+	rtcClockData.bits	 = 0;
+	rtcClockData.state	 = IDLE;
 }
 
 void rtcSaveGame(gzFile gzFile)

@@ -53,12 +53,13 @@ ARFLAGS = cru
 libgba_a_AR = $(AR) $(ARFLAGS)
 libgba_a_LIBADD =
 am_libgba_a_OBJECTS = agbprint.$(OBJEXT) armdis.$(OBJEXT) \
-	bios.$(OBJEXT) elf.$(OBJEXT) GBACheats.$(OBJEXT) EEprom.$(OBJEXT) \
-	Flash.$(OBJEXT) GBA.$(OBJEXT) GBAGfx.$(OBJEXT) \
-	GBAGlobals.$(OBJEXT) Mode0.$(OBJEXT) Mode1.$(OBJEXT) \
-	Mode2.$(OBJEXT) Mode3.$(OBJEXT) Mode4.$(OBJEXT) \
-	Mode5.$(OBJEXT) remote.$(OBJEXT) RTC.$(OBJEXT) GBASound.$(OBJEXT) \
-	Sram.$(OBJEXT)
+	bios.$(OBJEXT) elf.$(OBJEXT) Flash.$(OBJEXT) \
+	EEprom.$(OBJEXT) GBA.$(OBJEXT) GBACheats.$(OBJEXT) \
+	GBAGfx.$(OBJEXT) GBAGlobals.$(OBJEXT) \
+	GBAMemory.$(OBJEXT) GBASound.$(OBJEXT) \
+	Mode0.$(OBJEXT) Mode1.$(OBJEXT) Mode2.$(OBJEXT) \
+	Mode3.$(OBJEXT) Mode4.$(OBJEXT) Mode5.$(OBJEXT) \
+	remote.$(OBJEXT) RTC.$(OBJEXT) Sram.$(OBJEXT)
 libgba_a_OBJECTS = $(patsubst %,$(OBJDIR)/%,$(am_libgba_a_OBJECTS))
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -212,26 +213,31 @@ noinst_LIBRARIES = libgba.a
 libgba_a_SOURCES = \
 	agbprint.cpp		\
 	agbprint.h		\
-	arm-new.h		\
 	armdis.cpp		\
 	armdis.h		\
 	bios.cpp		\
 	bios.h			\
 	elf.cpp			\
 	elf.h			\
-	Cheats.cpp		\
-	Cheats.h		\
 	EEprom.cpp		\
 	EEprom.h		\
 	Flash.cpp		\
 	Flash.h			\
 	GBA.cpp			\
 	GBA.h			\
-	GBAinline.h		\
+	GBA-arm.h		\
+	GBA-thumb.h	\
+	GBACheats.cpp	\
+	GBACheats.h		\
+	GBACpu.h		\
 	GBAGfx.cpp		\
 	GBAGfx.h		\
-	Globals.cpp		\
-	Globals.h		\
+	GBAGlobals.cpp	\
+	GBAGlobals.h	\
+	GBAinline.h		\
+	GBAMemory.cpp	\
+	GBASound.cpp	\
+	GBASound.h		\
 	Mode0.cpp		\
 	Mode1.cpp		\
 	Mode2.cpp		\
@@ -241,11 +247,8 @@ libgba_a_SOURCES = \
 	remote.cpp		\
 	RTC.cpp			\
 	RTC.h			\
-	Sound.cpp		\
-	Sound.h			\
 	Sram.cpp		\
-	Sram.h			\
-	thumb.h
+	Sram.h
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src		\
@@ -300,12 +303,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Cheats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EEprom.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Flash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GBA.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GBACheats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GBAGfx.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Globals.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GBAGlobals.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GBASound.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Mode0.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Mode1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Mode2.Po@am__quote@
@@ -313,7 +317,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Mode4.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Mode5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RTC.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sound.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/agbprint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/armdis.Po@am__quote@

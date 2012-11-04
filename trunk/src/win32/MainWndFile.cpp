@@ -22,6 +22,7 @@
 #include "../gba/GBASound.h"
 #include "../gb/GB.h"
 #include "../gb/gbGlobals.h"
+#include "../common/SystemGlobals.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
@@ -57,13 +58,18 @@ void MainWnd::OnFileReset()
 {
 	if (emulating)
 	{
-		if (VBAMovieGetState() == MOVIE_STATE_PLAY)
+		if (VBAMoviePlaying())
 		{
-			OnToolsPlayRestart();   // HACK: shortcut
+			// HACK: backward-compatibility shortcut
+			VBAMovieRestart();
+		}
+		else if (VBAMovieRecording())
+		{
+			VBAMovieSignalReset();
 		}
 		else
 		{
-			theApp.emulator.emuReset(true);
+			theApp.emulator.emuReset();
 			systemScreenMessage(winResLoadString(IDS_RESET));
 		}
 	}
@@ -350,10 +356,17 @@ void MainWnd::OnFileImportBatteryfile()
 	res = theApp.emulator.emuReadBattery(dlg.GetPathName());
 
 	if (!res)
+	{
 		systemMessage(MSG_CANNOT_OPEN_FILE, "Cannot open file %s", dlg.GetPathName());
+	}
+	else if (VBAMovieRecording())
+	{
+		// FIXME: we just treat this as if using a cheat code for now
+		VBAMovieSignalReset();
+	}
 	else
 	{
-		theApp.emulator.emuReset(true);
+		theApp.emulator.emuReset();
 	}
 }
 

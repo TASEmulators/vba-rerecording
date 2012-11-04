@@ -10,6 +10,7 @@
 extern void BIOS_ArcTan();
 extern void BIOS_ArcTan2();
 extern void BIOS_BitUnPack();
+extern void BIOS_GetBiosChecksum();
 extern void BIOS_BgAffineSet();
 extern void BIOS_CpuSet();
 extern void BIOS_CpuFastSet();

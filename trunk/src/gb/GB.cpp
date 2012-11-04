@@ -11,9 +11,9 @@
 #include "gbMemory.h"
 #include "gbSGB.h"
 #include "gbSound.h"
-#include "../common/unzip.h"
 #include "../common/Util.h"
 #include "../common/System.h"
+#include "../common/SystemGlobals.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
@@ -22,11 +22,15 @@
 #endif
 
 // FIXME: constant (GB) or boolean (GBA)?!
-#define C_FLAG 0x10
-#define H_FLAG 0x20
-#define N_FLAG 0x40
-#define Z_FLAG 0x80
-extern soundtick_t GB_USE_TICKS_AS;
+enum
+{
+	C_FLAG = 0x10,
+	H_FLAG = 0x20,
+	N_FLAG = 0x40,
+	Z_FLAG = 0x80
+};
+
+extern int32 GB_USE_TICKS_AS;
 
 u8 *		 origPix = NULL;
 extern u8 *	 pix;
@@ -143,24 +147,17 @@ int32 gbHdmaDestination = 0x8000;
 int32 gbHdmaBytes		= 0x0000;
 int32 gbHdmaOn = 0;
 int32 gbSpeed  = 0;
-// frame counting
-int32 gbFrameCount	   = 0;
-int32 gbFrameSkip	   = 0;
-int32 gbFrameSkipCount = 0;
 // timing
-u32	  gbLastTime		 = 0;
 u32	  gbElapsedTime		 = 0;
 u32	  gbTimeNow			 = 0;
 int32 gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
-int32 gbDMASpeedVersion	 = 1;
 // emulator features
 int32 gbBattery	   = 0;
 int32 gbJoymask[4] = { 0, 0, 0, 0 };
 
+// HACK
 int32 gbEchoRAMFixOn = 1;
-
-static bool newFrame = true;
-static bool pauseAfterFrameAdvance = false;
+int32 gbDMASpeedVersion	 = 1;
 
 int32 gbRomSizes[] = { 0x00008000, // 32K
 	                   0x00010000, // 64K
@@ -1407,7 +1404,7 @@ u8 gbReadMemory(register u16 address)
 				}
 			}
 		}
-			GBSystemCounters.lagged = false;
+			systemCounters.lagged = false;
 			return gbMemory[0xff00];
 			break;
 		case 0x01:
@@ -1633,24 +1630,11 @@ void gbGetHardwareType()
 	}
 }
 
-void gbReset(bool userReset)
+void gbReset()
 {
-	// movie must be closed while opening/creating a movie
-	if (userReset && VBAMovieRecording())
-	{
-		VBAMovieSignalReset();
-		return;
-	}
+	systemReset();
 
-	if (!VBAMovieActive())
-	{
-		GBSystemCounters.frameCount = 0;
-		GBSystemCounters.lagCount	= 0;
-		GBSystemCounters.extraCount = 0;
-		GBSystemCounters.lagged		= true;
-		GBSystemCounters.laggedLast = true;
-	}
-
+	gbGetHardwareType();
 	SP.W = 0xfffe;
 	AF.W = 0x01b0;
 	BC.W = 0x0013;
@@ -1684,7 +1668,6 @@ void gbReset(bool userReset)
 	register_SVBK  = 0;
 	register_IE	   = 0;
 
-	gbGetHardwareType();
 	if (gbCgbMode)
 	{
 		if (!gbVram)
@@ -1858,14 +1841,6 @@ void gbReset(bool userReset)
 	}
 
 	gbSoundReset();
-
-	systemResetSensor();
-
-	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-	gbLastTime	 = systemGetClock();
-	gbFrameCount = 0;
-
 	systemRefreshScreen();
 }
 
@@ -2109,21 +2084,11 @@ bool gbReadSaveMBC7(const char *name)
 	return true;
 }
 
-#if 0
-bool gbLoadBIOS(const char *biosFileName, bool useBiosFile)
+void gbLoadInternalBios()
 {
-	useBios = false;
-	if (useBiosFile)
-	{
-		useBios = utilLoadBIOS(bios, biosFileName, gbEmulatorType);
-		if (!useBios)
-		{
-			systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BOOTROM file"));
-		}
-	}
-	return useBios;
+	// clear BIOS
+	memset(bios, 0, 0x100);
 }
-#endif
 
 void gbInit()
 {
@@ -2538,14 +2503,14 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 				return false;
 			}
 		}
-		utilGzWrite(gzFile, &GBSystemCounters.frameCount, sizeof(GBSystemCounters.frameCount));
+		utilGzWrite(gzFile, &systemCounters.frameCount, sizeof(systemCounters.frameCount));
 	}
 
 	// new to rerecording 19.4 wip (svn r22+):
 	{
-		utilGzWrite(gzFile, &GBSystemCounters.lagCount, sizeof(GBSystemCounters.lagCount));
-		utilGzWrite(gzFile, &GBSystemCounters.lagged, sizeof(GBSystemCounters.lagged));
-		utilGzWrite(gzFile, &GBSystemCounters.laggedLast, sizeof(GBSystemCounters.laggedLast));
+		utilGzWrite(gzFile, &systemCounters.lagCount, sizeof(systemCounters.lagCount));
+		utilGzWrite(gzFile, &systemCounters.lagged, sizeof(systemCounters.lagged));
+		utilGzWrite(gzFile, &systemCounters.laggedLast, sizeof(systemCounters.laggedLast));
 	}
 
 	return true;
@@ -2585,22 +2550,16 @@ bool gbWriteSaveState(const char *name)
 	return res;
 }
 
-static int	tempStateID	  = 0;
-static int	tempFailCount = 0;
-static bool backupSafe	  = true;
-
 bool gbReadSaveStateFromStream(gzFile gzFile)
 {
-	int	 type;
-	char tempBackupName [128];
-	if (backupSafe)
+	char tempBackupName[128];
+	if (tempSaveSafe)
 	{
-		sprintf(tempBackupName, "gbatempsave%d.sav", tempStateID++);
+		sprintf(tempBackupName, "gbatempsave%d.sav", tempSaveID++);
 		gbWriteSaveState(tempBackupName);
 	}
 
 	int version = utilReadInt(gzFile);
-
 	if (version > GBSAVE_GAME_VERSION || version < 0)
 	{
 		systemMessage(MSG_UNSUPPORTED_VB_SGM,
@@ -2609,9 +2568,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	}
 
 	u8 romname[20];
-
 	utilGzRead(gzFile, romname, 15);
-
 	if (memcmp(&gbRom[0x134], romname, 15) != 0)
 	{
 		systemMessage(MSG_CANNOT_LOAD_SGM_FOR,
@@ -2706,7 +2663,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	gbMemoryMap[0x0e] = &gbMemory[0xe000];
 	gbMemoryMap[0x0f] = &gbMemory[0xf000];
 
-	type = gbRom[0x147];
+	u8 type = gbRom[0x147];
 
 	switch (type)
 	{
@@ -2854,20 +2811,20 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 				goto failedLoadGB;
 			}
 		}
-		utilGzRead(gzFile, &GBSystemCounters.frameCount, sizeof(GBSystemCounters.frameCount));
+		utilGzRead(gzFile, &systemCounters.frameCount, sizeof(systemCounters.frameCount));
 	}
 
 	if (version >= GBSAVE_GAME_VERSION_13)   // new to rerecording 19.4 wip (svn r22+):
 	{
-		utilGzRead(gzFile, &GBSystemCounters.lagCount, sizeof(GBSystemCounters.lagCount));
-		utilGzRead(gzFile, &GBSystemCounters.lagged, sizeof(GBSystemCounters.lagged));
-		utilGzRead(gzFile, &GBSystemCounters.laggedLast, sizeof(GBSystemCounters.laggedLast));
+		utilGzRead(gzFile, &systemCounters.lagCount, sizeof(systemCounters.lagCount));
+		utilGzRead(gzFile, &systemCounters.lagged, sizeof(systemCounters.lagged));
+		utilGzRead(gzFile, &systemCounters.laggedLast, sizeof(systemCounters.laggedLast));
 	}
 
-	if (backupSafe)
+	if (tempSaveSafe)
 	{
 		remove(tempBackupName);
-		tempFailCount = 0;
+		tempSaveAttempts = 0;
 	}
 
 	for (int i = 0; i < 4; ++i)
@@ -2882,10 +2839,10 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	return true;
 
 failedLoadGB:
-	if (backupSafe)
+	if (tempSaveSafe)
 	{
-		tempFailCount++;
-		if (tempFailCount < 3) // fail no more than 2 times in a row
+		tempSaveAttempts++;
+		if (tempSaveAttempts < 3) // fail no more than 2 times in a row
 			gbReadSaveState(tempBackupName);
 		remove(tempBackupName);
 	}
@@ -2896,9 +2853,9 @@ bool gbReadMemSaveState(char *memory, int available)
 {
 	gzFile gzFile = utilMemGzOpen(memory, available, "r");
 
-	backupSafe = false;
+	tempSaveSafe = false;
 	bool res = gbReadSaveStateFromStream(gzFile);
-	backupSafe = true;
+	tempSaveSafe = true;
 
 	utilGzClose(gzFile);
 
@@ -2937,14 +2894,6 @@ bool gbWriteBMPFile(const char *fileName)
 
 void gbCleanUp()
 {
-	newFrame	  = true;
-
-	GBSystemCounters.frameCount = 0;
-	GBSystemCounters.lagCount	= 0;
-	GBSystemCounters.extraCount = 0;
-	GBSystemCounters.lagged		= true;
-	GBSystemCounters.laggedLast = true;
-
 	if (gbRam != NULL)
 	{
 		free(gbRam);
@@ -2990,16 +2939,11 @@ void gbCleanUp()
 		gbWram = NULL;
 	}
 
-	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
 	memset(gbJoymask, 0, sizeof(gbJoymask));
 	// FIXME: horrible kludge
 	memset(s_gbJoymask, 0, sizeof(s_gbJoymask));
 
-	systemClearJoypads();
-	systemResetSensor();
-
-//	gbLastTime = gbFrameCount = 0;
+	systemCleanUp();
 	systemRefreshScreen();
 }
 
@@ -3149,6 +3093,62 @@ bool gbUpdateSizes()
 	return true;
 }
 
+static void gbGetUserInput()
+{
+	// update joystick information
+	systemReadJoypads();
+
+	bool sensor = (gbRom[0x147] == 0x22);
+	if (gbSgbMode && gbSgbMultiplayer)
+	{
+		if (gbSgbFourPlayers)
+		{
+			gbJoymask[0] = systemGetJoypad(0, sensor);
+			gbJoymask[1] = systemGetJoypad(1, false);
+			gbJoymask[2] = systemGetJoypad(2, false);
+			gbJoymask[3] = systemGetJoypad(3, false);
+		}
+		else
+		{
+			gbJoymask[0] = systemGetJoypad(0, sensor);
+			gbJoymask[1] = systemGetJoypad(1, false);
+		}
+	}
+	else
+	{
+		gbJoymask[0] = systemGetJoypad(0, sensor);
+	}
+
+	// FIXME: horrible kludge
+	memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
+
+	if (gbJoymask[0] & 0xFF)
+	{
+		gbMemory[0xff0f] |= 16;
+	}
+
+	extButtons = (gbJoymask[0] >> 18);
+	speedup	   = (extButtons & 1) != 0;
+}
+
+static void gbFrameBoundaryWork()
+{
+	//gbGetUserInput();
+
+	bool sensor = (gbRom[0x147] == 0x22);
+	if (sensor)
+	{
+		//  systemUpdateMotionSensor();
+	}
+	if (!gbSgbMask)
+	{
+		if (gbBorderOn)
+			gbSgbRenderBorder();
+	}
+
+	systemFrameBoundaryWork();
+}
+
 void gbEmulate(int ticksToStop)
 {
 	gbRegister tempRegister;
@@ -3163,58 +3163,16 @@ void gbEmulate(int ticksToStop)
 	u32 newmask = 0;
 	if (newFrame)
 	{
-		extern void VBAOnExitingFrameBoundary();
-		VBAOnExitingFrameBoundary();
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
-		// update joystick information
-		systemReadJoypads();
-
-		bool sensor = (gbRom[0x147] == 0x22);
-
-		// read joystick
-		if (gbSgbMode && gbSgbMultiplayer)
-		{
-			if (gbSgbFourPlayers)
-			{
-				gbJoymask[0] = systemGetJoypad(0, sensor);
-				gbJoymask[1] = systemGetJoypad(1, false);
-				gbJoymask[2] = systemGetJoypad(2, false);
-				gbJoymask[3] = systemGetJoypad(3, false);
-			}
-			else
-			{
-				gbJoymask[0] = systemGetJoypad(0, sensor);
-				gbJoymask[1] = systemGetJoypad(1, false);
-			}
-		}
-		else
-		{
-			gbJoymask[0] = systemGetJoypad(0, sensor);
-		}
-
-		// FIXME: horrible kludge
-		memcpy(s_gbJoymask, gbJoymask, sizeof(gbJoymask));
-
-//		if (sensor)
-//			systemUpdateMotionSensor(0);
-
-		newmask = gbJoymask[0];
-		if (newmask & 0xFF)
-		{
-			gbInterrupt |= 16;
-		}
-
-		extButtons = (newmask >> 18);
-		speedup	   = (extButtons & 1) != 0;
+		gbGetUserInput();
 
 		VBAMovieResetIfRequested();
-
-		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
 
 		newFrame = false;
 	}
 
-	for (;; )
+	for (;;)
 	{
 #ifndef FINAL_VERSION
 		if (systemDebug)
@@ -3223,14 +3181,13 @@ void gbEmulate(int ticksToStop)
 			{
 				if (systemDebug > 1)
 				{
-					sprintf(gbBuffer, "PC=%04x AF=%04x BC=%04x DE=%04x HL=%04x SP=%04x I=%04x\n",
-					        PC.W, AF.W, BC.W, DE.W, HL.W, SP.W, IFF);
+					log("PC=%04x AF=%04x BC=%04x DE=%04x HL=%04x SP=%04x I=%04x\n",
+					    PC.W, AF.W, BC.W, DE.W, HL.W, SP.W, IFF);
 				}
 				else
 				{
-					sprintf(gbBuffer, "PC=%04x I=%02x\n", PC.W, IFF);
+					log("PC=%04x I=%02x\n", PC.W, IFF);
 				}
-				log(gbBuffer);
 			}
 		}
 #endif
@@ -3269,20 +3226,7 @@ void gbEmulate(int ticksToStop)
 
 			clockTicks = gbCycles[opcode];
 
-			switch (opcode)
-			{
-			case 0xCB:
-				// extended opcode
-				//CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);	// is this desired?
-				opcode	   = gbReadOpcode(PC.W++);
-				clockTicks = gbCyclesCB[opcode];
-				switch (opcode)
-				{
-#include "gbCodesCB.h"
-				}
-				break;
 #include "gbCodes.h"
-			}
 		}
 
 		if (!emulating)
@@ -3376,56 +3320,7 @@ void gbEmulate(int ticksToStop)
 								gbInterrupt |= 2;
 						}
 
-						systemFrame();
-
-						++gbFrameCount;
-						u32 currentTime = systemGetClock();
-						if (currentTime - gbLastTime >= 1000)
-						{
-							systemShowSpeed(int(float(gbFrameCount) * 100000 / (float(currentTime - gbLastTime) * 60) + .5f));
-							gbLastTime	 = currentTime;
-							gbFrameCount = 0;
-						}
-
-						++GBSystemCounters.frameCount;
-						if (GBSystemCounters.lagged)
-						{
-							++GBSystemCounters.lagCount;
-						}
-						GBSystemCounters.laggedLast = GBSystemCounters.lagged;
-						GBSystemCounters.lagged		= true;
-
-						extern void VBAOnEnteringFrameBoundary();
-						VBAOnEnteringFrameBoundary();
-
-						newFrame = true;
-
-						pauseAfterFrameAdvance = systemPauseOnFrame();
-
-						if (gbFrameSkipCount >= framesToSkip || pauseAfterFrameAdvance)
-						{
-							if (gbBorderOn)
-								gbSgbRenderBorder();  // clear unnecessary things on border (e.g. in-game text message)
-
-							systemRenderFrame();
-							gbFrameSkipCount = 0;
-
-							bool capturePressed = (extButtons & 2) != 0;
-							if (capturePressed && !capturePrevious)
-							{
-								captureNumber = systemScreenCapture(captureNumber);
-							}
-							capturePrevious = capturePressed && !pauseAfterFrameAdvance;
-						}
-						else
-						{
-							++gbFrameSkipCount;
-						}
-
-						if (pauseAfterFrameAdvance)
-						{
-							systemSetPause(true);
-						}
+						gbFrameBoundaryWork();
 					}
 					else
 					{
@@ -3469,7 +3364,7 @@ void gbEmulate(int ticksToStop)
 					{
 						if (!gbSgbMask)
 						{
-							if (gbFrameSkipCount >= framesToSkip || pauseAfterFrameAdvance)
+							if (systemFrameDrawingRequired())
 							{
 								gbRenderLine();
 								gbDrawSprites();
@@ -3846,10 +3741,7 @@ void gbEmulate(int ticksToStop)
 		// makes sure frames are really divided across input sampling boundaries which occur at a constant rate
 		if (newFrame || useOldFrameTiming)
 		{
-///			extern void VBAOnEnteringFrameBoundary();
-///			VBAOnEnteringFrameBoundary();
-
-			break;
+			return;
 		}
 	}
 }
@@ -3897,20 +3789,3 @@ struct EmulatedSystem GBSystem =
 	1000,
 #endif
 };
-
-// is there a reason to use more than one set of counters?
-EmulatedSystemCounters &GBSystemCounters = systemCounters;
-
-/*
-   EmulatedSystemCounters GBSystemCounters =
-   {
-    // frameCount
-    0,
-    // lagCount
-    0,
-    // lagged
-    true,
-    // laggedLast
-    true,
-   };
- */

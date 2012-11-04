@@ -11,6 +11,7 @@
 
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
+#include "../common/SystemGlobals.h"
 #include "../gb/gbCheats.h"
 
 GBACheatSearch gbaDlg;

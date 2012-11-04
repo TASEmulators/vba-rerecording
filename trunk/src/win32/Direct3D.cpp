@@ -10,8 +10,7 @@
 #include "VBA.h"
 
 //#include "../common/System.h"
-#include "../gba/GBAGlobals.h"
-#include "../gb/gbGlobals.h"
+#include "../common/SystemGlobals.h"
 #include "../common/Text.h"
 #include "../version.h"
 
@@ -488,22 +487,9 @@ void Direct3DDisplay::render()
 			}
 			else
 			{
-				int copyX = 240;
-				int copyY = 160;
+				int copyX, copyY;
+				systemGetLCDResolution(copyX, copyY);
 
-				if (systemCartridgeType == 1)
-				{
-					if (gbBorderOn)
-					{
-						copyX = 256;
-						copyY = 224;
-					}
-					else
-					{
-						copyX = 160;
-						copyY = 144;
-					}
-				}
 				// MMX doesn't seem to be faster to copy the data
 				__asm {
 					mov eax, copyX;

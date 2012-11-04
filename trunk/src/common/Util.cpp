@@ -1144,6 +1144,15 @@ void utilReadData(gzFile gzFile, variable_desc *data)
 	}
 }
 
+void utilReadDataSkip(gzFile gzFile, variable_desc *data)
+{
+	while (data->address)
+	{
+		utilGzSeek(gzFile, data->size, SEEK_CUR);
+		data++;
+	}
+}
+
 void utilWriteData(gzFile gzFile, variable_desc *data)
 {
 	while (data->address)
@@ -1319,6 +1328,7 @@ bool utilLoadBIOS(u8 *bios, const char *biosFileName, int systemType)
 			if (biosSize == 0x4000)
 				return true;
 		}
+		systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid GBA BIOS file!"));
 	}
 	else
 	{
@@ -1328,6 +1338,7 @@ bool utilLoadBIOS(u8 *bios, const char *biosFileName, int systemType)
 			if (biosSize == 0x100)
 				return true;
 		}
+		systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BOOTROM file"));
 	}
 
 	return false;
@@ -1359,7 +1370,7 @@ u16 utilCalcBIOSChecksum(const u8 *bios, int systemType)
 	}
 
 	while ((biosChecksum >> 16) & 0xFFFF)
-		biosChecksum = (biosChecksum &0xFFFF) + ((biosChecksum >> 16) & 0xFFFF);
+		biosChecksum = (biosChecksum & 0xFFFF) + ((biosChecksum >> 16) & 0xFFFF);
 
 	return biosChecksum & 0xFFFF;
 }

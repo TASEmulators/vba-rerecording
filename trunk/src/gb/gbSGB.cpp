@@ -2,19 +2,20 @@
 #include <cstring>
 
 #include "../common/System.h"
+#include "../Port.h"
 #include "../common/Util.h"
-#include "GB.h"
+#include "gb.h"
 #include "gbGlobals.h"
-#include "../common/movie.h"
 
 extern u8 * pix;
+extern bool gbSgbResetFlag;
 
 #define GBSGB_NONE            0
 #define GBSGB_RESET           1
 #define GBSGB_PACKET_TRANSMIT 2
 
-u8 gbSgbBorderChar [32 * 256];
-u8 gbSgbBorder [2048];
+u8 *gbSgbBorderChar = NULL;
+u8 *gbSgbBorder		= NULL;
 
 int32 gbSgbCGBSupport	   = 0;
 int32 gbSgbMask			   = 0;
@@ -53,8 +54,8 @@ inline void gbSgbDraw16Bit(u16 *p, u16 v)
 
 void gbSgbReset()
 {
-	gbSgbPacketTimeout = 0;
-	gbSgbCGBSupport	   = 0;
+	gbSgbPacketTimeout	   = 0;
+	gbSgbCGBSupport		   = 0;
 	gbSgbMask			   = 0;
 	gbSgbPacketState	   = GBSGB_NONE;
 	gbSgbBit			   = 0;
@@ -78,7 +79,7 @@ void gbSgbReset()
 		gbSgbBorder[i] = 1 << 2;
 	}
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 32; i++)
 	{
 		gbPalette[i * 4]	 = (0x1f) | (0x1f << 5) | (0x1f << 10);
 		gbPalette[i * 4 + 1] = (0x15) | (0x15 << 5) | (0x15 << 10);
@@ -89,13 +90,26 @@ void gbSgbReset()
 
 void gbSgbInit()
 {
+	if (gbSgbBorderChar == NULL)
+	{
+		gbSgbBorderChar = (u8 *)malloc(32 * 256);
+	}
+
+	if (gbSgbBorder == NULL)
+	{
+		gbSgbBorder		= (u8 *)malloc(2048);
+	}
+
 	gbSgbReset();
 }
 
 void gbSgbShutdown()
 {
-	memset(gbSgbBorderChar, 0, 32 * 256);
-	memset(gbSgbBorder, 0, 2048);
+	free(gbSgbBorderChar);
+	gbSgbBorderChar = NULL;
+
+	free(gbSgbBorder);
+	gbSgbBorder = NULL;
 }
 
 void gbSgbFillScreen(u16 color)
@@ -106,8 +120,7 @@ void gbSgbFillScreen(u16 color)
 	{
 		for (int y = 0; y < 144; y++)
 		{
-			int yLine = (y + gbBorderRowSkip + 1) * (gbBorderLineSkip + 2) +
-			            gbBorderColumnSkip;
+			int yLine = (y + gbBorderRowSkip + 1) * (gbBorderLineSkip + 2) + gbBorderColumnSkip;
 			u16 *dest = (u16 *)pix + yLine;
 			for (register int x = 0; x < 160; x++)
 				gbSgbDraw16Bit(dest++, color);
@@ -216,6 +229,12 @@ void gbSgbDrawBorderTile(int x, int y, int tile, int attr)
 		u8 c	= *tileAddress2++;
 		u8 d	= *tileAddress2++;
 
+		u8 yyy;
+		if (!flipY)
+			yyy = yy;
+		else
+			yyy = 7 - yy;
+
 		while (mask > 0)
 		{
 			u8 color = 0;
@@ -228,32 +247,35 @@ void gbSgbDrawBorderTile(int x, int y, int tile, int attr)
 			if (d & mask)
 				color += 8;
 
-			u8 xxx = xx;
-			u8 yyy = yy;
-
-			if (flipX)
-				xxx = 7 - xx;
-			if (flipY)
-				yyy = 7 - yy;
-
-			u8 realx = x + xxx;
-			u8 realy = y + yyy;
-
-			u16 c = gbPalette[palette + color];
-			if (!color)
-				c = gbPalette[0];
-			if ((realy < 40 || realy >= 184) || (realx < 48 || realx >= 208))
+			if (color || (y + yy < 40 || y + yy >= 184) || (x + xx < 48 || x + xx >= 208))
 			{
+				u8 xxx;
+
+				if (!flipX)
+					xxx = xx;
+				else
+					xxx = 7 - xx;
+
+				u16 cc;
+				if (color)
+				{
+					cc = gbPalette[palette + color];
+				}
+				else
+				{
+					cc = gbPalette[0];
+				}
+
 				switch (systemColorDepth)
 				{
 				case 16:
-					gbSgbDraw16Bit(dest + yyy * (256 + 2) + xxx, c);
+					gbSgbDraw16Bit(dest + yyy * (256 + 2) + xxx, cc);
 					break;
 				case 24:
-					gbSgbDraw24Bit(dest8 + (yyy * 256 + xxx) * 3, c);
+					gbSgbDraw24Bit(dest8 + (yyy * 256 + xxx) * 3, cc);
 					break;
 				case 32:
-					gbSgbDraw32Bit(dest32 + yyy * (256 + 1) + xxx, c);
+					gbSgbDraw32Bit(dest32 + yyy * (256 + 1) + xxx, cc);
 					break;
 				}
 			}
@@ -315,7 +337,11 @@ void gbSgbPicture()
 	if (gbSgbMode && gbCgbMode && gbSgbCGBSupport > 4)
 	{
 		gbSgbCGBSupport = 0;
+#ifdef USE_GB_CORE_V7
 		gbSgbMode		= 2;
+#else
+		gbSgbMode		= 0;
+#endif
 		gbSgbMask		= 0;
 		gbSgbRenderBorder();
 		gbReset();
@@ -702,7 +728,11 @@ void gbSgbChrTransfer()
 	if (gbSgbMode && gbCgbMode && gbSgbCGBSupport == 7)
 	{
 		gbSgbCGBSupport = 0;
+#ifdef USE_GB_CORE_V7
 		gbSgbMode		= 2;
+#else
+		gbSgbMode		= 0;
+#endif
 		gbSgbMask		= 0;
 		gbSgbRenderBorder();
 		gbReset();

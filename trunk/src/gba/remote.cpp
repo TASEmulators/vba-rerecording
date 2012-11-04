@@ -14,6 +14,7 @@
 # else // ! HAVE_ARPA_INET_H
 #  define socklen_t int
 # endif // ! HAVE_ARPA_INET_H
+# define SOCKET int
 #else // WIN32
 # include "../win32/stdafx.h"
 # include <winsock.h>
@@ -25,33 +26,34 @@
 #endif // WIN32
 
 #include "GBA.h"
+#include "GBAinline.h"
 #include "GBAGlobals.h"
+#include "../common/SystemGlobals.h"
 
 extern bool debugger;
 extern void CPUUpdateCPSR();
 #ifdef SDL
 extern void (*dbgMain)();
-extern void (*dbgSignal)(int, int);
 extern void debuggerMain();
 extern void debuggerSignal(int, int);
 #endif
 
-int  remotePort         = 55555;
-int  remoteSignal       = 5;
-int  remoteSocket       = -1;
-int  remoteListenSocket = -1;
-bool remoteConnected    = false;
-bool remoteResumed      = false;
+int	   remotePort		  = 55555;
+int	   remoteSignal		  = 5;
+SOCKET remoteSocket		  = -1;
+SOCKET remoteListenSocket = -1;
+bool   remoteConnected	  = false;
+bool   remoteResumed	  = false;
 
-int  (*remoteSendFnc)(char *, int) = NULL;
-int  (*remoteRecvFnc)(char *, int) = NULL;
-bool (*remoteInitFnc)()    = NULL;
+int	 (*remoteSendFnc)(char *, int) = NULL;
+int	 (*remoteRecvFnc)(char *, int) = NULL;
+bool (*remoteInitFnc)()	   = NULL;
 void (*remoteCleanUpFnc)() = NULL;
 
-#if (defined WIN32 && !defined SDL)
+#ifndef SDL
 void remoteSetSockets(SOCKET l, SOCKET r)
 {
-	remoteSocket       = r;
+	remoteSocket	   = r;
 	remoteListenSocket = l;
 }
 
@@ -73,9 +75,9 @@ bool remoteTcpInit()
 	{
 #ifdef WIN32
 		WSADATA wsaData;
-		int     error = WSAStartup(MAKEWORD(1, 1), &wsaData);
+		int		error = WSAStartup(MAKEWORD(1, 1), &wsaData);
 #endif // WIN32
-		int s = socket(PF_INET, SOCK_STREAM, 0);
+		SOCKET s = socket(PF_INET, SOCK_STREAM, 0);
 
 		remoteListenSocket = s;
 
@@ -94,15 +96,15 @@ bool remoteTcpInit()
 		//    unsigned long a = *((unsigned long *)ent->h_addr);
 
 		sockaddr_in addr;
-		addr.sin_family      = AF_INET;
-		addr.sin_port        = htons(remotePort);
+		addr.sin_family		 = AF_INET;
+		addr.sin_port		 = htons(remotePort);
 		addr.sin_addr.s_addr = htonl(0);
 		int count = 0;
 		while (count < 3)
 		{
 			if (bind(s, (sockaddr *)&addr, sizeof(addr)))
 			{
-				addr.sin_port = htons(ntohs(addr.sin_port)+1);
+				addr.sin_port = htons(ntohs(addr.sin_port) + 1);
 			}
 			else
 				break;
@@ -127,7 +129,7 @@ bool remoteTcpInit()
 		int flag = 0;
 		ioctlsocket(s, FIONBIO, (unsigned long *)&flag);
 #endif // WIN32
-		int s2 = accept(s, (sockaddr *)&addr, &len);
+		SOCKET s2 = accept(s, (sockaddr *)&addr, &len);
 		if (s2 > 0)
 		{
 			fprintf(stderr, "Got a connection from %s %d\n",
@@ -140,13 +142,12 @@ bool remoteTcpInit()
 			int error = WSAGetLastError();
 #endif // WIN32
 		}
-		char dummy;
-		recv(s2, &dummy, 1, 0);
-		if (dummy != '+')
-		{
-			fprintf(stderr, "ACK not received\n");
-			exit(-1);
-		}
+		//char dummy;
+		//recv(s2, &dummy, 1, 0);
+		//if(dummy != '+') {
+		//  fprintf(stderr, "ACK not received\n");
+		//  exit(-1);
+		//}
 		remoteSocket = s2;
 		//    close(s);
 	}
@@ -183,13 +184,14 @@ int remotePipeRecv(char *data, int len)
 
 bool remotePipeInit()
 {
-	char dummy;
-	read(0, &dummy, 1);
-	if (dummy != '+')
-	{
-		fprintf(stderr, "ACK not received\n");
-		exit(-1);
-	}
+//  char dummy;
+//  if (read(0, &dummy, 1) == 1)
+//  {
+//    if(dummy != '+') {
+//      fprintf(stderr, "ACK not received\n");
+//      exit(-1);
+//    }
+//  }
 
 	return true;
 }
@@ -206,16 +208,16 @@ void remoteSetProtocol(int p)
 {
 	if (p == 0)
 	{
-		remoteSendFnc    = remoteTcpSend;
-		remoteRecvFnc    = remoteTcpRecv;
-		remoteInitFnc    = remoteTcpInit;
+		remoteSendFnc	 = remoteTcpSend;
+		remoteRecvFnc	 = remoteTcpRecv;
+		remoteInitFnc	 = remoteTcpInit;
 		remoteCleanUpFnc = remoteTcpCleanUp;
 	}
 	else
 	{
-		remoteSendFnc    = remotePipeSend;
-		remoteRecvFnc    = remotePipeRecv;
-		remoteInitFnc    = remotePipeInit;
+		remoteSendFnc	 = remotePipeSend;
+		remoteRecvFnc	 = remotePipeRecv;
+		remoteInitFnc	 = remotePipeInit;
 		remoteCleanUpFnc = remotePipeCleanUp;
 	}
 }
@@ -226,41 +228,39 @@ void remoteInit()
 		remoteInitFnc();
 }
 
-void remotePutPacket(char *packet)
+void remotePutPacket(const char *packet)
 {
-	char *hex = "0123456789abcdef";
-	char  buffer[1024];
+	const char *hex = "0123456789abcdef";
+	char		buffer[1024];
 
-	int count = strlen(packet);
+	size_t count = strlen(packet);
 
 	unsigned char csum = 0;
 
 	char *p = buffer;
 	*p++ = '$';
 
-	for (int i = 0; i < count; i++)
+	for (size_t i = 0; i < count; i++)
 	{
 		csum += packet[i];
 		*p++  = packet[i];
 	}
 	*p++ = '#';
-	*p++ = hex[csum>>4];
+	*p++ = hex[csum >> 4];
 	*p++ = hex[csum & 15];
 	*p++ = 0;
-	//  printf("Sending %s\n", buffer);
-	remoteSendFnc(buffer, count + 4);
+	// printf("Sending %s\n", buffer);
 
 	char c = 0;
-	remoteRecvFnc(&c, 1);
-	/*
-	   if(c == '+')
-	   printf("ACK\n");
-	   else if(c=='-')
-	   printf("NACK\n");
-	 */
+	while (c != '+')
+	{
+		remoteSendFnc(buffer, (int)count + 4);
+		remoteRecvFnc(&c, 1);
+//    fprintf(stderr,"sent:%s recieved:%c\n",buffer,c);
+	}
 }
 
-void remoteOutput(char *s, u32 addr)
+void remoteOutput(const char *s, u32 addr)
 {
 	char buffer[16384];
 
@@ -279,13 +279,13 @@ void remoteOutput(char *s, u32 addr)
 	}
 	else
 	{
-		char c = debuggerReadByte(addr);
+		char c = CPUReadByteQuick(addr);
 		addr++;
 		while (c)
 		{
 			sprintf(d, "%02x", c);
 			d += 2;
-			c  = debuggerReadByte(addr);
+			c  = CPUReadByteQuick(addr);
 			addr++;
 		}
 	}
@@ -350,11 +350,11 @@ void remoteBinaryWrite(char *p)
 		{
 		case 0x7d:
 			b = *p++;
-			debuggerWriteByte(address, (b^0x20));
+			CPUWriteByteQuick(address, (b ^ 0x20));
 			address++;
 			break;
 		default:
-			debuggerWriteByte(address, b);
+			CPUWriteByteQuick(address, b);
 			address++;
 			break;
 		}
@@ -374,7 +374,7 @@ void remoteMemoryWrite(char *p)
 	p++;
 	for (int i = 0; i < count; i++)
 	{
-		u8   v = 0;
+		u8	 v = 0;
 		char c = *p++;
 		if (c <= '9')
 			v = (c - '0') << 4;
@@ -385,7 +385,7 @@ void remoteMemoryWrite(char *p)
 			v += (c - '0');
 		else
 			v += (c + 10 - 'a');
-		debuggerWriteByte(address, v);
+		CPUWriteByteQuick(address, v);
 		address++;
 	}
 	//  printf("ROM is %08x\n", debuggerReadMemory(0x8000254));
@@ -404,7 +404,7 @@ void remoteMemoryRead(char *p)
 	char *s = buffer;
 	for (int i = 0; i < count; i++)
 	{
-		u8 b = debuggerReadByte(address);
+		u8 b = CPUReadByteQuick(address);
 		sprintf(s, "%02x", b);
 		address++;
 		s += 2;
@@ -468,6 +468,7 @@ void remoteWriteWatch(char *p, bool active)
 		return;
 	}
 
+#ifdef BKPT_SUPPORT
 	for (int i = 0; i < count; i++)
 	{
 		if ((address >> 24) == 2)
@@ -476,6 +477,7 @@ void remoteWriteWatch(char *p, bool active)
 			freezeInternalRAM[address & 0x7fff] = active;
 		address++;
 	}
+#endif
 
 	remotePutPacket("OK");
 }
@@ -485,7 +487,7 @@ void remoteReadRegisters(char *p)
 	char buffer[1024];
 
 	char *s = buffer;
-	int   i;
+	int	  i;
 	// regular registers
 	for (i = 0; i < 15; i++)
 	{
@@ -533,7 +535,7 @@ void remoteWriteRegister(char *p)
 
 	u32 v = 0;
 
-	u8 data[4] = {0, 0, 0, 0};
+	u8 data[4] = { 0, 0, 0, 0 };
 
 	int i = 0;
 
@@ -550,7 +552,7 @@ void remoteWriteRegister(char *p)
 		else
 			b += (c + 10 - 'a');
 		data[i++] = b;
-		c         = *p++;
+		c		  = *p++;
 	}
 
 	v = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
@@ -579,120 +581,175 @@ void remoteStubMain()
 		remoteResumed = false;
 	}
 
+	const char *hex = "0123456789abcdef";
 	while (true)
 	{
+		char ack;
 		char buffer[1024];
-		int  res = remoteRecvFnc(buffer, 1024);
+		int	 res = remoteRecvFnc(buffer, 1024);
 
 		if (res == -1)
 		{
 			fprintf(stderr, "GDB connection lost\n");
 #ifdef SDL
-			dbgMain   = debuggerMain;
+			dbgMain	  = debuggerMain;
 			dbgSignal = debuggerSignal;
 #endif
 			debugger = false;
 			break;
 		}
-
-		//    fprintf(stderr, "Received %s\n", buffer);
-		char *p  = buffer;
-		char  c  = *p++;
-		char  pp = '+';
-		remoteSendFnc(&pp, 1);
-
-		if (c != '$')
-			continue;
-		c = *p++;
-		switch (c)
+		if (res < 1024)
 		{
-		case '?':
-			remoteSendSignal();
-			break;
-		case 'D':
-			remotePutPacket("OK");
-#ifdef SDL
-			dbgMain   = debuggerMain;
-			dbgSignal = debuggerSignal;
-#endif
-			remoteResumed = true;
-			debugger      = false;
-			return;
-		case 'e':
-			remoteStepOverRange(p);
-			break;
-		case 'k':
-			remotePutPacket("OK");
-#ifdef SDL
-			dbgMain   = debuggerMain;
-			dbgSignal = debuggerSignal;
-#endif
-			debugger  = false;
-			emulating = false;
-			return;
-		case 'C':
-			remoteResumed = true;
-			debugger      = false;
-			return;
-		case 'c':
-			remoteResumed = true;
-			debugger      = false;
-			return;
-		case 's':
-			remoteResumed = true;
-			remoteSignal  = 5;
-			CPULoop(1);
-			if (remoteResumed)
+			buffer[res] = 0;
+		}
+		else
+		{
+			fprintf(stderr, "res=%d\n", res);
+		}
+
+//    fprintf(stderr, "res=%d Received %s\n",res, buffer);
+		char  c = buffer[0];
+		char *p = &buffer[0];
+		int	  i = 0;
+		unsigned char csum = 0;
+		while (i < res)
+		{
+			if (buffer[i] == '$')
 			{
-				remoteResumed = false;
-				remoteSendStatus();
+				i++;
+				csum = 0;
+				c	 = buffer[i];
+				p	 = &buffer[i + 1];
+				while ((i < res) && (buffer[i] != '#'))
+				{
+					csum += buffer[i];
+					i++;
+				}
 			}
-			break;
-		case 'g':
-			remoteReadRegisters(p);
-			break;
-		case 'P':
-			remoteWriteRegister(p);
-			break;
-		case 'M':
-			remoteMemoryWrite(p);
-			break;
-		case 'm':
-			remoteMemoryRead(p);
-			break;
-		case 'X':
-			remoteBinaryWrite(p);
-			break;
-		case 'H':
-			remotePutPacket("OK");
-			break;
-		case 'q':
-			remotePutPacket("");
-			break;
-		case 'Z':
-			if (*p++ == '2')
+			else if (buffer[i] == '#')
 			{
-				remoteWriteWatch(p, true);
+				buffer[i] = 0;
+				if ((i + 2) < res)
+				{
+					if ((buffer[i + 1] == hex[csum >> 4]) && (buffer[i + 2] == hex[csum & 0xf]))
+					{
+						ack = '+';
+						remoteSendFnc(&ack, 1);
+						//fprintf(stderr, "SentACK c=%c\n",c);
+						//process message...
+						switch (c)
+						{
+						case '?':
+							remoteSendSignal();
+							break;
+						case 'D':
+							remotePutPacket("OK");
+#ifdef SDL
+							dbgMain	  = debuggerMain;
+							dbgSignal = debuggerSignal;
+#endif
+							remoteResumed = true;
+							debugger	  = false;
+							return;
+						case 'e':
+							remoteStepOverRange(p);
+							break;
+						case 'k':
+							remotePutPacket("OK");
+#ifdef SDL
+							dbgMain	  = debuggerMain;
+							dbgSignal = debuggerSignal;
+#endif
+							debugger  = false;
+							emulating = false;
+							return;
+						case 'C':
+							remoteResumed = true;
+							debugger	  = false;
+							return;
+						case 'c':
+							remoteResumed = true;
+							debugger	  = false;
+							return;
+						case 's':
+							remoteResumed = true;
+							remoteSignal  = 5;
+							CPULoop(1);
+							if (remoteResumed)
+							{
+								remoteResumed = false;
+								remoteSendStatus();
+							}
+							break;
+						case 'g':
+							remoteReadRegisters(p);
+							break;
+						case 'P':
+							remoteWriteRegister(p);
+							break;
+						case 'M':
+							remoteMemoryWrite(p);
+							break;
+						case 'm':
+							remoteMemoryRead(p);
+							break;
+						case 'X':
+							remoteBinaryWrite(p);
+							break;
+						case 'H':
+							remotePutPacket("OK");
+							break;
+						case 'q':
+							remotePutPacket("");
+							break;
+						case 'Z':
+							if (*p++ == '2')
+							{
+								remoteWriteWatch(p, true);
+							}
+							else
+								remotePutPacket("");
+							break;
+						case 'z':
+							if (*p++ == '2')
+							{
+								remoteWriteWatch(p, false);
+							}
+							else
+								remotePutPacket("");
+							break;
+						default:
+						{
+							fprintf(stderr, "Unknown packet %s\n", --p);
+							remotePutPacket("");
+						}
+						break;
+						}
+					}
+					else
+					{
+						fprintf(stderr, "bad chksum csum=%x msg=%c%c\n", csum, buffer[i + 1], buffer[i + 2]);
+						ack = '-';
+						remoteSendFnc(&ack, 1);
+						fprintf(stderr, "SentNACK\n");
+					} //if
+					i += 3;
+				}
+				else
+				{
+					fprintf(stderr, "didn't receive chksum i=%d res=%d\n", i, res);
+					i++;
+				} //if
 			}
 			else
-				remotePutPacket("");
-			break;
-		case 'z':
-			if (*p++ == '2')
 			{
-				remoteWriteWatch(p, false);
-			}
-			else
-				remotePutPacket("");
-			break;
-		default:
-		{
-			*(strchr(p, '#') + 3) = 0;
-			fprintf(stderr, "Unknown packet %s\n", --p);
-			remotePutPacket("");
-			break;
-		}
-		}
+				if (buffer[i] != '+') //ingnore ACKs
+				{
+					fprintf(stderr, "not sure what to do with:%c i=%d res=%d\n", buffer[i], i, res);
+				}
+				i++;
+			} //if
+		} //while
 	}
 }
 

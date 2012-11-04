@@ -2,40 +2,39 @@
 #include <cstring>
 
 #include "../common/System.h"
-#include "gbPrinter.h"
 
-u8  gbPrinterStatus = 0;
-int gbPrinterState  = 0;
-u8  gbPrinterData[0x280*9];
-u8  gbPrinterPacket[0x400];
-int gbPrinterCount     = 0;
+u8	gbPrinterStatus = 0;
+int gbPrinterState	= 0;
+u8	gbPrinterData[0x280 * 9];
+u8	gbPrinterPacket[0x400];
+int gbPrinterCount	   = 0;
 int gbPrinterDataCount = 0;
 int gbPrinterDataSize  = 0;
-int gbPrinterResult    = 0;
+int gbPrinterResult	   = 0;
 
 bool gbPrinterCheckCRC()
 {
 	u16 crc = 0;
 
-	for (int i = 2; i < (6+gbPrinterDataSize); i++)
+	for (int i = 2; i < (6 + gbPrinterDataSize); i++)
 	{
 		crc += gbPrinterPacket[i];
 	}
 
-	int msgCrc = gbPrinterPacket[6+gbPrinterDataSize] +
-	             (gbPrinterPacket[7+gbPrinterDataSize]<<8);
+	int msgCrc = gbPrinterPacket[6 + gbPrinterDataSize] +
+	             (gbPrinterPacket[7 + gbPrinterDataSize] << 8);
 
 	return msgCrc == crc;
 }
 
 void gbPrinterReset()
 {
-	gbPrinterState     = 0;
+	gbPrinterState	   = 0;
 	gbPrinterDataSize  = 0;
 	gbPrinterDataCount = 0;
-	gbPrinterCount     = 0;
-	gbPrinterStatus    = 0;
-	gbPrinterResult    = 0;
+	gbPrinterCount	   = 0;
+	gbPrinterStatus	   = 0;
+	gbPrinterResult	   = 0;
 }
 
 void gbPrinterShowData()
@@ -94,7 +93,7 @@ void gbPrinterReceiveData()
 	{
 		u8 *data = &gbPrinterPacket[6];
 		u8 *dest = &gbPrinterData[gbPrinterDataCount];
-		int len  = 0;
+		int len	 = 0;
 		while (len < gbPrinterDataSize)
 		{
 			u8 control = *data++;
@@ -103,7 +102,7 @@ void gbPrinterReceiveData()
 				control &= 0x7f;
 				control += 2;
 				memset(dest, *data++, control);
-				len  += control;
+				len	 += control;
 				dest += control;
 			}
 			else // raw data
@@ -112,7 +111,7 @@ void gbPrinterReceiveData()
 				memcpy(dest, data, control);
 				dest += control;
 				data += control;
-				len  += control;
+				len	 += control;
 			}
 		}
 	}
@@ -132,7 +131,7 @@ void gbPrinterCommand()
 	case 0x01:
 		// reset/initialize packet
 		gbPrinterDataCount = 0;
-		gbPrinterStatus    = 0;
+		gbPrinterStatus	   = 0;
 		break;
 	case 0x02:
 		// print packet
@@ -225,8 +224,8 @@ u8 gbPrinterSend(u8 byte)
 		// receiving dummy 2
 		gbPrinterPacket[gbPrinterCount++] = byte;
 		gbPrinterResult = gbPrinterStatus;
-		gbPrinterState  = 0;
-		gbPrinterCount  = 0;
+		gbPrinterState	= 0;
+		gbPrinterCount	= 0;
 		break;
 	}
 	return gbPrinterResult;

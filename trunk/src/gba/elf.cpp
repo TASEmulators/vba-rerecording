@@ -6,10 +6,8 @@
 #include "../NLS.h"
 #include "../common/System.h" // systemMessage
 #include "GBAGlobals.h"
+#include "GBAinline.h"
 #include "elf.h"
-
-#define elfReadMemory(addr) \
-    READ32LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
 
 #define DW_TAG_array_type             0x01
 #define DW_TAG_enumeration_type       0x04
@@ -164,22 +162,22 @@ case DW_TAG_reference_type
 struct ELFcie
 {
 	ELFcie *next;
-	u32     offset;
-	u8 *    augmentation;
-	u32     codeAlign;
-	s32     dataAlign;
-	int     returnAddress;
-	u8 *    data;
-	u32     dataLen;
+	u32		offset;
+	u8 *	augmentation;
+	u32		codeAlign;
+	s32		dataAlign;
+	int		returnAddress;
+	u8 *	data;
+	u32		dataLen;
 };
 
 struct ELFfde
 {
 	ELFcie *cie;
-	u32     address;
-	u32     end;
-	u8 *    data;
-	u32     dataLen;
+	u32		address;
+	u32		end;
+	u8 *	data;
+	u32		dataLen;
 };
 
 enum ELFRegMode
@@ -192,13 +190,13 @@ enum ELFRegMode
 struct ELFFrameStateRegister
 {
 	ELFRegMode mode;
-	int        reg;
-	s32        offset;
+	int		   reg;
+	s32		   offset;
 };
 
 struct ELFFrameStateRegisters
 {
-	ELFFrameStateRegister   regs[16];
+	ELFFrameStateRegister	regs[16];
 	ELFFrameStateRegisters *previous;
 };
 
@@ -213,8 +211,8 @@ struct ELFFrameState
 	ELFFrameStateRegisters registers;
 
 	ELFCfaMode cfaMode;
-	int        cfaRegister;
-	s32        cfaOffset;
+	int		   cfaRegister;
+	s32		   cfaOffset;
 
 	u32 pc;
 
@@ -223,24 +221,25 @@ struct ELFFrameState
 	int returnAddress;
 };
 
-extern bool8 cpuIsMultiBoot;
+bool8 cpuIsMultiBoot = false;
+bool8 parseDebug	 = true;
 
-Symbol *elfSymbols       = NULL;
-char *  elfSymbolsStrTab = NULL;
-int     elfSymbolsCount  = 0;
+Symbol *elfSymbols		 = NULL;
+char *	elfSymbolsStrTab = NULL;
+int		elfSymbolsCount	 = 0;
 
-ELFSectionHeader **elfSectionHeaders = NULL;
-char *elfSectionHeadersStringTable   = NULL;
-int   elfSectionHeadersCount         = 0;
+ELFSectionHeader * *elfSectionHeaders = NULL;
+char *elfSectionHeadersStringTable	  = NULL;
+int	  elfSectionHeadersCount = 0;
 u8 *  elfFileData = NULL;
 
 CompileUnit *elfCompileUnits = NULL;
-DebugInfo *  elfDebugInfo    = NULL;
-char *       elfDebugStrings = NULL;
+DebugInfo *	 elfDebugInfo	 = NULL;
+char *		 elfDebugStrings = NULL;
 
-ELFcie * elfCies     = NULL;
-ELFfde **elfFdes     = NULL;
-int      elfFdeCount = 0;
+ELFcie *  elfCies	  = NULL;
+ELFfde * *elfFdes	  = NULL;
+int		  elfFdeCount = 0;
 
 CompileUnit *elfCurrentUnit = NULL;
 
@@ -278,7 +277,7 @@ CompileUnit *elfGetCompileUnit(u32 addr)
 	return NULL;
 }
 
-char *elfGetAddressSymbol(u32 addr)
+const char *elfGetAddressSymbol(u32 addr)
 {
 	static char buffer[256];
 
@@ -291,8 +290,8 @@ char *elfGetAddressSymbol(u32 addr)
 		{
 			if (addr >= func->lowPC && addr < func->highPC)
 			{
-				int   offset = addr - func->lowPC;
-				char *name   = func->name;
+				int offset		 = addr - func->lowPC;
+				const char *name = func->name;
 				if (!name)
 					name = "";
 				if (offset)
@@ -310,14 +309,14 @@ char *elfGetAddressSymbol(u32 addr)
 		for (int i = 0; i < elfSymbolsCount; i++)
 		{
 			Symbol *s = &elfSymbols[i];
-			if ((addr >= s->value)  && addr < (s->value+s->size))
+			if ((addr >= s->value)  && addr < (s->value + s->size))
 			{
-				int   offset = addr-s->value;
-				char *name   = s->name;
+				int offset		 = addr - s->value;
+				const char *name = s->name;
 				if (name == NULL)
 					name = "";
 				if (offset)
-					sprintf(buffer, "%s+%d", name, addr-s->value);
+					sprintf(buffer, "%s+%d", name, addr - s->value);
 				else
 					strcpy(buffer, name);
 				return buffer;
@@ -336,7 +335,7 @@ char *elfGetAddressSymbol(u32 addr)
 	return "";
 }
 
-bool elfFindLineInModule(u32 *addr, char *name, int line)
+bool elfFindLineInModule(u32 *addr, const char *name, int line)
 {
 	CompileUnit *unit = elfCompileUnits;
 
@@ -344,8 +343,8 @@ bool elfFindLineInModule(u32 *addr, char *name, int line)
 	{
 		if (unit->lineInfoTable)
 		{
-			int   i;
-			int   count = unit->lineInfoTable->fileCount;
+			int	  i;
+			int	  count = unit->lineInfoTable->fileCount;
 			char *found = NULL;
 			for (i = 0; i < count; i++)
 			{
@@ -377,7 +376,7 @@ bool elfFindLineInModule(u32 *addr, char *name, int line)
 	return false;
 }
 
-int elfFindLine(CompileUnit *unit, Function * /* func */, u32 addr, char **f)
+int elfFindLine(CompileUnit *unit, Function * /* func */, u32 addr, const char * *f)
 {
 	int currentLine = -1;
 	if (unit->hasLineInfo)
@@ -417,7 +416,7 @@ bool elfFindLineInUnit(u32 *addr, CompileUnit *unit, int line)
 	return false;
 }
 
-bool elfGetCurrentFunction(u32 addr, Function **f, CompileUnit **u)
+bool elfGetCurrentFunction(u32 addr, Function * *f, CompileUnit * *u)
 {
 	CompileUnit *unit = elfGetCompileUnit(addr);
 	// found unit, need to find function
@@ -438,7 +437,7 @@ bool elfGetCurrentFunction(u32 addr, Function **f, CompileUnit **u)
 	return false;
 }
 
-bool elfGetObject(char *name, Function *f, CompileUnit *u, Object **o)
+bool elfGetObject(const char *name, Function *f, CompileUnit *u, Object * *o)
 {
 	if (f && u)
 	{
@@ -498,7 +497,7 @@ bool elfGetObject(char *name, Function *f, CompileUnit *u, Object **o)
 	return false;
 }
 
-char *elfGetSymbol(int i, u32 *value, u32 *size, int *type)
+const char *elfGetSymbol(int i, u32 *value, u32 *size, int *type)
 {
 	if (i < elfSymbolsCount)
 	{
@@ -511,7 +510,7 @@ char *elfGetSymbol(int i, u32 *value, u32 *size, int *type)
 	return NULL;
 }
 
-bool elfGetSymbolAddress(char *sym, u32 *addr, u32 *size, int *type)
+bool elfGetSymbolAddress(const char *sym, u32 *addr, u32 *size, int *type)
 {
 	if (elfSymbolsCount)
 	{
@@ -567,7 +566,7 @@ void elfExecuteCFAInstructions(ELFFrameState *state, u8 *data, u32 len,
 			break;
 		case DW_CFA_offset:
 			reg = op & 0x3f;
-			state->registers.regs[reg].mode   = REG_OFFSET;
+			state->registers.regs[reg].mode	  = REG_OFFSET;
 			state->registers.regs[reg].offset = state->dataAlign *
 			                                    (s32)elfReadLEB128(data, &bytes);
 			data += bytes;
@@ -587,16 +586,16 @@ void elfExecuteCFAInstructions(ELFFrameState *state, u8 *data, u32 len,
 				break;
 			case DW_CFA_advance_loc2:
 				state->pc += state->codeAlign * elfRead2Bytes(data);
-				data      += 2;
+				data	  += 2;
 				break;
 			case DW_CFA_advance_loc4:
 				state->pc += state->codeAlign * elfRead4Bytes(data);
-				data      += 4;
+				data	  += 4;
 				break;
 			case DW_CFA_offset_extended:
-				reg   = elfReadLEB128(data, &bytes);
+				reg	  = elfReadLEB128(data, &bytes);
 				data += bytes;
-				state->registers.regs[reg].mode   = REG_OFFSET;
+				state->registers.regs[reg].mode	  = REG_OFFSET;
 				state->registers.regs[reg].offset = state->dataAlign *
 				                                    (s32)elfReadLEB128(data, &bytes);
 				data += bytes;
@@ -604,15 +603,15 @@ void elfExecuteCFAInstructions(ELFFrameState *state, u8 *data, u32 len,
 			case DW_CFA_restore_extended:
 			case DW_CFA_undefined:
 			case DW_CFA_same_value:
-				reg   = elfReadLEB128(data, &bytes);
+				reg	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 				state->registers.regs[reg].mode = REG_NOT_SET;
 				break;
 			case DW_CFA_register:
-				reg   = elfReadLEB128(data, &bytes);
+				reg	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 				state->registers.regs[reg].mode = REG_REGISTER;
-				state->registers.regs[reg].reg  = elfReadLEB128(data, &bytes);
+				state->registers.regs[reg].reg	= elfReadLEB128(data, &bytes);
 				data += bytes;
 				break;
 			case DW_CFA_remember_state:
@@ -663,9 +662,9 @@ void elfExecuteCFAInstructions(ELFFrameState *state, u8 *data, u32 len,
 ELFFrameState *elfGetFrameState(ELFfde *fde, u32 address)
 {
 	ELFFrameState *state = (ELFFrameState *)calloc(1, sizeof(ELFFrameState));
-	state->pc            = fde->address;
-	state->dataAlign     = fde->cie->dataAlign;
-	state->codeAlign     = fde->cie->codeAlign;
+	state->pc = fde->address;
+	state->dataAlign	 = fde->cie->dataAlign;
+	state->codeAlign	 = fde->cie->codeAlign;
 	state->returnAddress = fde->cie->returnAddress;
 
 	elfExecuteCFAInstructions(state,
@@ -691,7 +690,7 @@ void elfPrintCallChain(u32 address)
 
 	while (count < 20)
 	{
-		char *addr = elfGetAddressSymbol(address);
+		const char *addr = elfGetAddressSymbol(address);
 		if (*addr == 0)
 			addr = "???";
 
@@ -726,7 +725,7 @@ void elfPrintCallChain(u32 address)
 					newRegs[i].I = regs[i].I;
 					break;
 				case REG_OFFSET:
-					newRegs[i].I = elfReadMemory(regs[state->cfaRegister].I +
+					newRegs[i].I = CPUReadMemoryQuick(regs[state->cfaRegister].I +
 					                             state->cfaOffset +
 					                             r->offset);
 					break;
@@ -738,8 +737,8 @@ void elfPrintCallChain(u32 address)
 					break;
 				}
 			}
-			memcpy(regs, newRegs, sizeof(reg_pair)*15);
-			addr    = newRegs[14].I;
+			memcpy(regs, newRegs, sizeof(reg_pair) * 15);
+			addr	= newRegs[14].I;
 			addr   &= 0xfffffffe;
 			address = addr;
 			count++;
@@ -788,7 +787,7 @@ u32 elfDecodeLocation(Function *f, ELFBlock *o, LocationType *type, u32 base)
 		case DW_OP_reg13:
 		case DW_OP_reg14:
 		case DW_OP_reg15:
-			framebase = reg[*b->data-0x50].I;
+			framebase = reg[*b->data - 0x50].I;
 			break;
 		default:
 			fprintf(stderr, "Unknown frameBase %02x\n", *b->data);
@@ -796,20 +795,20 @@ u32 elfDecodeLocation(Function *f, ELFBlock *o, LocationType *type, u32 base)
 		}
 	}
 
-	ELFBlock *loc      = o;
-	u32       location = 0;
-	int       bytes    = 0;
+	ELFBlock *loc	   = o;
+	u32		  location = 0;
+	int		  bytes	   = 0;
 	if (loc)
 	{
 		switch (*loc->data)
 		{
 		case DW_OP_addr:
-			location = elfRead4Bytes(loc->data+1);
-			*type    = LOCATION_memory;
+			location = elfRead4Bytes(loc->data + 1);
+			*type	 = LOCATION_memory;
 			break;
 		case DW_OP_plus_uconst:
-			location = base + elfReadLEB128(loc->data+1, &bytes);
-			*type    = LOCATION_memory;
+			location = base + elfReadLEB128(loc->data + 1, &bytes);
+			*type	 = LOCATION_memory;
 			break;
 		case DW_OP_reg0:
 		case DW_OP_reg1:
@@ -828,16 +827,16 @@ u32 elfDecodeLocation(Function *f, ELFBlock *o, LocationType *type, u32 base)
 		case DW_OP_reg14:
 		case DW_OP_reg15:
 			location = *loc->data - 0x50;
-			*type    = LOCATION_register;
+			*type	 = LOCATION_register;
 			break;
 		case DW_OP_fbreg:
 		{
 			int bytes;
-			s32 off = elfReadSignedLEB128(loc->data+1, &bytes);
+			s32 off = elfReadSignedLEB128(loc->data + 1, &bytes);
 			location = framebase + off;
-			*type    = LOCATION_memory;
-			break;
+			*type	 = LOCATION_memory;
 		}
+		break;
 		default:
 			fprintf(stderr, "Unknown location %02x\n", *loc->data);
 			break;
@@ -876,7 +875,7 @@ char *elfReadString(u8 *data, int *bytesRead)
 		*bytesRead = 1;
 		return NULL;
 	}
-	*bytesRead = strlen((char *)data) + 1;
+	*bytesRead = (int)strlen((char *)data) + 1;
 	return (char *)data;
 }
 
@@ -906,7 +905,7 @@ u32 elfReadLEB128(u8 *data, int *bytesRead)
 	u32 result = 0;
 	int shift  = 0;
 	int count  = 0;
-	u8  byte;
+	u8	byte;
 	do
 	{
 		byte = *data++;
@@ -924,7 +923,7 @@ u8 *elfReadSection(u8 *data, ELFSectionHeader *sh)
 	return data + READ32LE(&sh->offset);
 }
 
-ELFSectionHeader *elfGetSectionByName(char *name)
+ELFSectionHeader *elfGetSectionByName(const char *name)
 {
 	for (int i = 0; i < elfSectionHeadersCount; i++)
 	{
@@ -980,35 +979,35 @@ start:
 	{
 	case DW_FORM_addr:
 		attr->value = elfRead4Bytes(data);
-		data       += 4;
+		data	   += 4;
 		break;
 	case DW_FORM_data2:
 		attr->value = elfRead2Bytes(data);
-		data       += 2;
+		data	   += 2;
 		break;
 	case DW_FORM_data4:
 		attr->value = elfRead4Bytes(data);
-		data       += 4;
+		data	   += 4;
 		break;
 	case DW_FORM_string:
 		attr->string = (char *)data;
-		data        += strlen(attr->string)+1;
+		data		+= strlen(attr->string) + 1;
 		break;
 	case DW_FORM_strp:
 		attr->string = elfDebugStrings + elfRead4Bytes(data);
-		data        += 4;
+		data		+= 4;
 		break;
 	case DW_FORM_block:
-		attr->block         = (ELFBlock *)malloc(sizeof(ELFBlock));
+		attr->block			= (ELFBlock *)malloc(sizeof(ELFBlock));
 		attr->block->length = elfReadLEB128(data, &bytes);
 		data += bytes;
 		attr->block->data = data;
 		data += attr->block->length;
 		break;
 	case DW_FORM_block1:
-		attr->block         = (ELFBlock *)malloc(sizeof(ELFBlock));
+		attr->block			= (ELFBlock *)malloc(sizeof(ELFBlock));
 		attr->block->length = *data++;
-		attr->block->data   = data;
+		attr->block->data	= data;
 		data += attr->block->length;
 		break;
 	case DW_FORM_data1:
@@ -1019,27 +1018,23 @@ start:
 		break;
 	case DW_FORM_sdata:
 		attr->value = elfReadSignedLEB128(data, &bytes);
-		data       += bytes;
+		data	   += bytes;
 		break;
 	case DW_FORM_udata:
 		attr->value = elfReadLEB128(data, &bytes);
-		data       += bytes;
+		data	   += bytes;
 		break;
 	case DW_FORM_ref_addr:
-		attr->value = (elfDebugInfo->infodata + elfRead4Bytes(data)) -
-		              elfGetCompileUnitForData(data)->top;
-		data += 4;
+		attr->value = (u32)((elfDebugInfo->infodata + elfRead4Bytes(data)) - elfGetCompileUnitForData(data)->top);
+		data	   += 4;
 		break;
 	case DW_FORM_ref4:
 		attr->value = elfRead4Bytes(data);
-		data       += 4;
+		data	   += 4;
 		break;
 	case DW_FORM_ref_udata:
-		attr->value = (elfDebugInfo->infodata +
-		               (elfGetCompileUnitForData(data)->top -
-		                elfDebugInfo->infodata) +
-		               elfReadLEB128(data, &bytes)) -
-		              elfCurrentUnit->top;
+		attr->value =
+		    (u32)((elfDebugInfo->infodata + (elfGetCompileUnitForData(data)->top - elfDebugInfo->infodata) + elfReadLEB128(data, &bytes)) - elfCurrentUnit->top);
 		data += bytes;
 		break;
 	case DW_FORM_indirect:
@@ -1053,7 +1048,7 @@ start:
 	return data;
 }
 
-ELFAbbrev *elfGetAbbrev(ELFAbbrev **table, u32 number)
+ELFAbbrev *elfGetAbbrev(ELFAbbrev * *table, u32 number)
 {
 	int hash = number % 121;
 
@@ -1071,9 +1066,9 @@ ELFAbbrev *elfGetAbbrev(ELFAbbrev **table, u32 number)
 ELFAbbrev * *elfReadAbbrevs(u8 *data, u32 offset)
 {
 	data += offset;
-	ELFAbbrev **abbrevs = (ELFAbbrev * *)calloc(sizeof(ELFAbbrev *)*121, 1);
-	int         bytes   = 0;
-	u32         number  = elfReadLEB128(data, &bytes);
+	ELFAbbrev * *abbrevs = (ELFAbbrev * *)calloc(sizeof(ELFAbbrev *) * 121, 1);
+	int			 bytes	 = 0;
+	u32			 number	 = elfReadLEB128(data, &bytes);
 	data += bytes;
 	while (number)
 	{
@@ -1081,7 +1076,7 @@ ELFAbbrev * *elfReadAbbrevs(u8 *data, u32 offset)
 
 		// read tag information
 		abbrev->number = number;
-		abbrev->tag    = elfReadLEB128(data, &bytes);
+		abbrev->tag	   = elfReadLEB128(data, &bytes);
 		data += bytes;
 		abbrev->hasChildren = *data++ ? true : false;
 
@@ -1141,8 +1136,8 @@ void elfParseCFA(u8 *top)
 
 	while (data < end)
 	{
-		u32 offset = data - topOffset;
-		u32 len    = elfRead4Bytes(data);
+		u32 offset = (u32)(data - topOffset);
+		u32 len	   = elfRead4Bytes(data);
 		data += 4;
 
 		u8 *dataEnd = data + len;
@@ -1158,7 +1153,7 @@ void elfParseCFA(u8 *top)
 			ELFcie *cie = (ELFcie *)calloc(1, sizeof(ELFcie));
 
 			cie->next = cies;
-			cies      = cie;
+			cies	  = cie;
 
 			cie->offset = offset;
 
@@ -1182,8 +1177,8 @@ void elfParseCFA(u8 *top)
 
 			cie->returnAddress = *data++;
 
-			cie->data    = data;
-			cie->dataLen = dataEnd - data;
+			cie->data	 = data;
+			cie->dataLen = (u32)(dataEnd - data);
 		}
 		else
 		{
@@ -1207,18 +1202,19 @@ void elfParseCFA(u8 *top)
 			fde->cie = cie;
 
 			fde->address = elfRead4Bytes(data);
-			data        += 4;
+			data		+= 4;
 
 			fde->end = fde->address + elfRead4Bytes(data);
-			data    += 4;
+			data	+= 4;
 
-			fde->data    = data;
-			fde->dataLen = dataEnd - data;
+			fde->data	 = data;
+			fde->dataLen = (u32)(dataEnd - data);
 
-			if ((elfFdeCount %10) == 0)
+			if ((elfFdeCount % 10) == 0)
 			{
-				elfFdes = (ELFfde * *)realloc(elfFdes, (elfFdeCount+10) *
-				                              sizeof(ELFfde *));
+				void *tmp = realloc(elfFdes, (elfFdeCount + 10) * sizeof(ELFfde *));
+				if (!tmp) free(elfFdes);
+				elfFdes = (ELFfde **)tmp;
 			}
 			elfFdes[elfFdeCount++] = fde;
 		}
@@ -1232,13 +1228,15 @@ void elfAddLine(LineInfo *l, u32 a, int file, int line, int *max)
 {
 	if (l->number == *max)
 	{
-		*max    += 1000;
-		l->lines = (LineInfoItem *)realloc(l->lines, *max*sizeof(LineInfoItem));
+		*max	 += 1000;
+		void *tmp = realloc(l->lines, *max * sizeof(LineInfoItem));
+		if (!tmp) free(l->lines);
+		l->lines  = (LineInfoItem *)tmp;
 	}
 	LineInfoItem *li = &l->lines[l->number];
-	li->file    = l->files[file-1];
+	li->file	= l->files[file - 1];
 	li->address = a;
-	li->line    = line;
+	li->line	= line;
 	l->number++;
 }
 
@@ -1253,7 +1251,7 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 	LineInfo *l = unit->lineInfoTable = (LineInfo *)calloc(1, sizeof(LineInfo));
 	l->number = 0;
 	int max = 1000;
-	l->lines = (LineInfoItem *)malloc(1000*sizeof(LineInfoItem));
+	l->lines = (LineInfoItem *)malloc(1000 * sizeof(LineInfoItem));
 
 	u8 *data = elfReadSection(top, h);
 	data += unit->lineInfo;
@@ -1266,10 +1264,10 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 	data += 4;
 	int minInstrSize  = *data++;
 	int defaultIsStmt = *data++;
-	int lineBase      = (s8)*data++;
-	int lineRange     = *data++;
-	int opcodeBase    = *data++;
-	u8 *stdOpLen      = (u8 *)malloc(opcodeBase * sizeof(u8));
+	int lineBase	  = (s8) * data++;
+	int lineRange	  = *data++;
+	int opcodeBase	  = *data++;
+	u8 *stdOpLen	  = (u8 *)malloc(opcodeBase * sizeof(u8));
 	stdOpLen[0] = 1;
 	int i;
 	for (i = 1; i < opcodeBase; i++)
@@ -1287,7 +1285,7 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 	data += bytes;
 	int count = 4;
 	int index = 0;
-	l->files = (char * *)malloc(sizeof(char *)*count);
+	l->files = (char * *)malloc(sizeof(char *) * count);
 
 	while ((s = elfReadString(data, &bytes)) != NULL)
 	{
@@ -1306,22 +1304,24 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 		//    fprintf(stderr, "File is %s\n", s);
 		if (index == count)
 		{
-			count   += 4;
-			l->files = (char * *)realloc(l->files, sizeof(char *)*count);
+			count	+= 4;
+			void *tmp = realloc(l->files, sizeof(char *) * count);
+			if (!tmp) free(l->files);
+			l->files = (char **)tmp;
 		}
 	}
 	l->fileCount = index;
-	data        += bytes;
+	data		+= bytes;
 
 	while (data < end)
 	{
-		u32 address    = 0;
-		int file       = 1;
-		int line       = 1;
-		int col        = 0;
-		int isStmt     = defaultIsStmt;
+		u32 address	   = 0;
+		int file	   = 1;
+		int line	   = 1;
+		int col		   = 0;
+		int isStmt	   = defaultIsStmt;
 		int basicBlock = 0;
-		int endSeq     = 0;
+		int endSeq	   = 0;
 
 		while (!endSeq)
 		{
@@ -1345,8 +1345,8 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 					fprintf(stderr, "Unknown extended LINE opcode %02x\n", op);
 					exit(-1);
 				}
-				break;
 			}
+			break;
 			case DW_LNS_copy:
 				//      fprintf(stderr, "Address %08x line %d (%d)\n", address, line, file);
 				elfAddLine(l, address, file, line, &max);
@@ -1354,7 +1354,7 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 				break;
 			case DW_LNS_advance_pc:
 				address += minInstrSize * elfReadLEB128(data, &bytes);
-				data    += bytes;
+				data	+= bytes;
 				break;
 			case DW_LNS_advance_line:
 				line += elfReadSignedLEB128(data, &bytes);
@@ -1365,7 +1365,7 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 				data += bytes;
 				break;
 			case DW_LNS_set_column:
-				col   = elfReadLEB128(data, &bytes);
+				col	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 				break;
 			case DW_LNS_negate_stmt:
@@ -1375,16 +1375,16 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 				basicBlock = 1;
 				break;
 			case DW_LNS_const_add_pc:
-				address += (minInstrSize *((255 - opcodeBase)/lineRange));
+				address += (minInstrSize * ((255 - opcodeBase) / lineRange));
 				break;
 			case DW_LNS_fixed_advance_pc:
 				address += elfRead2Bytes(data);
-				data    += 2;
+				data	+= 2;
 				break;
 			default:
-				op       = op - opcodeBase;
+				op		 = op - opcodeBase;
 				address += (op / lineRange) * minInstrSize;
-				line    += lineBase + (op % lineRange);
+				line	+= lineBase + (op % lineRange);
 				elfAddLine(l, address, file, line, &max);
 				//        fprintf(stderr, "Address %08x line %d (%d)\n", address, line,file);
 				basicBlock = 1;
@@ -1392,10 +1392,12 @@ void elfParseLineInfo(CompileUnit *unit, u8 *top)
 			}
 		}
 	}
-	l->lines = (LineInfoItem *)realloc(l->lines, l->number*sizeof(LineInfoItem));
+	void *tmp = realloc(l->lines, l->number * sizeof(LineInfoItem));
+	if (!tmp) free(l->lines);
+	l->lines = (LineInfoItem *)tmp;
 }
 
-u8 *elfSkipData(u8 *data, ELFAbbrev *abbrev, ELFAbbrev **abbrevs)
+u8 *elfSkipData(u8 *data, ELFAbbrev *abbrev, ELFAbbrev * *abbrevs)
 {
 	int i;
 	int bytes;
@@ -1439,11 +1441,11 @@ u8 *elfSkipData(u8 *data, ELFAbbrev *abbrev, ELFAbbrev **abbrevs)
 	return data;
 }
 
-Type *elfParseType(CompileUnit *unit, u32);
+Type *elfParseType(CompileUnit * unit, u32);
 u8 *elfParseObject(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
-                   Object **object);
+                   Object * *object);
 u8 *elfParseFunction(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
-                     Function **function);
+                     Function * *function);
 void elfCleanUp(Function *);
 
 void elfAddType(Type *type, CompileUnit *unit, u32 offset)
@@ -1453,21 +1455,21 @@ void elfAddType(Type *type, CompileUnit *unit, u32 offset)
 		if (unit->types != type && type->offset == 0)
 		{
 			type->offset = offset;
-			type->next   = unit->types;
-			unit->types  = type;
+			type->next	 = unit->types;
+			unit->types	 = type;
 		}
 	}
 }
 
 void elfParseType(u8 *data, u32 offset, ELFAbbrev *abbrev, CompileUnit *unit,
-                  Type **type)
+                  Type * *type)
 {
 	switch (abbrev->tag)
 	{
 	case DW_TAG_typedef:
 	{
-		u32   typeref = 0;
-		char *name    = NULL;
+		u32	  typeref = 0;
+		char *name	  = NULL;
 		for (int i = 0; i < abbrev->numAttrs; i++)
 		{
 			ELFAttr *attr = &abbrev->attrs[i];
@@ -1494,8 +1496,8 @@ void elfParseType(u8 *data, u32 offset, ELFAbbrev *abbrev, CompileUnit *unit,
 		if (name)
 			(*type)->name = name;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_union_type:
 	case DW_TAG_structure_type:
 	{
@@ -1548,13 +1550,16 @@ void elfParseType(u8 *data, u32 offset, ELFAbbrev *abbrev, CompileUnit *unit,
 				case DW_TAG_member:
 				{
 					if ((index % 4) == 0)
-						s->members = (Member *)realloc(s->members,
-						                               sizeof(Member)*(index+4));
+					{
+						void *tmp = realloc(s->members, sizeof(Member) * (index + 4));
+						if (!tmp) free(s->members);
+						s->members = (Member *)tmp;
+					}
 					Member *m = &s->members[index];
-					m->location  = NULL;
+					m->location	 = NULL;
 					m->bitOffset = 0;
-					m->bitSize   = 0;
-					m->byteSize  = 0;
+					m->bitSize	 = 0;
+					m->byteSize	 = 0;
 					for (int i = 0; i < abbr->numAttrs; i++)
 					{
 						ELFAttr *attr = &abbr->attrs[i];
@@ -1590,8 +1595,8 @@ void elfParseType(u8 *data, u32 offset, ELFAbbrev *abbrev, CompileUnit *unit,
 						}
 					}
 					index++;
-					break;
 				}
+				break;
 				case DW_TAG_subprogram:
 				{
 					Function *fnc = NULL;
@@ -1604,8 +1609,8 @@ void elfParseType(u8 *data, u32 offset, ELFAbbrev *abbrev, CompileUnit *unit,
 							unit->functions = fnc;
 						unit->lastFunction = fnc;
 					}
-					break;
 				}
+				break;
 				case DW_TAG_inheritance:
 					// TODO: add support
 					data = elfSkipData(data, abbr, unit->abbrevs);
@@ -1622,15 +1627,15 @@ CASE_TYPE_TAG:
 					data = elfSkipData(data, abbr, unit->abbrevs);
 					break;
 				}
-				num   = elfReadLEB128(data, &bytes);
+				num	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 			}
 			s->memberCount = index;
 		}
 		*type = t;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_base_type:
 	{
 		Type *t = (Type *)calloc(sizeof(Type), 1);
@@ -1665,8 +1670,8 @@ CASE_TYPE_TAG:
 			fprintf(stderr, "Unexpected children for base type\n");
 		*type = t;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_pointer_type:
 	{
 		Type *t = (Type *)calloc(sizeof(Type), 1);
@@ -1696,8 +1701,8 @@ CASE_TYPE_TAG:
 			fprintf(stderr, "Unexpected children for pointer type\n");
 		*type = t;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_reference_type:
 	{
 		Type *t = (Type *)calloc(sizeof(Type), 1);
@@ -1727,8 +1732,8 @@ CASE_TYPE_TAG:
 			fprintf(stderr, "Unexpected children for ref type\n");
 		*type = t;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_volatile_type:
 	{
 		u32 typeref = 0;
@@ -1752,8 +1757,8 @@ CASE_TYPE_TAG:
 			fprintf(stderr, "Unexpected children for volatile type\n");
 		*type = elfParseType(unit, typeref);
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_const_type:
 	{
 		u32 typeref = 0;
@@ -1777,8 +1782,8 @@ CASE_TYPE_TAG:
 			fprintf(stderr, "Unexpected children for const type\n");
 		*type = elfParseType(unit, typeref);
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_enumeration_type:
 	{
 		Type *t = (Type *)calloc(sizeof(Type), 1);
@@ -1821,9 +1826,10 @@ CASE_TYPE_TAG:
 				case DW_TAG_enumerator:
 				{
 					count++;
-					e->members = (EnumMember *)realloc(e->members,
-					                                   count*sizeof(EnumMember));
-					EnumMember *m = &e->members[count-1];
+					void *tmp = realloc(e->members, count * sizeof(EnumMember));
+					if (!tmp) free(e->members);
+					e->members = (EnumMember *)tmp;
+					EnumMember *m = &e->members[count - 1];
 					for (int i = 0; i < abbr->numAttrs; i++)
 					{
 						ELFAttr *attr = &abbr->attrs[i];
@@ -1841,22 +1847,22 @@ CASE_TYPE_TAG:
 							        attr->name);
 						}
 					}
-					break;
 				}
+				break;
 				default:
 					fprintf(stderr, "Unknown enum tag %02x\n", abbr->tag);
 					data = elfSkipData(data, abbr, unit->abbrevs);
 					break;
 				}
-				num   = elfReadLEB128(data, &bytes);
+				num	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 			}
 		}
 		e->count = count;
-		*type    = t;
+		*type	 = t;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_subroutine_type:
 	{
 		Type *t = (Type *)calloc(sizeof(Type), 1);
@@ -1901,8 +1907,8 @@ CASE_TYPE_TAG:
 					else
 						f->args = o;
 					lastVar = o;
-					break;
 				}
+				break;
 				case DW_TAG_unspecified_parameters:
 					// no use in the debugger yet
 					data = elfSkipData(data, abbr, unit->abbrevs);
@@ -1916,20 +1922,20 @@ CASE_TYPE_TAG:
 					data = elfSkipData(data, abbr, unit->abbrevs);
 					break;
 				}
-				num   = elfReadLEB128(data, &bytes);
+				num	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 			}
 		}
 		*type = t;
 		return;
-		break;
 	}
+	break;
 	case DW_TAG_array_type:
 	{
-		u32    typeref = 0;
-		int    i;
+		u32	   typeref = 0;
+		int	   i;
 		Array *array = (Array *)calloc(sizeof(Array), 1);
-		Type * t     = (Type *)calloc(sizeof(Type), 1);
+		Type * t	 = (Type *)calloc(sizeof(Type), 1);
 		t->type = TYPE_array;
 		elfAddType(t, unit, offset);
 
@@ -1942,7 +1948,7 @@ CASE_TYPE_TAG:
 			case DW_AT_sibling:
 				break;
 			case DW_AT_type:
-				typeref     = attr->value;
+				typeref		= attr->value;
 				array->type = elfParseType(unit, typeref);
 				break;
 			default:
@@ -1954,7 +1960,7 @@ CASE_TYPE_TAG:
 			int bytes;
 			u32 num = elfReadLEB128(data, &bytes);
 			data += bytes;
-			int index     = 0;
+			int index	  = 0;
 			int maxBounds = 0;
 			while (num)
 			{
@@ -1966,9 +1972,10 @@ CASE_TYPE_TAG:
 				{
 					if (maxBounds == index)
 					{
-						maxBounds    += 4;
-						array->bounds = (int *)realloc(array->bounds,
-						                               sizeof(int)*maxBounds);
+						maxBounds	 += 4;
+						void *tmp = realloc(array->bounds, sizeof(int) * maxBounds);
+						if (!tmp) free(array->bounds);
+						array->bounds = (int *)tmp;
 					}
 					for (int i = 0; i < abbr->numAttrs; i++)
 					{
@@ -1977,7 +1984,7 @@ CASE_TYPE_TAG:
 						switch (attr->name)
 						{
 						case DW_AT_upper_bound:
-							array->bounds[index] = attr->value+1;
+							array->bounds[index] = attr->value + 1;
 							break;
 						case DW_AT_type: // ignore
 							break;
@@ -1987,14 +1994,14 @@ CASE_TYPE_TAG:
 						}
 					}
 					index++;
-					break;
 				}
+				break;
 				default:
 					fprintf(stderr, "Unknown array tag %02x\n", abbr->tag);
 					data = elfSkipData(data, abbr, unit->abbrevs);
 					break;
 				}
-				num   = elfReadLEB128(data, &bytes);
+				num	  = elfReadLEB128(data, &bytes);
 				data += bytes;
 			}
 			array->maxBounds = index;
@@ -2003,10 +2010,10 @@ CASE_TYPE_TAG:
 		for (i = 0; i < array->maxBounds; i++)
 			t->size *= array->bounds[i];
 		t->array = array;
-		*type    = t;
+		*type	 = t;
 		return;
-		break;
 	}
+	break;
 	default:
 		fprintf(stderr, "Unknown type TAG %02x\n", abbrev->tag);
 		exit(-1);
@@ -2026,7 +2033,7 @@ Type *elfParseType(CompileUnit *unit, u32 offset)
 	if (offset == 0)
 	{
 		Type *t = (Type *)calloc(sizeof(Type), 1);
-		t->type   = TYPE_void;
+		t->type	  = TYPE_void;
 		t->offset = 0;
 		elfAddType(t, unit, 0);
 		return t;
@@ -2102,7 +2109,7 @@ void elfGetObjectAttributes(CompileUnit *unit, u32 offset, Object *o)
 }
 
 u8 *elfParseObject(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
-                   Object **object)
+                   Object * *object)
 {
 	Object *o = (Object *)calloc(sizeof(Object), 1);
 
@@ -2156,11 +2163,11 @@ u8 *elfParseObject(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
 }
 
 u8 *elfParseBlock(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
-                  Function *func, Object **lastVar)
+                  Function *func, Object * *lastVar)
 {
 	int bytes;
 	u32 start = func->lowPC;
-	u32 end   = func->highPC;
+	u32 end	  = func->highPC;
 
 	for (int i = 0; i < abbrev->numAttrs; i++)
 	{
@@ -2222,8 +2229,8 @@ CASE_TYPE_TAG:       // types only parsed when used
 						unit->functions = f;
 					unit->lastFunction = f;
 				}
-				break;
 			}
+			break;
 			case DW_TAG_variable:
 			{
 				Object *o;
@@ -2237,8 +2244,8 @@ CASE_TYPE_TAG:       // types only parsed when used
 				else
 					func->variables = o;
 				*lastVar = o;
-				break;
 			}
+			break;
 			case DW_TAG_inlined_subroutine:
 				// TODO:
 				data = elfSkipData(data, abbrev, unit->abbrevs);
@@ -2247,8 +2254,8 @@ CASE_TYPE_TAG:       // types only parsed when used
 			{
 				fprintf(stderr, "Unknown block TAG %02x\n", abbrev->tag);
 				data = elfSkipData(data, abbrev, unit->abbrevs);
-				break;
 			}
+			break;
 			}
 		}
 	}
@@ -2332,13 +2339,13 @@ void elfGetFunctionAttributes(CompileUnit *unit, u32 offset, Function *func)
 }
 
 u8 *elfParseFunction(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
-                     Function **f)
+                     Function * *f)
 {
 	Function *func = (Function *)calloc(sizeof(Function), 1);
 	*f = func;
 
-	int  bytes;
-	bool mangled     = false;
+	int	 bytes;
+	bool mangled	 = false;
 	bool declaration = false;
 	for (int i = 0; i < abbrev->numAttrs; i++)
 	{
@@ -2354,7 +2361,7 @@ u8 *elfParseFunction(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
 			break;
 		case DW_AT_MIPS_linkage_name:
 			func->name = attr->string;
-			mangled    = true;
+			mangled	   = true;
 			break;
 		case DW_AT_low_pc:
 			func->lowPC = attr->value;
@@ -2429,9 +2436,9 @@ u8 *elfParseFunction(u8 *data, ELFAbbrev *abbrev, CompileUnit *unit,
 
 	if (abbrev->hasChildren)
 	{
-		int     nesting   = 1;
+		int		nesting	  = 1;
 		Object *lastParam = NULL;
-		Object *lastVar   = NULL;
+		Object *lastVar	  = NULL;
 
 		while (nesting)
 		{
@@ -2464,13 +2471,13 @@ CASE_TYPE_TAG:       // no need to parse types. only parsed when used
 						unit->lastFunction->next = fnc;
 					unit->lastFunction = fnc;
 				}
-				break;
 			}
+			break;
 			case DW_TAG_lexical_block:
 			{
 				data = elfParseBlock(data, abbrev, unit, func, &lastVar);
-				break;
 			}
+			break;
 			case DW_TAG_formal_parameter:
 			{
 				Object *o;
@@ -2480,8 +2487,8 @@ CASE_TYPE_TAG:       // no need to parse types. only parsed when used
 				else
 					func->parameters = o;
 				lastParam = o;
-				break;
 			}
+			break;
 			case DW_TAG_variable:
 			{
 				Object *o;
@@ -2491,8 +2498,8 @@ CASE_TYPE_TAG:       // no need to parse types. only parsed when used
 				else
 					func->variables = o;
 				lastVar = o;
-				break;
 			}
+			break;
 			case DW_TAG_unspecified_parameters:
 			case DW_TAG_inlined_subroutine:
 			{
@@ -2506,21 +2513,21 @@ CASE_TYPE_TAG:       // no need to parse types. only parsed when used
 
 				if (abbrev->hasChildren)
 					nesting++;
-				break;
 			}
+			break;
 			default:
 			{
 				fprintf(stderr, "Unknown function TAG %02x\n", abbrev->tag);
 				data = elfSkipData(data, abbrev, unit->abbrevs);
-				break;
 			}
+			break;
 			}
 		}
 	}
 	return data;
 }
 
-u8 *elfParseUnknownData(u8 *data, ELFAbbrev *abbrev, ELFAbbrev **abbrevs)
+u8 *elfParseUnknownData(u8 *data, ELFAbbrev *abbrev, ELFAbbrev * *abbrevs)
 {
 	int i;
 	int bytes;
@@ -2593,8 +2600,8 @@ u8 *elfParseCompileUnitChildren(u8 *data, CompileUnit *unit)
 					unit->functions = func;
 				unit->lastFunction = func;
 			}
-			break;
 		}
+		break;
 CASE_TYPE_TAG:
 			data = elfSkipData(data, abbrev, unit->abbrevs);
 			break;
@@ -2607,15 +2614,15 @@ CASE_TYPE_TAG:
 			else
 				unit->variables = var;
 			lastObj = var;
-			break;
 		}
+		break;
 		default:
 			data = elfParseUnknownData(data, abbrev, unit->abbrevs);
 			break;
 		}
 
 		abbrevNum = elfReadLEB128(data, &bytes);
-		data     += bytes;
+		data	 += bytes;
 	}
 	return data;
 }
@@ -2648,7 +2655,7 @@ CompileUnit *elfParseCompUnit(u8 *data, u8 *abbrevData)
 		return NULL;
 	}
 
-	ELFAbbrev **abbrevs = elfReadAbbrevs(abbrevData, offset);
+	ELFAbbrev * *abbrevs = elfReadAbbrevs(abbrevData, offset);
 
 	u32 abbrevNum = elfReadLEB128(data, &bytes);
 	data += bytes;
@@ -2656,10 +2663,10 @@ CompileUnit *elfParseCompUnit(u8 *data, u8 *abbrevData)
 	ELFAbbrev *abbrev = elfGetAbbrev(abbrevs, abbrevNum);
 
 	CompileUnit *unit = (CompileUnit *)calloc(sizeof(CompileUnit), 1);
-	unit->top     = top;
+	unit->top	  = top;
 	unit->length  = length;
 	unit->abbrevs = abbrevs;
-	unit->next    = NULL;
+	unit->next	  = NULL;
 
 	elfCurrentUnit = unit;
 
@@ -2677,7 +2684,7 @@ CompileUnit *elfParseCompUnit(u8 *data, u8 *abbrevData)
 			break;
 		case DW_AT_stmt_list:
 			unit->hasLineInfo = true;
-			unit->lineInfo    = attr->value;
+			unit->lineInfo	  = attr->value;
 			break;
 		case DW_AT_low_pc:
 			unit->lowPC = attr->value;
@@ -2718,7 +2725,7 @@ void elfParseAranges(u8 *data)
 	data = elfReadSection(data, sh);
 	u8 *end = data + READ32LE(&sh->size);
 
-	int      max    = 4;
+	int		 max	= 4;
 	ARanges *ranges = (ARanges *)calloc(sizeof(ARanges), 4);
 
 	int index = 0;
@@ -2735,9 +2742,9 @@ void elfParseAranges(u8 *data)
 		//    u8 segSize = *data++;
 		data += 2; // remove if uncommenting above
 		data += 4;
-		ranges[index].count  = (len-20)/8;
+		ranges[index].count	 = (len - 20) / 8;
 		ranges[index].offset = offset;
-		ranges[index].ranges = (ARange *)calloc(sizeof(ARange), (len-20)/8);
+		ranges[index].ranges = (ARange *)calloc(sizeof(ARange), (len - 20) / 8);
 		int i = 0;
 		while (true)
 		{
@@ -2748,18 +2755,20 @@ void elfParseAranges(u8 *data)
 			if (addr == 0 && len == 0)
 				break;
 			ranges[index].ranges[i].lowPC  = addr;
-			ranges[index].ranges[i].highPC = addr+len;
+			ranges[index].ranges[i].highPC = addr + len;
 			i++;
 		}
 		index++;
 		if (index == max)
 		{
-			max   += 4;
-			ranges = (ARanges *)realloc(ranges, max*sizeof(ARanges));
+			max	  += 4;
+			void *tmp = realloc(ranges, max * sizeof(ARanges));
+			if (!tmp) free(ranges);
+			ranges = (ARanges *)tmp;
 		}
 	}
 	elfDebugInfo->numRanges = index;
-	elfDebugInfo->ranges    = ranges;
+	elfDebugInfo->ranges	= ranges;
 }
 
 void elfReadSymtab(u8 *data)
@@ -2774,41 +2783,41 @@ void elfReadSymtab(u8 *data)
 	int count = READ32LE(&sh->size) / sizeof(ELFSymbol);
 	elfSymbolsCount = 0;
 
-	elfSymbols = (Symbol *)malloc(sizeof(Symbol)*count);
+	elfSymbols = (Symbol *)malloc(sizeof(Symbol) * count);
 
 	int i;
 
 	for (i = 0; i < count; i++)
 	{
-		ELFSymbol *s       = &symtab[i];
-		int        type    = s->info & 15;
-		int        binding = s->info >> 4;
+		ELFSymbol *s	   = &symtab[i];
+		int		   type	   = s->info & 15;
+		int		   binding = s->info >> 4;
 
 		if (binding)
 		{
 			Symbol *sym = &elfSymbols[elfSymbolsCount];
-			sym->name    = &strtable[READ32LE(&s->name)];
+			sym->name	 = &strtable[READ32LE(&s->name)];
 			sym->binding = binding;
-			sym->type    = type;
-			sym->value   = READ32LE(&s->value);
-			sym->size    = READ32LE(&s->size);
+			sym->type	 = type;
+			sym->value	 = READ32LE(&s->value);
+			sym->size	 = READ32LE(&s->size);
 			elfSymbolsCount++;
 		}
 	}
 	for (i = 0; i < count; i++)
 	{
-		ELFSymbol *s    = &symtab[i];
-		int        bind = s->info>>4;
-		int        type = s->info & 15;
+		ELFSymbol *s	= &symtab[i];
+		int		   bind = s->info >> 4;
+		int		   type = s->info & 15;
 
 		if (!bind)
 		{
 			Symbol *sym = &elfSymbols[elfSymbolsCount];
-			sym->name    = &strtable[READ32LE(&s->name)];
+			sym->name	 = &strtable[READ32LE(&s->name)];
 			sym->binding = (s->info >> 4);
-			sym->type    = type;
-			sym->value   = READ32LE(&s->value);
-			sym->size    = READ32LE(&s->size);
+			sym->type	 = type;
+			sym->value	 = READ32LE(&s->value);
+			sym->size	 = READ32LE(&s->size);
 			elfSymbolsCount++;
 		}
 	}
@@ -2816,7 +2825,7 @@ void elfReadSymtab(u8 *data)
 	//  free(symtab);
 }
 
-bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
+bool elfReadProgram(ELFHeader *eh, u8 *data, int &size, bool parseDebug)
 {
 	int count = READ16LE(&eh->e_phnum);
 	int i;
@@ -2847,6 +2856,7 @@ bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
 				memcpy(&workRAM[READ32LE(&ph->paddr) & 0x3ffff],
 				       data + READ32LE(&ph->offset),
 				       READ32LE(&ph->filesz));
+				size += READ32LE(&ph->filesz);
 			}
 		}
 		else
@@ -2865,16 +2875,16 @@ bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
 	char *stringTable = NULL;
 
 	// read section headers
-	p     = data + READ32LE(&eh->e_shoff);
+	p	  = data + READ32LE(&eh->e_shoff);
 	count = READ16LE(&eh->e_shnum);
 
-	ELFSectionHeader **sh = (ELFSectionHeader * *)
-	                        malloc(sizeof(ELFSectionHeader *) * count);
+	ELFSectionHeader * *sh = (ELFSectionHeader * *)
+	                         malloc(sizeof(ELFSectionHeader *) * count);
 
 	for (i = 0; i < count; i++)
 	{
 		sh[i] = (ELFSectionHeader *)p;
-		p    += sizeof(ELFSectionHeader);
+		p	 += sizeof(ELFSectionHeader);
 		if (READ16LE(&eh->e_shentsize) != sizeof(ELFSectionHeader))
 			p += READ16LE(&eh->e_shentsize) - sizeof(ELFSectionHeader);
 	}
@@ -2887,7 +2897,7 @@ bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
 
 	elfSectionHeaders = sh;
 	elfSectionHeadersStringTable = stringTable;
-	elfSectionHeadersCount       = count;
+	elfSectionHeadersCount		 = count;
 
 	for (i = 0; i < count; i++)
 	{
@@ -2905,6 +2915,7 @@ bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
 					memcpy(&workRAM[READ32LE(&sh[i]->addr) & 0x3ffff], data +
 					       READ32LE(&sh[i]->offset),
 					       READ32LE(&sh[i]->size));
+					size += READ32LE(&sh[i]->size);
 				}
 			}
 			else
@@ -2952,10 +2963,10 @@ bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
 		u8 *debugdata = elfReadSection(data, dbgHeader);
 
 		elfDebugInfo->debugdata = data;
-		elfDebugInfo->infodata  = debugdata;
+		elfDebugInfo->infodata	= debugdata;
 
 		u32 total = READ32LE(&dbgHeader->size);
-		u8 *end   = debugdata + total;
+		u8 *end	  = debugdata + total;
 		u8 *ddata = debugdata;
 
 		CompileUnit *last = NULL;
@@ -2963,8 +2974,8 @@ bool elfReadProgram(ELFHeader *eh, u8 *data, int& size, bool parseDebug)
 
 		while (ddata < end)
 		{
-			unit         = elfParseCompUnit(ddata, abbrevdata);
-			unit->offset = ddata-debugdata;
+			unit		 = elfParseCompUnit(ddata, abbrevdata);
+			unit->offset = (u32)(ddata - debugdata);
 			elfParseLineInfo(unit, data);
 			if (last == NULL)
 				elfCompileUnits = unit;
@@ -2997,21 +3008,28 @@ end:
 
 	elfSectionHeaders = NULL;
 	elfSectionHeadersStringTable = NULL;
-	elfSectionHeadersCount       = 0;
+	elfSectionHeadersCount		 = 0;
 
 	return true;
 }
 
 extern bool8 parseDebug;
 
-bool elfRead(const char *name, int& siz, FILE *f)
+bool elfRead(const char *name, int &siz, FILE *f)
 {
 	fseek(f, 0, SEEK_END);
 	long size = ftell(f);
 	elfFileData = (u8 *)malloc(size);
 	fseek(f, 0, SEEK_SET);
-	fread(elfFileData, 1, size, f);
+	int res = fread(elfFileData, 1, size, f);
 	fclose(f);
+
+	if (res < 0)
+	{
+		free(elfFileData);
+		elfFileData = NULL;
+		return false;
+	}
 
 	ELFHeader *header = (ELFHeader *)elfFileData;
 
@@ -3062,7 +3080,7 @@ void elfCleanUp(Function *func)
 	free(func->frameBase);
 }
 
-void elfCleanUp(ELFAbbrev **abbrevs)
+void elfCleanUp(ELFAbbrev * *abbrevs)
 {
 	for (int i = 0; i < 121; i++)
 	{
@@ -3207,7 +3225,7 @@ void elfCleanUp()
 		}
 		free(elfFdes);
 
-		elfFdes     = NULL;
+		elfFdes		= NULL;
 		elfFdeCount = 0;
 	}
 

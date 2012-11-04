@@ -16,6 +16,7 @@
 #include "../../gba/RTC.h"
 #include "../../gba/GBASound.h"
 #include "../../common/vbalua.h"
+#include "../../common/SystemGlobals.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // BugReport dialog

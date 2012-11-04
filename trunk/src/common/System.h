@@ -8,87 +8,38 @@
 #include "zlib.h"
 #include "../Port.h"
 
-// c++ lacks a way to implement Smart Referrences or Delphi-Style Properties
-// in order to maintain consistency, value-copied things should not be modified too often
-struct EmulatedSystem
-{
-	// main emulation function
-	void (*emuMain)(int);
-	// reset emulator
-	void (*emuReset)(bool);
-	// clean up memory
-	void (*emuCleanUp)();
-	// load battery file
-	bool (*emuReadBattery)(const char *);
-	// write battery file
-	bool (*emuWriteBattery)(const char *);
-	// load battery file from stream
-	bool (*emuReadBatteryFromStream)(gzFile);
-	// write battery file to stream
-	bool (*emuWriteBatteryToStream)(gzFile);
-	// load state
-	bool (*emuReadState)(const char *);
-	// save state
-	bool (*emuWriteState)(const char *);
-	// load state from stream
-	bool (*emuReadStateFromStream)(gzFile);
-	// save state to stream
-	bool (*emuWriteStateToStream)(gzFile);
-	// load memory state (rewind)
-	bool (*emuReadMemState)(char *, int);
-	// write memory state (rewind)
-	bool (*emuWriteMemState)(char *, int);
-	// write PNG file
-	bool (*emuWritePNG)(const char *);
-	// write BMP file
-	bool (*emuWriteBMP)(const char *);
-	// emulator update CPSR (ARM only)
-	void (*emuUpdateCPSR)();
-	// emulator has debugger
-	bool emuHasDebugger;
-	// clock ticks to emulate
-	int emuCount;
-};
-
-// why not convert the value type only when doing I/O?
-struct EmulatedSystemCounters
-{
-	int32 frameCount;
-	int32 lagCount;
-	int32 extraCount;
-	bool8 lagged;
-	bool8 laggedLast;
-};
-
-extern struct EmulatedSystem theEmulator;
-extern struct EmulatedSystemCounters systemCounters;
-
 extern void log(const char *, ...);
 
 extern void systemGbPrint(u8 *, int, int, int, int);
+extern int32 systemGetLCDSizeType();
+extern void systemGetLCDResolution(int32 &width, int32 &height);
+extern void systemGetLCDBaseSize(int32 &width, int32 &height);
+extern void systemGetLCDBaseOffset(int32 &xofs, int32 &yofs);
 extern int  systemScreenCapture(int);
 extern void systemRefreshScreen();
 extern void systemRenderFrame();
 extern void systemRedrawScreen();
 extern void systemUpdateListeners();
-// updates the joystick data
+// updates the motion sensor
 extern void systemSetSensorX(int32);
 extern void systemSetSensorY(int32);
 extern void systemResetSensor();
 extern int32 systemGetSensorX();
 extern int32 systemGetSensorY();
 extern void systemUpdateMotionSensor(int);
+// updates the joystick data
 extern int  systemGetDefaultJoypad();
 extern void systemSetDefaultJoypad(int);
 extern bool systemReadJoypads();
-// return information about the given joystick, -1 for default joystick... the bool is for if motion sensor should be handled
-// too
+// return information about the given joystick, -1 for default joystick...
+// the bool is for if motion sensor should be handled too
 extern u32  systemGetOriginalJoypad(int, bool);
 extern u32  systemGetJoypad(int, bool);
 extern void systemSetJoypad(int, u32);
 extern void systemClearJoypads();
 extern void systemMessage(int, const char *, ...);
 extern void systemScreenMessage(const char *msg, int slot = 0, int duration = 3000, const char *colorList = NULL);
+// sound
 extern bool systemSoundInit();
 extern void systemSoundShutdown();
 extern void systemSoundPause();
@@ -99,6 +50,7 @@ extern void systemSoundWriteToBuffer();
 extern void systemSoundClearBuffer();
 extern bool systemSoundCanChangeQuality();
 extern bool systemSoundSetQuality(int quality);
+// speed-related stuff
 extern u32  systemGetClock();
 extern void systemSetTitle(const char *);
 extern void systemShowSpeed(int);
@@ -108,6 +60,10 @@ extern void systemSetThrottle(int);
 extern int  systemGetThrottle();
 extern void systemFrame();
 extern int  systemFramesToSkip();
+extern void systemCleanUp();
+extern void systemReset();
+extern bool systemFrameDrawingRequired();
+extern void systemFrameBoundaryWork();
 extern bool systemIsEmulating();
 extern void systemGbBorderOn();
 extern bool systemIsRunningGBA();
@@ -132,7 +88,17 @@ extern int  systemVerbose;
 extern int  systemFrameSkip;
 extern int  systemSaveUpdateCounter;
 
+// constances
 #define SYSTEM_SAVE_UPDATED 30
 #define SYSTEM_SAVE_NOT_UPDATED 0
+#define SYSTEM_SENSOR_INIT_VALUE 2047
+
+enum NativeDisplayResolutions
+{
+	UNKNOWN_NDR = -1,
+	GBA_NDR = 0,
+	GB_NDR = 1,
+	SGB_NDR = 2
+};
 
 #endif // VBA_SYSTEM_H

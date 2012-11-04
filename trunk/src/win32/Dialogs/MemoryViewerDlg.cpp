@@ -10,20 +10,9 @@
 #include "../WinResUtil.h"
 #include "../VBA.h"
 
+#include "../../common/SystemGlobals.h"
+#include "../../gba/GBAinline.h"
 #include "../../gba/GBAGlobals.h"
-
-#define CPUReadByteQuick(addr) \
-    ::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask]
-#define CPUWriteByteQuick(addr, b) \
-    ::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask] = (b)
-#define CPUReadHalfWordQuick(addr) \
-    *((u16 *)&::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask])
-#define CPUWriteHalfWordQuick(addr, b) \
-    *((u16 *)&::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask]) = (b)
-#define CPUReadMemoryQuick(addr) \
-    *((u32 *)&::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask])
-#define CPUWriteMemoryQuick(addr, b) \
-    *((u32 *)&::map[(addr)>>24].address[(addr) & ::map[(addr)>>24].mask]) = (b)
 
 /////////////////////////////////////////////////////////////////////////////
 // GBAMemoryViewer control
