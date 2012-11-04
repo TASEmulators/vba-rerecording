@@ -7,8 +7,9 @@
 #include "../NLS.h"
 #include "GBA.h"
 #include "GBAGlobals.h"
-#include "GBACpu.h"
 #include "GBAinline.h"
+#include "GBACheats.h"
+#include "GBACpu.h"
 #include "GBAGfx.h"
 #include "GBASound.h"
 #include "EEprom.h"
@@ -91,7 +92,7 @@ u32	  dma3Source		= 0;
 u32	  dma3Dest			= 0;
 void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
-bool8 fxOn = false;
+bool8 fxOn			 = false;
 bool8 windowOn		 = false;
 bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
 char  buffer[1024];
@@ -439,14 +440,14 @@ variable_desc saveGameStruct[] = {
 	{ &timer3Ticks,		  sizeof(int32) },
 	{ &timer3Reload,	  sizeof(int32) },
 	{ &timer3ClockReload, sizeof(int32) },
-	{ &dma0Source,		  sizeof(u32)	},
-	{ &dma0Dest,		  sizeof(u32)	},
-	{ &dma1Source,		  sizeof(u32)	},
-	{ &dma1Dest,		  sizeof(u32)	},
-	{ &dma2Source,		  sizeof(u32)	},
-	{ &dma2Dest,		  sizeof(u32)	},
-	{ &dma3Source,		  sizeof(u32)	},
-	{ &dma3Dest,		  sizeof(u32)	},
+	{ &dma0Source,		  sizeof(u32)   },
+	{ &dma0Dest,		  sizeof(u32)   },
+	{ &dma1Source,		  sizeof(u32)   },
+	{ &dma1Dest,		  sizeof(u32)   },
+	{ &dma2Source,		  sizeof(u32)   },
+	{ &dma2Dest,		  sizeof(u32)   },
+	{ &dma3Source,		  sizeof(u32)   },
+	{ &dma3Dest,		  sizeof(u32)   },
 	{ &fxOn,			  sizeof(bool8) },
 	{ &windowOn,		  sizeof(bool8) },
 	{ &N_FLAG,			  sizeof(bool8) },
@@ -455,10 +456,10 @@ variable_desc saveGameStruct[] = {
 	{ &V_FLAG,			  sizeof(bool8) },
 	{ &armState,		  sizeof(bool8) },
 	{ &armIrqEnable,	  sizeof(bool8) },
-	{ &armNextPC,		  sizeof(u32)	},
+	{ &armNextPC,		  sizeof(u32)   },
 	{ &armMode,			  sizeof(int32) },
 	{ &saveType,		  sizeof(int32) },
-	{ NULL,				  0				}
+	{ NULL,				  0			    }
 };
 
 #define CPU_BREAK_LOOP \
@@ -528,6 +529,7 @@ void cpuEnableProfiling(int hz)
 	profilingTicks = profilingTicksReload = 16777216 / hz;
 	profSetHertz(hz);
 }
+
 #endif
 
 inline int CPUUpdateTicks()
@@ -636,6 +638,8 @@ void CPUUpdateRenderBuffers(bool force)
 	}
 }
 
+#undef CLEAR_ARRAY
+
 bool CPUWriteStateToStream(gzFile gzFile)
 {
 	utilWriteInt(gzFile, SAVE_GAME_VERSION);
@@ -668,7 +672,6 @@ bool CPUWriteStateToStream(gzFile gzFile)
 
 	// SAVE_GAME_VERSION_9 (new to re-recording version which is based on 1.72)
 	{
-		extern int32 sensorX, sensorY; // from SDL.cpp
 		utilGzWrite(gzFile, &sensorX, sizeof(sensorX));
 		utilGzWrite(gzFile, &sensorY, sizeof(sensorY));
 		bool8 movieActive = VBAMovieActive();
@@ -765,7 +768,7 @@ bool CPUWriteMemState(char *memory, int available)
 bool CPUReadStateFromStream(gzFile gzFile)
 {
 	char tempBackupName[128];
- 	if (tempSaveSafe)
+	if (tempSaveSafe)
 	{
 		sprintf(tempBackupName, "gbatempsave%d.sav", tempSaveID++);
 		CPUWriteState(tempBackupName);
@@ -829,13 +832,31 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, pix, 4 * 241 * 162);
 	utilGzRead(gzFile, ioMem, 0x400);
 
-	eepromReadGame(gzFile, version);
-	flashReadGame(gzFile, version);
+	if (skipSaveGameBattery)
+	{
+		// skip eeprom data
+		eepromReadGameSkip(gzFile, version);
+		// skip flash data
+		flashReadGameSkip(gzFile, version);
+	}
+	else
+	{
+		eepromReadGame(gzFile, version);
+		flashReadGame(gzFile, version);
+	}
 	soundReadGame(gzFile, version);
 
 	if (version > SAVE_GAME_VERSION_1)
 	{
-		cheatsReadGame(gzFile);
+		if (skipSaveGameCheats)
+		{
+			// skip cheats list data
+			cheatsReadGameSkip(gzFile, version);
+		}
+		else
+		{
+			cheatsReadGame(gzFile, version);
+		}
 	}
 	if (version > SAVE_GAME_VERSION_6)
 	{
@@ -860,6 +881,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		SWAP(dma3Source, DM3SAD_H, DM3SAD_L);
 		SWAP(dma3Dest,   DM3DAD_H, DM3DAD_L);
 	}
+#undef SWAP
 
 	// set pointers!
 	layerEnable = layerSettings & DISPCNT;
@@ -868,6 +890,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 	CPUUpdateRenderBuffers(true);
 	CPUUpdateWindow0();
 	CPUUpdateWindow1();
+
 	gbaSaveType = 0;
 	switch (saveType)
 	{
@@ -894,7 +917,6 @@ bool CPUReadStateFromStream(gzFile gzFile)
 
 	if (version >= SAVE_GAME_VERSION_9) // new to re-recording version:
 	{
-		extern int32 sensorX, sensorY; // from SDL.cpp
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
 		utilGzRead(gzFile, &sensorY, sizeof(sensorY));
 
@@ -972,15 +994,16 @@ bool CPUReadStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, &systemCounters.laggedLast, sizeof(systemCounters.laggedLast));
 	}
 
+	systemSetJoypad(0, ~P1 & 0x3FF);
+	VBAUpdateButtonPressDisplay();
+	VBAUpdateFrameCountDisplay();
+	systemRefreshScreen();
+
 	if (tempSaveSafe)
 	{
 		remove(tempBackupName);
 		tempSaveAttempts = 0;
 	}
-	systemSetJoypad(0, ~P1 & 0x3FF);
-	VBAUpdateButtonPressDisplay();
-	VBAUpdateFrameCountDisplay();
-	systemRefreshScreen();
 	return true;
 
 failedLoad:
@@ -1219,13 +1242,13 @@ bool CPUWriteGSASnapshot(const char *fileName,
 	fwrite("SharkPortSave", 1, 0x0d, file);
 	utilPutDword(buffer, 0x000f0000);
 	fwrite(buffer, 1, 4, file); // save type 0x000f0000 = GBA save
-	utilPutDword(buffer, strlen(title));
+	utilPutDword(buffer, (u32)strlen(title));
 	fwrite(buffer, 1, 4, file); // title length
 	fwrite(title, 1, strlen(title), file);
-	utilPutDword(buffer, strlen(desc));
+	utilPutDword(buffer, (u32)strlen(desc));
 	fwrite(buffer, 1, 4, file); // desc length
 	fwrite(desc, 1, strlen(desc), file);
-	utilPutDword(buffer, strlen(notes));
+	utilPutDword(buffer, (u32)strlen(notes));
 	fwrite(buffer, 1, 4, file); // notes length
 	fwrite(notes, 1, strlen(notes), file);
 	int saveSize = 0x10000;
@@ -1236,7 +1259,7 @@ bool CPUWriteGSASnapshot(const char *fileName,
 	utilPutDword(buffer, totalSize); // length of remainder of save - CRC
 	fwrite(buffer, 1, 4, file);
 
-	char temp[0x2001c];
+	char *temp = new char[0x2001c];
 	memset(temp, 0, 28);
 	memcpy(temp, &rom[0xa0], 16); // copy internal name
 	temp[0x10] = rom[0xbe]; // reserved area (old checksum)
@@ -1257,6 +1280,7 @@ bool CPUWriteGSASnapshot(const char *fileName,
 	fwrite(buffer, 1, 4, file); // CRC?
 
 	fclose(file);
+	delete [] temp;
 	return true;
 }
 
@@ -1456,6 +1480,7 @@ int CPULoadRom(const char *szFile)
 
 	u8 *whereToLoad = cpuIsMultiBoot ? workRAM : rom;
 
+#ifndef NO_DEBUGGER
 	if (utilIsELF(szFile))
 	{
 		FILE *f = fopen(szFile, "rb");
@@ -1477,21 +1502,24 @@ int CPULoadRom(const char *szFile)
 			free(workRAM);
 			workRAM = NULL;
 			elfCleanUp();
-			elfCleanUp();
 			return 0;
 		}
 	}
-	else if (!utilLoad(szFile,
-	                   utilIsGBAImage,
-	                   whereToLoad,
-	                   size))
+	else
+#endif //NO_DEBUGGER
+	if (szFile != NULL)
 	{
+		if (!utilLoad(szFile,
+		              utilIsGBAImage,
+		              whereToLoad,
+		              size))
+		{
 			free(rom);
 			rom = NULL;
 			free(workRAM);
 			workRAM = NULL;
-			elfCleanUp();
-		return 0;
+			return 0;
+		}
 	}
 
 	u16 *temp = (u16 *)(rom + ((size + 1) & ~1));
@@ -1558,6 +1586,9 @@ int CPULoadRom(const char *szFile)
 		CPUCleanUp();
 		return 0;
 	}
+
+	//flashInit();
+	//eepromInit();
 
 	CPUUpdateRenderBuffers(true);
 
@@ -1842,7 +1873,6 @@ void CPUSoftwareInterrupt(int comment)
 #ifdef BKPT_SUPPORT
 	if (comment == 0xff)
 	{
-		extern void (*dbgOutput)(const char *, u32);
 		dbgOutput(NULL, reg[0].I);
 		return;
 	}
@@ -1919,8 +1949,8 @@ void CPUSoftwareInterrupt(int comment)
 			    VCOUNT);
 		}
 #endif
-		holdState = true;
-		holdType  = -1;
+		holdState	 = true;
+		holdType	 = -1;
 		break;
 	case 0x03:
 #ifdef GBA_LOGGING
@@ -1930,9 +1960,9 @@ void CPUSoftwareInterrupt(int comment)
 			    VCOUNT);
 		}
 #endif
-		holdState = true;
-		holdType  = -1;
-		stopState = true;
+		holdState	 = true;
+		holdType	 = -1;
+		stopState	 = true;
 		break;
 	case 0x04:
 #ifdef GBA_LOGGING
@@ -2020,9 +2050,9 @@ void CPUSoftwareInterrupt(int comment)
 		}
 #endif
 		if (reg[0].I)
-			soundPause();
+			systemSoundPause();
 		else
-			soundResume();
+			systemSoundResume();
 		break;
 	case 0x1F:
 		BIOS_MidiKey2Freq();
@@ -2046,8 +2076,7 @@ void CPUSoftwareInterrupt(int comment)
 		if (!disableMessage)
 		{
 			systemMessage(MSG_UNSUPPORTED_BIOS_FUNCTION,
-			              N_(
-			                  "Unsupported BIOS function %02x called from %08x. A BIOS file is needed in order to get correct behaviour."),
+			              N_("Unsupported BIOS function %02x called from %08x. A BIOS file is needed in order to get correct behaviour."),
 			              comment,
 			              armMode ? armNextPC - 4 : armNextPC - 2);
 			disableMessage = true;
@@ -2080,7 +2109,6 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 {
 	int sm = s >> 24;
 	int dm = d >> 24;
-
 	int sc = c;
 
 	cpuDmaCount = c;
@@ -2206,7 +2234,8 @@ void CPUCheckDMA(int reason, int dmamask)
 			doDMA(dma0Source, dma0Dest, sourceIncrement, destIncrement,
 			      DM0CNT_L ? DM0CNT_L : 0x4000,
 			      DM0CNT_H & 0x0400);
-			cpuDmaHack = 1;
+			cpuDmaHack = true;
+
 			if (DM0CNT_H & 0x4000)
 			{
 				IF |= 0x0100;
@@ -2285,7 +2314,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				      DM1CNT_L ? DM1CNT_L : 0x4000,
 				      DM1CNT_H & 0x0400);
 			}
-			cpuDmaHack = 1;
+			cpuDmaHack = true;
 
 			if (DM1CNT_H & 0x4000)
 			{
@@ -2366,7 +2395,8 @@ void CPUCheckDMA(int reason, int dmamask)
 				      DM2CNT_L ? DM2CNT_L : 0x4000,
 				      DM2CNT_H & 0x0400);
 			}
-			cpuDmaHack = 1;
+			cpuDmaHack = true;
+
 			if (DM2CNT_H & 0x4000)
 			{
 				IF |= 0x0400;
@@ -2447,7 +2477,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			}
 		}
 	}
-	cpuDmaHack = 0;
+	cpuDmaHack = false;
 }
 
 void CPUUpdateRegister(u32 address, u16 value)
@@ -2460,8 +2490,10 @@ void CPUUpdateRegister(u32 address, u16 value)
 		bool changeBG = ((DISPCNT ^ value) & 0x0F00) ? true : false;
 		DISPCNT = (value & 0xFFF7);
 		UPDATE_REG(0x00, DISPCNT);
+
 		layerEnable = layerSettings & value;
 		windowOn	= (layerEnable & 0x6000) ? true : false;
+
 		if (change && !((value & 0x80)))
 		{
 			if (!(DISPSTAT & 1))
@@ -2478,7 +2510,9 @@ void CPUUpdateRegister(u32 address, u16 value)
 		CPUUpdateRender();
 		// we only care about changes in BG0-BG3
 		if (changeBG)
+		{
 			CPUUpdateRenderBuffers(false);
+		}
 		//      CPUUpdateTicks();
 		break;
 	}
@@ -2935,7 +2969,6 @@ void CPUUpdateRegister(u32 address, u16 value)
 		break;
 	case 0x204:
 	{
-		int i;
 		memoryWait[0x0e] = memoryWaitSeq[0x0e] = gamepakRamWaitState[value & 3];
 
 		if (!speedHack)
@@ -2963,10 +2996,9 @@ void CPUUpdateRegister(u32 address, u16 value)
 			memoryWait[0x0c]	= memoryWait[0x0d] = 4;
 			memoryWaitSeq[0x0c] = memoryWaitSeq[0x0d] = 8;
 		}
-		for (i = 0; i < 16; i++)
+		for (int i = 0; i < 16; i++)
 		{
-			memoryWaitFetch32[i] = memoryWait32[i] = memoryWait[i] *
-			                                         (memory32[i] ? 1 : 2);
+			memoryWaitFetch32[i] = memoryWait32[i] = memoryWait[i] * (memory32[i] ? 1 : 2);
 			memoryWaitFetch[i] = memoryWait[i];
 		}
 		memoryWaitFetch32[3] += 1;
@@ -2976,7 +3008,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 		prefetchApplies = false;
 		if (value & 0x4000)
 		{
-			for (i = 8; i < 16; i++)
+			for (int i = 8; i < 16; i++)
 			{
 				memoryWaitFetch32[i] = 2 * cpuMemoryWait[i];
 				memoryWaitFetch[i]	 = cpuMemoryWait[i];
@@ -3021,246 +3053,6 @@ void CPUUpdateRegister(u32 address, u16 value)
 	}
 }
 
-void CPUWriteHalfWordWrapped(u32 address, u16 value)
-{
-#ifdef GBA_LOGGING
-	if (address & 1)
-	{
-		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
-		{
-			log("Unaligned halfword write: %04x to %08x from %08x\n",
-			    value,
-			    address,
-			    armMode ? armNextPC - 4 : armNextPC - 2);
-		}
-	}
-#endif
-
-	switch (address >> 24)
-	{
-	case 2:
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-		if (*((u16 *)&freezeWorkRAM[address & 0x3FFFE]))
-			cheatsWriteHalfWord((u16 *)&workRAM[address & 0x3FFFE],
-			                    value,
-			                    *((u16 *)&freezeWorkRAM[address & 0x3FFFE]));
-		else
-#endif
-#endif
-		WRITE16LE(((u16 *)&workRAM[address & 0x3FFFE]), value);
-		break;
-	case 3:
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-		if (*((u16 *)&freezeInternalRAM[address & 0x7ffe]))
-			cheatsWriteHalfWord((u16 *)&internalRAM[address & 0x7ffe],
-			                    value,
-			                    *((u16 *)&freezeInternalRAM[address & 0x7ffe]));
-		else
-#endif
-#endif
-		WRITE16LE(((u16 *)&internalRAM[address & 0x7ffe]), value);
-		break;
-	case 4:
-		CPUUpdateRegister(address & 0x3fe, value);
-		break;
-	case 5:
-		WRITE16LE(((u16 *)&paletteRAM[address & 0x3fe]), value);
-		break;
-	case 6:
-		if (address & 0x10000)
-			WRITE16LE(((u16 *)&vram[address & 0x17ffe]), value);
-		else
-			WRITE16LE(((u16 *)&vram[address & 0x1fffe]), value);
-		break;
-	case 7:
-		WRITE16LE(((u16 *)&oam[address & 0x3fe]), value);
-		break;
-	case 8:
-	case 9:
-		if (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8)
-		{
-			if (!rtcWrite(address, value))
-				goto unwritable;
-		}
-		else if (!agbPrintWrite(address, value))
-			goto unwritable;
-		break;
-	case 13:
-		if (cpuEEPROMEnabled)
-		{
-			eepromWrite(address, (u8)(value & 0xFF));
-			break;
-		}
-		goto unwritable;
-	case 14:
-		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
-		{
-			(*cpuSaveGameFunc)(address, (u8)(value & 0xFF));
-			break;
-		}
-		goto unwritable;
-	default:
-unwritable:
-#ifdef GBA_LOGGING
-		if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
-		{
-			log("Illegal halfword write: %04x to %08x from %08x\n",
-			    value,
-			    address,
-			    armMode ? armNextPC - 4 : armNextPC - 2);
-		}
-#endif
-		break;
-	}
-}
-
-void CPUWriteHalfWord(u32 address, u16 value)
-{
-	CPUWriteHalfWordWrapped(address, value);
-	CallRegisteredLuaMemHook(address, 2, value, LUAMEMHOOK_WRITE);
-}
-
-void CPUWriteByteWrapped(u32 address, u8 b)
-{
-	switch (address >> 24)
-	{
-	case 2:
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-		if (freezeWorkRAM[address & 0x3FFFF])
-			cheatsWriteByte(&workRAM[address & 0x3FFFF], b);
-		else
-#endif
-#endif
-		workRAM[address & 0x3FFFF] = b;
-		break;
-	case 3:
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-		if (freezeInternalRAM[address & 0x7fff])
-			cheatsWriteByte(&internalRAM[address & 0x7fff], b);
-		else
-#endif
-#endif
-		internalRAM[address & 0x7fff] = b;
-		break;
-	case 4:
-		switch (address & 0x3FF)
-		{
-		case 0x301:
-			if (b == 0x80)
-				stopState = true;
-			holdState = 1;
-			holdType  = -1;
-			break;
-		case 0x60:
-		case 0x61:
-		case 0x62:
-		case 0x63:
-		case 0x64:
-		case 0x65:
-		case 0x68:
-		case 0x69:
-		case 0x6c:
-		case 0x6d:
-		case 0x70:
-		case 0x71:
-		case 0x72:
-		case 0x73:
-		case 0x74:
-		case 0x75:
-		case 0x78:
-		case 0x79:
-		case 0x7c:
-		case 0x7d:
-		case 0x80:
-		case 0x81:
-		case 0x84:
-		case 0x85:
-		case 0x90:
-		case 0x91:
-		case 0x92:
-		case 0x93:
-		case 0x94:
-		case 0x95:
-		case 0x96:
-		case 0x97:
-		case 0x98:
-		case 0x99:
-		case 0x9a:
-		case 0x9b:
-		case 0x9c:
-		case 0x9d:
-		case 0x9e:
-		case 0x9f:
-			soundEvent(address & 0xFF, b);
-			break;
-		default:
-			//      if(address & 1) {
-			//        CPUWriteHalfWord(address-1, (CPUReadHalfWord(address-1)&0x00FF)|((int)b<<8));
-			//      } else
-			if (address & 1)
-				CPUUpdateRegister(address & 0x3fe,
-				                  ((READ16LE(((u16 *)&ioMem[address & 0x3fe])))
-				                   & 0x00FF) |
-				                  b << 8);
-			else
-				CPUUpdateRegister(address & 0x3fe,
-				                  ((READ16LE(((u16 *)&ioMem[address & 0x3fe])) & 0xFF00) | b));
-		}
-		break;
-	case 5:
-		// no need to switch
-		*((u16 *)&paletteRAM[address & 0x3FE]) = (b << 8) | b;
-		break;
-	case 6:
-		// no need to switch
-		if (address & 0x10000)
-			*((u16 *)&vram[address & 0x17FFE]) = (b << 8) | b;
-		else
-			*((u16 *)&vram[address & 0x1FFFE]) = (b << 8) | b;
-		break;
-	case 7:
-		// no need to switch
-		*((u16 *)&oam[address & 0x3FE]) = (b << 8) | b;
-		break;
-	case 13:
-		if (cpuEEPROMEnabled)
-		{
-			eepromWrite(address, b);
-			break;
-		}
-		goto unwritable;
-	case 14:
-		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
-		{
-			(*cpuSaveGameFunc)(address, b);
-			break;
-		}
-	// default
-	default:
-unwritable:
-#ifdef GBA_LOGGING
-		if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
-		{
-			log("Illegal byte write: %02x to %08x from %08x\n",
-			    b,
-			    address,
-			    armMode ? armNextPC - 4 : armNextPC - 2);
-		}
-#endif
-		break;
-	}
-}
-
-void CPUWriteByte(u32 address, u8 b)
-{
-	CPUWriteByteWrapped(address, b);
-	CallRegisteredLuaMemHook(address, 1, b, LUAMEMHOOK_WRITE);
-}
-
 void CPULoadInternalBios()
 {
 	// load internal BIOS
@@ -3276,26 +3068,6 @@ void CPULoadInternalBios()
 
 void CPUInit()
 {
-#ifdef WORDS_BIGENDIAN
-	if (!cpuBiosSwapped)
-	{
-		for (unsigned int i = 0; i < sizeof(myROM) / 4; i++)
-		{
-			WRITE32LE(&myROM[i], myROM[i]);
-		}
-		cpuBiosSwapped = true;
-	}
-#endif
-	gbaSaveType = 0;
-	eepromInUse = 0;
-	saveType	= 0;
-
-	if (!useBios)
-	{
-		// load internal BIOS
-		memcpy(bios, myROM, sizeof(myROM));
-	}
-
 	biosProtected[0] = 0x00;
 	biosProtected[1] = 0xf0;
 	biosProtected[2] = 0x29;
@@ -3361,14 +3133,14 @@ void CPUInit()
 		memcpy(memoryWaitFetch, origMemoryWaitFetch, 16 * sizeof(int32));
 		memcpy(memoryWaitFetch32, origMemoryWaitFetch32, 16 * sizeof(int32));
 	}
+
+	gbaSaveType = 0;
+	eepromInUse = 0;
+	saveType	= 0;
 }
 
 void CPUReset()
 {
-	// FIXME: This should also be state-saved/state-loaded
-	cpuSavedTicks = 0;
-	gbaSaveType = 0;
-
 	systemReset();
 
 	if (gbaSaveType == 0)
@@ -3724,8 +3496,8 @@ static void CPUGetUserInput()
 	systemReadJoypads();
 
 	u32 joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
-	//		if (cpuEEPROMSensorEnabled)
-	//			systemUpdateMotionSensor(0);
+	//if (cpuEEPROMSensorEnabled)
+		//systemUpdateMotionSensor(0);
 
 	P1 = 0x03FF ^ (joy & 0x3FF);
 	UPDATE_REG(0x130, P1);
@@ -3840,7 +3612,7 @@ void CPULoop(int _ticks)
 				log("PC=%08x\n", armNextPC);
 			}
 		}
-#endif
+#endif /* FINAL_VERSION */
 
 		if (!holdState)
 		{
@@ -4276,7 +4048,7 @@ updateLoop:
 									UPDATE_REG(0x202, IF);
 								}
 							}
-							UPDATE_REG(0x10c, TM3D);
+							UPDATE_REG(0x10C, TM3D);
 						}
 					}
 					else
@@ -4351,7 +4123,6 @@ updateLoop:
 			ticks		-= clockTicks;
 			cpuLoopTicks = CPUUpdateTicks();
 
-			// FIXME: it is too bad that it is still not determined whether the loop can be exited at this point
 			if (cpuDmaTicksToUpdate > 0)
 			{
 				clockTicks = cpuSavedTicks;

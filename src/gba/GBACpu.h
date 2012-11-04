@@ -5,8 +5,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "GBACheats.h" // FIXME: SDL requires this included before "GBAinline.h"
-
 extern int armExecute();
 extern int thumbExecute();
 

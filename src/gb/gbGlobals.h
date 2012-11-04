@@ -117,6 +117,7 @@ extern u16	 gbColorFilter[32768];
 extern int32 gbColorOption;
 extern int32 gbPaletteOption;
 extern int32 gbEmulatorType;
+extern int32 gbHardware;
 extern int32 gbBorderOn;
 extern int32 gbBorderAutomatic;
 extern int32 gbCgbMode;

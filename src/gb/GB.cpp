@@ -17,10 +17,6 @@
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
-#ifdef __GNUC__
-#define _stricmp strcasecmp
-#endif
-
 // FIXME: constant (GB) or boolean (GBA)?!
 enum
 {
@@ -33,12 +29,6 @@ enum
 extern int32 GB_USE_TICKS_AS;
 
 u8 *		 origPix = NULL;
-extern u8 *	 pix;
-extern u32	 extButtons;
-extern bool8 capturePrevious;
-extern int32 captureNumber;
-extern bool8 speedup;
-
 bool gbUpdateSizes();
 
 // debugging
@@ -59,7 +49,7 @@ gbRegister AF;
 gbRegister BC;
 gbRegister DE;
 gbRegister HL;
-u16		   IFF;
+u16		   IFF = 0;
 // 0xff04
 u8 register_DIV = 0;
 // 0xff05
@@ -194,8 +184,7 @@ int32 gbRamSizesMasks[6] = { 0x00000000,
 	                         0x0001ffff,
 	                         0x0000ffff };
 
-int32 gbCycles[] =
-{
+int32 gbCycles[] = {
 //  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 	1, 3, 2, 2, 1, 1, 2, 1, 5, 2, 2, 2, 1, 1, 2, 1,  // 0
 	1, 3, 2, 2, 1, 1, 2, 1, 3, 2, 2, 2, 1, 1, 2, 1,  // 1
@@ -215,8 +204,7 @@ int32 gbCycles[] =
 	3, 3, 2, 1, 0, 4, 2, 4, 3, 2, 4, 1, 0, 0, 2, 4   // f
 };
 
-int32 gbCyclesCB[] =
-{
+int32 gbCyclesCB[] = {
 //  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 	2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,  // 0
 	2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,  // 1
@@ -236,8 +224,7 @@ int32 gbCyclesCB[] =
 	2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2   // f
 };
 
-u16 DAATable[] =
-{
+u16 DAATable[] = {
 	0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0700,
 	0x0800, 0x0900, 0x1020, 0x1120, 0x1220, 0x1320, 0x1420, 0x1520,
 	0x1000, 0x1100, 0x1200, 0x1300, 0x1400, 0x1500, 0x1600, 0x1700,
@@ -496,8 +483,7 @@ u16 DAATable[] =
 	0x9250, 0x9350, 0x9450, 0x9550, 0x9650, 0x9750, 0x9850, 0x9950,
 };
 
-u8 ZeroTable[] =
-{
+u8 ZeroTable[] = {
 	0x80, 0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,
 	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,
 	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,	0,	  0,
@@ -531,6 +517,29 @@ u8 ZeroTable[] =
 #define GBSAVE_GAME_VERSION_13 13
 #define GBSAVE_GAME_VERSION GBSAVE_GAME_VERSION_13
 
+#if 1
+u16 gbcGetNewBGR15(int r, int g, int b)
+{
+	r = (r * 13 + g * 2 + b * 1 + 8) >> 4;
+	g = (r * 1 + g * 12 + b * 3 + 8) >> 4;
+	b = (r * 2 + g * 2 + b * 12 + 8) >> 4;
+	return (b << 10) | (g << 5) | r;
+}
+
+void gbGenFilter()
+{
+	for (int r = 0; r < 32; r++)
+	{
+		for (int g = 0; g < 32; g++)
+		{
+			for (int b = 0; b < 32; b++)
+			{
+				gbColorFilter[(b << 10) | (g << 5) | r] = gbcGetNewBGR15(r, g, b);
+			}
+		}
+	}
+}
+#else
 int inline gbGetValue(int min, int max, int v)
 {
 	return (int)(min + (float)(max - min) * (2.0 * (v / 31.0) - (v / 31.0) * (v / 31.0)));
@@ -559,6 +568,7 @@ void gbGenFilter()
 		}
 	}
 }
+#endif
 
 void gbCopyMemory(u16 d, u16 s, int count)
 {
@@ -649,7 +659,8 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 		}
 #endif
 
-		if (mapper)
+		// I believe this is a correct fix (it used to be 'if (mapper)')...
+		if (mapperRAM)
 			(*mapperRAM)(address, value);
 		return;
 	}
@@ -694,7 +705,7 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 		if (gbSerialOn)
 		{
 			gbSerialTicks = GBSERIAL_CLOCK_TICKS;
-#ifdef LINK_EMULATION
+#ifdef OLD_GB_LINK
 			if (linkConnected)
 			{
 				if (value & 1)
@@ -945,7 +956,6 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 			register_VBK = value;
 		}
 		return;
-		break;
 	}
 
 	// HDMA1
@@ -1111,7 +1121,6 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 				int index = ((gbMemory[0xff68] & 0x3f) + 1) & 0x3f;
 
 				gbMemory[0xff68] = (gbMemory[0xff68] & 0x80) | index;
-
 				gbMemory[0xff69] = (index & 1 ?
 				                    (gbPalette[index >> 1] >> 8) :
 				                    (gbPalette[index >> 1] & 0x00ff));
@@ -1760,7 +1769,6 @@ void gbReset()
 
 	if (gbCgbMode)
 	{
-		gbSpeed	 = 0;
 		gbHdmaOn = 0;
 		gbHdmaSource	  = 0x0000;
 		gbHdmaDestination = 0x8000;
@@ -1897,10 +1905,9 @@ void gbWriteSaveMBC3(const char *name, bool extendedSave)
 
 	if (extendedSave)
 	{
-		//assert(sizeof(time_t) == 4);
 		fwrite(&gbDataMBC3.mapperSeconds,
 		       1,
-		       10 * sizeof(int32) + /*sizeof(time_t)*/4,
+		       10 * sizeof(int32) + sizeof(u32),
 		       gzFile);
 	}
 
@@ -2015,12 +2022,11 @@ bool gbReadSaveMBC3(const char *name)
 	}
 	else
 	{
-		//assert(sizeof(time_t) == 4);
 		read = gzread(gzFile,
 		              &gbDataMBC3.mapperSeconds,
-		              sizeof(int32) * 10 + /*sizeof(time_t)*/4);
+		              sizeof(int32) * 10 + sizeof(u32));
 
-		if (read != (sizeof(int32) * 10 + /*sizeof(time_t)*/4) && read != 0)
+		if (read != (sizeof(int32) * 10 + sizeof(u32)) && read != 0)
 		{
 			systemMessage(MSG_FAILED_TO_READ_RTC,
 			              N_("Failed to read RTC from save game %s (continuing)"),
@@ -2200,22 +2206,19 @@ bool gbReadBatteryFile(const char *file)
 			if (!gbReadSaveMBC3(file))
 			{
 				struct tm *lt;
-				time_t tmp; //Small kludge to get it working on some systems where time_t has size 8.
-
+				time_t tmp; //64 bit kludge
 				if (VBAMovieActive() || VBAMovieLoading())
 				{
-					gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / 60;
-					lt = gmtime(&tmp);
-					gbDataMBC3.mapperLastTime=(u32)tmp;
+					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);
+					lt  = gmtime(&tmp);
 				}
 				else
 				{
-					time(&tmp);
-					gbDataMBC3.mapperLastTime=(u32)tmp;
-					lt = localtime(&tmp);
+					tmp = time(NULL);
+					lt  = localtime(&tmp);
 				}
 				systemScreenMessage(ctime(&tmp), 4);
-				gbDataMBC3.mapperLastTime=(u32)tmp;
+				gbDataMBC3.mapperLastTime = u32(tmp);
 
 				gbDataMBC3.mapperSeconds = lt->tm_sec;
 				gbDataMBC3.mapperMinutes = lt->tm_min;
@@ -2295,7 +2298,6 @@ bool gbReadGSASnapshot(const char *fileName)
 		return false;
 	}
 
-	//  long size = ftell(file);
 	fseek(file, 0x4, SEEK_SET);
 	char buffer[16];
 	char buffer2[16];
@@ -2443,7 +2445,6 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 
 	utilGzWrite(gzFile, &gbDataMBC1, sizeof(gbDataMBC1));
 	utilGzWrite(gzFile, &gbDataMBC2, sizeof(gbDataMBC2));
-	//assert(sizeof(time_t) == 4);
 	utilGzWrite(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	utilGzWrite(gzFile, &gbDataMBC5, sizeof(gbDataMBC5));
 	utilGzWrite(gzFile, &gbDataHuC1, sizeof(gbDataHuC1));
@@ -2471,12 +2472,10 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 	}
 
 	gbSoundSaveGame(gzFile);
-
 	gbCheatsSaveGame(gzFile);
 
 	// new to re-recording version:
 	{
-		extern int32 sensorX, sensorY;
 		utilGzWrite(gzFile, &sensorX, sizeof(sensorX));
 		utilGzWrite(gzFile, &sensorY, sizeof(sensorY));
 		utilGzWrite(gzFile, gbJoymask, 4 * sizeof(*gbJoymask)); // this has to be saved or old input will incorrectly get
@@ -2519,7 +2518,6 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 bool gbWriteMemSaveState(char *memory, int available)
 {
 	gzFile gzFile = utilMemGzOpen(memory, available, "w");
-
 	if (gzFile == NULL)
 	{
 		return false;
@@ -2555,7 +2553,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	char tempBackupName[128];
 	if (tempSaveSafe)
 	{
-		sprintf(tempBackupName, "gbatempsave%d.sav", tempSaveID++);
+		sprintf(tempBackupName, "gbtempsave%d.sav", tempSaveID++);
 		gbWriteSaveState(tempBackupName);
 	}
 
@@ -2602,7 +2600,6 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(int32) * 10);
 	else
 	{
-		//assert(sizeof(time_t) == 4);
 		utilGzRead(gzFile, &gbDataMBC3, sizeof(gbDataMBC3));
 	}
 	utilGzRead(gzFile, &gbDataMBC5, sizeof(gbDataMBC5));
@@ -2762,7 +2759,6 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 
 	if (version >= GBSAVE_GAME_VERSION_11) // new to re-recording version:
 	{
-		extern int32 sensorX, sensorY; // from SDL.cpp
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
 		utilGzRead(gzFile, &sensorY, sizeof(sensorY));
 		utilGzRead(gzFile, gbJoymask, 4 * sizeof(*gbJoymask)); // this has to be saved or old input will incorrectly get carried
@@ -2821,12 +2817,6 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 		utilGzRead(gzFile, &systemCounters.laggedLast, sizeof(systemCounters.laggedLast));
 	}
 
-	if (tempSaveSafe)
-	{
-		remove(tempBackupName);
-		tempSaveAttempts = 0;
-	}
-
 	for (int i = 0; i < 4; ++i)
 		systemSetJoypad(i, gbJoymask[i] & 0xFFFF);
 
@@ -2836,6 +2826,12 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	systemRefreshScreen();
+
+	if (tempSaveSafe)
+	{
+		remove(tempBackupName);
+		tempSaveAttempts = 0;
+	}
 	return true;
 
 failedLoadGB:
@@ -2894,50 +2890,29 @@ bool gbWriteBMPFile(const char *fileName)
 
 void gbCleanUp()
 {
-	if (gbRam != NULL)
-	{
-		free(gbRam);
-		gbRam = NULL;
-	}
+	free(gbRam);
+	gbRam = NULL;
 
-	if (gbRom != NULL)
-	{
-		free(gbRom);
-		gbRom = NULL;
-	}
+	free(gbRom);
+	gbRom = NULL;
 
-	if (gbMemory != NULL)
-	{
-		free(gbMemory);
-		gbMemory = NULL;
-	}
+	free(gbMemory);
+	gbMemory = NULL;
 
-	if (gbLineBuffer != NULL)
-	{
-		free(gbLineBuffer);
-		gbLineBuffer = NULL;
-	}
+	free(gbLineBuffer);
+	gbLineBuffer = NULL;
 
-	if (origPix != NULL)
-	{
-		free(origPix);
-		origPix = NULL;
-	}
+	free(origPix);
+	origPix = NULL;
 	pix = NULL;
 
 	gbSgbShutdown();
 
-	if (gbVram != NULL)
-	{
-		free(gbVram);
-		gbVram = NULL;
-	}
+	free(gbVram);
+	gbVram = NULL;
 
-	if (gbWram != NULL)
-	{
-		free(gbWram);
-		gbWram = NULL;
-	}
+	free(gbWram);
+	gbWram = NULL;
 
 	memset(gbJoymask, 0, sizeof(gbJoymask));
 	// FIXME: horrible kludge
@@ -3155,7 +3130,7 @@ void gbEmulate(int ticksToStop)
 	u8		   tempValue;
 	s8		   offset;
 
-	int clockTicks = 0;
+	int gbClockTicks = 0;
 	gbDmaTicks = 0;
 
 	register int opcode = 0;
@@ -3195,22 +3170,22 @@ void gbEmulate(int ticksToStop)
 		{
 			if (register_LCDC & 0x80)
 			{
-				clockTicks = gbLcdTicks;
+				gbClockTicks = gbLcdTicks;
 			}
 			else
-				clockTicks = 100;
+				gbClockTicks = 100;
 
-			if (gbLcdMode == 1 && (gbLcdLYIncrementTicks < clockTicks))
-				clockTicks = gbLcdLYIncrementTicks;
+			if (gbLcdMode == 1 && (gbLcdLYIncrementTicks < gbClockTicks))
+				gbClockTicks = gbLcdLYIncrementTicks;
 
-			if (gbSerialOn && (gbSerialTicks < clockTicks))
-				clockTicks = gbSerialTicks;
+			if (gbSerialOn && (gbSerialTicks < gbClockTicks))
+				gbClockTicks = gbSerialTicks;
 
-			if (gbTimerOn && (gbTimerTicks < clockTicks))
-				clockTicks = gbTimerTicks;
+			if (gbTimerOn && (gbTimerTicks < gbClockTicks))
+				gbClockTicks = gbTimerTicks;
 
-			if (soundTicks && (soundTicks < clockTicks))
-				clockTicks = soundTicks;
+			if (soundTicks && (soundTicks < gbClockTicks))
+				gbClockTicks = soundTicks;
 		}
 		else
 		{
@@ -3224,7 +3199,7 @@ void gbEmulate(int ticksToStop)
 				PC.W--;
 			}
 
-			clockTicks = gbCycles[opcode];
+			gbClockTicks = gbCycles[opcode];
 
 #include "gbCodes.h"
 		}
@@ -3234,7 +3209,7 @@ void gbEmulate(int ticksToStop)
 
 		if (gbDmaTicks)
 		{
-			clockTicks += gbDmaTicks;
+			gbClockTicks += gbDmaTicks;
 			gbDmaTicks	= 0;
 		}
 
@@ -3242,17 +3217,17 @@ void gbEmulate(int ticksToStop)
 		{
 			if (gbSgbPacketTimeout)
 			{
-				gbSgbPacketTimeout -= clockTicks;
+				gbSgbPacketTimeout -= gbClockTicks;
 
 				if (gbSgbPacketTimeout <= 0)
 					gbSgbResetPacketState();
 			}
 		}
 
-		ticksToStop -= clockTicks;
+		ticksToStop -= gbClockTicks;
 
 		// DIV register emulation
-		gbDivTicks -= clockTicks;
+		gbDivTicks -= gbClockTicks;
 		while (gbDivTicks <= 0)
 		{
 			register_DIV++;
@@ -3262,11 +3237,11 @@ void gbEmulate(int ticksToStop)
 		if (register_LCDC & 0x80)
 		{
 			// LCD stuff
-			gbLcdTicks -= clockTicks;
+			gbLcdTicks -= gbClockTicks;
 			if (gbLcdMode == 1)
 			{
 				// during V-BLANK,we need to increment LY at the same rate!
-				gbLcdLYIncrementTicks -= clockTicks;
+				gbLcdLYIncrementTicks -= gbClockTicks;
 				while (gbLcdLYIncrementTicks <= 0)
 				{
 					gbLcdLYIncrementTicks += GBLY_INCREMENT_CLOCK_TICKS;
@@ -3507,10 +3482,10 @@ void gbEmulate(int ticksToStop)
 		// serial emulation
 		if (gbSerialOn)
 		{
-#ifdef LINK_EMULATION
+#ifdef OLD_GB_LINK
 			if (linkConnected)
 			{
-				gbSerialTicks -= clockTicks;
+				gbSerialTicks -= gbClockTicks;
 
 				while (gbSerialTicks <= 0)
 				{
@@ -3537,7 +3512,7 @@ void gbEmulate(int ticksToStop)
 #endif
 			if (gbMemory[0xff02] & 1)
 			{
-				gbSerialTicks -= clockTicks;
+				gbSerialTicks -= gbClockTicks;
 
 				// overflow
 				while (gbSerialTicks <= 0)
@@ -3549,7 +3524,7 @@ void gbEmulate(int ticksToStop)
 					if (gbSerialBits == 8)
 					{
 						// end of transmission
-						if (gbSerialFunction)    // external device
+						if (gbSerialFunction) // external device
 							gbMemory[0xff01] = gbSerialFunction(gbMemory[0xff01]);
 						else
 							gbMemory[0xff01] = 0xff;
@@ -3563,7 +3538,7 @@ void gbEmulate(int ticksToStop)
 						gbSerialTicks += GBSERIAL_CLOCK_TICKS;
 				}
 			}
-#ifdef LINK_EMULATION
+#ifdef OLD_GB_LINK
 		}
 #endif
 		}
@@ -3571,7 +3546,7 @@ void gbEmulate(int ticksToStop)
 		// timer emulation
 		if (gbTimerOn)
 		{
-			gbTimerTicks -= clockTicks;
+			gbTimerTicks -= gbClockTicks;
 
 			while (gbTimerTicks <= 0)
 			{
@@ -3597,7 +3572,7 @@ void gbEmulate(int ticksToStop)
 		   {
 		   if(synchronize && !speedup)
 		   {
-		   synchronizeTicks -= clockTicks;
+		   synchronizeTicks -= gbClockTicks;
 
 		   while(synchronizeTicks < 0)
 		   {
@@ -3624,7 +3599,7 @@ void gbEmulate(int ticksToStop)
 		   }
 		 */
 
-		soundTicks -= clockTicks;
+		soundTicks -= gbClockTicks;
 		while (soundTicks < 0) // must be < 1 when soundtick_t is real data type
 		{
 			soundTicks += SOUND_CLOCK_TICKS;
@@ -3681,7 +3656,7 @@ void gbEmulate(int ticksToStop)
 			}
 			else
 			{
-				gbInterruptWait -= clockTicks;
+				gbInterruptWait -= gbClockTicks;
 				if (gbInterruptWait < 0)
 					gbInterruptWait = 0;
 			}
@@ -3786,6 +3761,6 @@ struct EmulatedSystem GBSystem =
 #ifdef FINAL_VERSION
 	70000 / 4,
 #else
-	1000,
+	7000,
 #endif
 };

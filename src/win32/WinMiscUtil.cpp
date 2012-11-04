@@ -234,7 +234,7 @@ CString winGetSavestateFilename(const CString &LogicalRomName, int nID)
 	if (VBAMovieActive() && theApp.AsscWithSaveState)
 	{
 		std::string fs(VBAMovieGetFilename());	// RVO tip
-		size_t startindex = fs.find_last_of("/\\") ;
+		size_t startindex = fs.find_last_of("/\\");
 		if (startindex < fs.length())
 			++startindex;	// luckily the found character can't be at the end of fs
 		else

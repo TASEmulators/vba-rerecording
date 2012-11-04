@@ -177,7 +177,7 @@ case 0x20:
 	else
 	{
 		PC.W += (s8)gbReadMemory(PC.W) + 1;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	break;
 case 0x21:
@@ -221,16 +221,17 @@ case 0x28:
 	if (AF.B.B0 & Z_FLAG)
 	{
 		PC.W += (s8)gbReadMemory(PC.W) + 1;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	else
 		PC.W++;
 	break;
 case 0x29:
 	// ADD HL,HL
-	tempRegister.W = (HL.W + HL.W) & 0xFFFF; AF.B.B0 = (AF.B.B0 & Z_FLAG) |
-	                                                   ((HL.W ^ HL.W ^ tempRegister.W) & 0x1000 ? H_FLAG : 0) |
-	                                                   (((long)HL.W + (long)HL.W) & 0x10000 ? C_FLAG : 0);
+	tempRegister.W = (HL.W + HL.W) & 0xFFFF;
+	AF.B.B0		   = (AF.B.B0 & Z_FLAG) |
+	                 ((HL.W ^ HL.W ^ tempRegister.W) & 0x1000 ? H_FLAG : 0) |
+	                 (((long)HL.W + (long)HL.W) & 0x10000 ? C_FLAG : 0);
 	HL.W = tempRegister.W;
 	break;
 case 0x2a:
@@ -268,7 +269,7 @@ case 0x30:
 	else
 	{
 		PC.W += (s8)gbReadMemory(PC.W) + 1;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	break;
 case 0x31:
@@ -294,7 +295,8 @@ case 0x35:
 	// DEC (HL)
 	tempValue = (gbReadMemory(HL.W) - 1) & 0xFF;
 	AF.B.B0	  = N_FLAG | (AF.B.B0 & C_FLAG) | ZeroTable[tempValue] |
-	            ((tempValue & 0x0F) == 0x0F ? H_FLAG : 0); gbWriteMemory(HL.W, tempValue);
+	            ((tempValue & 0x0F) == 0x0F ? H_FLAG : 0);
+	gbWriteMemory(HL.W, tempValue);
 	break;
 case 0x36:
 	// LD (HL),NN
@@ -309,7 +311,7 @@ case 0x38:
 	if (AF.B.B0 & C_FLAG)
 	{
 		PC.W += (s8)gbReadMemory(PC.W) + 1;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	else
 		PC.W++;
@@ -346,7 +348,8 @@ case 0x3e:
 	break;
 case 0x3f:
 	// CCF
-	AF.B.B0 ^= C_FLAG; AF.B.B0 &= ~(N_FLAG | H_FLAG);
+	AF.B.B0 ^= C_FLAG;
+	AF.B.B0 &= ~(N_FLAG | H_FLAG);
 	break;
 case 0x40:
 	// LD B,B
@@ -707,7 +710,8 @@ case 0x8c:
 	// ADC H
 	tempRegister.W = AF.B.B1 + HL.B.B1 + (AF.B.B0 & C_FLAG ? 1 : 0);
 	AF.B.B0		   = (tempRegister.B.B1 ? C_FLAG : 0) | ZeroTable[tempRegister.B.B0] |
-	                 ((AF.B.B1 ^ HL.B.B1 ^ tempRegister.B.B0) & 0x10 ? H_FLAG : 0); AF.B.B1 = tempRegister.B.B0;
+	                 ((AF.B.B1 ^ HL.B.B1 ^ tempRegister.B.B0) & 0x10 ? H_FLAG : 0);
+	AF.B.B1 = tempRegister.B.B0;
 	break;
 case 0x8d:
 	// ADC L
@@ -1019,7 +1023,7 @@ case 0xc0:
 	{
 		PC.B.B0		= gbReadMemory(SP.W++);
 		PC.B.B1		= gbReadMemory(SP.W++);
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	break;
 case 0xc1:
@@ -1036,7 +1040,7 @@ case 0xc2:
 		tempRegister.B.B0 = gbReadMemory(PC.W++);
 		tempRegister.B.B1 = gbReadMemory(PC.W);
 		PC.W = tempRegister.W;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	break;
 case 0xc3:
@@ -1056,7 +1060,7 @@ case 0xc4:
 		gbWriteMemory(--SP.W, PC.B.B1);
 		gbWriteMemory(--SP.W, PC.B.B0);
 		PC.W		= tempRegister.W;
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	break;
 case 0xc5:
@@ -1084,7 +1088,7 @@ case 0xc8:
 	{
 		PC.B.B0		= gbReadMemory(SP.W++);
 		PC.B.B1		= gbReadMemory(SP.W++);
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	break;
 case 0xc9:
@@ -1099,7 +1103,7 @@ case 0xca:
 		tempRegister.B.B0 = gbReadMemory(PC.W++);
 		tempRegister.B.B1 = gbReadMemory(PC.W);
 		PC.W = tempRegister.W;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	else
 		PC.W += 2;
@@ -1109,7 +1113,7 @@ case 0xCB:
 	// extended opcode
 	CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC); // is this desired?
 	opcode	   = gbReadOpcode(PC.W++);
-	clockTicks = gbCyclesCB[opcode];
+	gbClockTicks = gbCyclesCB[opcode];
 #include "gbCodesCB.h"
 	break;
 // CB done outside
@@ -1122,7 +1126,7 @@ case 0xcc:
 		gbWriteMemory(--SP.W, PC.B.B1);
 		gbWriteMemory(--SP.W, PC.B.B0);
 		PC.W		= tempRegister.W;
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	else
 		PC.W += 2;
@@ -1155,7 +1159,7 @@ case 0xd0:
 	{
 		PC.B.B0		= gbReadMemory(SP.W++);
 		PC.B.B1		= gbReadMemory(SP.W++);
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	break;
 case 0xd1:
@@ -1172,7 +1176,7 @@ case 0xd2:
 		tempRegister.B.B0 = gbReadMemory(PC.W++);
 		tempRegister.B.B1 = gbReadMemory(PC.W);
 		PC.W = tempRegister.W;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	break;
 // D3 illegal
@@ -1187,7 +1191,7 @@ case 0xd4:
 		gbWriteMemory(--SP.W, PC.B.B1);
 		gbWriteMemory(--SP.W, PC.B.B0);
 		PC.W		= tempRegister.W;
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	break;
 case 0xd5:
@@ -1215,7 +1219,7 @@ case 0xd8:
 	{
 		PC.B.B0		= gbReadMemory(SP.W++);
 		PC.B.B1		= gbReadMemory(SP.W++);
-		clockTicks += 4;
+		gbClockTicks += 4;
 	}
 	break;
 case 0xd9:
@@ -1231,7 +1235,7 @@ case 0xda:
 		tempRegister.B.B0 = gbReadMemory(PC.W++);
 		tempRegister.B.B1 = gbReadMemory(PC.W);
 		PC.W = tempRegister.W;
-		clockTicks++;
+		gbClockTicks++;
 	}
 	else
 		PC.W += 2;
@@ -1246,7 +1250,7 @@ case 0xdc:
 		gbWriteMemory(--SP.W, PC.B.B1);
 		gbWriteMemory(--SP.W, PC.B.B0);
 		PC.W		= tempRegister.W;
-		clockTicks += 3;
+		gbClockTicks += 3;
 	}
 	else
 		PC.W += 2;

@@ -11,6 +11,17 @@
 #include "Flash.h"
 #include "RTC.h"
 
+#ifdef BKPT_SUPPORT
+#ifdef SDL
+void cheatsWriteMemory(u32 *address, u32 value, u32 mask);
+void cheatsWriteHalfWord(u16 *address, u16 value, u16 mask);
+void cheatsWriteByte(u8 *address, u8 value);
+#endif
+#endif
+
+extern bool8 stopState;
+extern bool8 holdState;
+extern int32 holdType;
 extern bool8 cpuSramEnabled;
 extern bool8 cpuFlashEnabled;
 extern bool8 cpuEEPROMEnabled;
@@ -467,8 +478,248 @@ unwritable:
 	}
 }
 
+void CPUWriteHalfWordWrapped(u32 address, u16 value)
+{
+#ifdef GBA_LOGGING
+	if (address & 1)
+	{
+		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
+		{
+			log("Unaligned halfword write: %04x to %08x from %08x\n",
+			    value,
+			    address,
+			    armMode ? armNextPC - 4 : armNextPC - 2);
+		}
+	}
+#endif
+
+	switch (address >> 24)
+	{
+	case 2:
+#ifdef BKPT_SUPPORT
+#ifdef SDL
+		if (*((u16 *)&freezeWorkRAM[address & 0x3FFFE]))
+			cheatsWriteHalfWord((u16 *)&workRAM[address & 0x3FFFE],
+			                    value,
+			                    *((u16 *)&freezeWorkRAM[address & 0x3FFFE]));
+		else
+#endif
+#endif
+		WRITE16LE(((u16 *)&workRAM[address & 0x3FFFE]), value);
+		break;
+	case 3:
+#ifdef BKPT_SUPPORT
+#ifdef SDL
+		if (*((u16 *)&freezeInternalRAM[address & 0x7ffe]))
+			cheatsWriteHalfWord((u16 *)&internalRAM[address & 0x7ffe],
+			                    value,
+			                    *((u16 *)&freezeInternalRAM[address & 0x7ffe]));
+		else
+#endif
+#endif
+		WRITE16LE(((u16 *)&internalRAM[address & 0x7ffe]), value);
+		break;
+	case 4:
+		CPUUpdateRegister(address & 0x3fe, value);
+		break;
+	case 5:
+		WRITE16LE(((u16 *)&paletteRAM[address & 0x3fe]), value);
+		break;
+	case 6:
+		if (address & 0x10000)
+			WRITE16LE(((u16 *)&vram[address & 0x17ffe]), value);
+		else
+			WRITE16LE(((u16 *)&vram[address & 0x1fffe]), value);
+		break;
+	case 7:
+		WRITE16LE(((u16 *)&oam[address & 0x3fe]), value);
+		break;
+	case 8:
+	case 9:
+		if (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8)
+		{
+			if (!rtcWrite(address, value))
+				goto unwritable;
+		}
+		else if (!agbPrintWrite(address, value))
+			goto unwritable;
+		break;
+	case 13:
+		if (cpuEEPROMEnabled)
+		{
+			eepromWrite(address, (u8)(value & 0xFF));
+			break;
+		}
+		goto unwritable;
+	case 14:
+		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
+		{
+			(*cpuSaveGameFunc)(address, (u8)(value & 0xFF));
+			break;
+		}
+		goto unwritable;
+	default:
+unwritable:
+#ifdef GBA_LOGGING
+		if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
+		{
+			log("Illegal halfword write: %04x to %08x from %08x\n",
+			    value,
+			    address,
+			    armMode ? armNextPC - 4 : armNextPC - 2);
+		}
+#endif
+		break;
+	}
+}
+
+void CPUWriteByteWrapped(u32 address, u8 b)
+{
+	switch (address >> 24)
+	{
+	case 2:
+#ifdef BKPT_SUPPORT
+#ifdef SDL
+		if (freezeWorkRAM[address & 0x3FFFF])
+			cheatsWriteByte(&workRAM[address & 0x3FFFF], b);
+		else
+#endif
+#endif
+		workRAM[address & 0x3FFFF] = b;
+		break;
+	case 3:
+#ifdef BKPT_SUPPORT
+#ifdef SDL
+		if (freezeInternalRAM[address & 0x7fff])
+			cheatsWriteByte(&internalRAM[address & 0x7fff], b);
+		else
+#endif
+#endif
+		internalRAM[address & 0x7fff] = b;
+		break;
+	case 4:
+		switch (address & 0x3FF)
+		{
+		case 0x301:
+			if (b == 0x80)
+				stopState = true;
+			holdState = 1;
+			holdType  = -1;
+			break;
+		case 0x60:
+		case 0x61:
+		case 0x62:
+		case 0x63:
+		case 0x64:
+		case 0x65:
+		case 0x68:
+		case 0x69:
+		case 0x6c:
+		case 0x6d:
+		case 0x70:
+		case 0x71:
+		case 0x72:
+		case 0x73:
+		case 0x74:
+		case 0x75:
+		case 0x78:
+		case 0x79:
+		case 0x7c:
+		case 0x7d:
+		case 0x80:
+		case 0x81:
+		case 0x84:
+		case 0x85:
+		case 0x90:
+		case 0x91:
+		case 0x92:
+		case 0x93:
+		case 0x94:
+		case 0x95:
+		case 0x96:
+		case 0x97:
+		case 0x98:
+		case 0x99:
+		case 0x9a:
+		case 0x9b:
+		case 0x9c:
+		case 0x9d:
+		case 0x9e:
+		case 0x9f:
+			soundEvent(address & 0xFF, b);
+			break;
+		default:
+			//      if(address & 1) {
+			//        CPUWriteHalfWord(address-1, (CPUReadHalfWord(address-1)&0x00FF)|((int)b<<8));
+			//      } else
+			if (address & 1)
+				CPUUpdateRegister(address & 0x3fe,
+				                  ((READ16LE(((u16 *)&ioMem[address & 0x3fe])))
+				                   & 0x00FF) |
+				                  b << 8);
+			else
+				CPUUpdateRegister(address & 0x3fe,
+				                  ((READ16LE(((u16 *)&ioMem[address & 0x3fe])) & 0xFF00) | b));
+		}
+		break;
+	case 5:
+		// no need to switch
+		*((u16 *)&paletteRAM[address & 0x3FE]) = (b << 8) | b;
+		break;
+	case 6:
+		// no need to switch
+		if (address & 0x10000)
+			*((u16 *)&vram[address & 0x17FFE]) = (b << 8) | b;
+		else
+			*((u16 *)&vram[address & 0x1FFFE]) = (b << 8) | b;
+		break;
+	case 7:
+		// no need to switch
+		*((u16 *)&oam[address & 0x3FE]) = (b << 8) | b;
+		break;
+	case 13:
+		if (cpuEEPROMEnabled)
+		{
+			eepromWrite(address, b);
+			break;
+		}
+		goto unwritable;
+	case 14:
+		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
+		{
+			(*cpuSaveGameFunc)(address, b);
+			break;
+		}
+	// default
+	default:
+unwritable:
+#ifdef GBA_LOGGING
+		if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
+		{
+			log("Illegal byte write: %02x to %08x from %08x\n",
+			    b,
+			    address,
+			    armMode ? armNextPC - 4 : armNextPC - 2);
+		}
+#endif
+		break;
+	}
+}
+
 void CPUWriteMemory(u32 address, u32 value)
 {
 	CPUWriteMemoryWrapped(address, value);
 	CallRegisteredLuaMemHook(address, 4, value, LUAMEMHOOK_WRITE);
+}
+
+void CPUWriteHalfWord(u32 address, u16 value)
+{
+	CPUWriteHalfWordWrapped(address, value);
+	CallRegisteredLuaMemHook(address, 2, value, LUAMEMHOOK_WRITE);
+}
+
+void CPUWriteByte(u32 address, u8 b)
+{
+	CPUWriteByteWrapped(address, b);
+	CallRegisteredLuaMemHook(address, 1, b, LUAMEMHOOK_WRITE);
 }

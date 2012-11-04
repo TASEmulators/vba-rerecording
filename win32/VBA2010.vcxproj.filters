@@ -667,6 +667,9 @@
     <None Include="..\documentation\Readme.txt">
       <Filter>Docs</Filter>
     </None>
+    <None Include="..\src\win32\vba.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\filters\hq2x.h">
@@ -939,9 +942,6 @@
     <ClInclude Include="..\src\NLS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\VersionInfo.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\Controls\ZoomControl.h">
       <Filter>Header Files\Win32\Controls</Filter>
     </ClInclude>
@@ -1094,6 +1094,9 @@
     </ClInclude>
     <ClInclude Include="..\src\win32\Dialogs\GBColorDlg.h">
       <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\VersionInfo.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

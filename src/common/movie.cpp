@@ -49,10 +49,6 @@
 #   include "../win32/WinMiscUtil.h"
 #endif
 
-extern int emulating; // from system.cpp
-extern u16 currentButtons[4];     // from System.cpp
-extern u16 lastKeys;
-
 SMovie Movie;
 bool   loadingMovie = false;
 

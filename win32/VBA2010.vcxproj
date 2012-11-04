@@ -559,6 +559,9 @@
     <None Include="..\documentation\Readme.txt" />
     <None Include="..\documentation\TODO.txt" />
     <None Include="..\src\win32\gbadvance.ico" />
+    <None Include="..\src\win32\vba.rc2">
+      <FileType>RC</FileType>
+    </None>
     <None Include="..\src\win32\VisualBoyAdvance.exe.manifest" />
     <None Include="ClassDiagram1.cd" />
   </ItemGroup>
@@ -708,7 +711,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\win32\7zip\7zip.rc" />
-    <ResourceCompile Include="..\src\win32\VBA.rc" />
+    <ResourceCompile Include="..\src\win32\VBA.rc">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\win32\7zip\7z\7zip_2010.vcxproj">

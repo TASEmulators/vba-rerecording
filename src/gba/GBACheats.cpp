@@ -1372,7 +1372,7 @@ void cheatsCBADecrypt(u8 *decrypt)
 	u32 cs = cheatsCBAGetValue(cheatsCBACurrentSeed);
 	for (int i = 0; i <= 4; i++)
 	{
-		array[i] = ((cs >> 8) ^ array[i+1]) ^ array[i] ;
+		array[i] = ((cs >> 8) ^ array[i+1]) ^ array[i];
 	}
 
 	array[5] = (cs >> 8) ^ array[5];
@@ -1578,7 +1578,7 @@ void cheatsSaveGame(gzFile file)
 	utilGzWrite(file, cheatsList, sizeof(cheatsList));
 }
 
-void cheatsReadGame(gzFile file)
+void cheatsReadGame(gzFile file, int version)
 {
 	cheatsNumber = utilReadInt(file);
 
@@ -1634,6 +1634,13 @@ void cheatsReadGame(gzFile file)
 			}
 		}
 	}
+}
+
+void cheatsReadGameSkip(gzFile file, int version)
+{
+	// skip the cheats data in a save game
+	cheatsNumber = utilReadInt(file);
+	utilGzSeek(file, sizeof(cheatsList), SEEK_CUR);
 }
 
 void cheatsSaveCheatList(const char *file)

@@ -13,7 +13,7 @@ class MovieCreate : public CDialog
 public:
 	MovieCreate(CWnd* pParent = NULL);   // standard constructor
 	virtual ~MovieCreate();
-	virtual BOOL OnInitDialog() ;
+	virtual BOOL OnInitDialog();
 
 // Dialog Data
   //{{AFX_DATA(MovieCreate)

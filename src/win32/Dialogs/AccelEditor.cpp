@@ -651,7 +651,7 @@ void AccelEditor::OnTimer(UINT_PTR nIDEvent)
 				m_commands.SetFocus();
 			return;
 		}
-		UINT green = (m_timer * 255 / m_timeoutValue) ;
+		UINT green = (m_timer * 255 / m_timeoutValue);
 		m_progress.SetBarColor(RGB(128 + green / 2, green, 255 - green));
 		m_progress.SetPos(m_timer);
 	}

@@ -1,3 +1,4 @@
+#include "../Port.h"
 #include "gbGlobals.h"
 #include "gbMemory.h"
 #include "../common/System.h"
@@ -40,10 +41,10 @@ void mapperMBC1ROM(u16 address, u8 value)
 
 		tmpAddress &= gbRomSizeMask;
 		gbDataMBC1.mapperROMBank = value;
-		gbMemoryMap[0x04]        = &gbRom[tmpAddress];
-		gbMemoryMap[0x05]        = &gbRom[tmpAddress + 0x1000];
-		gbMemoryMap[0x06]        = &gbRom[tmpAddress + 0x2000];
-		gbMemoryMap[0x07]        = &gbRom[tmpAddress + 0x3000];
+		gbMemoryMap[0x04]		 = &gbRom[tmpAddress];
+		gbMemoryMap[0x05]		 = &gbRom[tmpAddress + 0x1000];
+		gbMemoryMap[0x06]		 = &gbRom[tmpAddress + 0x2000];
+		gbMemoryMap[0x07]		 = &gbRom[tmpAddress + 0x3000];
 		break;
 	case 0x4000: // RAM bank select
 		if (gbDataMBC1.mapperMemoryModel == 1)
@@ -52,20 +53,20 @@ void mapperMBC1ROM(u16 address, u8 value)
 			value = value & 0x03;
 			if (value == gbDataMBC1.mapperRAMBank)
 				break;
-			tmpAddress                  = value << 13;
-			tmpAddress                 &= gbRamSizeMask;
-			gbMemoryMap[0x0a]           = &gbRam[tmpAddress];
-			gbMemoryMap[0x0b]           = &gbRam[tmpAddress + 0x1000];
-			gbDataMBC1.mapperRAMBank    = value;
+			tmpAddress = value << 13;
+			tmpAddress &= gbRamSizeMask;
+			gbMemoryMap[0x0a] = &gbRam[tmpAddress];
+			gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
+			gbDataMBC1.mapperRAMBank	= value;
 			gbDataMBC1.mapperRAMAddress = tmpAddress;
 		}
 		else
 		{
 			// 16/8, set the high address
 			gbDataMBC1.mapperROMHighAddress = value & 0x03;
-			tmpAddress        = gbDataMBC1.mapperROMBank << 14;
-			tmpAddress       |= (gbDataMBC1.mapperROMHighAddress) << 19;
-			tmpAddress       &= gbRomSizeMask;
+			tmpAddress		  = gbDataMBC1.mapperROMBank << 14;
+			tmpAddress		 |= (gbDataMBC1.mapperROMHighAddress) << 19;
+			tmpAddress		 &= gbRomSizeMask;
 			gbMemoryMap[0x04] = &gbRom[tmpAddress];
 			gbMemoryMap[0x05] = &gbRom[tmpAddress + 0x1000];
 			gbMemoryMap[0x06] = &gbRom[tmpAddress + 0x2000];
@@ -102,7 +103,7 @@ void memoryUpdateMapMBC1()
 		tmpAddress |= (gbDataMBC1.mapperROMHighAddress) << 19;
 	}
 
-	tmpAddress       &= gbRomSizeMask;
+	tmpAddress		 &= gbRomSizeMask;
 	gbMemoryMap[0x04] = &gbRom[tmpAddress];
 	gbMemoryMap[0x05] = &gbRom[tmpAddress + 0x1000];
 	gbMemoryMap[0x06] = &gbRom[tmpAddress + 0x2000];
@@ -198,15 +199,14 @@ mapperMBC3 gbDataMBC3 = {
 	0, // timer latched hours
 	0, // timer latched days
 	0, // timer latched control
-	(time_t)-1 // last time
+	time_t(-1) // last time
 };
 
 void memoryUpdateMBC3Clock()
 {
 	time_t now;
-
 	if (VBAMovieActive() || VBAMovieLoading())
-		now = (time_t)(VBAMovieGetId() + VBAMovieGetFrameCounter()/60); /// FIXME: is /60 the right factor?
+		now = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);  /// FIXME: is /60 the right factor?
 	else
 		now = time(NULL);
 
@@ -245,7 +245,7 @@ void memoryUpdateMBC3Clock()
 		{
 			if (gbDataMBC3.mapperDays > 511)
 			{
-				gbDataMBC3.mapperDays    %= 512;
+				gbDataMBC3.mapperDays	 %= 512;
 				gbDataMBC3.mapperControl |= 0x80;
 			}
 			gbDataMBC3.mapperControl = (gbDataMBC3.mapperControl & 0xfe) |
@@ -276,10 +276,10 @@ void mapperMBC3ROM(u16 address, u8 value)
 
 		tmpAddress &= gbRomSizeMask;
 		gbDataMBC3.mapperROMBank = value;
-		gbMemoryMap[0x04]        = &gbRom[tmpAddress];
-		gbMemoryMap[0x05]        = &gbRom[tmpAddress + 0x1000];
-		gbMemoryMap[0x06]        = &gbRom[tmpAddress + 0x2000];
-		gbMemoryMap[0x07]        = &gbRom[tmpAddress + 0x3000];
+		gbMemoryMap[0x04]		 = &gbRom[tmpAddress];
+		gbMemoryMap[0x05]		 = &gbRom[tmpAddress + 0x1000];
+		gbMemoryMap[0x06]		 = &gbRom[tmpAddress + 0x2000];
+		gbMemoryMap[0x07]		 = &gbRom[tmpAddress + 0x3000];
 
 		break;
 	case 0x4000: // RAM bank select
@@ -287,11 +287,11 @@ void mapperMBC3ROM(u16 address, u8 value)
 		{
 			if (value == gbDataMBC3.mapperRAMBank)
 				break;
-			tmpAddress                  = value << 13;
-			tmpAddress                 &= gbRamSizeMask;
-			gbMemoryMap[0x0a]           = &gbRam[tmpAddress];
-			gbMemoryMap[0x0b]           = &gbRam[tmpAddress + 0x1000];
-			gbDataMBC3.mapperRAMBank    = value;
+			tmpAddress = value << 13;
+			tmpAddress &= gbRamSizeMask;
+			gbMemoryMap[0x0a] = &gbRam[tmpAddress];
+			gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
+			gbDataMBC3.mapperRAMBank	= value;
 			gbDataMBC3.mapperRAMAddress = tmpAddress;
 		}
 		else
@@ -310,8 +310,8 @@ void mapperMBC3ROM(u16 address, u8 value)
 			memoryUpdateMBC3Clock();
 			gbDataMBC3.mapperLSeconds = gbDataMBC3.mapperSeconds;
 			gbDataMBC3.mapperLMinutes = gbDataMBC3.mapperMinutes;
-			gbDataMBC3.mapperLHours   = gbDataMBC3.mapperHours;
-			gbDataMBC3.mapperLDays    = gbDataMBC3.mapperDays;
+			gbDataMBC3.mapperLHours	  = gbDataMBC3.mapperHours;
+			gbDataMBC3.mapperLDays	  = gbDataMBC3.mapperDays;
 			gbDataMBC3.mapperLControl = gbDataMBC3.mapperControl;
 		}
 		if (value == 0x00 || value == 0x01)
@@ -335,15 +335,12 @@ void mapperMBC3RAM(u16 address, u8 value)
 		}
 		else
 		{
-			time_t tmp; //Small kludge to get it working on some 64 bit systems.
 			if (VBAMovieActive() || VBAMovieLoading())
-				gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter()/60;
-			else {
-				time(&tmp);
-				gbDataMBC3.mapperLastTime=(u32)tmp;
-			}
+				gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / 60;
+			else
+				gbDataMBC3.mapperLastTime = u32(time(NULL));
+			time_t tmp = time_t(gbDataMBC3.mapperLastTime); //64 bit kludge
 			systemScreenMessage(ctime(&tmp), 4);
-			gbDataMBC3.mapperLastTime=(u32)tmp;
 
 			switch (gbDataMBC3.mapperClockRegister)
 			{
@@ -414,8 +411,8 @@ void memoryUpdateMapMBC3()
 
 	if (gbDataMBC3.mapperRAMBank >= 0 && gbRamSize)
 	{
-		tmpAddress        = gbDataMBC3.mapperRAMBank << 13;
-		tmpAddress       &= gbRamSizeMask;
+		tmpAddress		  = gbDataMBC3.mapperRAMBank << 13;
+		tmpAddress		 &= gbRamSizeMask;
 		gbMemoryMap[0x0a] = &gbRam[tmpAddress];
 		gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
 	}
@@ -447,14 +444,14 @@ void mapperMBC5ROM(u16 address, u8 value)
 			if (value == gbDataMBC5.mapperROMBank)
 				break;
 
-			tmpAddress = (value << 14) | (gbDataMBC5.mapperROMHighAddress << 22) ;
+			tmpAddress = (value << 14) | (gbDataMBC5.mapperROMHighAddress << 22);
 
 			tmpAddress &= gbRomSizeMask;
 			gbDataMBC5.mapperROMBank = value;
-			gbMemoryMap[0x04]        = &gbRom[tmpAddress];
-			gbMemoryMap[0x05]        = &gbRom[tmpAddress + 0x1000];
-			gbMemoryMap[0x06]        = &gbRom[tmpAddress + 0x2000];
-			gbMemoryMap[0x07]        = &gbRom[tmpAddress + 0x3000];
+			gbMemoryMap[0x04]		 = &gbRom[tmpAddress];
+			gbMemoryMap[0x05]		 = &gbRom[tmpAddress + 0x1000];
+			gbMemoryMap[0x06]		 = &gbRom[tmpAddress + 0x2000];
+			gbMemoryMap[0x07]		 = &gbRom[tmpAddress + 0x3000];
 		}
 		else
 		{
@@ -479,14 +476,14 @@ void mapperMBC5ROM(u16 address, u8 value)
 			value &= 0x0f;
 		if (value == gbDataMBC5.mapperRAMBank)
 			break;
-		tmpAddress  = value << 13;
+		tmpAddress	= value << 13;
 		tmpAddress &= gbRamSizeMask;
 		if (gbRamSize)
 		{
 			gbMemoryMap[0x0a] = &gbRam[tmpAddress];
 			gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
 
-			gbDataMBC5.mapperRAMBank    = value;
+			gbDataMBC5.mapperRAMBank	= value;
 			gbDataMBC5.mapperRAMAddress = tmpAddress;
 		}
 		break;
@@ -509,9 +506,9 @@ void mapperMBC5RAM(u16 address, u8 value)
 void memoryUpdateMapMBC5()
 {
 	int tmpAddress = (gbDataMBC5.mapperROMBank << 14) |
-	                 (gbDataMBC5.mapperROMHighAddress << 22) ;
+	                 (gbDataMBC5.mapperROMHighAddress << 22);
 
-	tmpAddress       &= gbRomSizeMask;
+	tmpAddress		 &= gbRomSizeMask;
 	gbMemoryMap[0x04] = &gbRom[tmpAddress];
 	gbMemoryMap[0x05] = &gbRom[tmpAddress + 0x1000];
 	gbMemoryMap[0x06] = &gbRom[tmpAddress + 0x2000];
@@ -519,8 +516,8 @@ void memoryUpdateMapMBC5()
 
 	if (gbRamSize)
 	{
-		tmpAddress        = gbDataMBC5.mapperRAMBank << 13;
-		tmpAddress       &= gbRamSizeMask;
+		tmpAddress		  = gbDataMBC5.mapperRAMBank << 13;
+		tmpAddress		 &= gbRamSizeMask;
 		gbMemoryMap[0x0a] = &gbRam[tmpAddress];
 		gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
 	}
@@ -564,22 +561,22 @@ void mapperMBC7ROM(u16 address, u8 value)
 
 		tmpAddress &= gbRomSizeMask;
 		gbDataMBC7.mapperROMBank = value;
-		gbMemoryMap[0x04]        = &gbRom[tmpAddress];
-		gbMemoryMap[0x05]        = &gbRom[tmpAddress + 0x1000];
-		gbMemoryMap[0x06]        = &gbRom[tmpAddress + 0x2000];
-		gbMemoryMap[0x07]        = &gbRom[tmpAddress + 0x3000];
+		gbMemoryMap[0x04]		 = &gbRom[tmpAddress];
+		gbMemoryMap[0x05]		 = &gbRom[tmpAddress + 0x1000];
+		gbMemoryMap[0x06]		 = &gbRom[tmpAddress + 0x2000];
+		gbMemoryMap[0x07]		 = &gbRom[tmpAddress + 0x3000];
 		break;
 	case 0x4000: // RAM bank select/enable
 		if (value < 8)
 		{
-			tmpAddress        = (value&3) << 13;
-			tmpAddress       &= gbRamSizeMask;
+			tmpAddress		  = (value & 3) << 13;
+			tmpAddress		 &= gbRamSizeMask;
 			gbMemoryMap[0x0a] = &gbMemory[0xa000];
 			gbMemoryMap[0x0b] = &gbMemory[0xb000];
 
-			gbDataMBC7.mapperRAMBank    = value;
+			gbDataMBC7.mapperRAMBank	= value;
 			gbDataMBC7.mapperRAMAddress = tmpAddress;
-			gbDataMBC7.mapperRAMEnable  = 0;
+			gbDataMBC7.mapperRAMEnable	= 0;
 		}
 		else
 		{
@@ -625,8 +622,8 @@ void mapperMBC7RAM(u16 address, u8 value)
 		// special processing needed
 		int oldCs = gbDataMBC7.cs, oldSk = gbDataMBC7.sk;
 
-		gbDataMBC7.cs = value>>7;
-		gbDataMBC7.sk = (value>>6)&1;
+		gbDataMBC7.cs = value >> 7;
+		gbDataMBC7.sk = (value >> 6) & 1;
 
 		if (!oldCs && gbDataMBC7.cs)
 		{
@@ -634,8 +631,8 @@ void mapperMBC7RAM(u16 address, u8 value)
 			{
 				if (gbDataMBC7.writeEnable)
 				{
-					gbWriteMemoryQuick(0xa000+gbDataMBC7.address*2, gbDataMBC7.buffer>>8);
-					gbWriteMemoryQuick(0xa000+gbDataMBC7.address*2+1, gbDataMBC7.buffer&0xff);
+					gbWriteMemoryQuick(0xa000 + gbDataMBC7.address * 2, gbDataMBC7.buffer >> 8);
+					gbWriteMemoryQuick(0xa000 + gbDataMBC7.address * 2 + 1, gbDataMBC7.buffer & 0xff);
 					systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
 				}
 				gbDataMBC7.state = 0;
@@ -643,7 +640,7 @@ void mapperMBC7RAM(u16 address, u8 value)
 			}
 			else
 			{
-				gbDataMBC7.idle  = true;
+				gbDataMBC7.idle	 = true;
 				gbDataMBC7.state = 0;
 			}
 		}
@@ -654,7 +651,7 @@ void mapperMBC7RAM(u16 address, u8 value)
 			{
 				if (value & 0x02)
 				{
-					gbDataMBC7.idle  = false;
+					gbDataMBC7.idle	 = false;
 					gbDataMBC7.count = 0;
 					gbDataMBC7.state = 1;
 				}
@@ -673,38 +670,38 @@ void mapperMBC7RAM(u16 address, u8 value)
 						// finished receiving command
 						gbDataMBC7.state = 2;
 						gbDataMBC7.count = 0;
-						gbDataMBC7.code  = gbDataMBC7.buffer & 3;
+						gbDataMBC7.code	 = gbDataMBC7.buffer & 3;
 					}
 					break;
 				case 2:
 					// receive address
 					gbDataMBC7.buffer <<= 1;
-					gbDataMBC7.buffer  |= (value&0x02) ? 1 : 0;
+					gbDataMBC7.buffer  |= (value & 0x02) ? 1 : 0;
 					gbDataMBC7.count++;
 					if (gbDataMBC7.count == 8)
 					{
 						// finish receiving
 						gbDataMBC7.state   = 3;
 						gbDataMBC7.count   = 0;
-						gbDataMBC7.address = gbDataMBC7.buffer&0xff;
+						gbDataMBC7.address = gbDataMBC7.buffer & 0xff;
 						if (gbDataMBC7.code == 0)
 						{
-							if ((gbDataMBC7.address>>6) == 0)
+							if ((gbDataMBC7.address >> 6) == 0)
 							{
 								gbDataMBC7.writeEnable = 0;
-								gbDataMBC7.state       = 0;
+								gbDataMBC7.state	   = 0;
 							}
-							else if ((gbDataMBC7.address>>6) == 3)
+							else if ((gbDataMBC7.address >> 6) == 3)
 							{
 								gbDataMBC7.writeEnable = 1;
-								gbDataMBC7.state       = 0;
+								gbDataMBC7.state	   = 0;
 							}
 						}
 					}
 					break;
 				case 3:
 					gbDataMBC7.buffer <<= 1;
-					gbDataMBC7.buffer  |= (value&0x02) ? 1 : 0;
+					gbDataMBC7.buffer  |= (value & 0x02) ? 1 : 0;
 					gbDataMBC7.count++;
 
 					switch (gbDataMBC7.code)
@@ -712,38 +709,38 @@ void mapperMBC7RAM(u16 address, u8 value)
 					case 0:
 						if (gbDataMBC7.count == 16)
 						{
-							if ((gbDataMBC7.address>>6) == 0)
+							if ((gbDataMBC7.address >> 6) == 0)
 							{
 								gbDataMBC7.writeEnable = 0;
-								gbDataMBC7.state       = 0;
+								gbDataMBC7.state	   = 0;
 							}
-							else if ((gbDataMBC7.address>>6) == 1)
+							else if ((gbDataMBC7.address >> 6) == 1)
 							{
 								if (gbDataMBC7.writeEnable)
 								{
 									for (int i = 0; i < 256; i++)
 									{
-										gbWriteMemoryQuick(0xa000+i*2, gbDataMBC7.buffer >> 8);
-										gbWriteMemoryQuick(0xa000+i*2+1, gbDataMBC7.buffer & 0xff);
+										gbWriteMemoryQuick(0xa000 + i * 2, gbDataMBC7.buffer >> 8);
+										gbWriteMemoryQuick(0xa000 + i * 2 + 1, gbDataMBC7.buffer & 0xff);
 										systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
 									}
 								}
 								gbDataMBC7.state = 5;
 							}
-							else if ((gbDataMBC7.address>>6) == 2)
+							else if ((gbDataMBC7.address >> 6) == 2)
 							{
 								if (gbDataMBC7.writeEnable)
 								{
 									for (int i = 0; i < 256; i++)
-										WRITE16LE((u16 *)&gbMemory[0xa000+i*2], 0xffff);
+										WRITE16LE((u16 *)&gbMemory[0xa000 + i * 2], 0xffff);
 									systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
 								}
 								gbDataMBC7.state = 5;
 							}
-							else if ((gbDataMBC7.address>>6) == 3)
+							else if ((gbDataMBC7.address >> 6) == 3)
 							{
 								gbDataMBC7.writeEnable = 1;
-								gbDataMBC7.state       = 0;
+								gbDataMBC7.state	   = 0;
 							}
 							gbDataMBC7.count = 0;
 						}
@@ -761,8 +758,8 @@ void mapperMBC7RAM(u16 address, u8 value)
 						{
 							gbDataMBC7.state  = 4;
 							gbDataMBC7.count  = 0;
-							gbDataMBC7.buffer = (gbReadMemoryQuick(0xa000+gbDataMBC7.address*2)<<8)|
-							                    (gbReadMemoryQuick(0xa000+gbDataMBC7.address*2+1));
+							gbDataMBC7.buffer = (gbReadMemoryQuick(0xa000 + gbDataMBC7.address * 2) << 8) |
+							                    (gbReadMemoryQuick(0xa000 + gbDataMBC7.address * 2 + 1));
 						}
 						break;
 					case 3:
@@ -784,7 +781,7 @@ void mapperMBC7RAM(u16 address, u8 value)
 		{
 			if (gbDataMBC7.state == 4)
 			{
-				gbDataMBC7.value    = (gbDataMBC7.buffer & 0x8000) ? 1 : 0;
+				gbDataMBC7.value	= (gbDataMBC7.buffer & 0x8000) ? 1 : 0;
 				gbDataMBC7.buffer <<= 1;
 				gbDataMBC7.count++;
 				if (gbDataMBC7.count == 16)
@@ -801,7 +798,7 @@ void memoryUpdateMapMBC7()
 {
 	int tmpAddress = (gbDataMBC5.mapperROMBank << 14);
 
-	tmpAddress       &= gbRomSizeMask;
+	tmpAddress		 &= gbRomSizeMask;
 	gbMemoryMap[0x04] = &gbRom[tmpAddress];
 	gbMemoryMap[0x05] = &gbRom[tmpAddress + 0x1000];
 	gbMemoryMap[0x06] = &gbRom[tmpAddress + 0x2000];
@@ -838,10 +835,10 @@ void mapperHuC1ROM(u16 address, u8 value)
 
 		tmpAddress &= gbRomSizeMask;
 		gbDataHuC1.mapperROMBank = value;
-		gbMemoryMap[0x04]        = &gbRom[tmpAddress];
-		gbMemoryMap[0x05]        = &gbRom[tmpAddress + 0x1000];
-		gbMemoryMap[0x06]        = &gbRom[tmpAddress + 0x2000];
-		gbMemoryMap[0x07]        = &gbRom[tmpAddress + 0x3000];
+		gbMemoryMap[0x04]		 = &gbRom[tmpAddress];
+		gbMemoryMap[0x05]		 = &gbRom[tmpAddress + 0x1000];
+		gbMemoryMap[0x06]		 = &gbRom[tmpAddress + 0x2000];
+		gbMemoryMap[0x07]		 = &gbRom[tmpAddress + 0x3000];
 		break;
 	case 0x4000: // RAM bank select
 		if (gbDataHuC1.mapperMemoryModel == 1)
@@ -850,20 +847,20 @@ void mapperHuC1ROM(u16 address, u8 value)
 			value = value & 0x03;
 			if (value == gbDataHuC1.mapperRAMBank)
 				break;
-			tmpAddress                  = value << 13;
-			tmpAddress                 &= gbRamSizeMask;
-			gbMemoryMap[0x0a]           = &gbRam[tmpAddress];
-			gbMemoryMap[0x0b]           = &gbRam[tmpAddress + 0x1000];
-			gbDataHuC1.mapperRAMBank    = value;
+			tmpAddress = value << 13;
+			tmpAddress &= gbRamSizeMask;
+			gbMemoryMap[0x0a] = &gbRam[tmpAddress];
+			gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
+			gbDataHuC1.mapperRAMBank	= value;
 			gbDataHuC1.mapperRAMAddress = tmpAddress;
 		}
 		else
 		{
 			// 16/8, set the high address
 			gbDataHuC1.mapperROMHighAddress = value & 0x03;
-			tmpAddress        = gbDataHuC1.mapperROMBank << 14;
-			tmpAddress       |= (gbDataHuC1.mapperROMHighAddress) << 19;
-			tmpAddress       &= gbRomSizeMask;
+			tmpAddress		  = gbDataHuC1.mapperROMBank << 14;
+			tmpAddress		 |= (gbDataHuC1.mapperROMHighAddress) << 19;
+			tmpAddress		 &= gbRomSizeMask;
 			gbMemoryMap[0x04] = &gbRom[tmpAddress];
 			gbMemoryMap[0x05] = &gbRom[tmpAddress + 0x1000];
 			gbMemoryMap[0x06] = &gbRom[tmpAddress + 0x2000];
@@ -902,8 +899,8 @@ void memoryUpdateMapHuC1()
 
 	if (gbRamSize)
 	{
-		tmpAddress        = gbDataHuC1.mapperRAMBank << 13;
-		tmpAddress       &= gbRamSizeMask;
+		tmpAddress		  = gbDataHuC1.mapperRAMBank << 13;
+		tmpAddress		 &= gbRamSizeMask;
 		gbMemoryMap[0x0a] = &gbRam[tmpAddress];
 		gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
 	}
@@ -942,20 +939,20 @@ void mapperHuC3ROM(u16 address, u8 value)
 
 		tmpAddress &= gbRomSizeMask;
 		gbDataHuC3.mapperROMBank = value;
-		gbMemoryMap[0x04]        = &gbRom[tmpAddress];
-		gbMemoryMap[0x05]        = &gbRom[tmpAddress + 0x1000];
-		gbMemoryMap[0x06]        = &gbRom[tmpAddress + 0x2000];
-		gbMemoryMap[0x07]        = &gbRom[tmpAddress + 0x3000];
+		gbMemoryMap[0x04]		 = &gbRom[tmpAddress];
+		gbMemoryMap[0x05]		 = &gbRom[tmpAddress + 0x1000];
+		gbMemoryMap[0x06]		 = &gbRom[tmpAddress + 0x2000];
+		gbMemoryMap[0x07]		 = &gbRom[tmpAddress + 0x3000];
 		break;
 	case 0x4000: // RAM bank select
 		value = value & 0x03;
 		if (value == gbDataHuC3.mapperRAMBank)
 			break;
-		tmpAddress                  = value << 13;
-		tmpAddress                 &= gbRamSizeMask;
-		gbMemoryMap[0x0a]           = &gbRam[tmpAddress];
-		gbMemoryMap[0x0b]           = &gbRam[tmpAddress + 0x1000];
-		gbDataHuC3.mapperRAMBank    = value;
+		tmpAddress = value << 13;
+		tmpAddress &= gbRamSizeMask;
+		gbMemoryMap[0x0a] = &gbRam[tmpAddress];
+		gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
+		gbDataHuC3.mapperRAMBank	= value;
 		gbDataHuC3.mapperRAMAddress = tmpAddress;
 		break;
 	case 0x6000: // nothing to do!
@@ -980,8 +977,6 @@ u8 mapperHuC3ReadRAM(u16 address)
 // HuC3 RAM write
 void mapperHuC3RAM(u16 address, u8 value)
 {
-	int32 *p;
-
 	if (gbDataHuC3.mapperRAMFlag < 0x0b ||
 	    gbDataHuC3.mapperRAMFlag > 0x0e)
 	{
@@ -1004,17 +999,18 @@ void mapperHuC3RAM(u16 address, u8 value)
 			}
 			else
 			{
+				int32 *p;
 				switch (value & 0xf0)
 				{
 				case 0x10:
 					p = &gbDataHuC3.mapperRegister2;
-					gbDataHuC3.mapperRAMValue = *(p+gbDataHuC3.mapperRegister1++);
+					gbDataHuC3.mapperRAMValue = *(p + gbDataHuC3.mapperRegister1++);
 					if (gbDataHuC3.mapperRegister1 > 6)
 						gbDataHuC3.mapperRegister1 = 0;
 					break;
 				case 0x30:
 					p = &gbDataHuC3.mapperRegister2;
-					*(p+gbDataHuC3.mapperRegister1++) = value & 0x0f;
+					*(p + gbDataHuC3.mapperRegister1++) = value & 0x0f;
 					if (gbDataHuC3.mapperRegister1 > 6)
 						gbDataHuC3.mapperRegister1 = 0;
 					gbDataHuC3.mapperAddress =
@@ -1028,17 +1024,17 @@ void mapperHuC3RAM(u16 address, u8 value)
 					gbDataHuC3.mapperRegister1 = (gbDataHuC3.mapperRegister1 & 0xf0) |
 					                             (value & 0x0f);
 					gbDataHuC3.mapperRegister2 = (gbDataHuC3.mapperAddress & 0x0f);
-					gbDataHuC3.mapperRegister3 = ((gbDataHuC3.mapperAddress>>4)&0x0f);
-					gbDataHuC3.mapperRegister4 = ((gbDataHuC3.mapperAddress>>8)&0x0f);
-					gbDataHuC3.mapperRegister5 = ((gbDataHuC3.mapperAddress>>16)&0x0f);
-					gbDataHuC3.mapperRegister6 = ((gbDataHuC3.mapperAddress>>24)&0x0f);
+					gbDataHuC3.mapperRegister3 = ((gbDataHuC3.mapperAddress >> 4) & 0x0f);
+					gbDataHuC3.mapperRegister4 = ((gbDataHuC3.mapperAddress >> 8) & 0x0f);
+					gbDataHuC3.mapperRegister5 = ((gbDataHuC3.mapperAddress >> 16) & 0x0f);
+					gbDataHuC3.mapperRegister6 = ((gbDataHuC3.mapperAddress >> 24) & 0x0f);
 					gbDataHuC3.mapperRegister7 = 0;
 					gbDataHuC3.mapperRegister8 = 0;
 					gbDataHuC3.mapperRAMValue  = 0;
 					break;
 				case 0x50:
 					gbDataHuC3.mapperRegister1 = (gbDataHuC3.mapperRegister1 & 0x0f) |
-					                             ((value << 4)&0x0f);
+					                             ((value << 4) & 0x0f);
 					break;
 				default:
 					gbDataHuC3.mapperRAMValue = 1;
@@ -1053,7 +1049,7 @@ void memoryUpdateMapHuC3()
 {
 	int tmpAddress = gbDataHuC3.mapperROMBank << 14;
 
-	tmpAddress       &= gbRomSizeMask;
+	tmpAddress		 &= gbRomSizeMask;
 	gbMemoryMap[0x04] = &gbRom[tmpAddress];
 	gbMemoryMap[0x05] = &gbRom[tmpAddress + 0x1000];
 	gbMemoryMap[0x06] = &gbRom[tmpAddress + 0x2000];
@@ -1061,8 +1057,8 @@ void memoryUpdateMapHuC3()
 
 	if (gbRamSize)
 	{
-		tmpAddress        = gbDataHuC3.mapperRAMBank << 13;
-		tmpAddress       &= gbRamSizeMask;
+		tmpAddress		  = gbDataHuC3.mapperRAMBank << 13;
+		tmpAddress		 &= gbRamSizeMask;
 		gbMemoryMap[0x0a] = &gbRam[tmpAddress];
 		gbMemoryMap[0x0b] = &gbRam[tmpAddress + 0x1000];
 	}
