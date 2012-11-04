@@ -26,7 +26,7 @@
 #include "../common/Util.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
-#include "../gba/GBASound.h"
+#include "../common/System.h"
 #include "../common/SystemGlobals.h"
 #include "../gba/GBAGlobals.h"
 #include "../gb/gbGlobals.h"
@@ -1426,19 +1426,8 @@ bool MainWnd::winFileRun(bool reopening)
 		}
 	}
 
-	if (theApp.soundInitialized)
-	{
-		if (systemCartridgeType == 1)
-			gbSoundReset();
-		else
-			soundReset();
-	}
-	else
-	{
-		if (!soundOffFlag)
-			soundInit();
-		theApp.soundInitialized = true;
-	}
+	if (!soundOffFlag)
+		systemSoundCleanInit();
 
 	winReadBatteryFile();
 

@@ -26,9 +26,7 @@ enum
 	Z_FLAG = 0x80
 };
 
-extern int32 GB_USE_TICKS_AS;
-
-u8 *		 origPix = NULL;
+u8 *origPix = NULL;
 bool gbUpdateSizes();
 
 // debugging
@@ -1558,6 +1556,7 @@ void gbSpeedSwitch()
 	if (gbSpeed == 0)
 	{
 		gbSpeed = 1;
+		USE_TICKS_AS  = GB_SOUNDTICKS_AS * 2;
 		GBLCD_MODE_0_CLOCK_TICKS   = 51 * 2; //127; //51 * 2;
 		GBLCD_MODE_1_CLOCK_TICKS   = 1140 * 2;
 		GBLCD_MODE_2_CLOCK_TICKS   = 20 * 2; //52; //20 * 2;
@@ -1574,15 +1573,15 @@ void gbSpeedSwitch()
 		gbLcdLYIncrementTicks *= 2;
 		//    timerTicks *= 2;
 		//    timerClockTicks *= 2;
-		gbSerialTicks	 *= 2;
-		SOUND_CLOCK_TICKS = soundQuality * GB_USE_TICKS_AS * 2;
-		soundTicks		 *= 2;
+		gbSerialTicks *= 2;
+		soundTicks	  *= 2;
 		//    synchronizeTicks *= 2;
 		//    SYNCHRONIZE_CLOCK_TICKS *= 2;
 	}
 	else
 	{
 		gbSpeed = 0;
+		USE_TICKS_AS = GB_SOUNDTICKS_AS;
 		GBLCD_MODE_0_CLOCK_TICKS   = 51;
 		GBLCD_MODE_1_CLOCK_TICKS   = 1140;
 		GBLCD_MODE_2_CLOCK_TICKS   = 20;
@@ -1599,12 +1598,12 @@ void gbSpeedSwitch()
 		gbLcdLYIncrementTicks /= 2;
 		//    timerTicks /= 2;
 		//    timerClockTicks /= 2;
-		gbSerialTicks	 /= 2;
-		SOUND_CLOCK_TICKS = soundQuality * GB_USE_TICKS_AS;
-		soundTicks		 /= 2;
+		gbSerialTicks /= 2;
+		soundTicks	  /= 2;
 		//    synchronizeTicks /= 2;
 		//    SYNCHRONIZE_CLOCK_TICKS /= 2;
 	}
+	soundTickStep = USE_TICKS_AS * soundQuality;
 }
 
 void gbGetHardwareType()
@@ -3543,6 +3542,13 @@ void gbEmulate(int ticksToStop)
 #endif
 		}
 
+		soundTicks -= gbClockTicks;
+		while (soundTicks < 0)
+		{
+			gbSoundTick();
+			soundTicks += soundTickStep;
+		}
+
 		// timer emulation
 		if (gbTimerOn)
 		{
@@ -3598,14 +3604,6 @@ void gbEmulate(int ticksToStop)
 		   }
 		   }
 		 */
-
-		soundTicks -= gbClockTicks;
-		while (soundTicks < 0) // must be < 1 when soundtick_t is real data type
-		{
-			soundTicks += SOUND_CLOCK_TICKS;
-
-			gbSoundTick();
-		}
 
 		register_IF = gbInterrupt;
 

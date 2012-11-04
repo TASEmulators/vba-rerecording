@@ -4099,7 +4099,7 @@ updateLoop:
 			if (soundTicks < 1)
 			{
 				soundTick();
-				soundTicks += SOUND_CLOCK_TICKS;
+				soundTicks += soundTickStep;
 			}
 			timerOverflow = 0;
 

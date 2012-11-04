@@ -27,23 +27,16 @@
 #define NR51 0xff25
 #define NR52 0xff26
 
+#define GB_SOUNDTICKS_AS 24 // (1048576.0/44100.0)
+							// FIXME: (4194304.0/70224.0)(fps) vs 60.0fps?
+
 #define SOUND_EVENT(address, value) \
     gbSoundEvent(address, value)
 
 extern void gbSoundTick();
-extern void gbSoundPause();
-extern void gbSoundResume();
-extern void gbSoundEnable(int);
-extern void gbSoundDisable(int);
-extern int32 gbSoundGetEnable();
 extern void gbSoundReset();
 extern void gbSoundSaveGame(gzFile);
 extern void gbSoundReadGame(int, gzFile);
 extern void gbSoundEvent(register u16, register int);
-extern void gbSoundSetQuality(int);
-
-extern int32 soundTicks;
-extern int32 soundQuality;
-extern int32 SOUND_CLOCK_TICKS;
 
 #endif // VBA_GB_SOUND_H

@@ -25,7 +25,6 @@
 #include "../gb/gbPrinter.h"
 #include "../common/CheatSearch.h"
 #include "../gba/RTC.h"
-#include "../gba/GBASound.h"
 #include "../common/SystemGlobals.h"
 #include "../common/Util.h"
 #include "../common/Text.h"
@@ -447,8 +446,8 @@ VBA::~VBA()
 		soundRecorder = NULL;
 	}
 	soundRecording = false;
-	soundPause();
-	soundShutdown();
+	systemSoundPause();
+	systemSoundShutdown();
 
 	((MainWnd *)(m_pMainWnd))->winFileClose();
 
@@ -1852,8 +1851,8 @@ void VBA::loadSettings()
 
 	// sound
 	int resChannels = regQueryDwordValue("soundEnable", 0x30f);
-	soundEnableChannels(resChannels);
-	soundDisableChannels(~resChannels);
+	systemSoundEnableChannels(resChannels);
+	systemSoundDisableChannels(~resChannels);
 	soundOffFlag = (regQueryDwordValue("soundOff", 0)) ? true : false;
 	soundQuality = regQueryDwordValue("soundQuality", 2);
 	soundEcho	 = regQueryDwordValue("soundEcho", 0) ? true : false;
@@ -2086,7 +2085,7 @@ void VBA::saveSettings()
 	regSetDwordValue("accuratePitchThrottle", accuratePitchThrottle);
 
 	// sound
-	regSetDwordValue("soundEnable", soundGetEnabledChannels() & 0x030f);
+	regSetDwordValue("soundEnable", systemSoundGetEnabledChannels() & 0x030f);
 	regSetDwordValue("soundOff", soundOffFlag);
 	regSetDwordValue("soundQuality", soundQuality);
 	regSetDwordValue("soundEcho", soundEcho);
