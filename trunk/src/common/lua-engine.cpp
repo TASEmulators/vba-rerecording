@@ -25,7 +25,7 @@ using namespace std;
 	#include "../win32/Input.h"
 	#include "../win32/MainWnd.h"
 	#include "../win32/VBA.h"
-	#include "../win32/LuaOpenDialog.h"
+	#include "../win32/Dialogs/LuaOpenDialog.h"
 #else
 	#define stricmp strcasecmp
 	#define strnicmp strncasecmp

@@ -1148,7 +1148,6 @@
     <ClInclude Include="CPP\7zip\Archive\7z\StdAfx.h" />
     <ClInclude Include="CPP\7zip\Archive\StdAfx.h" />
     <ClInclude Include="CPP\7zip\Compress\StdAfx.h" />
-    <ClInclude Include="CPP\7zip\Bundles\Format7zF\StdAfx.h" />
     <ClInclude Include="CPP\7zip\Archive\GZip\StdAfx.h" />
     <ClInclude Include="CPP\7zip\Crypto\StdAfx.h" />
     <ClInclude Include="CPP\7zip\Archive\Tar\StdAfx.h" />

@@ -8,19 +8,19 @@
 #include "MainWnd.h"
 
 #include "CmdAccelOb.h"
-#include "FileDlg.h"
-#include "ModeConfirm.h"
 #include "Reg.h"
 #include "WinResUtil.h"
 #include "WinMiscUtil.h"
 #include "Input.h"
-#include "7zip/7zip.h"
-#include "7zip/OpenArchive.h"
-#include "LuaOpenDialog.h"
-#include "ram_search.h"
-#include "ramwatch.h"
 #include "Sound.h"
 #include "VBA.h"
+#include "7zip/7zip.h"
+#include "7zip/OpenArchive.h"
+#include "Dialogs/FileDlg.h"
+#include "Dialogs/ModeConfirm.h"
+#include "Dialogs/LuaOpenDialog.h"
+#include "Dialogs/ram_search.h"
+#include "Dialogs/ramwatch.h"
 
 #include "../version.h"
 #include "../common/Util.h"
@@ -972,7 +972,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 		_splitpath(szFile, NULL, NULL, NULL, ext);
 		if (strcasecmp(ext, ".lua") == 0)
 		{
-			if (!systemIsEmulating())
+			if (!emulating)
 			{
 				theApp.winCheckFullscreen();
 
@@ -1251,8 +1251,8 @@ static const char *s_romIgnoreExtensions[] = {
 	"htm", "html", "jpg",  "jpeg",	"png",	"bmp",	"gif", "mp3", "wav", "lnk", "exe", "bat", "sav", "luasav"
 };
 
-#include "GBACheatsDlg.h"
-#include "GBCheatsDlg.h"
+#include "Dialogs/GBACheatsDlg.h"
+#include "Dialogs/GBCheatsDlg.h"
 
 #include "../common/CheatSearch.h"
 #include "../gba/GBA.h"

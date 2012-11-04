@@ -213,7 +213,13 @@ const TCHAR *mapVirtKeysStringFromWORD(WORD wKey)
 ////////////////////////////////////////////////////////////////////////
 //
 #define DEFAULT_ACCEL   0x01
-#define USER_ACCEL              0x02
+#define USER_ACCEL      0x02
+
+#ifndef _countof
+#define sizetable(table) (sizeof(table)/sizeof(table[0]))
+#else
+#define sizetable(table) _countof(table)
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -307,7 +313,8 @@ void CAccelsOb::GetString(CString &szBuffer)
 		}
 	}
 
-	AfxMessageBox("Internal error : (CAccelsOb::GetString) m_wKey invalid");
+//	systemMessage(0, "%d", m_wKey);
+	//AfxMessageBox("Internal error : (CAccelsOb::GetString) m_wKey invalid");
 }
 
 ////////////////////////////////////////////////////////////////////////

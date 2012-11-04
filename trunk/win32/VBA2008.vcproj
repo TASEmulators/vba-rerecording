@@ -394,11 +394,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\win32\BugReport.cpp"
+				RelativePath="..\src\win32\AcceleratorManager.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\src\win32\CmdAccelOb.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\win32\Commands.cpp"
 				>
 			</File>
 			<File
@@ -426,10 +430,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\LuaOpenDialog.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\win32\MainWnd.cpp"
 				>
 			</File>
@@ -454,14 +454,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MaxScale.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\win32\MemoryViewer.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\common\movie.cpp"
 				>
 			</File>
@@ -483,14 +475,6 @@
 			</File>
 			<File
 				RelativePath="..\src\win32\OpenGL.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\win32\ram_search.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\win32\ramwatch.cpp"
 				>
 			</File>
 			<File
@@ -753,163 +737,179 @@
 				Name="Dialogs"
 				>
 				<File
-					RelativePath="..\src\win32\AboutDialog.cpp"
+					RelativePath="..\src\win32\Dialogs\AboutDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\AccelEditor.cpp"
+					RelativePath="..\src\win32\Dialogs\AccelEditor.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\AcceleratorManager.cpp"
+					RelativePath="..\src\win32\Dialogs\Associate.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Associate.cpp"
+					RelativePath="..\src\win32\Dialogs\BugReport.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Commands.cpp"
+					RelativePath="..\src\win32\Dialogs\Directories.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Directories.cpp"
+					RelativePath="..\src\win32\Dialogs\Disassemble.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Disassemble.cpp"
+					RelativePath="..\src\win32\Dialogs\ExportGSASnapshot.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\ExportGSASnapshot.cpp"
+					RelativePath="..\src\win32\Dialogs\FileDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\FileDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\GBACheatsDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBACheatsDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\GBCheatsDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBCheatsDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\GBColorDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBColorDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\GBDisassemble.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBDisassemble.cpp"
+					RelativePath="..\src\win32\Dialogs\GBMapView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBMapView.cpp"
+					RelativePath="..\src\win32\Dialogs\GBMemoryViewerDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBMemoryViewerDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\GBOamView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBOamView.cpp"
+					RelativePath="..\src\win32\Dialogs\GBPaletteView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBPaletteView.cpp"
+					RelativePath="..\src\win32\Dialogs\GBPrinterDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBPrinterDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\GBTileView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GBTileView.cpp"
+					RelativePath="..\src\win32\Dialogs\GDBConnection.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GDBConnection.cpp"
+					RelativePath="..\src\win32\Dialogs\GSACodeSelect.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\GSACodeSelect.cpp"
+					RelativePath="..\src\win32\Dialogs\IOViewer.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\IOViewer.cpp"
+					RelativePath="..\src\win32\Dialogs\Joypad.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Joypad.cpp"
+					RelativePath="..\src\win32\Dialogs\LangSelect.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\LangSelect.cpp"
+					RelativePath="..\src\win32\Dialogs\Logging.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Logging.cpp"
+					RelativePath="..\src\win32\Dialogs\LuaOpenDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\MapView.cpp"
+					RelativePath="..\src\win32\Dialogs\MapView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\MemoryViewerAddressSize.cpp"
+					RelativePath="..\src\win32\Dialogs\MaxScale.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\MemoryViewerDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\MemoryViewer.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\ModeConfirm.cpp"
+					RelativePath="..\src\win32\Dialogs\MemoryViewerAddressSize.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\MovieCreate.cpp"
+					RelativePath="..\src\win32\Dialogs\MemoryViewerDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\MovieOpen.cpp"
+					RelativePath="..\src\win32\Dialogs\ModeConfirm.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\OamView.cpp"
+					RelativePath="..\src\win32\Dialogs\MovieCreate.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\PaletteView.cpp"
+					RelativePath="..\src\win32\Dialogs\MovieOpen.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\ResizeDlg.cpp"
+					RelativePath="..\src\win32\Dialogs\OamView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\RewindInterval.cpp"
+					RelativePath="..\src\win32\Dialogs\PaletteView.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\RomInfo.cpp"
+					RelativePath="..\src\win32\Dialogs\ram_search.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\TextOptions.cpp"
+					RelativePath="..\src\win32\Dialogs\ramwatch.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Throttle.cpp"
+					RelativePath="..\src\win32\Dialogs\ResizeDlg.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\TileView.cpp"
+					RelativePath="..\src\win32\Dialogs\RewindInterval.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\VideoMode.cpp"
+					RelativePath="..\src\win32\Dialogs\RomInfo.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\win32\Dialogs\TextOptions.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\win32\Dialogs\Throttle.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\win32\Dialogs\TileView.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\win32\Dialogs\VideoMode.cpp"
 					>
 				</File>
 			</Filter>
@@ -917,31 +917,31 @@
 				Name="Controls"
 				>
 				<File
-					RelativePath="..\src\win32\BitmapControl.cpp"
+					RelativePath="..\src\win32\Controls\BitmapControl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\ColorButton.cpp"
+					RelativePath="..\src\win32\Controls\ColorButton.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\ColorControl.cpp"
+					RelativePath="..\src\win32\Controls\ColorControl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\Hyperlink.cpp"
+					RelativePath="..\src\win32\Controls\Hyperlink.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\KeyboardEdit.cpp"
+					RelativePath="..\src\win32\Controls\KeyboardEdit.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\PaletteViewControl.cpp"
+					RelativePath="..\src\win32\Controls\PaletteViewControl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\win32\ZoomControl.cpp"
+					RelativePath="..\src\win32\Controls\ZoomControl.cpp"
 					>
 				</File>
 			</Filter>
@@ -2751,11 +2751,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\AboutDialog.h"
+				RelativePath="..\src\win32\Dialogs\AboutDialog.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\AccelEditor.h"
+				RelativePath="..\src\win32\Dialogs\AccelEditor.h"
 				>
 			</File>
 			<File
@@ -2775,7 +2775,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Associate.h"
+				RelativePath="..\src\win32\Dialogs\Associate.h"
 				>
 			</File>
 			<File
@@ -2787,7 +2787,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\BitmapControl.h"
+				RelativePath="..\src\win32\Controls\BitmapControl.h"
 				>
 			</File>
 			<File
@@ -2795,7 +2795,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\BugReport.h"
+				RelativePath="..\src\win32\Dialogs\BugReport.h"
 				>
 			</File>
 			<File
@@ -2807,19 +2807,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ColorButton.h"
+				RelativePath="..\src\win32\Controls\ColorButton.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ColorControl.h"
+				RelativePath="..\src\win32\Controls\ColorControl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Directories.h"
+				RelativePath="..\src\win32\Dialogs\Directories.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Disassemble.h"
+				RelativePath="..\src\win32\Dialogs\Disassemble.h"
 				>
 			</File>
 			<File
@@ -2831,11 +2831,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ExportGSASnapshot.h"
+				RelativePath="..\src\win32\Dialogs\ExportGSASnapshot.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\FileDlg.h"
+				RelativePath="..\src\win32\Dialogs\FileDlg.h"
 				>
 			</File>
 			<File
@@ -2859,7 +2859,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBACheatsDlg.h"
+				RelativePath="..\src\win32\Dialogs\GBACheatsDlg.h"
 				>
 			</File>
 			<File
@@ -2883,7 +2883,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBCheatsDlg.h"
+				RelativePath="..\src\win32\Dialogs\GBCheatsDlg.h"
 				>
 			</File>
 			<File
@@ -2895,11 +2895,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBColorDlg.h"
+				RelativePath="..\src\win32\Dialogs\GBColorDlg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBDisassemble.h"
+				RelativePath="..\src\win32\Dialogs\GBDisassemble.h"
 				>
 			</File>
 			<File
@@ -2907,7 +2907,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBMapView.h"
+				RelativePath="..\src\win32\Dialogs\GBMapView.h"
 				>
 			</File>
 			<File
@@ -2915,15 +2915,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBMemoryViewerDlg.h"
+				RelativePath="..\src\win32\Dialogs\GBMemoryViewerDlg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBOamView.h"
+				RelativePath="..\src\win32\Dialogs\GBOamView.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPaletteView.h"
+				RelativePath="..\src\win32\Dialogs\GBPaletteView.h"
 				>
 			</File>
 			<File
@@ -2935,7 +2935,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBPrinterDlg.h"
+				RelativePath="..\src\win32\Dialogs\GBPrinterDlg.h"
 				>
 			</File>
 			<File
@@ -2947,19 +2947,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GBTileView.h"
+				RelativePath="..\src\win32\Dialogs\GBTileView.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GDBConnection.h"
+				RelativePath="..\src\win32\Dialogs\GDBConnection.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\GSACodeSelect.h"
+				RelativePath="..\src\win32\Dialogs\GSACodeSelect.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Hyperlink.h"
+				RelativePath="..\src\win32\Controls\Hyperlink.h"
 				>
 			</File>
 			<File
@@ -2971,27 +2971,27 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\IOViewer.h"
+				RelativePath="..\src\win32\Dialogs\IOViewer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Joypad.h"
+				RelativePath="..\src\win32\Dialogs\Joypad.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\KeyboardEdit.h"
+				RelativePath="..\src\win32\Controls\KeyboardEdit.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\LangSelect.h"
+				RelativePath="..\src\win32\Dialogs\LangSelect.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Logging.h"
+				RelativePath="..\src\win32\Dialogs\Logging.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\LuaOpenDialog.h"
+				RelativePath="..\src\win32\Dialogs\LuaOpenDialog.h"
 				>
 			</File>
 			<File
@@ -2999,11 +2999,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MapView.h"
+				RelativePath="..\src\win32\Dialogs\MapView.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MaxScale.h"
+				RelativePath="..\src\win32\Dialogs\MaxScale.h"
 				>
 			</File>
 			<File
@@ -3011,19 +3011,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MemoryViewer.h"
+				RelativePath="..\src\win32\Dialogs\MemoryViewer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MemoryViewerAddressSize.h"
+				RelativePath="..\src\win32\Dialogs\MemoryViewerAddressSize.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MemoryViewerDlg.h"
+				RelativePath="..\src\win32\Dialogs\MemoryViewerDlg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ModeConfirm.h"
+				RelativePath="..\src\win32\Dialogs\ModeConfirm.h"
 				>
 			</File>
 			<File
@@ -3031,11 +3031,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MovieCreate.h"
+				RelativePath="..\src\win32\Dialogs\MovieCreate.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\MovieOpen.h"
+				RelativePath="..\src\win32\Dialogs\MovieOpen.h"
 				>
 			</File>
 			<File
@@ -3047,7 +3047,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\OamView.h"
+				RelativePath="..\src\win32\Dialogs\OamView.h"
 				>
 			</File>
 			<File
@@ -3055,11 +3055,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\PaletteView.h"
+				RelativePath="..\src\win32\Dialogs\PaletteView.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\PaletteViewControl.h"
+				RelativePath="..\src\win32\Controls\PaletteViewControl.h"
 				>
 			</File>
 			<File
@@ -3067,11 +3067,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ram_search.h"
+				RelativePath="..\src\win32\Dialogs\ram_search.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ramwatch.h"
+				RelativePath="..\src\win32\Dialogs\ramwatch.h"
 				>
 			</File>
 			<File
@@ -3079,15 +3079,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ResizeDlg.h"
+				RelativePath="..\src\win32\Dialogs\ResizeDlg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\RewindInterval.h"
+				RelativePath="..\src\win32\Dialogs\RewindInterval.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\RomInfo.h"
+				RelativePath="..\src\win32\Dialogs\RomInfo.h"
 				>
 			</File>
 			<File
@@ -3119,11 +3119,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\TextOptions.h"
+				RelativePath="..\src\win32\Dialogs\TextOptions.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\Throttle.h"
+				RelativePath="..\src\win32\Dialogs\Throttle.h"
 				>
 			</File>
 			<File
@@ -3131,7 +3131,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\TileView.h"
+				RelativePath="..\src\win32\Dialogs\TileView.h"
 				>
 			</File>
 			<File
@@ -3155,7 +3155,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\VideoMode.h"
+				RelativePath="..\src\win32\Dialogs\VideoMode.h"
 				>
 			</File>
 			<File
@@ -3171,7 +3171,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\win32\ZoomControl.h"
+				RelativePath="..\src\win32\Controls\ZoomControl.h"
 				>
 			</File>
 		</Filter>

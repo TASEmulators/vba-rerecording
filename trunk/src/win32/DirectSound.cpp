@@ -484,6 +484,7 @@ void DirectSound::write()
 
 	if (SUCCEEDED(hr))
 	{
+		// note: with the old frame timing, this can be entered after theApp.winPauseNextFrame  was set to false...
 		if (theApp.muteFrameAdvance && theApp.winPauseNextFrame || theApp.winMuteForNow)
 		{
 			// Write 0 to pointers.

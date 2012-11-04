@@ -294,38 +294,14 @@
     <ClCompile Include="..\src\win32\7zip\OpenArchive.cpp">
       <Filter>Source Files\Win32\7zip</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\AboutDialog.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\AccelEditor.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\AcceleratorManager.cpp">
       <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\Associate.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\AVIWrite.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\BitmapControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\BugReport.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\CmdAccelOb.cpp">
       <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ColorButton.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ColorControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\Commands.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\Direct3D.cpp">
       <Filter>Source Files\Win32</Filter>
@@ -336,80 +312,11 @@
     <ClCompile Include="..\src\win32\DirectInput.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\Directories.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\DirectSound.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\Disassemble.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ExportGSASnapshot.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\FileDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBACheatsDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBCheatsDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBColorDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBDisassemble.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBMapView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBMemoryViewerDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBOamView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBPaletteView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBPrinterDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GBTileView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GDBConnection.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\GDIDisplay.cpp">
       <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\GSACodeSelect.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\Hyperlink.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\IOViewer.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\Joypad.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\KeyboardEdit.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\LangSelect.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\Logging.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\LuaOpenDialog.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\MainWnd.cpp">
       <Filter>Source Files\Win32</Filter>
@@ -429,59 +336,11 @@
     <ClCompile Include="..\src\win32\MainWndTools.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\MapView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\MaxScale.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\MemoryViewer.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\MemoryViewerAddressSize.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\MemoryViewerDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ModeConfirm.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\MovieCreate.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\MovieOpen.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\OamView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\OpenGL.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\PaletteView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\PaletteViewControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ramwatch.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ram_search.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\Reg.cpp">
       <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ResizeDlg.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\RewindInterval.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\RomInfo.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\stdafx.cpp">
       <Filter>Source Files\Win32</Filter>
@@ -489,29 +348,14 @@
     <ClCompile Include="..\src\win32\StringTokenizer.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\win32\TextOptions.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\Throttle.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\TileView.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\VBA.cpp">
       <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\VideoMode.cpp">
-      <Filter>Source Files\Win32\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\WavWriter.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32\WinResUtil.cpp">
       <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\win32\ZoomControl.cpp">
-      <Filter>Source Files\Win32\Controls</Filter>
     </ClCompile>
     <ClCompile Include="lib\libpng\png.c">
       <Filter>Source Files\libpng</Filter>
@@ -638,6 +482,162 @@
     </ClCompile>
     <ClCompile Include="..\src\common\unzip.cpp">
       <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\BugReport.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\Directories.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\Disassemble.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\ExportGSASnapshot.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\FileDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBACheatsDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBCheatsDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBColorDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBDisassemble.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBMapView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBMemoryViewerDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBOamView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBPaletteView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBPrinterDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GBTileView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GDBConnection.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\GSACodeSelect.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\IOViewer.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\Joypad.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\LangSelect.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\Logging.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\LuaOpenDialog.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MapView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MaxScale.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MemoryViewer.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MemoryViewerAddressSize.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MemoryViewerDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\ModeConfirm.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MovieCreate.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\MovieOpen.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\OamView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\PaletteView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\ram_search.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\ramwatch.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\ResizeDlg.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\RewindInterval.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\RomInfo.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\TextOptions.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\Throttle.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\TileView.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\VideoMode.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\AboutDialog.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\AccelEditor.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Dialogs\Associate.cpp">
+      <Filter>Source Files\Win32\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\Hyperlink.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\KeyboardEdit.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\PaletteViewControl.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\ZoomControl.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\BitmapControl.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\ColorButton.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Controls\ColorControl.cpp">
+      <Filter>Source Files\Win32\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win32\Commands.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -828,170 +828,35 @@
     <ClInclude Include="..\src\win32\7zip\OpenArchive.h">
       <Filter>Header Files\Win32\7zip</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\AboutDialog.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\AccelEditor.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\AcceleratorManager.h">
       <Filter>Header Files\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Associate.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\AVIWrite.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\BitmapControl.h">
-      <Filter>Header Files\Win32\Controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\BugReport.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\CmdAccelOb.h">
       <Filter>Header Files\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\ColorButton.h">
-      <Filter>Header Files\Win32\Controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\ColorControl.h">
-      <Filter>Header Files\Win32\Controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Directories.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Disassemble.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\Display.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\ExportGSASnapshot.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\FileDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBACheatsDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBCheatsDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBColorDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBDisassemble.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBMapView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBMemoryViewerDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBOamView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBPaletteView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBPrinterDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GBTileView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GDBConnection.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\GSACodeSelect.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Hyperlink.h">
-      <Filter>Header Files\Win32\Controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\Input.h">
       <Filter>Header Files\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\IOViewer.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\IOViewerRegs.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\IUpdate.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\LangSelect.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Logging.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\LuaOpenDialog.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\MainWnd.h">
       <Filter>Header Files\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MapView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MaxScale.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MemoryViewer.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MemoryViewerAddressSize.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MemoryViewerDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\ModeConfirm.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MovieCreate.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\MovieOpen.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\OamView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\PaletteView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\PaletteViewControl.h">
-      <Filter>Header Files\Win32\Controls</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\PerfTimer.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\ramwatch.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\ram_search.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\Reg.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\ResizeDlg.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\resource.h">
       <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\RewindInterval.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\RomInfo.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\Sound.h">
       <Filter>Header Files\Win32</Filter>
@@ -1002,20 +867,8 @@
     <ClInclude Include="..\src\win32\StringTokenizer.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\TextOptions.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Throttle.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\TileView.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\win32\VBA.h">
       <Filter>Header Files\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\VideoMode.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\WavWriter.h">
       <Filter>Header Files\Win32</Filter>
@@ -1026,20 +879,11 @@
     <ClInclude Include="..\src\win32\WinResUtil.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\win32\ZoomControl.h">
-      <Filter>Header Files\Win32\Controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\filters\filters.h">
       <Filter>Header Files\Filters</Filter>
     </ClInclude>
     <ClInclude Include="..\src\win32\WinMiscUtil.h">
       <Filter>Header Files\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\KeyboardEdit.h">
-      <Filter>Header Files\Win32\Controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\win32\Joypad.h">
-      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\src\common\CheatSearch.h">
       <Filter>Header Files\Common</Filter>
@@ -1082,6 +926,159 @@
     </ClInclude>
     <ClInclude Include="..\src\win32\VersionInfo.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\ZoomControl.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\BitmapControl.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\ColorButton.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\ColorControl.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\Hyperlink.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\KeyboardEdit.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Controls\PaletteViewControl.h">
+      <Filter>Header Files\Win32\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBDisassemble.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBMapView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBMemoryViewerDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBOamView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBPaletteView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBPrinterDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBTileView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GDBConnection.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GSACodeSelect.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\IOViewer.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\IOViewerRegs.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\Joypad.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\LangSelect.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\LuaOpenDialog.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MapView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MaxScale.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MemoryViewer.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MemoryViewerAddressSize.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MemoryViewerDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\ModeConfirm.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MovieCreate.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\MovieOpen.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\OamView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\PaletteView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\ram_search.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\ramwatch.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\ResizeDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\RewindInterval.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\RomInfo.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\TextOptions.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\Throttle.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\TileView.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\VideoMode.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\AboutDialog.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\AccelEditor.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\Associate.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\BugReport.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\Directories.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\Disassemble.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\ExportGSASnapshot.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\FileDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBACheatsDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBCheatsDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32\Dialogs\GBColorDlg.h">
+      <Filter>Header Files\Win32\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
