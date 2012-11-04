@@ -8,7 +8,7 @@
 #include "../common/movie.h"
 #include <direct.h>
 
-#include "GSACodeSelect.h"
+#include "Dialogs/GSACodeSelect.h"
 #include "../gba/GBACheats.h"
 #include "../gb/gbCheats.h"
 

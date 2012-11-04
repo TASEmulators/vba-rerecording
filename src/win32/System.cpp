@@ -4,7 +4,6 @@
 #include "Sound.h"
 #include "Input.h"
 #include "IUpdate.h"
-#include "ram_search.h"
 #include "WinMiscUtil.h"
 #include "WinResUtil.h"
 #include "resource.h"
@@ -21,6 +20,7 @@
 #include "../common/Util.h"
 #include "../common/nesvideos-piece.h"
 #include "../version.h"
+#include "Dialogs/ram_search.h"
 #include <cassert>
 
 struct EmulatedSystem theEmulator;
@@ -850,7 +850,7 @@ void systemSetPause(bool pause)
 	}
 	else
 	{
-		theApp.paused	 = false;
+		theApp.paused = false;
 		systemSoundResume();
 	}
 }

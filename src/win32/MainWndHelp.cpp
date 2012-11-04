@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "MainWnd.h"
-#include "AboutDialog.h"
-#include "BugReport.h"
 #include "VBA.h"
+#include "Dialogs/AboutDialog.h"
+#include "Dialogs/BugReport.h"
 
 extern int emulating;
 

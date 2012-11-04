@@ -722,9 +722,6 @@
     <ClInclude Include="CPP\7zip\Archive\Zip\ZipItemEx.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="CPP\7zip\Bundles\Format7zF\StdAfx.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="CPP\7zip\Common\CreateCoder.h">
       <Filter>Headers</Filter>
     </ClInclude>

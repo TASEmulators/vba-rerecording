@@ -1059,17 +1059,17 @@
 #define IDC_C_WATCH_EDIT                43402
 #define IDC_C_WATCH_REMOVE              43403
 #define IDC_C_WATCH_UP                  43404
+#define IDC_C_WATCH_SEPARATE            43405
 #define IDC_PROMPT_TEXT                 44000
 #define IDC_PROMPT_TEXT2                44001
 #define IDC_PROMPT_EDIT                 44005
-#define IDC_C_WATCH_SEPARATE            55555
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        171
-#define _APS_NEXT_COMMAND_VALUE         42416
+#define _APS_NEXT_COMMAND_VALUE         44006
 #define _APS_NEXT_CONTROL_VALUE         1376
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

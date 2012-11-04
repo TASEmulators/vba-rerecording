@@ -9,13 +9,13 @@
 #include "AVIWrite.h"
 #include "Input.h"
 #include "IUpdate.h"
-#include "LangSelect.h"
 #include "MainWnd.h"
 #include "Reg.h"
 #include "WavWriter.h"
 #include "WinResUtil.h"
 #include "WinMiscUtil.h"
-#include "ramwatch.h"
+#include "Dialogs/LangSelect.h"
+#include "Dialogs/ramwatch.h"
 
 #include "../gba/GBA.h"
 #include "../gba/GBAGlobals.h"
@@ -46,7 +46,6 @@ extern void remoteOutput(char *, u32);
 extern void remoteStubMain();
 extern void remoteSetProtocol(int);
 extern void remoteCleanUp();
-extern int remoteSocket;
 
 void winlog(const char *msg, ...);
 
@@ -110,13 +109,13 @@ void DrawLuaGui()
 		if (gbBorderOn)
 		{
 			copyX		= 256, copyY       = 224;
-			screenX		= 256, screenY     = 224;
+			copyOffsetX = 48,  copyOffsetY = 40;
 		}
 		else
 		{
 			copyX = 160, copyY = 144;
-			screenX = 160, screenY = 144;
 		}
+		screenX = 160, screenY = 144;
 	}
 	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
