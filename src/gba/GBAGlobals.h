@@ -74,11 +74,8 @@ extern bool8	armIrqEnable;
 extern u32		armNextPC;
 extern int32	armMode;
 extern u32		stop;
-
-// ?
-extern bool8	speedHack;
 extern int32	saveType;
-extern int32	cpuSaveType;
+extern bool8	speedHack;
 
 extern u8 *rom;
 extern u8 *internalRAM;

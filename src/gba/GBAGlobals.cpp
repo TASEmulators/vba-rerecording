@@ -5,23 +5,20 @@ int	 oldreg[18];
 char oldbuffer[10];
 #endif
 
-/// settings
-bool8	  speedHack			   = false;
-int32	  saveType			   = 0;
-int32	  cpuSaveType		   = 0;
-
 // internals
-reg_pair  reg[45];
-bool8	  ioReadable[0x400];
-bool8	  N_FLAG = 0;
-bool8	  C_FLAG = 0;
-bool8	  Z_FLAG = 0;
-bool8	  V_FLAG = 0;
-bool8	  armState = true;
-bool8	  armIrqEnable		   = true;
-u32		  armNextPC			   = 0x00000000;
-int32	  armMode			   = 0x1f;
-u32		  stop				   = 0x08000568;
+reg_pair reg[45];
+bool8	 ioReadable[0x400];
+bool8	 N_FLAG		  = 0;
+bool8	 C_FLAG		  = 0;
+bool8	 Z_FLAG		  = 0;
+bool8	 V_FLAG		  = 0;
+bool8	 armState	  = true;
+bool8	 armIrqEnable = true;
+u32		 armNextPC	  = 0x00000000;
+int32	 armMode	  = 0x1f;
+u32		 stop		  = 0x08000568;
+int32	 saveType	  = 0;
+bool8	 speedHack	  = false;
 
 u8 *rom			= NULL;
 u8 *internalRAM = NULL;

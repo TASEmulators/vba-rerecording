@@ -3,19 +3,19 @@
 #include <cstring>
 #include <cassert>
 
-#include "../Port.h"
-#include "../NLS.h"
-#include "GB.h"
-#include "gbCheats.h"
-#include "gbGlobals.h"
-#include "gbMemory.h"
-#include "gbSGB.h"
-#include "gbSound.h"
-#include "../common/Util.h"
-#include "../common/System.h"
-#include "../common/SystemGlobals.h"
-#include "../common/movie.h"
-#include "../common/vbalua.h"
+#include "../../Port.h"
+#include "../../NLS.h"
+#include "../GB.h"
+#include "../gbCheats.h"
+#include "../gbGlobals.h"
+#include "../gbMemory.h"
+#include "../gbSGB.h"
+#include "../gbSound.h"
+#include "../../common/Util.h"
+#include "../../common/System.h"
+#include "../../common/SystemGlobals.h"
+#include "../../common/movie.h"
+#include "../../common/vbalua.h"
 
 // FIXME: constant (GB) or boolean (GBA)?!
 enum
@@ -26,7 +26,6 @@ enum
 	Z_FLAG = 0x80
 };
 
-u8 *origPix = NULL;
 bool gbUpdateSizes();
 
 // debugging
@@ -1679,24 +1678,18 @@ void gbReset()
 	if (gbCgbMode)
 	{
 		if (!gbVram)
-			gbVram = (u8 *)malloc(0x4000 + 4);
+			gbVram = (u8 *)RAM_MALLOC(0x4000);
 		if (!gbWram)
-			gbWram = (u8 *)malloc(0x8000 + 4);
-		memset(gbVram, 0, 0x4000 + 4);
-		memset(gbWram, 0, 0x8000 + 4);
+			gbWram = (u8 *)RAM_MALLOC(0x8000);
+		memset(gbVram, 0, 0x4000);
+		memset(gbWram, 0, 0x8000);
 	}
 	else
 	{
-		if (gbVram)
-		{
-			free(gbVram);
-			gbVram = NULL;
-		}
-		if (gbWram)
-		{
-			free(gbWram);
-			gbWram = NULL;
-		}
+		free(gbVram);
+		gbVram = NULL;
+		free(gbWram);
+		gbWram = NULL;
 	}
 
 	// clean LineBuffer
@@ -2100,15 +2093,17 @@ void gbInit()
 	gbGenFilter();
 	gbSgbInit();    // calls gbSgbReset()... whatever
 
-	gbMemory = (u8 *)malloc(65536 + 4);
-	memset(gbMemory, 0, 65536 + 4);
-	memset(gbPalette, 0, 2 * 128);
+	gbMemory = (u8 *)RAM_MALLOC(0x10000);
 
-	// HACK: +4 at start to accomodate the 2xSaI filter reading out of bounds of the leftmost pixel
-	origPix = (u8 *)calloc(1, 4 * 257 * 226 + 4);
-	pix		= origPix + 4;
+	pix = (u8 *)PIX_CALLOC(4 * 257 * 226);
 
 	gbLineBuffer = (u16 *)malloc(160 * sizeof(u16));
+
+	free(bios);
+	bios = (u8 *)calloc(1, 0x100);
+
+	memset(gbMemory, 0, 0x10000);
+	memset(gbPalette, 0, 2 * 128);
 }
 
 bool gbWriteBatteryFile(const char *file, bool extendedSave)
@@ -2605,6 +2600,10 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	utilGzRead(gzFile, &gbDataHuC1, sizeof(gbDataHuC1));
 	utilGzRead(gzFile, &gbDataHuC3, sizeof(gbDataHuC3));
 
+	if (version < GBSAVE_GAME_VERSION_5)
+	{
+		utilGzRead(gzFile, pix, 256 * 224 * sizeof(u16));
+	}
 	if (version >= GBSAVE_GAME_VERSION_12)
 	{
 		utilGzRead(gzFile, pix, 4 * 257 * 226);
@@ -2712,9 +2711,9 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	if (gbCgbMode)
 	{
 		if (!gbVram)
-			gbVram = (u8 *)malloc(0x4000 + 4);
+			gbVram = (u8 *)RAM_MALLOC(0x4000);
 		if (!gbWram)
-			gbWram = (u8 *)malloc(0x8000 + 4);
+			gbWram = (u8 *)RAM_MALLOC(0x8000);
 		utilGzRead(gzFile, gbVram, 0x4000);
 		utilGzRead(gzFile, gbWram, 0x8000);
 
@@ -2728,16 +2727,10 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 	}
 	else
 	{
-		if (gbVram)
-		{
-			free(gbVram);
-			gbVram = NULL;
-		}
-		if (gbWram)
-		{
-			free(gbWram);
-			gbWram = NULL;
-		}
+		free(gbVram);
+		gbVram = NULL;
+		free(gbWram);
+		gbWram = NULL;
 	}
 
 	gbSoundReadGame(version, gzFile);
@@ -2889,6 +2882,12 @@ bool gbWriteBMPFile(const char *fileName)
 
 void gbCleanUp()
 {
+	PIX_FREE(pix);
+	pix = NULL;
+
+	free(bios);
+	bios = NULL;
+
 	free(gbRam);
 	gbRam = NULL;
 
@@ -2898,20 +2897,16 @@ void gbCleanUp()
 	free(gbMemory);
 	gbMemory = NULL;
 
-	free(gbLineBuffer);
-	gbLineBuffer = NULL;
-
-	free(origPix);
-	origPix = NULL;
-	pix = NULL;
-
-	gbSgbShutdown();
-
 	free(gbVram);
 	gbVram = NULL;
 
 	free(gbWram);
 	gbWram = NULL;
+
+	gbSgbShutdown();
+
+	free(gbLineBuffer);
+	gbLineBuffer = NULL;
 
 	memset(gbJoymask, 0, sizeof(gbJoymask));
 	// FIXME: horrible kludge
@@ -2972,8 +2967,8 @@ bool gbUpdateSizes()
 
 	if (gbRamSize)
 	{
-		gbRam = (u8 *)malloc(gbRamSize + 4);
-		memset(gbRam, 0xFF, gbRamSize + 4);
+		gbRam = (u8 *)RAM_MALLOC(gbRamSize);
+		memset(gbRam, 0xFF, gbRamSize);
 	}
 
 	int type = gbRom[0x147];
@@ -3065,6 +3060,119 @@ bool gbUpdateSizes()
 	gbReset();
 
 	return true;
+}
+
+static void gbDrawPixLine()
+{
+	switch (systemColorDepth)
+	{
+	case 16:
+	{
+		u16 *dest = (u16 *)pix +
+		            (gbBorderLineSkip + 2) * (register_LY + gbBorderRowSkip + 1)
+		            + gbBorderColumnSkip;
+		for (int x = 0; x < 160; )
+		{
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+			*dest++ = systemColorMap16[gbLineMix[x++]];
+		}
+		if (gbBorderOn)
+			dest += gbBorderColumnSkip;
+		*dest++ = 0; // for filters that read one pixel more
+		break;
+	}
+	case 24:
+	{
+		u8 *dest = (u8 *)pix +
+		           3 * (gbBorderLineSkip * (register_LY + gbBorderRowSkip) +
+		                gbBorderColumnSkip);
+		for (int x = 0; x < 160; )
+		{
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
+			dest += 3;
+		}
+		break;
+	}
+	case 32:
+	{
+		u32 *dest = (u32 *)pix +
+		            (gbBorderLineSkip + 1) * (register_LY + gbBorderRowSkip + 1)
+		            + gbBorderColumnSkip;
+		for (int x = 0; x < 160; )
+		{
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+			*dest++ = systemColorMap32[gbLineMix[x++]];
+		}
+		break;
+	}
+	}
 }
 
 static void gbGetUserInput()
@@ -3343,118 +3451,7 @@ void gbEmulate(int ticksToStop)
 								gbRenderLine();
 								gbDrawSprites();
 
-								switch (systemColorDepth)
-								{
-								case 16:
-
-								{
-									u16 *dest = (u16 *)pix +
-									            (gbBorderLineSkip + 2) * (register_LY + gbBorderRowSkip + 1)
-									            + gbBorderColumnSkip;
-									for (int x = 0; x < 160; )
-									{
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-										*dest++ = systemColorMap16[gbLineMix[x++]];
-									}
-									if (gbBorderOn)
-										dest += gbBorderColumnSkip;
-									*dest++ = 0;     // for filters that read one pixel more
-									break;
-								}
-								case 24:
-
-								{
-									u8 *dest = (u8 *)pix +
-									           3 * (gbBorderLineSkip * (register_LY + gbBorderRowSkip) +
-									                gbBorderColumnSkip);
-									for (int x = 0; x < 160; )
-									{
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-										*((u32 *)dest) = systemColorMap32[gbLineMix[x++]];
-										dest += 3;
-									}
-									break;
-								}
-								case 32:
-
-								{
-									u32 *dest = (u32 *)pix +
-									            (gbBorderLineSkip + 1) * (register_LY + gbBorderRowSkip + 1)
-									            + gbBorderColumnSkip;
-									for (int x = 0; x < 160; )
-									{
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-										*dest++ = systemColorMap32[gbLineMix[x++]];
-									}
-									break;
-								}
-								}
+								gbDrawPixLine();
 							}
 						}
 					}

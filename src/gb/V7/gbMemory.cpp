@@ -1,8 +1,8 @@
-#include "../Port.h"
-#include "gbGlobals.h"
-#include "gbMemory.h"
-#include "../common/System.h"
-#include "../common/movie.h"
+#include "../../Port.h"
+#include "../gbGlobals.h"
+#include "../gbMemory.h"
+#include "../../common/System.h"
+#include "../../common/movie.h"
 
 mapperMBC1 gbDataMBC1 = {
 	0, // RAM enable

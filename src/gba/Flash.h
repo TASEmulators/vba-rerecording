@@ -18,7 +18,7 @@ extern void flashSaveDecide(u32 address, u8 byte);
 extern void flashInit();
 extern void flashReset();
 extern void flashErase();
-extern void flashSetSize(int size);
+extern void flashSetSize(int32 size);
 
 extern int32 flashSize;
 extern u8	 flashSaveMemory[0x20000];

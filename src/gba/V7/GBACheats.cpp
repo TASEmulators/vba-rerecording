@@ -2,13 +2,13 @@
 #include <cctype>
 #include <cstring>
 
-#include "../common/System.h"
-#include "../common/Util.h"
-#include "../NLS.h"
-#include "GBACheats.h"
-#include "GBA.h"
-#include "GBAinline.h"
-#include "GBAGlobals.h"
+#include "../../common/System.h"
+#include "../../common/Util.h"
+#include "../../NLS.h"
+#include "../GBACheats.h"
+#include "../GBA.h"
+#include "../GBAinline.h"
+#include "../GBAGlobals.h"
 
 /**
  * Gameshark code types:

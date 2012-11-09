@@ -1387,12 +1387,13 @@ bool MainWnd::winFileRun(bool reopening)
 			rtcEnable(i == 0 ? false : true);
 
 		i = GetPrivateProfileInt(buffer, "flashSize", -1, vbaOverINI);
-		if (i != (UINT)-1 && (i == 0x10000 || i == 0x20000))
-			flashSetSize((int)i);
+		if (i != (UINT)-1)
+			if (i == 0x10000 || i == 0x20000)
+				flashSetSize((int32)i);
 
 		i = GetPrivateProfileInt(buffer, "saveType", -1, vbaOverINI);
 		if (i != (UINT)-1 && (i <= 5))
-			cpuSaveType = (int)i;
+			cpuSaveType = (int32)i;
 
 #ifndef USE_GBA_CORE_V7
 		i = GetPrivateProfileInt(buffer, "mirroringEnabled", -1, vbaOverINI);

@@ -1,7 +1,7 @@
 #include <cstring>
 
-#include "gbGlobals.h"
-#include "gbSGB.h"
+#include "../gbGlobals.h"
+#include "../gbSGB.h"
 
 extern int32 layerSettings;
 

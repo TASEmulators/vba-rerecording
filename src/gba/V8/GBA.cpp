@@ -3,27 +3,27 @@
 #include <cstdarg>
 #include <cstring>
 
-#include "../Port.h"
-#include "../NLS.h"
-#include "GBA.h"
-#include "GBAGlobals.h"
-#include "GBAinline.h"
-#include "GBACheats.h"
+#include "../../Port.h"
+#include "../../NLS.h"
+#include "../GBA.h"
+#include "../GBAGlobals.h"
+#include "../GBAinline.h"
+#include "../GBACheats.h"
 #include "GBACpu.h"
-#include "GBAGfx.h"
-#include "GBASound.h"
-#include "EEprom.h"
-#include "Flash.h"
-#include "Sram.h"
-#include "bios.h"
-#include "elf.h"
-#include "rtc.h"
-#include "agbprint.h"
-#include "../common/System.h"
-#include "../common/SystemGlobals.h"
-#include "../common/Util.h"
-#include "../common/movie.h"
-#include "../common/vbalua.h"
+#include "../GBAGfx.h"
+#include "../GBASound.h"
+#include "../EEprom.h"
+#include "../Flash.h"
+#include "../Sram.h"
+#include "../bios.h"
+#include "../elf.h"
+#include "../RTC.h"
+#include "../agbprint.h"
+#include "../../common/System.h"
+#include "../../common/SystemGlobals.h"
+#include "../../common/Util.h"
+#include "../../common/movie.h"
+#include "../../common/vbalua.h"
 
 #ifdef PROFILING
 #include "../prof/prof.h"
@@ -1383,14 +1383,14 @@ void CPUCleanUp()
 	}
 #endif
 
+	PIX_FREE(pix);
+	pix = NULL;
+
+	free(bios);
+	bios = NULL;
+
 	free(rom);
 	rom = NULL;
-
-	free(vram);
-	vram = NULL;
-
-	free(paletteRAM);
-	paletteRAM = NULL;
 
 	free(internalRAM);
 	internalRAM = NULL;
@@ -1398,17 +1398,22 @@ void CPUCleanUp()
 	free(workRAM);
 	workRAM = NULL;
 
-	free(bios);
-	bios = NULL;
+	free(paletteRAM);
+	paletteRAM = NULL;
 
-	free(pix);
-	pix = NULL;
+	free(vram);
+	vram = NULL;
 
 	free(oam);
 	oam = NULL;
 
 	free(ioMem);
 	ioMem = NULL;
+
+#if 0
+	eepromErase();
+	flashErase();
+#endif
 
 #ifndef NO_DEBUGGER
 	elfCleanUp();
@@ -1429,15 +1434,16 @@ int CPULoadRom(const char *szFile)
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
-	// size+4 is so RAM search and watch are safe to read any byte in the allocated region as a 4-byte int
-	rom = (u8 *)malloc(0x2000000 + 4);
+	rom = (u8 *)malloc(0x2000000);
 	if (rom == NULL)
 	{
 		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
 		              "ROM");
 		return 0;
 	}
-	workRAM = (u8 *)calloc(1, 0x40000 + 4);
+
+	// FIXME: size+4 is so RAM search and watch are safe to read any byte in the allocated region as a 4-byte int
+	workRAM = (u8 *)RAM_CALLOC(0x40000);
 	if (workRAM == NULL)
 	{
 		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
@@ -1455,19 +1461,13 @@ int CPULoadRom(const char *szFile)
 		{
 			systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"),
 			              szFile);
-			free(rom);
-			rom = NULL;
-			free(workRAM);
-			workRAM = NULL;
+			CPUCleanUp();
 			return 0;
 		}
 		bool res = elfRead(szFile, size, f);
 		if (!res || size == 0)
 		{
-			free(rom);
-			rom = NULL;
-			free(workRAM);
-			workRAM = NULL;
+			CPUCleanUp();
 			elfCleanUp();
 			return 0;
 		}
@@ -1481,63 +1481,19 @@ int CPULoadRom(const char *szFile)
 		              whereToLoad,
 		              size))
 		{
-			free(rom);
-			rom = NULL;
-			free(workRAM);
-			workRAM = NULL;
+			CPUCleanUp();
 			return 0;
 		}
 	}
 
 	u16 *temp = (u16 *)(rom + ((size + 1) & ~1));
-	int	 i;
-	for (i = (size + 1) & ~1; i < 0x2000000; i += 2)
+	for (int i = (size + 1) & ~1; i < 0x2000000; i += 2)
 	{
 		WRITE16LE(temp, (i >> 1) & 0xFFFF);
 		temp++;
 	}
 
-	bios = (u8 *)calloc(1, 0x4000);
-	if (bios == NULL)
-	{
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-		              "BIOS");
-		CPUCleanUp();
-		return 0;
-	}
-	internalRAM = (u8 *)calloc(1, 0x8000);
-	if (internalRAM == NULL)
-	{
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-		              "IRAM");
-		CPUCleanUp();
-		return 0;
-	}
-	paletteRAM = (u8 *)calloc(1, 0x400);
-	if (paletteRAM == NULL)
-	{
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-		              "PRAM");
-		CPUCleanUp();
-		return 0;
-	}
-	vram = (u8 *)calloc(1, 0x20000);
-	if (vram == NULL)
-	{
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-		              "VRAM");
-		CPUCleanUp();
-		return 0;
-	}
-	oam = (u8 *)calloc(1, 0x400);
-	if (oam == NULL)
-	{
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-		              "OAM");
-		CPUCleanUp();
-		return 0;
-	}
-	pix = (u8 *)calloc(1, 4 * 241 * 162);
+	pix = (u8 *)PIX_CALLOC(4 * 241 * 162);
 	if (pix == NULL)
 	{
 		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
@@ -1545,7 +1501,47 @@ int CPULoadRom(const char *szFile)
 		CPUCleanUp();
 		return 0;
 	}
-	ioMem = (u8 *)calloc(1, 0x400);
+	bios = (u8 *)RAM_CALLOC(0x4000);
+	if (bios == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "BIOS");
+		CPUCleanUp();
+		return 0;
+	}
+	internalRAM = (u8 *)RAM_CALLOC(0x8000);
+	if (internalRAM == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "IRAM");
+		CPUCleanUp();
+		return 0;
+	}
+	paletteRAM = (u8 *)RAM_CALLOC(0x400);
+	if (paletteRAM == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "PRAM");
+		CPUCleanUp();
+		return 0;
+	}
+	vram = (u8 *)RAM_CALLOC(0x20000);
+	if (vram == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "VRAM");
+		CPUCleanUp();
+		return 0;
+	}
+	oam = (u8 *)RAM_CALLOC(0x400);
+	if (oam == NULL)
+	{
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+		              "OAM");
+		CPUCleanUp();
+		return 0;
+	}
+	ioMem = (u8 *)RAM_CALLOC(0x400);
 	if (ioMem == NULL)
 	{
 		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
@@ -3491,34 +3487,34 @@ void CPUReset()
 
 	for (int i = 0; i < 256; i++)
 	{
-		map[i].address = (u8 *)&dummyAddress;
-		map[i].mask	   = 0;
+		memoryMap[i].address = (u8 *)&dummyAddress;
+		memoryMap[i].mask	   = 0;
 	}
 
-	map[0].address	= bios;
-	map[0].mask		= 0x3FFF;
-	map[2].address	= workRAM;
-	map[2].mask		= 0x3FFFF;
-	map[3].address	= internalRAM;
-	map[3].mask		= 0x7FFF;
-	map[4].address	= ioMem;
-	map[4].mask		= 0x3FF;
-	map[5].address	= paletteRAM;
-	map[5].mask		= 0x3FF;
-	map[6].address	= vram;
-	map[6].mask		= 0x1FFFF;
-	map[7].address	= oam;
-	map[7].mask		= 0x3FF;
-	map[8].address	= rom;
-	map[8].mask		= 0x1FFFFFF;
-	map[9].address	= rom;
-	map[9].mask		= 0x1FFFFFF;
-	map[10].address = rom;
-	map[10].mask	= 0x1FFFFFF;
-	map[12].address = rom;
-	map[12].mask	= 0x1FFFFFF;
-	map[14].address = flashSaveMemory;
-	map[14].mask	= 0xFFFF;
+	memoryMap[0].address	= bios;
+	memoryMap[0].mask		= 0x3FFF;
+	memoryMap[2].address	= workRAM;
+	memoryMap[2].mask		= 0x3FFFF;
+	memoryMap[3].address	= internalRAM;
+	memoryMap[3].mask		= 0x7FFF;
+	memoryMap[4].address	= ioMem;
+	memoryMap[4].mask		= 0x3FF;
+	memoryMap[5].address	= paletteRAM;
+	memoryMap[5].mask		= 0x3FF;
+	memoryMap[6].address	= vram;
+	memoryMap[6].mask		= 0x1FFFF;
+	memoryMap[7].address	= oam;
+	memoryMap[7].mask		= 0x3FF;
+	memoryMap[8].address	= rom;
+	memoryMap[8].mask		= 0x1FFFFFF;
+	memoryMap[9].address	= rom;
+	memoryMap[9].mask		= 0x1FFFFFF;
+	memoryMap[10].address	= rom;
+	memoryMap[10].mask		= 0x1FFFFFF;
+	memoryMap[12].address	= rom;
+	memoryMap[12].mask		= 0x1FFFFFF;
+	memoryMap[14].address	= flashSaveMemory;
+	memoryMap[14].mask		= 0xFFFF;
 
 	eepromReset();
 	flashReset();
@@ -3622,6 +3618,112 @@ void CPUInterrupt()
 	biosProtected[1] = 0xc0;
 	biosProtected[2] = 0x5e;
 	biosProtected[3] = 0xe5;
+}
+
+static void CPUDrawPixLine()
+{
+	switch (systemColorDepth)
+	{
+	case 16:
+	{
+		u16 *dest = (u16 *)pix + 241 * (VCOUNT + 1);
+		for (int x = 0; x < 240; )
+		{
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
+		}
+		// for filters that read past the screen
+		*dest++ = 0;
+		break;
+	}
+	case 24:
+	{
+		u8 *dest = (u8 *)pix + 240 * VCOUNT * 3;
+		for (int x = 0; x < 240; )
+		{
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+			*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
+			dest += 3;
+		}
+		break;
+	}
+	case 32:
+	{
+		u32 *dest = (u32 *)pix + 241 * (VCOUNT + 1);
+		for (int x = 0; x < 240; )
+		{
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+			*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+		}
+		break;
+	}
+	}
 }
 
 static void CPUGetUserInput()
@@ -3880,108 +3982,7 @@ updateLoop:
 						{
 							(*renderLine)();
 
-							switch (systemColorDepth)
-							{
-							case 16:
-							{
-								u16 *dest = (u16 *)pix + 242 * (VCOUNT + 1);
-								for (int x = 0; x < 240; )
-								{
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap16[lineMix[x++] & 0xFFFF];
-								}
-								// for filters that read past the screen
-								*dest++ = 0;
-								break;
-							}
-							case 24:
-							{
-								u8 *dest = (u8 *)pix + 240 * VCOUNT * 3;
-								for (int x = 0; x < 240; )
-								{
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-									*((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-									dest += 3;
-								}
-								break;
-							}
-							case 32:
-							{
-								u32 *dest = (u32 *)pix + 241 * (VCOUNT + 1);
-								for (int x = 0; x < 240; )
-								{
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-									*dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-								}
-								break;
-							}
-							}
+							CPUDrawPixLine();
 						}
 						// entering H-Blank
 						DISPSTAT |= 2;

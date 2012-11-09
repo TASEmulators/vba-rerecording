@@ -1,11 +1,11 @@
 #include <cstring>
 
-#include "../common/System.h"
-#include "../common/SystemGlobals.h"
-#include "../common/Util.h"
-//#include "../Blip_Buffer.h"
-#include "gbGlobals.h"
-#include "gbSound.h"
+#include "../../common/System.h"
+#include "../../common/SystemGlobals.h"
+#include "../../common/Util.h"
+//#include "../../Blip_Buffer.h"
+#include "../gbGlobals.h"
+#include "../gbSound.h"
 
 #define SOUND_MAGIC   0x60000000
 #define SOUND_MAGIC_2 0x30000000

@@ -79,12 +79,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(SolutionDir)__bins\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(SolutionDir)__V82Xbins\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir)__bins\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(SolutionDir)__bins\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(SolutionDir)__bins\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(SolutionDir)__V82Xbins\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(SolutionDir)__V72Xbins\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -103,7 +103,7 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">$(ProjectName)_$(Configuration)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='V82XR|Win32'">$(ProjectName)_$(Configuration)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(ProjectName)_release</TargetName>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir)__bins\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir)__V72Xbins\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(SolutionDir).VS2010\$(Configuration)\$(Platform)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='V72XR|Win32'">$(ProjectName)_$(Configuration)</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(SolutionDir)__bins\</OutDir>
@@ -359,6 +359,21 @@
     <ClCompile Include="..\src\gba\RTC.cpp" />
     <ClCompile Include="..\src\gba\GBASound.cpp" />
     <ClCompile Include="..\src\gba\Sram.cpp" />
+    <ClInclude Include="..\src\gba\V7\arm-new.h" />
+    <ClInclude Include="..\src\gba\V7\GBA-arm.h" />
+    <ClInclude Include="..\src\gba\V7\GBA-thumb.h" />
+    <ClInclude Include="..\src\gba\V7\GBACpu.h" />
+    <ClInclude Include="..\src\gba\V7\thumb.h" />
+    <ClInclude Include="..\src\gba\V8\bios.cpp" />
+    <ClInclude Include="..\src\gba\V8\GBA-arm.cpp" />
+    <ClInclude Include="..\src\gba\V8\GBA-thumb.cpp" />
+    <ClInclude Include="..\src\gba\V8\GBA.cpp" />
+    <ClInclude Include="..\src\gba\V8\GBACheats.cpp" />
+    <ClInclude Include="..\src\gba\V8\GBAMemory.cpp" />
+    <ClInclude Include="..\src\gba\V7\bios.cpp" />
+    <ClInclude Include="..\src\gba\V7\GBA.cpp" />
+    <ClInclude Include="..\src\gba\V7\GBACheats.cpp" />
+    <ClInclude Include="..\src\gba\V7\GBAMemory.cpp" />
     <ClCompile Include="..\src\gb\GB.cpp" />
     <ClCompile Include="..\src\gb\gbCheats.cpp" />
     <ClCompile Include="..\src\gb\gbDis.cpp" />
@@ -368,6 +383,15 @@
     <ClCompile Include="..\src\gb\gbPrinter.cpp" />
     <ClCompile Include="..\src\gb\gbSGB.cpp" />
     <ClCompile Include="..\src\gb\gbSound.cpp" />
+    <ClInclude Include="..\src\gba\V8\GBACpu.h" />
+    <ClInclude Include="..\src\gb\V7\GB.cpp" />
+    <ClInclude Include="..\src\gb\V7\gbGfx.cpp" />
+    <ClInclude Include="..\src\gb\V7\gbMemory.cpp" />
+    <ClInclude Include="..\src\gb\V7\gbSound.cpp" />
+    <ClInclude Include="..\src\gb\V8\GB.cpp" />
+    <ClInclude Include="..\src\gb\V8\gbGfx.cpp" />
+    <ClInclude Include="..\src\gb\V8\gbMemory.cpp" />
+    <ClInclude Include="..\src\gb\V8\gbSound.cpp" />
     <ClCompile Include="..\src\lua\src\lapi.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">true</ExcludedFromBuild>
@@ -800,6 +824,10 @@
     <ClInclude Include="..\src\common\nesvideos-piece.h" />
     <ClInclude Include="..\src\common\SystemGlobals.h" />
     <ClInclude Include="..\src\filters\filters.h" />
+    <ClInclude Include="..\src\gb\V7\gbCodes.h" />
+    <ClInclude Include="..\src\gb\V7\gbCodesCB.h" />
+    <ClInclude Include="..\src\gb\V8\gbCodes.h" />
+    <ClInclude Include="..\src\gb\V8\gbCodesCB.h" />
     <ClInclude Include="..\src\NLS.h" />
     <ClInclude Include="..\src\Port.h" />
     <ClInclude Include="..\src\common\System.h" />
