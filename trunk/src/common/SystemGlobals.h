@@ -126,6 +126,7 @@ extern bool8 cheatsEnabled;
 extern bool8 mirroringEnable;
 
 extern bool8 cpuEnhancedDetection;
+extern int32 cpuSaveType;
 
 extern int32 soundVolume;
 extern int32 soundQuality;

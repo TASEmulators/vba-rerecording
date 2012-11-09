@@ -83,6 +83,7 @@ bool8 cheatsEnabled		   = true;
 bool8 mirroringEnable	   = false;
 
 bool8 cpuEnhancedDetection = true;
+int32 cpuSaveType		   = 0;
 
 int32 soundVolume	= 0;
 int32 soundQuality	= 2;

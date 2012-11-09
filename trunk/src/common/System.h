@@ -109,4 +109,21 @@ enum NativeDisplayResolutions
 	SGB_NDR = 2
 };
 
+// FIXME: Not better way?
+#define PIX_MALLOC(n) \
+	(void *)((char *)malloc((n) + 4) + 4)
+#define PIX_CALLOC(n) \
+	(void *)((char *)calloc(1, (n) + 4) + 4)
+#define PIX_FREE(p) \
+	free((char *)(p) - 4)
+
+// FIXME: Should fix RAM Search and RAM Watch's OoB intead
+#define RAM_MALLOC(n) \
+	malloc((n) + 4)
+#define RAM_CALLOC(n) \
+	calloc(1, (n) + 4)
+// FIXME: Just to be consistent
+#define RAM_FREE(p) \
+	free(p)
+
 #endif // VBA_SYSTEM_H

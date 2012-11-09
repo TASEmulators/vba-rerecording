@@ -29,7 +29,13 @@ variable_desc eepromSaveData[] = {
 
 void eepromInit()
 {
-	memset(eepromData, 255, sizeof(eepromData));
+#ifdef USE_GBA_CORE_V7
+	//memset(eepromBuffer, 0x00, 16);
+	memset(eepromData, 0x00, 0x2000);
+#else
+	//memset(eepromBuffer, 0xff, 16);
+	memset(eepromData, 0xff, 0x2000);
+#endif
 }
 
 void eepromReset()
@@ -44,14 +50,8 @@ void eepromReset()
 
 void eepromErase()
 {
-	memset(eepromData, 0, 0x2000*sizeof(u8));
-	eepromMode    = EEPROM_IDLE;
-	eepromByte    = 0;
-	eepromBits    = 0;
-	eepromAddress = 0;
-	memset(eepromBuffer, 0, 16*sizeof(u8));
-	eepromInUse = false;
-	eepromSize  = 512;
+	eepromInit();
+	eepromReset();
 }
 
 void eepromSaveGame(gzFile gzFile)

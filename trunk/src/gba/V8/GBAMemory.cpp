@@ -1,15 +1,15 @@
-#include "GBAinline.h"
-#include "../common/System.h"
-#include "../common/SystemGlobals.h"
-#include "../common/vbalua.h"
-#include "GBAGlobals.h"
-#include "GBA.h"
-#include "GBACheats.h"
-#include "GBASound.h"
-#include "agbprint.h"
-#include "EEprom.h"
-#include "Flash.h"
-#include "RTC.h"
+#include "../GBAinline.h"
+#include "../../common/System.h"
+#include "../../common/SystemGlobals.h"
+#include "../../common/vbalua.h"
+#include "../GBAGlobals.h"
+#include "../GBA.h"
+#include "../GBACheats.h"
+#include "../GBASound.h"
+#include "../agbprint.h"
+#include "../EEprom.h"
+#include "../Flash.h"
+#include "../RTC.h"
 
 #ifdef BKPT_SUPPORT
 void cheatsWriteMemory(u32 *address, u32 value, u32 mask);
@@ -119,7 +119,7 @@ extern int32 timer3ClockReload;
 
 extern const u32 objTilesAddress[3];
 
-memoryMap map[256];
+MemoryMap memoryMap[256];
 
 u32 CPUReadMemory(u32 address)
 {

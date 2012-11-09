@@ -1,15 +1,15 @@
-#include "GBAinline.h"
-#include "../common/System.h"
-#include "../common/SystemGlobals.h"
-#include "../common/vbalua.h"
-#include "GBAGlobals.h"
-#include "GBA.h"
-#include "GBACheats.h"
-#include "GBASound.h"
-#include "agbprint.h"
-#include "EEprom.h"
-#include "Flash.h"
-#include "RTC.h"
+#include "../GBAinline.h"
+#include "../../common/System.h"
+#include "../../common/SystemGlobals.h"
+#include "../../common/vbalua.h"
+#include "../GBAGlobals.h"
+#include "../GBA.h"
+#include "../GBACheats.h"
+#include "../GBASound.h"
+#include "../agbprint.h"
+#include "../EEprom.h"
+#include "../Flash.h"
+#include "../RTC.h"
 
 #ifdef BKPT_SUPPORT
 #ifdef SDL
@@ -30,7 +30,7 @@ extern bool8 cpuDmaHack;
 extern u32	 cpuDmaLast;
 extern int32 cpuDmaCount;
 
-memoryMap map[256];
+MemoryMap memoryMap[256];
 
 u32 CPUReadMemory(u32 address)
 {

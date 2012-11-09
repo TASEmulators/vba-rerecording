@@ -53,7 +53,14 @@ static variable_desc flashSaveData3[] = {
 
 void flashInit()
 {
-	memset(flashSaveMemory, 0xff, sizeof(flashSaveMemory));
+#ifdef USE_GBA_CORE_V7
+	memset(flashSaveMemory, 0x00, 0x20000);
+#else
+	memset(flashSaveMemory, 0xff, 0x20000);
+#endif
+	flashSize			= 0x10000;
+	flashDeviceID		= 0x1b;
+	flashManufacturerID = 0x32;
 }
 
 void flashReset()
@@ -65,13 +72,8 @@ void flashReset()
 
 void flashErase()
 {
-	memset(flashSaveMemory, 0, 0x20000*sizeof(u8));
-	flashState          = FLASH_READ_ARRAY;
-	flashReadState      = FLASH_READ_ARRAY;
-	flashSize           = 0x10000;
-	flashDeviceID       = 0x1b;
-	flashManufacturerID = 0x32;
-	flashBank           = 0;
+	flashInit();
+	flashReset();
 }
 
 void flashSaveGame(gzFile gzFile)
@@ -110,7 +112,7 @@ void flashReadGameSkip(gzFile gzFile, int version)
 	}
 }
 
-void flashSetSize(int size)
+void flashSetSize(int32 size)
 {
 	//  log("Setting flash size to %d\n", size);
 	if (size == 0x10000)

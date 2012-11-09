@@ -2,11 +2,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "bios.h"
-#include "../common/System.h"
-#include "GBA.h"
-#include "GBAinline.h"
-#include "GBAGlobals.h"
+#include "../bios.h"
+#include "../../common/System.h"
+#include "../GBA.h"
+#include "../GBAinline.h"
+#include "../GBAGlobals.h"
 
 s16 sineTable[256] = {
 	(s16)0x0000, (s16)0x0192, (s16)0x0323, (s16)0x04B5, (s16)0x0645, (s16)0x07D5, (s16)0x0964, (s16)0x0AF1,
