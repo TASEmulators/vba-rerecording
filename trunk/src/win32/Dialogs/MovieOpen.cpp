@@ -73,10 +73,13 @@ void MovieOpen::DoDataExchange(CDataExchange *pDX)
 	DDX_Control(pDX, IDC_EDIT_DESCRIPTION, m_editDescription);
 	DDX_Control(pDX, IDC_MOVIE_FILENAME, m_editFilename);
 	DDX_Control(pDX, IDC_EDIT_PAUSEFRAME, m_editPauseFrame);
+	DDX_Control(pDX, IDC_LABEL_WARNING1, m_warning1);
+	DDX_Control(pDX, IDC_LABEL_WARNING2, m_warning2);
 	//}}AFX_DATA_MAP
 }
 
 BEGIN_MESSAGE_MAP(MovieOpen, CDialog)
+ON_WM_CTLCOLOR()
 ON_BN_CLICKED(IDC_BROWSE, OnBnClickedBrowse)
 ON_BN_CLICKED(IDOK, OnBnClickedOk)
 ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
@@ -117,7 +120,7 @@ void MovieOpen::OnBnClickedBrowse()
 
 		movieName = dlg.GetPathName();
 
-		GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(movieName);
+		m_editFilename.SetWindowText(movieName);
 
 		// SetWindowText calls OnEnChangeMovieFilename which calls OnBnClickedMovieRefresh
 		// so this extra call to OnBnClickedMovieRefresh is bad
@@ -126,7 +129,7 @@ void MovieOpen::OnBnClickedBrowse()
 	while (shouldReopenBrowse);
 
 	// scroll to show the rightmost side of the movie filename
-	((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
+	m_editFilename.SetSel((DWORD)(movieName.GetLength() - 1), FALSE);
 }
 
 // some extensions that might commonly be near emulation-related files that we almost certainly can't open, or at least not
@@ -135,8 +138,8 @@ void MovieOpen::OnBnClickedBrowse()
 // we do this by exclusion instead of inclusion because we don't want to exclude extensions used for any archive files, even
 // extensionless or unusually-named archives.
 static const char *s_movieIgnoreExtensions [] = {
-	"gba", "gbc", "gb",	 "sgb",	 "cgb",	 "bin", "agb", "bios", "mb",   "elf",	"sgm",	"clt",	 "dat",	 "gbs",	 "gcf", "spc",
-	"xpc", "pal", "act", "dmp",	 "avi",	 "ini", "txt", "nfo",  "htm",  "html",	"jpg",	"jpeg",	 "png",	 "bmp",	 "gif", "mp3",
+	"gba", "gbc", "gb",	 "sgb",	 "cgb",	 "bin",	 "agb",	 "bios", "mb",	 "elf",	  "sgm",   "clt",	 "dat",	  "gbs",   "gcf",  "spc",
+	"xpc", "pal", "act", "dmp",	 "avi",	 "ini",	 "txt",	 "nfo",	 "htm",	 "html",  "jpg",   "jpeg",	 "png",	  "bmp",   "gif",  "mp3",
 	"wav", "lnk", "exe", "bat",	 "sav",	 "luasav"
 };
 
@@ -145,10 +148,10 @@ void MovieOpen::OnBnClickedMovieRefresh()
 	static int recursionDepth = 0;
 	if (recursionDepth > 0)
 		return;
-	struct Scope {Scope(){ ++ recursionDepth; } ~Scope(){ --recursionDepth; }} scope;
+	struct Scope {Scope(){ ++recursionDepth; } ~Scope(){ --recursionDepth; }} scope;
 
 	CString tempName;
-	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(tempName);
+	m_editFilename.GetWindowText(tempName);
 
 #if 1
 	// use ObtainFile to support opening files within archives (.7z, .rar, .zip, .zip.rar.7z, etc.)
@@ -162,11 +165,9 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		if (tempName != LogicalName)
 		{
 			int selStart = 0, selEnd = 0;
-			((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->GetSel(selStart, selEnd);
-
-			GetDlgItem(IDC_MOVIE_FILENAME)->SetWindowText(LogicalName);
-
-			((CEdit *)GetDlgItem(IDC_MOVIE_FILENAME))->SetSel(selStart, selEnd, FALSE);
+			m_editFilename.GetSel(selStart, selEnd);
+			m_editFilename.SetWindowText(LogicalName);
+			m_editFilename.SetSel(selStart, selEnd, FALSE);
 		}
 		moviePhysicalName = PhysicalName;
 		movieLogicalName  = LogicalName;
@@ -195,11 +196,11 @@ void MovieOpen::OnBnClickedMovieRefresh()
 
 		strncpy(buffer, movieInfo.authorInfo, MOVIE_METADATA_AUTHOR_SIZE);
 		buffer[MOVIE_METADATA_AUTHOR_SIZE - 1] = '\0';
-		GetDlgItem(IDC_EDIT_AUTHOR)->SetWindowText(buffer);
+		m_editAuthor.SetWindowText(buffer);
 
 		strncpy(buffer, movieInfo.authorInfo + MOVIE_METADATA_AUTHOR_SIZE, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 		buffer[MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE - 1] = '\0';
-		GetDlgItem(IDC_EDIT_DESCRIPTION)->SetWindowText(buffer);
+		m_editDescription.SetWindowText(buffer);
 
 		int option = 2;
 		if (movieInfo.header.startFlags & MOVIE_START_FROM_SRAM)
@@ -237,11 +238,11 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_NOBIOS + option);
 
 		{
-			char * p;
 			time_t ttime = (time_t)movieInfo.header.uid;
 			strncpy(buffer, ctime(&ttime), 127);
 			buffer[127] = '\0';
-			if ((p = strrchr(buffer, '\n')))
+			char *p = strrchr(buffer, '\n');
+			if (p)
 				*p = '\0';
 			GetDlgItem(IDC_LABEL_DATE)->SetWindowText(buffer);
 
@@ -261,110 +262,75 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		}
 
 		{
-			char warning1 [1024], warning2 [1024], buffer [1024];
+			// rather than treat these as warnings, might as well always show the info in the dialog
+			// (it's probably more informative and reassuring)
+			char warning1[1024], warning2[1024], buffer[1024];
+			char *p1 = warning1, *p2 = warning2;
 
-			strcpy(warning1, "");
-			strcpy(warning2, "");
-
-			char   romTitle [12];
+			char   romTitle[12];
 			uint32 romGameCode;
 			uint16 checksum;
 			uint8  crc;
-
 			VBAMovieGetRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
 
-			// rather than treat these as warnings, might as well always show the info in the dialog (it's probably more
-			// informative and reassuring)
-///			if (strncmp(movieInfo.header.romTitle,romTitle,12) != 0)
 			{
-				char str [13];
+				char str[13];
 				strncpy(str, movieInfo.header.romTitle, 12);
 				str[12] = '\0';
-				sprintf(buffer, "title=%s  ", str);
-				strcat(warning1, buffer);
+				p1 += sprintf(p1, "title=%s  ", str);
 
 				strncpy(str, romTitle, 12);
 				str[12] = '\0';
-				sprintf(buffer, "title=%s  ", str);
-				strcat(warning2, buffer);
+				p2 += sprintf(p2, "title=%s  ", str);
 			}
-///			if (((movieInfo.header.typeFlags & MOVIE_TYPE_GBA)!=0) != (systemCartridgeType == 0))
-			{
-				sprintf(buffer, "type=%s  ",
-				        (movieInfo.header.typeFlags & MOVIE_TYPE_GBA) ? "GBA" : (movieInfo.header.typeFlags &
-				                                                                 MOVIE_TYPE_GBC) ? "GBC" : (movieInfo.header.
-				                                                                                            typeFlags &
-				                                                                                            MOVIE_TYPE_SGB) ? "SGB" : "GB");
-				strcat(warning1, buffer);
 
-				sprintf(buffer, "type=%s  ", systemCartridgeType ==
-				        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
-				strcat(warning2, buffer);
-			}
-///			if (movieInfo.header.romCRC != crc)
 			{
-				sprintf(buffer, "crc=%02x  ", movieInfo.header.romCRC);
-				strcat(warning1, buffer);
+				p1 += sprintf(p1, "type=%s  ",
+				        (movieInfo.header.typeFlags & MOVIE_TYPE_GBA) ? "GBA" : 
+						(movieInfo.header.typeFlags & MOVIE_TYPE_GBC) ? "GBC" : 
+						(movieInfo.header.typeFlags & MOVIE_TYPE_SGB) ? "SGB" : " GB");
+				p2 += sprintf(p2, "type=%s  ", systemCartridgeType ==
+				        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : " GB")));
+			}
 
-				sprintf(buffer, "crc=%02x  ", crc);
-				strcat(warning2, buffer);
-			}
-///			if (movieInfo.header.romGameCode != romGameCode)
 			{
-				char code [5];
+				p1 += sprintf(p1, "crc=%02x  ", movieInfo.header.romCRC);
+				p2 += sprintf(p2, "crc=%02x  ", crc);
+			}
+
+			{
+				char code[5];
 				if (movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
 				{
 					memcpy(code, &movieInfo.header.romGameCode, 4);
 					code[4] = '\0';
-					sprintf(buffer, "code=%s  ", code);
-					strcat(warning1, buffer);
+					p1 += sprintf(p1, "code=%s  ", code);
 				}
-
 				if (systemCartridgeType == 0)
 				{
 					memcpy(code, &romGameCode, 4);
 					code[4] = '\0';
-					sprintf(buffer, "code=%s  ", code);
-					strcat(warning2, buffer);
+					p2 += sprintf(p2, "code=%s  ", code);
 				}
 			}
-///			if (movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags &
-// MOVIE_SETTING_USEBIOSFILE)==0
-// && checksum==0))
+
 			{
-				sprintf(buffer,
-				        movieInfo.header.typeFlags &
-				        MOVIE_TYPE_GBA ? ((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) ==
-				                          0 ? "(bios=none)  " : "(bios=%04x)  ") : "check=%04x  ",
+				p1 += sprintf(p1,
+				        movieInfo.header.typeFlags & MOVIE_TYPE_GBA ? 
+						((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) == 0 ? 
+						"(bios=none)  " : "(bios=%04x)  ") : "check=%04x  ",
 				        movieInfo.header.romOrBiosChecksum);
-				strcat(warning1, buffer);
-
-				sprintf(buffer,
-				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%04x)  " : "check=%04x  ",
+				p2 += sprintf(p2,
+				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? 
+						"(bios=%04x)  " : "check=%04x  ",
 				        checksum);
-				strcat(warning2, buffer);
 			}
 
-			if (strlen(warning1) > 0)
-			{
-				sprintf(buffer, "Movie ROM: %s", warning1);
-				GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText(buffer);
+			sprintf(buffer, "Movie ROM: %s", warning1);
+			m_warning1.SetWindowText(buffer);
 
-				sprintf(buffer, "Your ROM: %s", warning2);
-
-				//if(movieInfo.header.romCRC != crc
-				//|| strncmp(movieInfo.header.romTitle,romTitle,12) != 0
-				//|| movieInfo.header.romOrBiosChecksum != checksum && !((movieInfo.header.optionFlags &
-				// MOVIE_SETTING_USEBIOSFILE)==0 && checksum==0))
-				//	strcat(buffer, "<-- MISMATCH");
-
-				GetDlgItem(IDC_LABEL_WARNING2)->SetWindowText(buffer);
-			}
-			else
-			{
-				GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText("(No problems detected)");
-				GetDlgItem(IDC_LABEL_WARNING2)->SetWindowText(" ");
-			}
+			sprintf(buffer, "Your ROM: %s", warning2);
+			m_warning2.SetWindowText(buffer);
 		}
 		GetDlgItem(IDC_CHECK_PAUSEFRAME)->EnableWindow(TRUE);
 	}
@@ -374,10 +340,10 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		GetDlgItem(IDC_LABEL_LENGTH)->SetWindowText(" ");
 		GetDlgItem(IDC_LABEL_FRAMES)->SetWindowText(" ");
 		GetDlgItem(IDC_LABEL_RERECORD)->SetWindowText(" ");
-		GetDlgItem(IDC_EDIT_AUTHOR)->SetWindowText(" ");
-		GetDlgItem(IDC_EDIT_DESCRIPTION)->SetWindowText(" ");
-		GetDlgItem(IDC_LABEL_WARNING1)->SetWindowText(" ");
-		GetDlgItem(IDC_LABEL_WARNING2)->SetWindowText(" ");
+		m_editAuthor.SetWindowText(" ");
+		m_editDescription.SetWindowText(" ");
+		m_warning1.SetWindowText(" ");
+		m_warning2.SetWindowText(" ");
 
 		GetDlgItem(IDC_EDIT_PAUSEFRAME)->SetWindowText("");
 		GetDlgItem(IDC_EDIT_PAUSEFRAME)->EnableWindow(FALSE);
@@ -391,43 +357,31 @@ void MovieOpen::OnBnClickedMovieRefresh()
 	}
 }
 
-BOOL MovieOpen::OnWndMsg(UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *res)
+HBRUSH MovieOpen::OnCtlColor(CDC *pDC, CWnd *pWnd, UINT nCtlColor)
 {
-	switch (msg)
+	switch (nCtlColor)
 	{
-	case WM_CTLCOLORSTATIC:
-	{
-		//HWND hwndDlg = GetSafeHwnd();
-		HWND warnDlg = NULL;
-		GetDlgItem(IDC_LABEL_WARNING2, &warnDlg);
-
-		if ((HWND)lParam == warnDlg)
+	case CTLCOLOR_STATIC:
+		if (pWnd == &m_warning2)
 		{
-			char   romTitle [12];
+			char   romTitle[12];
 			uint32 romGameCode;
 			uint16 checksum;
 			uint8  crc;
-
 			VBAMovieGetRomInfo(movieInfo, romTitle, romGameCode, checksum, crc);
-
 			if (movieInfo.header.romCRC != crc
 			    || strncmp(movieInfo.header.romTitle, romTitle, 12) != 0
 			    || movieInfo.header.romOrBiosChecksum != checksum
 			    && !((movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) == 0 && checksum == 0))
 			{
-				// draw the md5 sum in red if it's different from the md5 of the rom used in the replay
-				HDC hdcStatic = (HDC)wParam;
-				SetTextColor(hdcStatic, RGB(255, 0, 0));      // use red for a mismatch
-
-				// I'm not sure why this doesn't work to make the background transparent... it turns white anyway
-				SetBkMode(hdcStatic, TRANSPARENT);
-				return (LONG)GetStockObject(NULL_BRUSH);
+				pDC->SetTextColor(RGB(255, 0, 0));  // use red for a mismatch
+				pDC->SetBkMode(TRANSPARENT);
+				return (HBRUSH)GetStockObject(NULL_BRUSH);
 			}
 		}
-		return FALSE;
+	default:
+		return CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 	}
-	}
-	return CDialog::OnWndMsg(msg, wParam, lParam, res);
 }
 
 void MovieOpen::OnBnClickedOk()
@@ -467,11 +421,11 @@ void MovieOpen::OnBnClickedOk()
 		// get author and movie info from the edit fields (the description might change):
 		char info[MOVIE_METADATA_SIZE], buffer[MOVIE_METADATA_SIZE];
 
-		GetDlgItem(IDC_EDIT_AUTHOR)->GetWindowText(buffer, MOVIE_METADATA_AUTHOR_SIZE);
+		m_editAuthor.GetWindowText(buffer, MOVIE_METADATA_AUTHOR_SIZE);
 		strncpy(info, buffer, MOVIE_METADATA_AUTHOR_SIZE);
 		info[MOVIE_METADATA_AUTHOR_SIZE - 1] = '\0';
 
-		GetDlgItem(IDC_EDIT_DESCRIPTION)->GetWindowText(buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
+		m_editDescription.GetWindowText(buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 		strncpy(info + MOVIE_METADATA_AUTHOR_SIZE, buffer, MOVIE_METADATA_SIZE - MOVIE_METADATA_AUTHOR_SIZE);
 		info[MOVIE_METADATA_SIZE - 1] = '\0';
 
