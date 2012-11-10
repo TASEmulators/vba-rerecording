@@ -15,7 +15,7 @@ void MainWnd::OnHelpAbout()
 
 void MainWnd::OnHelpFaq()
 {
-	::ShellExecute(0, _T("open"), "http://vba.ngemu.com/faq.shtml",
+	::ShellExecute(0, _T("open"), "http://code.google.com/p/vba-rerecording/w/list",
 	               0, 0, SW_SHOWNORMAL);
 }
 
