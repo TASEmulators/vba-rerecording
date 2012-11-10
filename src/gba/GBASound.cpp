@@ -139,8 +139,6 @@ int32 sound4EnvelopeATL		  = 0;
 int32 sound4EnvelopeUpDown	  = 0;
 int32 sound4EnvelopeATLReload = 0;
 
-int32 soundControl = 0;
-
 int32 soundDSFifoAIndex		 = 0;
 int32 soundDSFifoACount		 = 0;
 int32 soundDSFifoAWriteIndex = 0;
@@ -157,7 +155,7 @@ int32 soundDSBTimer = 0;
 u8	  soundDSFifoB[32];
 u8	  soundDSBValue = 0;
 
-int32 soundEnableFlag = 0x3ff;
+int32 soundControl = 0;
 
 // dummy variables
 static int32  soundTicks_int32;
@@ -533,7 +531,7 @@ void soundEvent(u32 address, u16 data)
 	{
 	case SGCNT0_H:
 		data		&= 0xFF0F;
-		soundControl = data & 0x770F;;
+		soundControl = data & 0x770F;
 		if (data & 0x0800)
 		{
 			soundDSFifoAWriteIndex = 0;
@@ -1166,6 +1164,8 @@ void soundReset()
 	sound4EnvelopeATL		= 0;
 	sound4EnvelopeUpDown	= 0;
 	sound4EnvelopeATLReload = 0;
+
+	soundControl = 0;
 
 	sound1On = 0;
 	sound2On = 0;

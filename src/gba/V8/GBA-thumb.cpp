@@ -2338,7 +2338,7 @@ int thumbExecute()
 		u32 oldArmNextPC = armNextPC;
 
 #ifndef FINAL_VERSION
-		if (armNextPC == stop)
+		if (armNextPC == armStopAddr)
 		{
 			armNextPC++;
 		}

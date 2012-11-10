@@ -913,8 +913,9 @@
 #define ID_FILE_LOADGAME_AUTOLOADMOSTRECENT 40393
 #define ID_EMULATOR_GBALAG              40394
 #define ID_EMULATOR_USE_OLD_FRAME_TIMING 40395
-#define ID_EMULATOR_USE_GB_INPUT_KLUDGE 40396
+#define ID_EMULATOR_USE_GB_INPUT_HACK   40396
 #define ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS 40397
+#define ID_EMULATION_V20_GB_FRAME_HACK  40398
 #define ID_STICKY_A                     40399
 #define ID_STICKY_B                     40400
 #define ID_STICKY_R                     40402
@@ -986,7 +987,7 @@
 #define ID_RAM_WATCH                    40523
 #define ID_MOVIE_TOOL_AUTO_CONVERT      40541
 #define ID_MOVIE_TOOL_EXTRACT_FROM_SAVEGAME 40560
-#define ID_MOVIE_TOOL_CONVERT_FILE          40561
+#define ID_MOVIE_TOOL_CONVERT_FILE      40561
 #define RAMMENU_FILE_RECENT             40653
 #define ID_WATCHES_MOVEUP               40664
 #define ID_WATCHES_MOVEDOWN             40665
@@ -1062,14 +1063,14 @@
 #define IDC_C_WATCH_SEPARATE            43405
 #define IDC_PROMPT_TEXT                 44000
 #define IDC_PROMPT_TEXT2                44001
-#define IDC_PROMPT_EDIT                 44005
+#define IDC_PROMPT_EDIT                 44002
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        171
-#define _APS_NEXT_COMMAND_VALUE         44006
+#define _APS_NEXT_COMMAND_VALUE         44003
 #define _APS_NEXT_CONTROL_VALUE         1376
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

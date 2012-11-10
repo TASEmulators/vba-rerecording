@@ -1111,8 +1111,9 @@ case 0xca:
 // CB done outside
 case 0xCB:
 	// extended opcode
+	opcode = gbReadOpcode(PC.W);
 	CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC); // is this desired?
-	opcode	   = gbReadOpcode(PC.W++);
+	PC.W++;
 	gbClockTicks = gbCyclesCB[opcode];
 #include "gbCodesCB.h"
 	break;

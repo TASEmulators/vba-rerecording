@@ -142,10 +142,6 @@ int32 gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
 int32 gbBattery	   = 0;
 int32 gbJoymask[4] = { 0, 0, 0, 0 };
 
-// HACK
-int32 gbEchoRAMFixOn = 1;
-int32 gbDMASpeedVersion	 = 1;
-
 int32 gbRomSizes[] = { 0x00008000, // 32K
 	                   0x00010000, // 64K
 	                   0x00020000, // 128K
@@ -1047,26 +1043,24 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 					// account... according to GB DEV FAQs, the setup time is the same
 					// for single and double speed, but the actual transfer takes the
 					// same time // (is that a typo?)
-					switch (gbDMASpeedVersion)
+					if (gbDMASpeedVersion)
 					{
-					case 1:     // I believe this is more correct
+						// I believe this is more correct
 						// the lower 7 bits of FF55 specify the Transfer Length (divided by 16, minus 1)
 						// and we make gbDmaTicks twice as many cycles at double speed to make the transfer take the same time
 						if (gbSpeed)
 							gbDmaTicks = 16 * ((value & 0x7f) + 1);
 						else
 							gbDmaTicks = 8 * ((value & 0x7f) + 1);
-						break;
-					case 0:     // here for backward compatibility
+					}
+					else
+					{
+						// here for backward compatibility
 						// I think this was a guess that approximates the above in most but not all games
 						if (gbSpeed)
 							gbDmaTicks = 231 + 16 * (value & 0x7f);
 						else
 							gbDmaTicks = 231 + 8 * (value & 0x7f);
-						break;
-					default:     // shouldn't happen
-						//assert(0);
-						break;
 					}
 					gbCopyMemory(gbHdmaDestination, gbHdmaSource, gbHdmaBytes);
 					gbHdmaDestination += gbHdmaBytes;
@@ -3240,9 +3234,6 @@ void gbEmulate(int ticksToStop)
 	int gbClockTicks = 0;
 	gbDmaTicks = 0;
 
-	register int opcode = 0;
-
-	u32 newmask = 0;
 	if (newFrame)
 	{
 		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
@@ -3296,7 +3287,7 @@ void gbEmulate(int ticksToStop)
 		}
 		else
 		{
-			opcode = gbReadOpcode(PC.W);
+			register int opcode = gbReadOpcode(PC.W);
 			CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);
 			PC.W++;
 
@@ -3312,7 +3303,7 @@ void gbEmulate(int ticksToStop)
 		}
 
 		if (!emulating)
-			return;
+			break;
 
 		if (gbDmaTicks)
 		{
@@ -3662,16 +3653,12 @@ void gbEmulate(int ticksToStop)
 			// old timing code
 			if (ticksToStop > 0)
 				continue;
+
+			break;
 		}
 		else
 		{
-			if (!newFrame && (register_LCDC & 0x80) != 0)
-				continue;
-		}
-
-		if (!(register_LCDC & 0x80))
-		{
-			if (!useOldFrameTiming)
+			if (!(register_LCDC & 0x80))
 			{
 				// FIXME: since register_LY can be reset to 0 by some games, frame length is variable
 				// and infinite loops can occurr
@@ -3702,16 +3689,17 @@ void gbEmulate(int ticksToStop)
 					}
 				}
 				else
+				{
 					gbJoymask[0] = gbJoymask[1] = gbJoymask[2] = gbJoymask[3] = 0;
-#else
+				}
 #endif
 			}
 		}
 
 		// makes sure frames are really divided across input sampling boundaries which occur at a constant rate
-		if (newFrame || useOldFrameTiming)
+		if (newFrame)
 		{
-			return;
+			break;
 		}
 	}
 }

@@ -82,7 +82,7 @@ case 0x0f:
 	break;
 case 0x10:
 	// STOP
-	opcode = gbReadOpcode(PC.W++);
+	opcode1 = gbReadOpcode(PC.W++);
 	if (gbCgbMode)
 	{
 		if (gbMemory[0xff4d] & 1)

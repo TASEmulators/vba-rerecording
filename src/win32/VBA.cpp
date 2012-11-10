@@ -1872,6 +1872,9 @@ void VBA::loadSettings()
 #ifdef USE_GB_CORE_V7
 	gbNullInputHackEnabled	   = regQueryDwordValue("gbNullInputHackEnabled", false) ? true : false;
 	gbNullInputHackTempEnabled = gbNullInputHackEnabled;
+#else
+	gbV20GBFrameTimingHack	   = regQueryDwordValue("gbV20GBFrameTimingHack", false) ? true : false;
+	gbV20GBFrameTimingHackTemp = gbV20GBFrameTimingHack;
 #endif
 	useOldSync		  = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 	useOldFrameTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
@@ -2109,6 +2112,8 @@ void VBA::saveSettings()
 #endif
 #ifdef USE_GB_CORE_V7
 	regSetDwordValue("gbNullInputHackEnabled", gbNullInputHackEnabled);
+#else
+	regSetDwordValue("gbV20GBFrameTimingHack", gbV20GBFrameTimingHack);
 #endif
 	regSetDwordValue("useOldGBTiming", useOldFrameTiming);
 	regSetDwordValue("useOldSync", useOldSync);

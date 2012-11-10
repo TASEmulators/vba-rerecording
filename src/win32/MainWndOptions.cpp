@@ -28,8 +28,6 @@
 #include "../common/movie.h"
 #include "../version.h"
 
-extern int emulating;
-
 #define VBA_CONFIRM_MODE WM_APP + 100
 
 void MainWnd::OnOptionsFrameskipThrottleNothrottle()
@@ -1018,6 +1016,22 @@ void MainWnd::OnUpdateOptionsEmulatorSkipbios(CCmdUI*pCmdUI)
 	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
+#ifdef USE_GBA_CORE_V7
+void MainWnd::OnOptionsEmulatorGBALag()
+{
+	extern void TogglePrefetchHack();
+	TogglePrefetchHack();
+	memLagEnabled = memLagTempEnabled; // memLagEnabled is only to hold the last value that the user chose, so temporary changes
+                                       // don't get into the registry
+}
+
+void MainWnd::OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI)
+{
+	pCmdUI->SetCheck(!memLagTempEnabled);
+	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+}
+#endif
+
 void MainWnd::OnOptionsEmulatorUseOldGBTiming()
 {
 	useOldFrameTiming = !useOldFrameTiming;
@@ -1029,41 +1043,35 @@ void MainWnd::OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI)
 	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
-void MainWnd::OnOptionsEmulatorUseGBNullInputKludge()
-{
 #ifdef USE_GB_CORE_V7
+void MainWnd::OnOptionsEmulatorUseGBNullInputHack()
+{
 	if (VBAMovieActive())
 		gbNullInputHackTempEnabled = !gbNullInputHackTempEnabled;
 	else
 		gbNullInputHackTempEnabled = gbNullInputHackEnabled = !gbNullInputHackEnabled;
-#endif
 }
 
-void MainWnd::OnUpdateOptionsEmulatorUseGBNullInputKludge(CCmdUI*pCmdUI)
+void MainWnd::OnUpdateOptionsEmulatorUseGBNullInputHack(CCmdUI*pCmdUI)
 {
-#ifdef USE_GB_CORE_V7
-	pCmdUI->SetCheck(VBAMovieActive() || GetAsyncKeyState(VK_CONTROL) ? gbNullInputHackTempEnabled : gbNullInputHackEnabled);
+	pCmdUI->SetCheck(gbNullInputHackTempEnabled);
 	pCmdUI->Enable((!VBAMovieActive() && !useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
-#endif
+}
+#else
+void MainWnd::OnOptionsEmulatorUseV20GBFrameHack()
+{
+	if (VBAMovieActive())
+		gbV20GBFrameTimingHackTemp = !gbV20GBFrameTimingHackTemp;
+	else
+		gbV20GBFrameTimingHackTemp = gbV20GBFrameTimingHack = !gbV20GBFrameTimingHack;
 }
 
-void MainWnd::OnOptionsEmulatorGBALag()
+void MainWnd::OnUpdateOptionsEmulatorUseV20GBFrameHack(CCmdUI*pCmdUI)
 {
-#ifdef USE_GBA_CORE_V7
-	extern void TogglePrefetchHack();
-	TogglePrefetchHack();
-	memLagEnabled = memLagTempEnabled; // memLagEnabled is only to hold the last value that the user chose, so temporary changes
-                                       // don't get into the registry
-#endif
+	pCmdUI->SetCheck(gbV20GBFrameTimingHackTemp);
+	pCmdUI->Enable((!VBAMovieActive() && useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
 }
-
-void MainWnd::OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI)
-{
-#ifdef USE_GBA_CORE_V7
-	pCmdUI->SetCheck(!memLagTempEnabled);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
 #endif
-}
 
 void MainWnd::OnOptionsEmulatorSelectbiosfile()
 {
@@ -1126,18 +1134,6 @@ void MainWnd::OnUpdateOptionsSoundDisable(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundOffFlag);
 	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
-}
-
-static void OnSoundToggleEnabled(int c)
-{
-	if (systemSoundGetEnabledChannels() & c)
-	{
-		systemSoundDisableChannels(c);
-	}
-	else
-	{
-		systemSoundEnableChannels(c);
-	}
 }
 
 void MainWnd::OnOptionsSoundMute()
@@ -1299,6 +1295,18 @@ void MainWnd::OnOptionsSoundVolume5x()
 void MainWnd::OnUpdateOptionsSoundVolume5x(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundVolume == 5);
+}
+
+static inline void OnSoundToggleEnabled(int c)
+{
+	if (systemSoundGetEnabledChannels() & c)
+	{
+		systemSoundDisableChannels(c);
+	}
+	else
+	{
+		systemSoundEnableChannels(c);
+	}
 }
 
 void MainWnd::OnOptionsSoundChannel1()

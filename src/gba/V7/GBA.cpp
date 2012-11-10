@@ -33,13 +33,17 @@
 #define _stricmp strcasecmp
 #endif
 
+bool8 prefetchActive = false;
+bool8 prefetchPrevActive = false;
+bool8 prefetchApplies = false;
+
 int32 cpuDmaTicksToUpdate = 0;
 int32 cpuDmaCount		  = 0;
 bool8 cpuDmaHack		  = 0;
 u32	  cpuDmaLast		  = 0;
 int32 dummyAddress		  = 0;
 
-int32 *extCpuLoopTicks = NULL;
+int32 *extCpuNextEvent = NULL;
 int32 *extClockTicks   = NULL;
 int32 *extTicks		   = NULL;
 
@@ -53,7 +57,7 @@ bool8 cpuFlashEnabled		 = true;
 bool8 cpuEEPROMEnabled		 = true;
 bool8 cpuEEPROMSensorEnabled = false;
 
-//int cpuLoopTicks = 0;
+//int cpuNextEvent = 0;
 int cpuSavedTicks = 0;
 
 #ifdef PROFILING
@@ -94,7 +98,7 @@ void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
 bool8 fxOn			 = false;
 bool8 windowOn		 = false;
-bool8 prefetchActive = false, prefetchPrevActive = false, prefetchApplies = false;
+
 char  buffer[1024];
 FILE *out = NULL;
 
@@ -462,13 +466,9 @@ variable_desc saveGameStruct[] = {
 	{ NULL,				  0			    }
 };
 
-#define CPU_BREAK_LOOP \
-    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
-    *extCpuLoopTicks = *extClockTicks;
-
 #define CPU_BREAK_LOOP_2 \
-    cpuSavedTicks	 = cpuSavedTicks - *extCpuLoopTicks; \
-    *extCpuLoopTicks = *extClockTicks; \
+    cpuSavedTicks	 = cpuSavedTicks - *extCpuNextEvent; \
+    *extCpuNextEvent = *extClockTicks; \
     *extTicks		 = *extClockTicks;
 
 #ifdef BKPT_SUPPORT
@@ -534,38 +534,38 @@ void cpuEnableProfiling(int hz)
 
 inline int CPUUpdateTicks()
 {
-	int cpuLoopTicks = lcdTicks;
+	int cpuNextEvent = lcdTicks;
 
-	if (soundTicks < cpuLoopTicks)
-		cpuLoopTicks = soundTicks;
+	if (soundTicks < cpuNextEvent)
+		cpuNextEvent = soundTicks;
 
-	if (timer0On && !(TM0CNT & 4) && (timer0Ticks < cpuLoopTicks))
+	if (timer0On && !(TM0CNT & 4) && (timer0Ticks < cpuNextEvent))
 	{
-		cpuLoopTicks = timer0Ticks;
+		cpuNextEvent = timer0Ticks;
 	}
-	if (timer1On && !(TM1CNT & 4) && (timer1Ticks < cpuLoopTicks))
+	if (timer1On && !(TM1CNT & 4) && (timer1Ticks < cpuNextEvent))
 	{
-		cpuLoopTicks = timer1Ticks;
+		cpuNextEvent = timer1Ticks;
 	}
-	if (timer2On && !(TM2CNT & 4) && (timer2Ticks < cpuLoopTicks))
+	if (timer2On && !(TM2CNT & 4) && (timer2Ticks < cpuNextEvent))
 	{
-		cpuLoopTicks = timer2Ticks;
+		cpuNextEvent = timer2Ticks;
 	}
-	if (timer3On && !(TM3CNT & 4) && (timer3Ticks < cpuLoopTicks))
+	if (timer3On && !(TM3CNT & 4) && (timer3Ticks < cpuNextEvent))
 	{
-		cpuLoopTicks = timer3Ticks;
+		cpuNextEvent = timer3Ticks;
 	}
 #ifdef PROFILING
 	if (profilingTicksReload != 0)
 	{
-		if (profilingTicks < cpuLoopTicks)
+		if (profilingTicks < cpuNextEvent)
 		{
-			cpuLoopTicks = profilingTicks;
+			cpuNextEvent = profilingTicks;
 		}
 	}
 #endif
-	cpuSavedTicks = cpuLoopTicks;
-	return cpuLoopTicks;
+	cpuSavedTicks = cpuNextEvent;
+	return cpuNextEvent;
 }
 
 void CPUUpdateWindow0()
@@ -2185,9 +2185,10 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 
 	cpuDmaTicksToUpdate += totalTicks;
 
-	if (*extCpuLoopTicks >= 0)
+	if (*extCpuNextEvent >= 0)
 	{
-		CPU_BREAK_LOOP;
+		cpuSavedTicks	-= *extCpuNextEvent;
+		*extCpuNextEvent = *extClockTicks;
 	}
 }
 
@@ -3162,21 +3163,21 @@ void CPUReset()
 			}
 	}
 
+	// clean picture
+	memset(pix, 0, 4 * 241 * 162);
 	// clean registers
 	memset(&reg[0], 0, sizeof(reg));
 	// clean OAM
 	memset(oam, 0, 0x400);
 	// clean palette
 	memset(paletteRAM, 0, 0x400);
-	// clean picture
-	memset(pix, 0, 4 * 241 * 162);
 	// clean vram
 	memset(vram, 0, 0x20000);
 	// clean io memory
 	memset(ioMem, 0, 0x400);
 	// clean RAM
-	memset(internalRAM, 0, 0x8000); /// FIXME: is it unsafe to erase ALL of this? Even the init code doesn't.
-	memset(workRAM, 0, 0x40000); /// ditto
+	memset(workRAM, 0, 0x40000); /// FIXME: is it unsafe to erase ALL of this? Even the init code doesn't.
+	memset(internalRAM, 0, 0x8000); /// FIXME: same question as above
 
 	DISPCNT	 = 0x0080;
 	DISPSTAT = 0x0000;
@@ -3256,8 +3257,8 @@ void CPUReset()
 	IF		 = 0x0000;
 	IME		 = 0x0000;
 
-	armMode = 0x1F;
-
+	armMode	 = 0x1F;
+	armState = true;
 	if (cpuIsMultiBoot)
 	{
 		reg[13].I	   = 0x03007F00;
@@ -3285,7 +3286,6 @@ void CPUReset()
 			armIrqEnable   = true;
 		}
 	}
-	armState = true;
 	C_FLAG	 = V_FLAG = N_FLAG = Z_FLAG = false;
 	UPDATE_REG(0x00, DISPCNT);
 	UPDATE_REG(0x20, BG2PA);
@@ -3303,6 +3303,8 @@ void CPUReset()
 	reg[15].I += 4;
 
 	// reset internal state
+	intState  = false;
+	stopState = false;
 	holdState = false;
 	holdType  = 0;
 
@@ -3473,7 +3475,7 @@ void TogglePrefetchHack()
 
 	if (emulating)
 	{
-		if (prefetchApplies && prefetchActive == memLagTempEnabled)
+		if (prefetchApplies && (!prefetchActive != memLagTempEnabled))
 		{
 			prefetchActive = !prefetchActive;
 			//if(prefetchActive && !prefetchPrevActive) systemScreenMessage("pre-fetch enabled",3,600);
@@ -3493,7 +3495,7 @@ void SetPrefetchHack(bool set)
 		TogglePrefetchHack();
 }
 
-static void CPUDrawPixLine()
+static inline void CPUDrawPixLine()
 {
 	switch (systemColorDepth)
 	{
@@ -3642,7 +3644,7 @@ static void CPUGetUserInput()
 	speedup	   = (extButtons & 1) != 0;
 }
 
-static void CPUFrameBoundaryWork()
+static inline void CPUFrameBoundaryWork()
 {
 	// HACK: some special "buttons"
 	if (cheatsEnabled)
@@ -3655,24 +3657,24 @@ void CPULoop(int _ticks)
 {
 	int32 ticks = _ticks;
 	int32 clockTicks;
-	int32 cpuLoopTicks	= 0;
+	int32 cpuNextEvent	= 0;
 	int32 timerOverflow = 0;
-	// variables used by the CPU core
 
-	extCpuLoopTicks = &cpuLoopTicks;
+	// variables used by the CPU core
+	extCpuNextEvent = &cpuNextEvent;
 	extClockTicks	= &clockTicks;
 	extTicks		= &ticks;
 
-	cpuLoopTicks = CPUUpdateTicks();
-	if (cpuLoopTicks > ticks)
+	cpuNextEvent = CPUUpdateTicks();
+	if (cpuNextEvent > ticks)
 	{
-		cpuLoopTicks  = ticks;
+		cpuNextEvent  = ticks;
 		cpuSavedTicks = ticks;
 	}
 
 	if (intState)
 	{
-		cpuLoopTicks  = 5;
+		cpuNextEvent  = 5;
 		cpuSavedTicks = 5;
 	}
 
@@ -3770,14 +3772,14 @@ void CPULoop(int _ticks)
 #endif
 		}
 
-		cpuLoopTicks -= clockTicks;
-		if ((cpuLoopTicks <= 0))
+		cpuNextEvent -= clockTicks;
+		if ((cpuNextEvent <= 0))
 		{
 			if (cpuSavedTicks)
 			{
-				clockTicks = cpuSavedTicks; // + cpuLoopTicks;
+				clockTicks = cpuSavedTicks; // + cpuNextEvent;
 			}
-			cpuDmaTicksToUpdate = -cpuLoopTicks;
+			cpuDmaTicksToUpdate = -cpuNextEvent;
 
 updateLoop:
 			lcdTicks -= clockTicks;
@@ -3864,6 +3866,16 @@ updateLoop:
 						}
 					}
 				}
+			}
+
+			// we shouldn't be doing sound in stop state, but we lose synchronization
+			// if sound is disabled, so in stop state, soundTick will just produce
+			// mute sound
+			soundTicks -= clockTicks;
+			if (soundTicks < 1)
+			{
+				soundTick();
+				soundTicks += soundTickStep;
 			}
 
 			if (!stopState)
@@ -4100,15 +4112,7 @@ updateLoop:
 					}
 				}
 			}
-			// we shouldn't be doing sound in stop state, but we lose synchronization
-			// if sound is disabled, so in stop state, soundTick will just produce
-			// mute sound
-			soundTicks -= clockTicks;
-			if (soundTicks < 1)
-			{
-				soundTick();
-				soundTicks += soundTickStep;
-			}
+
 			timerOverflow = 0;
 
 #ifdef PROFILING
@@ -4129,7 +4133,7 @@ updateLoop:
 #endif
 
 			ticks		-= clockTicks;
-			cpuLoopTicks = CPUUpdateTicks();
+			cpuNextEvent = CPUUpdateTicks();
 
 			if (cpuDmaTicksToUpdate > 0)
 			{
@@ -4164,7 +4168,7 @@ updateLoop:
 						if (!holdState)
 						{
 							intState	  = true;
-							cpuLoopTicks  = 5;
+							cpuNextEvent  = 5;
 							cpuSavedTicks = 5;
 						}
 						else
@@ -4180,17 +4184,9 @@ updateLoop:
 				}
 			}
 
-			if (useOldFrameTiming)
+			if (newFrame || useOldFrameTiming && ticks <= 0)
 			{
-				if (ticks <= 0)
-				{
-					newFrame = true;
-					return;
-				}
-			}
-			else if (newFrame)
-			{
-				return;
+				break;
 			}
 		}
 	}
