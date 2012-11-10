@@ -25,6 +25,8 @@ public:
 	CEdit   m_editPauseFrame;
 	CString moviePhysicalName;
 	CString movieLogicalName;
+	CStatic m_warning1;
+	CStatic m_warning2;
 	//}}AFX_DATA
 
 	// Overrides
@@ -41,6 +43,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(GBACheatList)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd *pWnd, UINT nCtlColor);
 	afx_msg void OnBnClickedBrowse();
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
@@ -50,7 +53,6 @@ protected:
 	afx_msg void OnBnClickedHideborder();
 	afx_msg void OnEnChangeMovieFilename();
 	virtual BOOL OnInitDialog();
-	virtual BOOL OnWndMsg(UINT, WPARAM, LPARAM, LRESULT *);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
