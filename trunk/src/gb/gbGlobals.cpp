@@ -24,6 +24,8 @@ u8	  gbObp1[4] = { 0, 1, 2, 3 };
 int32 gbWindowLine = -1;
 
 #ifdef USE_GB_CORE_V7
+bool gbEchoRAMFixOn	   = true;
+bool gbDMASpeedVersion = true;
 #else
 bool genericflashcardEnable = false;
 #endif

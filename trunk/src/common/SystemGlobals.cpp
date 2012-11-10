@@ -17,15 +17,15 @@ EmulatedSystemCounters systemCounters =
 	true,
 };
 
-int	emulating = 0;
+int emulating = 0;
 
 u8 *bios = NULL;
 u8 *pix	 = NULL;
 
-u16	  currentButtons[4] = { 0, 0, 0, 0 };	// constrain: never contains hacked buttons, only the lower 16 bits of each are used
-u16   lastKeys = 0;
-int32 sensorX = 0;
-int32 sensorY = 0;
+u16	  currentButtons[4] = { 0, 0, 0, 0 };   // constrain: never contains hacked buttons, only the lower 16 bits of each are used
+u16	  lastKeys = 0;
+int32 sensorX  = 0;
+int32 sensorY  = 0;
 
 bool  newFrame		  = true;
 bool8 speedup		  = false;
@@ -33,20 +33,19 @@ u32	  extButtons	  = 0;
 bool8 capturePrevious = false;
 int32 captureNumber	  = 0;
 
-soundtick_t USE_TICKS_AS	= 0;
-soundtick_t soundTickStep	= soundQuality * USE_TICKS_AS;
-soundtick_t soundTicks		= 0;
+soundtick_t USE_TICKS_AS  = 0;
+soundtick_t soundTickStep = soundQuality * USE_TICKS_AS;
+soundtick_t soundTicks	  = 0;
 
-u32	  soundIndex  = 0;
-int32 soundPaused = 1;
-int32 soundPlay	  = 0;
-u32	  soundNextPosition	= 0;
+u32	  soundIndex		= 0;
+int32 soundPaused		= 1;
+int32 soundPlay			= 0;
+u32	  soundNextPosition = 0;
 
-u8	  soundBuffer[6][735];
-u32   soundBufferLen	  = 1470;
-u32	  soundBufferTotalLen = 14700;
-u32	  soundBufferIndex	  = 0;
-
+u8	soundBuffer[6][735];
+u32 soundBufferLen		= 1470;
+u32 soundBufferTotalLen = 14700;
+u32 soundBufferIndex	= 0;
 
 u16	  soundFinalWave[1470];
 u16	  soundFrameSound[735 * 30 * 2]; // for avi logging
@@ -57,37 +56,41 @@ int	 tempSaveID		  = 0;
 int	 tempSaveAttempts = 0;
 
 // settings
-bool8 synchronize	= true;
-int32 gbFrameSkip	= 0;
-int32 frameSkip		= 0;
+bool  synchronize = true;
+int32 gbFrameSkip = 0;
+int32 frameSkip	  = 0;
 
-bool8 cpuDisableSfx = false;
+bool  cpuDisableSfx = false;
 int32 layerSettings = 0xff00;
 
 #ifdef USE_GB_CORE_V7
-bool8 gbNullInputHackEnabled	 = false;
-bool8 gbNullInputHackTempEnabled = false;
+bool gbNullInputHackEnabled		= false;
+bool gbNullInputHackTempEnabled = false;
+#else
+bool gbV20GBFrameTimingHack		= false;
+bool gbV20GBFrameTimingHackTemp = false;
 #endif
 
 #ifdef USE_GBA_CORE_V7
-bool8 memLagEnabled		   = false;
-bool8 memLagTempEnabled	   = false;
+bool memLagEnabled	   = false;
+bool memLagTempEnabled = false;
 #endif
 
-bool8 useOldFrameTiming	   = false;
-bool8 useBios			   = false;
-bool8 skipBios			   = false;
-bool8 skipSaveGameBattery  = false;
-bool8 skipSaveGameCheats   = false;
-bool8 cheatsEnabled		   = true;
-bool8 mirroringEnable	   = false;
+bool8 useOldFrameTiming	  = false;
+bool8 useBios			  = false;
+bool8 skipBios			  = false;
+bool8 skipSaveGameBattery = false;
+bool8 skipSaveGameCheats  = false;
+bool8 cheatsEnabled		  = true;
+bool8 mirroringEnable	  = false;
 
 bool8 cpuEnhancedDetection = true;
 int32 cpuSaveType		   = 0;
 
-int32 soundVolume	= 0;
-int32 soundQuality	= 2;
-bool8 soundEcho		= false;
-bool8 soundLowPass	= false;
-bool8 soundReverse	= false;
-bool8 soundOffFlag	= false;
+int32 soundVolume	  = 0;
+int32 soundQuality	  = 2;
+bool8 soundEcho		  = false;
+bool8 soundLowPass	  = false;
+bool8 soundReverse	  = false;
+int32 soundEnableFlag = 0x3ff;
+bool8 soundOffFlag	  = false;

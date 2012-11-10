@@ -8,7 +8,6 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#include "vba.rc2"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -34,12 +33,12 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
-    "#include ""vba.rc2""\r\n"
     "\0"
 END
 
 3 TEXTINCLUDE 
 BEGIN
+    "#include ""vba.rc2""\r\n"
     "\0"
 END
 
@@ -2014,7 +2013,8 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "GBA &Lag Reduction",          ID_EMULATOR_GBALAG
             MENUITEM "Use &Old Frame Timing",       ID_EMULATOR_USE_OLD_FRAME_TIMING
-            MENUITEM "    Use &GB Null Input Kludge", ID_EMULATOR_USE_GB_INPUT_KLUDGE
+            MENUITEM "    Use v20 &GB Frame Kludge", ID_EMULATION_V20_GB_FRAME_HACK
+            MENUITEM "Use &GB Null Input Kludge",   ID_EMULATOR_USE_GB_INPUT_HACK
             MENUITEM SEPARATOR
             MENUITEM "&Use BIOS File",              ID_OPTIONS_EMULATOR_USEBIOSFILE
             MENUITEM "Skip BIOS &Intro",            ID_OPTIONS_EMULATOR_SKIPBIOS
@@ -2612,4 +2612,15 @@ END
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#include "vba.rc2"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
 

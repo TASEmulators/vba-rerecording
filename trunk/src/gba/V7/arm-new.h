@@ -2165,7 +2165,7 @@ u32 opcode = CPUReadMemoryQuick(armNextPC);
 clockTicks = memoryWaitFetch32[(armNextPC >> 24) & 15];
 
 #ifndef FINAL_VERSION
-if (armNextPC == stop)
+if (armNextPC == armStopAddr)
 {
 	armNextPC++;
 }

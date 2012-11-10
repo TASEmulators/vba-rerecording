@@ -195,9 +195,7 @@ bool8 gbBatteryError = false;
 int32 gbJoymask[4]	 = { 0, 0, 0, 0 };
 
 // HACK
-static bool8&USE_VBA_V20_TIMING = useOldFrameTiming;
-static bool	 v20FrameTimingHack = false;
-static int32 stopCounter		= 0; // this has to be saved
+static int32 stopCounter = 0; // this has to be saved
 
 u8 gbRamFill = 0xff;
 
@@ -2851,7 +2849,6 @@ void gbReset()
 
 	// timing
 	stopCounter = 0;
-	v20FrameTimingHack = false;
 	gbSynchronizeTicks = GBSYNCHRONIZE_CLOCK_TICKS;
 
 	gbSoundReset();
@@ -4571,7 +4568,6 @@ void gbCleanUp()
 	memset(gbJoymask, 0, sizeof(gbJoymask));
 
 	stopCounter = 0;
-	v20FrameTimingHack = false;
 
 	systemCleanUp();
 	systemRefreshScreen();
@@ -5047,8 +5043,6 @@ void gbEmulate(int ticksToStop)
 	gbClockTicks = 0;
 	gbDmaTicks = 0;
 
-	register int opcode = 0;
-
 	int	 opcode1 = 0;
 	int	 opcode2 = 0;
 	bool execute = false;
@@ -5060,17 +5054,6 @@ void gbEmulate(int ticksToStop)
 		gbGetUserInput();
 
 		VBAMovieResetIfRequested();
-
-		// simulate the v20 frame timing hack
-		if (v20FrameTimingHack)
-		{
-			v20FrameTimingHack = false;
-			if (USE_VBA_V20_TIMING)
-			{
-				gbFrameBoundaryWork();
-				return;
-			}
-		}
 
 		newFrame = false;
 	}
@@ -5132,12 +5115,12 @@ void gbEmulate(int ticksToStop)
 		else
 		{
 			// First we apply the gbClockTicks, then we execute the opcodes.
-			opcode1 = 0;
-			opcode2 = 0;
 			execute = true;
 
+			register int opcode;
+			opcode2 = opcode1 = opcode = gbReadOpcode(PC.W);
 			CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);
-			opcode2 = opcode1 = opcode = gbReadOpcode(PC.W++);
+			PC.W++;
 
 			// If HALT state was launched while IME = 0 and (register_IF & register_IE & 0x1F),
 			// PC.W is not incremented for the first byte of the next instruction.
@@ -5153,8 +5136,9 @@ void gbEmulate(int ticksToStop)
 			{
 			case 0xCB:
 				// extended opcode
+				opcode2 = opcode = gbReadOpcode(PC.W);
 				CallRegisteredLuaMemHook(PC.W, 1, opcode, LUAMEMHOOK_EXEC);	// is this desired?
-				opcode2	   = opcode = gbReadOpcode(PC.W++);
+				PC.W++;
 				gbClockTicks = gbCyclesCB[opcode];
 				break;
 			}
@@ -5163,7 +5147,7 @@ void gbEmulate(int ticksToStop)
 		}
 
 		if (!emulating)
-			return;
+			break;
 
 		// For 'breakpoint' support (opcode 0xFC is considered as a breakpoint)
 		if ((gbClockTicks == 0) && execute)
@@ -5736,7 +5720,6 @@ gbRedoLoop:
 		}
 
 		// timer emulation
-
 		if (gbTimerOn)
 		{
 			gbTimerTicks = ((gbInternalTimer) & gbTimerMask[gbTimerMode]) + 1 - gbClockTicks;
@@ -5866,22 +5849,30 @@ gbRedoLoop:
 
 		gbBlackScreen = false;
 
-		if ((ticksToStop <= 0))
+		if (useOldFrameTiming)
 		{
-			// simulate the v20 frame timing hack
+			// old timing code
+			if (ticksToStop > 0)
+				continue;
+
+			// v20 frame timing hack
 			if (!(register_LCDC & 0x80))
 			{
 				++stopCounter;
-				v20FrameTimingHack = (stopCounter % 64 == 0);
-
-				if (USE_VBA_V20_TIMING && v20FrameTimingHack)
-					newFrame = true;
+				if (gbV20GBFrameTimingHackTemp && stopCounter % 64 == 0)
+				{
+					gbGetUserInput();
+					VBAMovieResetIfRequested();
+					gbFrameBoundaryWork();
+				}
 			}
+
+			break;
 		}
 
 		if (newFrame)
 		{
-			return;
+			break;
 		}
 	}
 }

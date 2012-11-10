@@ -262,15 +262,23 @@ protected:
 	afx_msg void OnUpdateOptionsEmulatorSavetypeFlash512k(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorSavetypeFlash1m();
 	afx_msg void OnUpdateOptionsEmulatorSavetypeFlash1m(CCmdUI*pCmdUI);
-	afx_msg void OnOptionsEmulatorUseOldGBTiming();
-	afx_msg void OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI);
-	afx_msg void OnOptionsEmulatorUseGBNullInputKludge();
-	afx_msg void OnUpdateOptionsEmulatorUseGBNullInputKludge(CCmdUI*pCmdUI);
+
+#ifdef USE_GBA_CORE_V7
 	afx_msg void OnOptionsEmulatorGBALag();
 	afx_msg void OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI);
+#endif
+	afx_msg void OnOptionsEmulatorUseOldGBTiming();
+	afx_msg void OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI);
+#ifdef USE_GB_CORE_V7
+	afx_msg void OnOptionsEmulatorUseGBNullInputHack();
+	afx_msg void OnUpdateOptionsEmulatorUseGBNullInputHack(CCmdUI*pCmdUI);
+#else
+	afx_msg void OnOptionsEmulatorUseV20GBFrameHack();
+	afx_msg void OnUpdateOptionsEmulatorUseV20GBFrameHack(CCmdUI*pCmdUI);
+#endif
+
 	afx_msg void OnOptionsEmulatorUsebiosfile();
 	afx_msg void OnUpdateOptionsEmulatorUsebiosfile(CCmdUI*pCmdUI);
-
 	afx_msg void OnOptionsEmulatorSkipbios();
 	afx_msg void OnUpdateOptionsEmulatorSkipbios(CCmdUI*pCmdUI);
 	afx_msg void OnOptionsEmulatorPngformat();

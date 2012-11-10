@@ -771,10 +771,10 @@ static inline void gfxDrawSprites(u32 *lineOBJ)
 	// and to stop drawing them if the 'maximum number of OBJ per line'
 	// has been reached.
 	int lineOBJpix = (DISPCNT & 0x20) ? 954 : 1226;
-	int m = 0;
 	gfxClearArray(lineOBJ);
 	if (layerEnable & 0x1000)
 	{
+		int  m = 0;
 		u16 *sprites	   = (u16 *)oam;
 		u16 *spritePalette = &((u16 *)paletteRAM)[256];
 		int	 mosaicY	   = ((MOSAIC & 0xF000) >> 12) + 1;

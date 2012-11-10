@@ -23,10 +23,14 @@ extern u8 * gbTAMA5ram;
 
 extern u8 *gbMemoryMap[16];
 
+#ifdef USE_GB_CORE_V7
+extern bool gbEchoRAMFixOn;
+extern bool gbDMASpeedVersion;
+#endif
+
 static inline u8 gbReadMemoryQuick(u16 address)
 {
 #ifdef USE_GB_CORE_V7
-	extern int32 gbEchoRAMFixOn;
 	if (gbEchoRAMFixOn)
 #endif
 	{
@@ -41,7 +45,6 @@ static inline u8 gbReadMemoryQuick(u16 address)
 static inline void gbWriteMemoryQuick(u16 address, u8 value)
 {
 #ifdef USE_GB_CORE_V7
-	extern int32 gbEchoRAMFixOn;
 	if (gbEchoRAMFixOn)
 #endif
 	{

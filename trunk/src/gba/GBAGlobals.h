@@ -73,9 +73,12 @@ extern bool8	armState;
 extern bool8	armIrqEnable;
 extern u32		armNextPC;
 extern int32	armMode;
-extern u32		stop;
 extern int32	saveType;
 extern bool8	speedHack;
+
+#ifndef FINAL_VERSION
+extern u32		armStopAddr;
+#endif
 
 extern u8 *rom;
 extern u8 *internalRAM;

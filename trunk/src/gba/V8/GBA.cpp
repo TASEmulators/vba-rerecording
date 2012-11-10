@@ -41,17 +41,17 @@ int32 IRQTicks = 0;
 
 u32	  mastercode = 0;
 int32 layerEnableDelay	= 0;
+
 bool8 busPrefetch		= false;
 bool8 busPrefetchEnable	= false;
 u32	  busPrefetchCount	= 0;
+u32	  cpuPrefetch[2];
+
 int32 cpuDmaTicksToUpdate = 0;
 int32 cpuDmaCount		  = 0;
 bool8 cpuDmaHack		  = 0;
 u32	  cpuDmaLast		  = 0;
 int32 dummyAddress		  = 0;
-
-bool8 cpuBreakLoop = false;
-int32 cpuNextEvent = 0;
 
 int32 gbaSaveType = 0;      // used to remember the save type on reset
 bool8 intState	  = false;
@@ -63,9 +63,14 @@ bool8 cpuFlashEnabled		 = true;
 bool8 cpuEEPROMEnabled		 = true;
 bool8 cpuEEPROMSensorEnabled = false;
 
-u32 cpuPrefetch[2];
+#ifdef SDL
+bool8 cpuBreakLoop = false;
+#endif
 
+// These don't seem to affect determinism
+int32 cpuNextEvent = 0;
 int32 cpuTotalTicks = 0;
+
 #ifdef PROFILING
 int profilingTicks		 = 0;
 int profilingTicksReload = 0;
@@ -115,6 +120,7 @@ void  (*cpuSaveGameFunc)(u32, u8) = flashSaveDecide;
 void  (*renderLine)() = mode0RenderLine;
 bool8 fxOn			 = false;
 bool8 windowOn		 = false;
+
 char  buffer[1024];
 FILE *out = NULL;
 
@@ -479,7 +485,7 @@ inline int CPUUpdateTicks()
 	if (soundTicks < cpuLoopTicks)
 		cpuLoopTicks = soundTicks;
 
-	if (timer0On && !(TM0CNT & 4) && (timer0Ticks < cpuLoopTicks))
+	if (timer0On && (timer0Ticks < cpuLoopTicks))
 	{
 		cpuLoopTicks = timer0Ticks;
 	}
@@ -3303,14 +3309,14 @@ void CPUReset()
 			}
 	}
 
+	// clean picture
+	memset(pix, 0, 4 * 241 * 162);
 	// clean registers
 	memset(&reg[0], 0, sizeof(reg));
 	// clean OAM
 	memset(oam, 0, 0x400);
 	// clean palette
 	memset(paletteRAM, 0, 0x400);
-	// clean picture
-	memset(pix, 0, 4 * 241 * 162);
 	// clean vram
 	memset(vram, 0, 0x20000);
 	// clean io memory
@@ -3394,8 +3400,8 @@ void CPUReset()
 	IF		 = 0x0000;
 	IME		 = 0x0000;
 
-	armMode = 0x1F;
-
+	armMode	 = 0x1F;
+	armState = true;
 	if (cpuIsMultiBoot)
 	{
 		reg[13].I	   = 0x03007F00;
@@ -3423,8 +3429,7 @@ void CPUReset()
 			armIrqEnable   = true;
 		}
 	}
-	armState = true;
-	C_FLAG	 = V_FLAG = N_FLAG = Z_FLAG = false;
+	C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;
 	UPDATE_REG(0x00, DISPCNT);
 	UPDATE_REG(0x06, VCOUNT);
 	UPDATE_REG(0x20, BG2PA);
@@ -3442,6 +3447,8 @@ void CPUReset()
 	reg[15].I += 4;
 
 	// reset internal state
+	intState  = false;
+	stopState = false;
 	holdState = false;
 	holdType  = 0;
 
@@ -3592,6 +3599,7 @@ void CPUReset()
 
 	cpuDmaHack = false;
 	SWITicks = 0;
+	IRQTicks = 0;
 
 	soundReset();
 	systemRefreshScreen();
@@ -3620,7 +3628,7 @@ void CPUInterrupt()
 	biosProtected[3] = 0xe5;
 }
 
-static void CPUDrawPixLine()
+static inline void CPUDrawPixLine()
 {
 	switch (systemColorDepth)
 	{
@@ -3769,7 +3777,7 @@ static void CPUGetUserInput()
 	speedup	   = (extButtons & 1) != 0;
 }
 
-static void CPUFrameBoundaryWork()
+static inline void CPUFrameBoundaryWork()
 {
 	// HACK: some special "buttons"
 	if (cheatsEnabled)
@@ -3783,13 +3791,17 @@ void CPULoop(int _ticks)
 	int32 ticks = _ticks;
 	int32 clockTicks;
 	int32 timerOverflow = 0;
+
 	// variable used by the CPU core
 	cpuTotalTicks = 0;
 
-	cpuBreakLoop = false;
 	cpuNextEvent = CPUUpdateTicks();
 	if (cpuNextEvent > ticks)
 		cpuNextEvent = ticks;
+
+#ifdef SDL
+	cpuBreakLoop = false;
+#endif
 
 	if (newFrame)
 	{
@@ -3890,7 +3902,7 @@ void CPULoop(int _ticks)
 
 		if (cpuTotalTicks >= cpuNextEvent)
 		{
-			int remainingTicks = cpuTotalTicks - cpuNextEvent;
+			int32 remainingTicks = cpuTotalTicks - cpuNextEvent;
 
 			if (SWITicks)
 			{
@@ -3904,7 +3916,6 @@ void CPULoop(int _ticks)
 			cpuDmaHack	  = false;
 
 updateLoop:
-
 			if (IRQTicks)
 			{
 				IRQTicks -= clockTicks;
@@ -4244,26 +4255,16 @@ updateLoop:
 			if (timerOnOffDelay)
 				applyTimer();
 
-			//if (cpuNextEvent > ticks)	// can be negative and slow down
+			//if (cpuNextEvent > ticks)	// FIXME: can be negative and slow down
 			//	cpuNextEvent = ticks;
 
-			// FIXME
-			if (cpuBreakLoop)
+#ifdef SDL
+			if (newFrame || useOldFrameTiming && ticks <= 0 || cpuBreakLoop)
+#else
+			if (newFrame || useOldFrameTiming && ticks <= 0)
+#endif
 			{
 				break;
-			}
-
-			if (useOldFrameTiming)
-			{
-				if (ticks <= 0)
-				{
-					return;
-				}
-			}
-
-			if (newFrame)
-			{
-				return;
 			}
 		}
 	}

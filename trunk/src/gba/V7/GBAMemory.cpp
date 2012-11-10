@@ -603,7 +603,7 @@ void CPUWriteByteWrapped(u32 address, u8 b)
 		case 0x301:
 			if (b == 0x80)
 				stopState = true;
-			holdState = 1;
+			holdState = true;
 			holdType  = -1;
 			break;
 		case 0x60:

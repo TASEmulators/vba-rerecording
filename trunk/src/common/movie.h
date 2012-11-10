@@ -57,6 +57,7 @@
 #define MOVIE_SETTING_LAGHACK       (1<<4)
 #define MOVIE_SETTING_GBCFF55FIX    (1<<5)
 #define MOVIE_SETTING_GBECHORAMFIX  (1<<6)
+#define MOVIE_SETTING_SRAMINITFIX   (1<<7)
 
 #define STREAM gzFile
 /*#define READ_STREAM(p,l,s) gzread (s,p,l)

@@ -86,35 +86,39 @@ extern int32 soundPaused;
 extern int32 soundPlay;
 extern u32	 soundNextPosition;
 
-extern u8	 soundBuffer[6][735];
-extern u32	 soundBufferLen;
-extern u32	 soundBufferTotalLen;
-extern u32	 soundBufferIndex;
+extern u8  soundBuffer[6][735];
+extern u32 soundBufferLen;
+extern u32 soundBufferTotalLen;
+extern u32 soundBufferIndex;
 
 extern u16	 soundFinalWave[1470];
 extern u16	 soundFrameSound[735 * 30 * 2];
 extern int32 soundFrameSoundWritten;
 
-extern bool	 tempSaveSafe;
-extern int	 tempSaveID;
-extern int	 tempSaveAttempts;
+extern bool tempSaveSafe;
+extern int	tempSaveID;
+extern int	tempSaveAttempts;
 
-//settings
-extern bool8 synchronize;
+// settings that should have no effect on timing
+extern bool	 synchronize;   // ... except this one?
 extern int32 gbFrameSkip;
 extern int32 frameSkip;
 
-extern bool8 cpuDisableSfx;
+extern bool	 cpuDisableSfx;
 extern int32 layerSettings;
 
+// other settings
 #ifdef USE_GB_CORE_V7
-extern bool8 gbNullInputHackEnabled;
-extern bool8 gbNullInputHackTempEnabled;
+extern bool gbNullInputHackEnabled;
+extern bool gbNullInputHackTempEnabled;
+#else
+extern bool gbV20GBFrameTimingHack;
+extern bool gbV20GBFrameTimingHackTemp;
 #endif
 
 #ifdef USE_GBA_CORE_V7
-extern bool8 memLagEnabled;
-extern bool8 memLagTempEnabled;
+extern bool memLagEnabled;
+extern bool memLagTempEnabled;
 #endif
 
 extern bool8 useOldFrameTiming;
@@ -133,7 +137,7 @@ extern int32 soundQuality;
 extern bool8 soundEcho;
 extern bool8 soundLowPass;
 extern bool8 soundReverse;
-extern bool8 soundOffFlag;
 extern int32 soundEnableFlag;
+extern bool8 soundOffFlag;
 
 #endif

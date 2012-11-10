@@ -148,14 +148,14 @@ static void reserve_movie_buffer_space(uint32 space_needed)
 	{
 		uint32 ptr_offset	= Movie.inputBufferPtr - Movie.inputBuffer;
 		uint32 alloc_chunks = (space_needed - 1) / BUFFER_GROWTH_SIZE + 1;
-		uint32 old_size     = Movie.inputBufferSize;
+		uint32 old_size		= Movie.inputBufferSize;
 		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
-		void *tmp			  = realloc(Movie.inputBuffer, Movie.inputBufferSize);
+		void *tmp = realloc(Movie.inputBuffer, Movie.inputBufferSize);
 		if (!tmp) free(tmp);
 		Movie.inputBuffer = (uint8 *)tmp;
 		// FIXME: this only fixes the random input problem during dma-frame-skip, but not the skip
 		memset(Movie.inputBuffer + old_size, 0, Movie.inputBufferSize - old_size);
-		Movie.inputBufferPtr  = Movie.inputBuffer + ptr_offset;
+		Movie.inputBufferPtr = Movie.inputBuffer + ptr_offset;
 	}
 }
 
@@ -338,8 +338,8 @@ static void change_movie_state(MovieState new_state)
 
 		truncate_movie(Movie.header.length_frames);
 		fclose(Movie.file);
-		Movie.file		   = NULL;
-		Movie.currentFrame = 0;
+		Movie.file				  = NULL;
+		Movie.currentFrame		  = 0;
 		Movie.RecordedNewRerecord = false;
 		Movie.RecordedThisSession = false;
 #if (defined(WIN32) && !defined(SDL))
@@ -354,13 +354,12 @@ static void change_movie_state(MovieState new_state)
 		gbEmulatorType = prevEmulatorType;
 
 #ifdef USE_GB_CORE_V7
-		extern int32 gbDMASpeedVersion;
-		gbDMASpeedVersion = 1;
-
-		extern int32 gbEchoRAMFixOn;
-		gbEchoRAMFixOn = 1;
+		gbDMASpeedVersion = true;
+		gbEchoRAMFixOn	  = true;
 
 		gbNullInputHackTempEnabled = gbNullInputHackEnabled;
+#else
+		gbV20GBFrameTimingHackTemp = gbV20GBFrameTimingHack;
 #endif
 
 		if (Movie.inputBuffer)
@@ -400,13 +399,13 @@ static void change_movie_state(MovieState new_state)
 			Movie.RecordedNewRerecord = true;
 		}
 		fseek(Movie.file, Movie.header.offset_to_controller_data + Movie.bytesPerFrame * Movie.currentFrame, SEEK_SET);
-		
+
 		systemScreenMessage("Movie re-record");
 	}
 
 	if (new_state == MOVIE_STATE_END && Movie.state != MOVIE_STATE_END)
 	{
-#if defined(SDL)		
+#if defined(SDL)
 		systemClearJoypads();
 #endif
 		systemScreenMessage("Movie end");
@@ -463,7 +462,7 @@ static void change_movie_state(MovieState new_state)
 				// keep open
 				break;
 			case 0:
-				// fall through
+			// fall through
 			default:
 				// close movie
 				//VBAMovieStop(false);
@@ -490,7 +489,7 @@ static void change_movie_state(MovieState new_state)
 				// keep open
 				break;
 			case 0:
-				// fall through
+			// fall through
 			default:
 				// close movie
 				VBAMovieStop(false);
@@ -583,6 +582,8 @@ static void SetPlayEmuSettings()
 #endif
 #ifdef USE_GB_CORE_V7
 	gbNullInputHackTempEnabled = ((Movie.header.optionFlags & MOVIE_SETTING_GBINPUTHACK) != 0);
+#else
+	gbV20GBFrameTimingHackTemp = ((Movie.header.optionFlags & MOVIE_SETTING_GBINPUTHACK) != 0);
 #endif
 
 	// some GB/GBC games depend on the sound rate, so just use the highest one
@@ -590,17 +591,15 @@ static void SetPlayEmuSettings()
 	useOldFrameTiming = false;
 
 #ifdef USE_GB_CORE_V7
-	extern int32 gbDMASpeedVersion;
 	if ((Movie.header.optionFlags & MOVIE_SETTING_GBCFF55FIX) != 0)
-		gbDMASpeedVersion = 1;
+		gbDMASpeedVersion = true;
 	else
-		gbDMASpeedVersion = 0;     // old CGB HDMA5 timing was used
+		gbDMASpeedVersion = false;     // old CGB HDMA5 timing was used
 
-	extern int32 gbEchoRAMFixOn;
 	if ((Movie.header.optionFlags & MOVIE_SETTING_GBECHORAMFIX) != 0)
-		gbEchoRAMFixOn = 1;
+		gbEchoRAMFixOn = true;
 	else
-		gbEchoRAMFixOn = 0;
+		gbEchoRAMFixOn = false;
 #endif
 
 #if (defined(WIN32) && !defined(SDL))
@@ -652,7 +651,8 @@ static void HardResetAndSRAMClear()
 	remove(fname);     // delete the damn SRAM file
 
 	// Henceforth, emuCleanUp means "clear out SRAM"
-	//theEmulator.emuCleanUp();     // keep it from being resurrected from RAM <--This is wrong, it'll deallocate all variables --Felipe
+	//theEmulator.emuCleanUp();     // keep it from being resurrected from RAM <--This is wrong, it'll deallocate all variables
+	// --Felipe
 
 	/// FIXME the correct SDL code to call for a full restart isn't in a function yet
 	theEmulator.emuReset();
@@ -783,9 +783,9 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
-	Movie.inputBufferPtr	  = Movie.inputBuffer;
-	Movie.currentFrame		  = 0;
-	Movie.readOnly			  = movieReadOnly;
+	Movie.inputBufferPtr = Movie.inputBuffer;
+	Movie.currentFrame	 = 0;
+	Movie.readOnly		 = movieReadOnly;
 
 	// read controller data
 	uint32 to_read = Movie.bytesPerFrame * Movie.header.length_frames;
@@ -855,19 +855,19 @@ static void SetRecordEmuSettings()
 
 #ifdef USE_GB_CORE_V7
 	if (gbNullInputHackTempEnabled)
-		Movie.header.optionFlags |= MOVIE_SETTING_GBINPUTHACK;
+#else
+	if (gbV20GBFrameTimingHackTemp)
 #endif
+		Movie.header.optionFlags |= MOVIE_SETTING_GBINPUTHACK;
 
 	Movie.header.optionFlags |= MOVIE_SETTING_GBCFF55FIX;
 #ifdef USE_GB_CORE_V7
-	extern int32 gbDMASpeedVersion;
-	gbDMASpeedVersion = 1;
+	gbDMASpeedVersion = true;
 #endif
 
 	Movie.header.optionFlags |= MOVIE_SETTING_GBECHORAMFIX;
 #ifdef USE_GB_CORE_V7
-	extern int32 gbEchoRAMFixOn;
-	gbEchoRAMFixOn = 1;
+	gbEchoRAMFixOn = true;
 #endif
 
 	// some GB/GBC games depend on the sound rate, so just use the highest one
@@ -1029,10 +1029,10 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 
 	strcpy(Movie.filename, movie_filename);
 	Movie.file = file;
-	Movie.bytesPerFrame		  = get_movie_frame_size(Movie);
-	Movie.inputBufferPtr	  = Movie.inputBuffer;
-	Movie.currentFrame		  = 0;
-	Movie.readOnly			  = false;
+	Movie.bytesPerFrame	 = get_movie_frame_size(Movie);
+	Movie.inputBufferPtr = Movie.inputBuffer;
+	Movie.currentFrame	 = 0;
+	Movie.readOnly		 = false;
 
 	change_movie_state(MOVIE_STATE_RECORD);
 
@@ -1111,7 +1111,7 @@ void VBAUpdateFrameCountDisplay()
 	const int MAGICAL_NUMBER = 64;  // FIXME: this won't do any better, but only to remind you of sz issues
 	char	  frameDisplayString[MAGICAL_NUMBER];
 	char	  lagFrameDisplayString[MAGICAL_NUMBER];
-	char      extraCountDisplayString[MAGICAL_NUMBER];
+	char	  extraCountDisplayString[MAGICAL_NUMBER];
 
 #if (defined(WIN32) && !defined(SDL))
 	if (theApp.frameCounter)
@@ -1192,7 +1192,7 @@ void VBAMovieUpdateState()
 		// use first fseek?
 		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
 		Movie.header.length_frames = Movie.currentFrame;
-		Movie.inputBufferPtr	 += Movie.bytesPerFrame;
+		Movie.inputBufferPtr	  += Movie.bytesPerFrame;
 		if (Movie.RecordedNewRerecord)
 		{
 			if (!VBALuaRerecordCountSkip())
@@ -1528,9 +1528,9 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 			return MOVIE_SNAPSHOT_INCONSISTENT;
 
 		Movie.currentFrame	 = current_frame;
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame *min(current_frame, Movie.header.length_frames);
 
-		change_movie_state(MOVIE_STATE_PLAY);	// check for movie end
+		change_movie_state(MOVIE_STATE_PLAY);   // check for movie end
 	}
 	else
 	{
@@ -1541,7 +1541,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		Movie.header.length_frames = end_frame;
 
 		// do this before calling reserve_movie_buffer_space()
-		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
+		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame *min(current_frame, Movie.header.length_frames);
 		reserve_movie_buffer_space(space_needed);
 		memcpy(Movie.inputBuffer, ptr, space_needed);
 
@@ -1562,7 +1562,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		const u8 NEW_RESET = u8(BUTTON_MASK_NEW_RESET >> 8);
 		for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 		{
-			if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(i)) && (*(Movie.inputBufferPtr+1- Movie.bytesPerFrame) & NEW_RESET))
+			if ((Movie.header.controllerFlags & MOVIE_CONTROLLER(i)) && (*(Movie.inputBufferPtr + 1 - Movie.bytesPerFrame) & NEW_RESET))
 			{
 				resetSignaledLast = true;
 				break;
@@ -1787,3 +1787,4 @@ bool VBAMovieFixHeader()
 	systemScreenMessage("Movie header fixed");
 	return true;
 }
+

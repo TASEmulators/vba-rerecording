@@ -16,9 +16,12 @@ bool8	 armState	  = true;
 bool8	 armIrqEnable = true;
 u32		 armNextPC	  = 0x00000000;
 int32	 armMode	  = 0x1f;
-u32		 stop		  = 0x08000568;
 int32	 saveType	  = 0;
 bool8	 speedHack	  = false;
+
+#ifndef FINAL_VERSION
+u32		 armStopAddr  = 0x08000568;
+#endif
 
 u8 *rom			= NULL;
 u8 *internalRAM = NULL;

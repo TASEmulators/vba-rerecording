@@ -5,8 +5,6 @@
 #include "Dialogs/AboutDialog.h"
 #include "Dialogs/BugReport.h"
 
-extern int emulating;
-
 void MainWnd::OnHelpAbout()
 {
 	theApp.winCheckFullscreen();
