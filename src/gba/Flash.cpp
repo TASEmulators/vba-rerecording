@@ -54,7 +54,14 @@ static variable_desc flashSaveData3[] = {
 void flashInit()
 {
 #ifdef USE_GBA_CORE_V7
-	memset(flashSaveMemory, 0x00, 0x20000);
+	if (sramInitFix)
+	{
+		memset(flashSaveMemory, 0xff, 0x20000);
+	}
+	else
+	{
+		memset(flashSaveMemory, 0x00, 0x20000);
+	}
 #else
 	memset(flashSaveMemory, 0xff, 0x20000);
 #endif

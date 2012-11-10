@@ -76,6 +76,10 @@ extern int32	armMode;
 extern int32	saveType;
 extern bool8	speedHack;
 
+#ifdef USE_GBA_CORE_V7
+extern bool		sramInitFix;
+#endif
+
 #ifndef FINAL_VERSION
 extern u32		armStopAddr;
 #endif

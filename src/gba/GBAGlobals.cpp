@@ -19,6 +19,10 @@ int32	 armMode	  = 0x1f;
 int32	 saveType	  = 0;
 bool8	 speedHack	  = false;
 
+#ifdef USE_GBA_CORE_V7
+bool	 sramInitFix  = true;
+#endif
+
 #ifndef FINAL_VERSION
 u32		 armStopAddr  = 0x08000568;
 #endif
