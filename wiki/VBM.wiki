@@ -30,14 +30,14 @@ VBM is the movie capture format of Visual Boy Advance
     (At most one of bits 0, 1, 2 can be "1")
     other: reserved, set to 0
 017 1-byte flags: (values of some boolean emulator options)
-       bit 0: (useBiosFile) if "1" and the movie is of a GBA game, the movie was made using a GBA BIOS file.
-       bit 1: (skipBiosFile) if "0" and the movie was made with a GBA BIOS file, the BIOS intro is included in the movie.
-       bit 2: (rtcEnable) if "1", the emulator "real time clock" feature was enabled.
-       bit 3: (gbInputHack) if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with the Null Input Kludge on, otherwise it wasn't.
-       bit 4: (lagReduction) if "0" and the movie is of a GBA game, the movie was made using the old excessively laggy GBA timing.
-       bit 5: (gbcHdma5Fix) if "0" and the movie is of a GBC game, the movie was made using the old buggy HDMA5 timing.
-       bit 6: (echoRAMFix) if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with Echo RAM Fix on, otherwise it was made with Echo RAM Fix off.
-       bit 7: (sramInitFix) if "1" and the movie is of a GBA game, the movie was made with SRAM Init Fix on, otherwise it wasn't.
+    bit 0: (useBiosFile) if "1" and the movie is of a GBA game, the movie was made using a GBA BIOS file.
+    bit 1: (skipBiosFile) if "0" and the movie was made with a GBA BIOS file, the BIOS intro is included in the movie.
+    bit 2: (rtcEnable) if "1", the emulator "real time clock" feature was enabled.
+    bit 3: (gbInputHack) if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with the Null Input Kludge on, otherwise it was not.
+    bit 4: (lagReduction) if "0" and the movie is of a GBA game, the movie was made using the old excessively laggy GBA timing.
+    bit 5: (gbcHdma5Fix) if "0" and the movie is of a GBC game, the movie was made using the old buggy HDMA5 timing.
+    bit 6: (echoRAMFix) if "1" and the movie is of a GB, GBC, or SGB game, the movie was made with Echo RAM Fix on, otherwise it was made with Echo RAM Fix off.
+    bit 7: (sramInitFix) if "1" and the movie is of a GBA game, the movie was made with SRAM Init Fix on, otherwise it was not.
 018 4-byte little-endian unsigned int: theApp.winSaveType (value of that emulator option)
 01C 4-byte little-endian unsigned int: theApp.winFlashSize (value of that emulator option)
 020 4-byte little-endian unsigned int: gbEmulatorType (value of that emulator option)
