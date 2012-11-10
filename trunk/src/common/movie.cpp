@@ -338,7 +338,7 @@ static void change_movie_state(MovieState new_state)
 
 		truncate_movie(Movie.header.length_frames);
 		fclose(Movie.file);
-		Movie.file				  = NULL;
+		Movie.file = NULL;
 		Movie.currentFrame		  = 0;
 		Movie.RecordedNewRerecord = false;
 		Movie.RecordedThisSession = false;
@@ -352,6 +352,10 @@ static void change_movie_state(MovieState new_state)
 		}
 #endif
 		gbEmulatorType = prevEmulatorType;
+
+#ifdef USE_GBA_CORE_V7
+		sramInitFix = true;
+#endif
 
 #ifdef USE_GB_CORE_V7
 		gbDMASpeedVersion = true;
@@ -577,8 +581,10 @@ static void SetPlayEmuSettings()
 
 #ifdef USE_GBA_CORE_V7
 	extern void SetPrefetchHack(bool);
-	if (systemCartridgeType == 0)    // lag disablement applies only to GBA
+	if (systemCartridgeType == 0)   // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
+
+	sramInitFix = (Movie.header.optionFlags & MOVIE_SETTING_SRAMINITFIX) != 0;
 #endif
 #ifdef USE_GB_CORE_V7
 	gbNullInputHackTempEnabled = ((Movie.header.optionFlags & MOVIE_SETTING_GBINPUTHACK) != 0);
@@ -851,6 +857,8 @@ static void SetRecordEmuSettings()
 #ifdef USE_GBA_CORE_V7
 	if (!memLagTempEnabled)
 		Movie.header.optionFlags |= MOVIE_SETTING_LAGHACK;
+	Movie.header.optionFlags |= MOVIE_SETTING_SRAMINITFIX;
+	sramInitFix = true;
 #endif
 
 #ifdef USE_GB_CORE_V7

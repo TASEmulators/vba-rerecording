@@ -30,10 +30,17 @@ variable_desc eepromSaveData[] = {
 void eepromInit()
 {
 #ifdef USE_GBA_CORE_V7
-	//memset(eepromBuffer, 0x00, 16);
-	memset(eepromData, 0x00, 0x2000);
+	extern bool sramInitFix;
+	if (sramInitFix)
+	{
+		memset(eepromData, 0xff, 0x2000);
+	}
+	else
+	{
+		//memset(eepromBuffer, 0x00, 16);
+		memset(eepromData, 0x00, 0x2000);
+	}
 #else
-	//memset(eepromBuffer, 0xff, 16);
 	memset(eepromData, 0xff, 0x2000);
 #endif
 }
