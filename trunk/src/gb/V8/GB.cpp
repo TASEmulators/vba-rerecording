@@ -4981,7 +4981,7 @@ static void gbDrawPixLine()
 	}
 }
 
-static void gbGetUserInput()
+static inline void gbGetUserInput()
 {
 	// update joystick information
 	systemReadJoypads();
@@ -5016,15 +5016,27 @@ static void gbGetUserInput()
 	speedup	   = (extButtons & 1) != 0;
 }
 
-static void gbFrameBoundaryWork()
+static inline void gbBeforeEmulation()
 {
-	//gbGetUserInput();
-
-	bool sensor = (gbRom[0x147] == 0x22);
-	if (sensor)
+	if (newFrame)
 	{
-		//  systemUpdateMotionSensor();
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
+
+		gbGetUserInput();
+
+		if (gbRom[0x147] == 0x22)
+		{
+			//systemUpdateMotionSensor();
+		}
+
+		VBAMovieResetIfRequested();
+
+		newFrame = false;
 	}
+}
+
+static inline void gbFrameBoundaryWork()
+{
 	if (!gbSgbMask)
 	{
 		if (gbBorderOn)
@@ -5036,6 +5048,8 @@ static void gbFrameBoundaryWork()
 
 void gbEmulate(int ticksToStop)
 {
+	gbBeforeEmulation();
+
 	gbRegister tempRegister;
 	u8		   tempValue;
 	s8		   offset;
@@ -5046,17 +5060,6 @@ void gbEmulate(int ticksToStop)
 	int	 opcode1 = 0;
 	int	 opcode2 = 0;
 	bool execute = false;
-
-	if (newFrame)
-	{
-		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-
-		gbGetUserInput();
-
-		VBAMovieResetIfRequested();
-
-		newFrame = false;
-	}
 
 	for (;;)
 	{
@@ -5637,6 +5640,7 @@ gbRedoLoop:
 					}
 					else if (register_LY == 144)
 					{
+						gbBeforeEmulation();
 						gbFrameBoundaryWork();
 					}
 				}
@@ -5861,8 +5865,7 @@ gbRedoLoop:
 				++stopCounter;
 				if (gbV20GBFrameTimingHackTemp && stopCounter % 64 == 0)
 				{
-					gbGetUserInput();
-					VBAMovieResetIfRequested();
+					gbBeforeEmulation();
 					gbFrameBoundaryWork();
 				}
 			}
