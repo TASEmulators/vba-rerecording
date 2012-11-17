@@ -3169,7 +3169,7 @@ static void gbDrawPixLine()
 	}
 }
 
-static void gbGetUserInput()
+static inline void gbGetUserInput()
 {
 	// update joystick information
 	systemReadJoypads();
@@ -3207,15 +3207,27 @@ static void gbGetUserInput()
 	speedup	   = (extButtons & 1) != 0;
 }
 
-static void gbFrameBoundaryWork()
+static inline void gbBeforeEmulation()
 {
-	//gbGetUserInput();
-
-	bool sensor = (gbRom[0x147] == 0x22);
-	if (sensor)
+	if (newFrame)
 	{
-		//  systemUpdateMotionSensor();
+		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
+
+		gbGetUserInput();
+
+		if (gbRom[0x147] == 0x22)
+		{
+			//systemUpdateMotionSensor();
+		}
+
+		VBAMovieResetIfRequested();
+
+		newFrame = false;
 	}
+}
+
+static inline void gbFrameBoundaryWork()
+{
 	if (!gbSgbMask)
 	{
 		if (gbBorderOn)
@@ -3227,23 +3239,14 @@ static void gbFrameBoundaryWork()
 
 void gbEmulate(int ticksToStop)
 {
+	gbBeforeEmulation();
+
 	gbRegister tempRegister;
 	u8		   tempValue;
 	s8		   offset;
 
 	int gbClockTicks = 0;
 	gbDmaTicks = 0;
-
-	if (newFrame)
-	{
-		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-
-		gbGetUserInput();
-
-		VBAMovieResetIfRequested();
-
-		newFrame = false;
-	}
 
 	for (;;)
 	{
