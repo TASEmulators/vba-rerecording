@@ -139,6 +139,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>lua51.dll</DelayLoadDLLs>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -227,6 +228,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
+      <DelayLoadDLLs>lua51.dll</DelayLoadDLLs>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -266,6 +268,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
+      <DelayLoadDLLs>lua51.dll</DelayLoadDLLs>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -307,6 +310,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>lua51.dll</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_AFXDLL;WIN32;USE_GB_CORE_V7;USE_GBA_CORE_V7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -323,6 +327,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
+      <DelayLoadDLLs>lua51.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
