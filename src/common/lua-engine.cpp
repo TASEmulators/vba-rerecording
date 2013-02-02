@@ -49,6 +49,22 @@ extern CString winGetSavestateFilename(const CString &LogicalRomName, int nID);
 #else
 #endif
 
+bool DemandLua()
+{
+#ifdef _WIN32
+	HMODULE mod = LoadLibrary("lua51.dll");
+	if(!mod)
+	{
+		MessageBox(NULL, "lua51.dll was not found. Please get it into your PATH or in the same directory as VBA.exe", "VBA", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	FreeLibrary(mod);
+	return true;
+#else
+	return true;
+#endif
+}
+
 extern "C"
 {
 #include "../lua/src/lua.h"
@@ -4643,6 +4659,11 @@ void VBALuaFrameBoundary(void)
 */
 int VBALoadLuaCode(const char *filename)
 {
+	if (!DemandLua())
+	{
+		return 0;
+	}
+
 	static bool sfmtInitialized = false;
 	if (!sfmtInitialized)
 	{
@@ -4809,6 +4830,9 @@ int VBAReloadLuaCode(void)
 */
 void VBALuaStop(void)
 {
+	if (!DemandLua())
+		return;
+
 	//already killed
 	if (!LUA)
 		return;
