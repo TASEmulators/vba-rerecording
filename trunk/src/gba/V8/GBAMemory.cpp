@@ -121,7 +121,7 @@ extern const u32 objTilesAddress[3];
 
 MemoryMap memoryMap[256];
 
-u32 CPUReadMemory(u32 address)
+u32 CPUReadMemoryWrapped(u32 address)
 {
 #ifdef GBA_LOGGING
 	if (address & 3)
@@ -270,7 +270,7 @@ unreadable:
 	return value;
 }
 
-u32 CPUReadHalfWord(u32 address)
+u32 CPUReadHalfWordWrapped(u32 address)
 {
 #ifdef GBA_LOGGING
 	if (address & 1)
@@ -409,7 +409,7 @@ unreadable:
 	return value;
 }
 
-u16 CPUReadHalfWordSigned(u32 address)
+u16 CPUReadHalfWordSignedWrapped(u32 address)
 {
 	u16 value = CPUReadHalfWord(address);
 	if ((address & 1))
@@ -417,7 +417,7 @@ u16 CPUReadHalfWordSigned(u32 address)
 	return value;
 }
 
-u8 CPUReadByte(u32 address)
+u8 CPUReadByteWrapped(u32 address)
 {
 	switch (address >> 24)
 	{
@@ -917,4 +917,32 @@ void CPUWriteByte(u32 address, u8 b)
 {
 	CPUWriteByteWrapped(address, b);
 	CallRegisteredLuaMemHook(address, 1, b, LUAMEMHOOK_WRITE);
+}
+
+u32 CPUReadMemory(u32 address)
+{
+	u32 value = CPUReadMemoryWrapped(address);
+	CallRegisteredLuaMemHook(address, 4, value, LUAMEMHOOK_READ);
+	return value;
+}
+
+u32 CPUReadHalfWord(u32 address)
+{
+	u32 value = CPUReadHalfWordWrapped(address);
+	CallRegisteredLuaMemHook(address, 4, value, LUAMEMHOOK_READ);
+	return value;
+}
+
+u16 CPUReadHalfWordSigned(u32 address)
+{
+	u16 value = CPUReadHalfWordSignedWrapped(address);
+	CallRegisteredLuaMemHook(address, 2, value, LUAMEMHOOK_READ);
+	return value;
+}
+
+u8 CPUReadByte(u32 address)
+{
+	u8 value = CPUReadByteWrapped(address);
+	CallRegisteredLuaMemHook(address, 1, value, LUAMEMHOOK_READ);
+	return value;
 }

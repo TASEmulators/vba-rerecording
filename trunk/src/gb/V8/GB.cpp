@@ -1839,7 +1839,7 @@ u8 gbReadOpcode(register u16 address)
 	return gbMemoryMap[address >> 12][address & 0x0fff];
 }
 
-u8 gbReadMemory(register u16 address)
+u8 gbReadMemoryWrapped(register u16 address)
 {
 	if (gbCheatMap[address])
 		return gbCheatRead(address);
@@ -2132,6 +2132,13 @@ u8 gbReadMemory(register u16 address)
 	}
 
 	return gbMemoryMap[address >> 12][address & 0x0fff];
+}
+
+u8 gbReadMemory(register u16 address)
+{
+	u8 value = gbReadMemoryWrapped(address);
+	CallRegisteredLuaMemHook(address, 1, value, LUAMEMHOOK_READ);
+	return value;
 }
 
 void gbVblank_interrupt()
