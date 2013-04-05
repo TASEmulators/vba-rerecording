@@ -150,15 +150,16 @@ void MovieCreate::OnBnClickedOk()
 		skipBiosFile = false;
 	}
 
-	extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
-	if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
+	if (m_biosOption > 1)
 	{
-		if (m_biosOption > 1)
+		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+		if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 		{
 			systemMessage(0, "Invalid GBA BIOS file!");
 			return;
 		}
 	}
+	
 
 	theApp.useBiosFile = useBiosFile;
 	if (useBiosFile)
