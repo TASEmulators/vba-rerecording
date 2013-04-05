@@ -55,16 +55,8 @@ void gbRenderLine()
 	u8 *bank1;
 	if (gbCgbMode)
 	{
-		if (register_VBK & 1)
-		{
-			bank0 = &gbVram[0x0000];
-			bank1 = &gbVram[0x2000];
-		}
-		else
-		{
-			bank0 = &gbVram[0x0000];
-			bank1 = &gbVram[0x2000];
-		}
+		bank0 = &gbVram[0x0000];
+		bank1 = &gbVram[0x2000];
 	}
 	else
 	{
@@ -418,16 +410,8 @@ void gbDrawSpriteTile(int tile, int x, int y, int t, int flags,
 	u8 *bank1;
 	if (gbCgbMode)
 	{
-		if (register_VBK & 1)
-		{
-			bank0 = &gbVram[0x0000];
-			bank1 = &gbVram[0x2000];
-		}
-		else
-		{
-			bank0 = &gbVram[0x0000];
-			bank1 = &gbVram[0x2000];
-		}
+		bank0 = &gbVram[0x0000];
+		bank1 = &gbVram[0x2000];
 	}
 	else
 	{
