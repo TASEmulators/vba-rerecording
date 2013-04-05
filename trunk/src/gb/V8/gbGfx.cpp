@@ -4,6 +4,8 @@
 #include "gbGlobals.h"
 #include "gbSGB.h"
 
+using namespace std;
+
 extern int32 layerSettings;
 extern int32 inUseRegister_WY;
 extern int32 inUseRegister_WX;
@@ -53,8 +55,16 @@ void gbRenderLine()
 	u8 *bank1;
 	if (gbCgbMode)
 	{
-		bank0 = &gbVram[0x0000];
-		bank1 = &gbVram[0x2000];
+		if (register_VBK & 1)
+		{
+			bank0 = &gbVram[0x0000];
+			bank1 = &gbVram[0x2000];
+		}
+		else
+		{
+			bank0 = &gbVram[0x0000];
+			bank1 = &gbVram[0x2000];
+		}
 	}
 	else
 	{
@@ -192,8 +202,8 @@ void gbRenderLine()
 				by = sy & 7;
 
 				tile_pattern_address = tile_pattern + tile * 16 + by * 2;
-				tile_map_line_y = tile_map + ty * 32;
-				tile_map_address = tile_map_line_y + tx;
+				tile_map_line_y		 = tile_map + ty * 32;
+				tile_map_address	 = tile_map_line_y + tx;
 
 				if (bank1)
 					attrs = bank1[tile_map_line_y + tx];
@@ -215,8 +225,9 @@ void gbRenderLine()
 			{
 				u16 color = gbColorOption ? gbColorFilter[0x7FFF] : 0x7FFF;
 				if (!gbCgbMode)
-					color = gbColorOption ? gbColorFilter[gbPalette[gbBgpLine[i + (gbSpeed ? 5 : 11) + gbSpritesTicks[i] * (gbSpeed ? 2 : 4)] & 3] & 0x7FFF] :
-					        gbPalette[gbBgpLine[i + (gbSpeed ? 5 : 11) + gbSpritesTicks[i] * (gbSpeed ? 2 : 4)] & 3] & 0x7FFF;
+					color = gbColorOption ? 
+						gbColorFilter[gbPalette[gbBgpLine[i + (gbSpeed ? 5 : 11) + gbSpritesTicks[i] * (gbSpeed ? 2 : 4)] & 3] & 0x7FFF] :
+						gbPalette[gbBgpLine[i + (gbSpeed ? 5 : 11) + gbSpritesTicks[i] * (gbSpeed ? 2 : 4)] & 3] & 0x7FFF;
 				gbLineMix[i]	= color;
 				gbLineBuffer[i] = 0;
 			}
@@ -230,14 +241,12 @@ void gbRenderLine()
 		{
 			if (y >= inUseRegister_WY)
 			{
-				// layer settings shall not affect timings
-				if (layerSettings & 0x2000)
+				int wx	= inUseRegister_WX - 7;
+				int wy	= inUseRegister_WY;
+				if (wx <= 159 && gbWindowLine <= 143 && gbWindowLine >= 0)
 				{
-					int wx	= inUseRegister_WX - 7;
-					int wy  = inUseRegister_WY;
-					int swx = 0;
-
-					if (wx <= 159 && gbWindowLine <= 143 && gbWindowLine >= 0)
+					// layer settings shall not affect timings
+					if (layerSettings & 0x2000)
 					{
 						tile_map = 0x1800;
 
@@ -252,6 +261,7 @@ void gbRenderLine()
 
 						// Tries to emulate the 'window scrolling bug' when wx == 0 (ie. wx-7 == -7).
 						// Nothing close to perfect, but good enought for now...
+						int swx = 0;
 						if (wx == -7)
 						{
 							swx	 = 7 - ((gbSCXLine[0] - 1) & 7);
@@ -275,7 +285,7 @@ void gbRenderLine()
 								wx	 = 0;
 							}
 
-						tile_map_line_y = tile_map + ty * 32;
+						tile_map_line_y	 = tile_map + ty * 32;
 						tile_map_address = tile_map_line_y + tx;
 
 						tile = bank0[tile_map_address];
@@ -382,10 +392,9 @@ void gbRenderLine()
 
 						//for (int i = swx; i<160; i++)
 						//  gbLineMix[i] = gbWindowColor[i];
+						gbWindowLine++;
 					}
 				}
-
-				gbWindowLine++;
 			}
 		}
 	}

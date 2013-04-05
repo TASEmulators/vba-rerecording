@@ -1760,7 +1760,7 @@ u8 gbReadOpcode(register u16 address)
 				return register_SCX;
 			case 0x44:
 				if (((gbHardware & 7) && ((gbLcdMode == 1) && (gbLcdTicks == 0x71))) ||
-				    (!(register_LCDC && 0x80)))
+				    (!(register_LCDC & 0x80)))
 					return 0;
 				else
 					return register_LY;
@@ -2058,7 +2058,7 @@ u8 gbReadMemoryWrapped(register u16 address)
 			return register_SCX;
 		case 0x44:
 			if (((gbHardware & 7) && ((gbLcdMode == 1) && (gbLcdTicks == 0x71))) ||
-			    (!(register_LCDC && 0x80)))
+			    (!(register_LCDC & 0x80)))
 				return (0);
 			else
 				return register_LY;
