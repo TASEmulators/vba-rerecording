@@ -235,7 +235,9 @@ void gbRenderLine()
 			{
 				int wx	= inUseRegister_WX - 7;
 				int wy	= inUseRegister_WY;
-				if (wx <= 159 && gbWindowLine <= 143 && gbWindowLine >= 0)
+				if (gbWindowLine == -2)
+					gbWindowLine = 0;
+				else if (wx <= 159 && gbWindowLine <= 143 && gbWindowLine >= 0)
 				{
 					// layer settings shall not affect timings
 					if (layerSettings & 0x2000)
@@ -381,11 +383,10 @@ void gbRenderLine()
 							}
 							tile_pattern_address = tile_pattern + tile * 16 + by * 2;
 						}
-
 						//for (int i = swx; i<160; i++)
 						//  gbLineMix[i] = gbWindowColor[i];
-						gbWindowLine++;
 					}
+					gbWindowLine++;
 				}
 			}
 		}
