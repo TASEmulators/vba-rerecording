@@ -1077,8 +1077,8 @@ void gbWriteMemoryWrapped(register u16 address, register u8 value)
 			// 007 fix : don't draw the first window's 1st line if it's enable 'too late'
 			// (ie. if register_LY == register_WY when enabling it)
 			// and move it to the next line
-//			else if (gbLcdModeDelayed == 3)
-//				gbWindowLine = -2;
+			else if (gbLcdModeDelayed == 3)
+				gbWindowLine = -2;
 		}
 
 		gbMemory[0xff40] = register_LCDC = value;
