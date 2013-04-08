@@ -231,7 +231,7 @@ CString winGetSavestateFilename(const CString &LogicalRomName, int nID)
 	CString		ext;
 //	size_t		startindex;	// forget about C89/ANSI-C
 //	size_t		endindex;
-	if (VBAMovieActive() && theApp.AsscWithSaveState)
+	if (VBAMovieIsActive() && theApp.AsscWithSaveState)
 	{
 		std::string fs(VBAMovieGetFilename());	// RVO tip
 		size_t startindex = fs.find_last_of("/\\");

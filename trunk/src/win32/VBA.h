@@ -156,6 +156,7 @@ public:
 	bool		 extraCounter;
 	bool		 inputDisplay;
 	bool		 movieReadOnly;
+	bool		 movieXorInput;
 	bool		 movieOnEndPause;
 	int			 movieOnEndBehavior;
 	bool		 soundRecording;

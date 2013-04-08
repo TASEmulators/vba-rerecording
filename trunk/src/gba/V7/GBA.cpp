@@ -674,7 +674,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 	{
 		utilGzWrite(gzFile, &sensorX, sizeof(sensorX));
 		utilGzWrite(gzFile, &sensorY, sizeof(sensorY));
-		bool8 movieActive = VBAMovieActive();
+		bool8 movieActive = VBAMovieIsActive();
 		utilGzWrite(gzFile, &movieActive, sizeof(movieActive));
 		if (movieActive)
 		{
@@ -922,7 +922,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 
 		bool8 movieSnapshot;
 		utilGzRead(gzFile, &movieSnapshot, sizeof(movieSnapshot));
-		if (VBAMovieActive() && !movieSnapshot)
+		if (VBAMovieIsActive() && !movieSnapshot)
 		{
 			systemMessage(0, N_("Can't load a non-movie snapshot while a movie is active."));
 			goto failedLoad;
@@ -943,7 +943,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 			}
 			int code = VBAMovieUnfreeze(local_movie_data, movieInputDataSize);
 			delete [] local_movie_data;
-			if (code != MOVIE_SUCCESS && VBAMovieActive())
+			if (code != MOVIE_SUCCESS && VBAMovieIsActive())
 			{
 				char errStr [1024];
 				strcpy(errStr, "Failed to load movie snapshot");

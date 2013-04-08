@@ -2199,7 +2199,7 @@ bool gbReadBatteryFile(const char *file)
 			{
 				struct tm *lt;
 				time_t tmp; //64 bit kludge
-				if (VBAMovieActive() || VBAMovieLoading())
+				if (VBAMovieIsActive() || VBAMovieIsLoading())
 				{
 					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);
 					lt  = gmtime(&tmp);
@@ -2475,7 +2475,7 @@ bool gbWriteSaveStateToStream(gzFile gzFile)
 		                                                        // carried
 		                                                        // back on loading a snapshot!
 
-		bool8 movieActive = VBAMovieActive();
+		bool8 movieActive = VBAMovieIsActive();
 		utilGzWrite(gzFile, &movieActive, sizeof(movieActive));
 		if (movieActive)
 		{
@@ -2757,7 +2757,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 
 		bool8 movieSnapshot;
 		utilGzRead(gzFile, &movieSnapshot, sizeof(movieSnapshot));
-		if (VBAMovieActive() && !movieSnapshot)
+		if (VBAMovieIsActive() && !movieSnapshot)
 		{
 			systemMessage(0, N_("Can't load a non-movie snapshot while a movie is active."));
 			goto failedLoadGB;
@@ -2778,7 +2778,7 @@ bool gbReadSaveStateFromStream(gzFile gzFile)
 			}
 			int code = VBAMovieUnfreeze(local_movie_data, movieInputDataSize);
 			delete [] local_movie_data;
-			if (code != MOVIE_SUCCESS && VBAMovieActive())
+			if (code != MOVIE_SUCCESS && VBAMovieIsActive())
 			{
 				char errStr [1024];
 				strcpy(errStr, "Failed to load movie snapshot");

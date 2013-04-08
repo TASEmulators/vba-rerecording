@@ -125,7 +125,7 @@ bool rtcWrite(u32 address, u16 value)
 							struct tm *newtime;
 							time_t	   long_time;
 
-							if (VBAMovieActive() || VBAMovieLoading())
+							if (VBAMovieIsActive() || VBAMovieIsLoading())
 							{
 								long_time = VBAMovieGetId() + VBAMovieGetFrameCounter()/60;
 								newtime   = gmtime(&long_time);
@@ -156,7 +156,7 @@ bool rtcWrite(u32 address, u16 value)
 							struct tm *newtime;
 							time_t	   long_time;
 
-							if (VBAMovieActive() || VBAMovieLoading())
+							if (VBAMovieIsActive() || VBAMovieIsLoading())
 							{
 								long_time = VBAMovieGetId() + VBAMovieGetFrameCounter()/60;
 								newtime   = gmtime(&long_time);

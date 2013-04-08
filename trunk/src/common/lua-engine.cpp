@@ -1312,25 +1312,25 @@ int vba_emulating(lua_State *L)
 
 int movie_isactive(lua_State *L)
 {
-	lua_pushboolean(L, VBAMovieActive());
+	lua_pushboolean(L, VBAMovieIsActive());
 	return 1;
 }
 
 int movie_isrecording(lua_State *L)
 {
-	lua_pushboolean(L, VBAMovieRecording());
+	lua_pushboolean(L, VBAMovieIsRecording());
 	return 1;
 }
 
 int movie_isplaying(lua_State *L)
 {
-	lua_pushboolean(L, VBAMoviePlaying());
+	lua_pushboolean(L, VBAMovieIsPlaying());
 	return 1;
 }
 
 int movie_getlength(lua_State *L)
 {
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		lua_pushinteger(L, VBAMovieGetLength());
 	else
 		lua_pushinteger(L, 0);
@@ -1970,7 +1970,7 @@ static int savestate_load(lua_State *L)
 //   Gets the frame counter for the movie, or the number of frames since last reset.
 int vba_framecount(lua_State *L)
 {
-	if (!VBAMovieActive())
+	if (!VBAMovieIsActive())
 	{
 		lua_pushinteger(L, systemCounters.frameCount);
 	}
@@ -1988,7 +1988,7 @@ int vba_framecount(lua_State *L)
 // returns author info field of .vbm file
 int movie_getauthor(lua_State *L)
 {
-	if (!VBAMovieActive())
+	if (!VBAMovieIsActive())
 	{
 		//lua_pushnil(L);
 		lua_pushstring(L, "");
@@ -2002,7 +2002,7 @@ int movie_getauthor(lua_State *L)
 //string movie.filename
 int movie_getfilename(lua_State *L)
 {
-	if (!VBAMovieActive())
+	if (!VBAMovieIsActive())
 	{
 		//lua_pushnil(L);
 		lua_pushstring(L, "");
@@ -2019,14 +2019,14 @@ int movie_getfilename(lua_State *L)
 //   "record", "playback" or nil
 int movie_getmode(lua_State *L)
 {
-	assert(!VBAMovieLoading());
-	if (!VBAMovieActive())
+	assert(!VBAMovieIsLoading());
+	if (!VBAMovieIsActive())
 	{
 		lua_pushnil(L);
 		return 1;
 	}
 
-	if (VBAMovieRecording())
+	if (VBAMovieIsRecording())
 		lua_pushstring(L, "record");
 	else
 		lua_pushstring(L, "playback");
@@ -2035,7 +2035,7 @@ int movie_getmode(lua_State *L)
 
 static int movie_rerecordcount(lua_State *L)
 {
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		lua_pushinteger(L, VBAMovieGetRerecordCount());
 	else
 		lua_pushinteger(L, 0);
@@ -2044,7 +2044,7 @@ static int movie_rerecordcount(lua_State *L)
 
 static int movie_setrerecordcount(lua_State *L)
 {
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		VBAMovieSetRerecordCount(luaL_checkinteger(L, 1));
 	return 0;
 }
@@ -2064,7 +2064,7 @@ static int movie_rerecordcounting(lua_State *L)
 //   Stops movie playback/recording. Bombs out if movie is not running.
 static int movie_stop(lua_State *L)
 {
-	if (!VBAMovieActive())
+	if (!VBAMovieIsActive())
 		luaL_error(L, "no movie");
 
 	VBAMovieStop(false);

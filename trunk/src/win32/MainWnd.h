@@ -443,6 +443,8 @@ protected:
 	afx_msg void OnUpdateToolsPlayMovie(CCmdUI*pCmdUI);
 	afx_msg void OnToolsPlayReadOnly();
 	afx_msg void OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI);
+	afx_msg void OnToolsPlayXorInput();
+	afx_msg void OnUpdateToolsPlayXorInput(CCmdUI*pCmdUI);
 	afx_msg void OnAsscWithSaveState();
 	afx_msg void OnUpdateAsscWithSaveState(CCmdUI*pCmdUI);
 	afx_msg void OnToolsResumeRecord();
@@ -469,6 +471,14 @@ protected:
 	afx_msg void OnUpdateToolsMovieAutoConvert(CCmdUI*pCmdUI);
 	afx_msg void OnToolsMovieFixHeader();
 	afx_msg void OnUpdateToolsMovieFixHeader(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieInsertOneFrame();
+	afx_msg void OnUpdateToolsMovieInsertOneFrame(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieDeleteOneFrame();
+	afx_msg void OnUpdateToolsMovieDeleteOneFrame(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieInsertFrames();
+	afx_msg void OnUpdateToolsMovieInsertFrames(CCmdUI*pCmdUI);
+	afx_msg void OnToolsMovieDeleteFrames();
+	afx_msg void OnUpdateToolsMovieDeleteFrames(CCmdUI*pCmdUI);
 	afx_msg void OnToolsMovieTruncateAtCurrent();
 	afx_msg void OnUpdateToolsMovieTruncateAtCurrent(CCmdUI*pCmdUI);
 	afx_msg void OnToolsMovieExtractFromSavegame();

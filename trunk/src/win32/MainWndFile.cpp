@@ -58,14 +58,14 @@ void MainWnd::OnFileReset()
 {
 	if (emulating)
 	{
-		if (VBAMoviePlaying())
+		if (VBAMovieIsPlaying() && VBAMovieIsXorInput() || VBAMovieIsRecording())
+		{
+			VBAMovieSignalReset();
+		}
+		else if (VBAMovieIsPlaying())
 		{
 			// HACK: backward-compatibility shortcut
 			VBAMovieRestart();
-		}
-		else if (VBAMovieRecording())
-		{
-			VBAMovieSignalReset();
 		}
 		else
 		{
@@ -216,9 +216,9 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 	if (res)
 	{
 		CString format;
-		if (VBAMovieActive())
+		if (VBAMovieIsActive())
 		{
-			if (VBAMovieReadOnly())
+			if (VBAMovieIsReadOnly())
 			{
 				format = winResLoadString(IDS_REPLAYED_STATE_N);
 			}
@@ -359,7 +359,7 @@ void MainWnd::OnFileImportBatteryfile()
 	{
 		systemMessage(MSG_CANNOT_OPEN_FILE, "Cannot open file %s", dlg.GetPathName());
 	}
-	else if (VBAMovieRecording())
+	else if (VBAMovieIsRecording())
 	{
 		// FIXME: we just treat this as if using a cheat code for now
 		VBAMovieSignalReset();
@@ -373,7 +373,7 @@ void MainWnd::OnFileImportBatteryfile()
 void MainWnd::OnUpdateFileImportBatteryfile(CCmdUI *pCmdUI)
 {
 	// we allow this as we allow using cheats during recording
-	pCmdUI->Enable(emulating /*&& !VBAMovieActive()*/);
+	pCmdUI->Enable(emulating /*&& !VBAMovieIsActive()*/);
 }
 
 void MainWnd::OnFileImportGamesharkcodefile()
@@ -404,7 +404,7 @@ void MainWnd::OnFileImportGamesharkcodefile()
 
 void MainWnd::OnUpdateFileImportGamesharkcodefile(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(emulating /*&& !VBAMovieActive()*/);
+	pCmdUI->Enable(emulating /*&& !VBAMovieIsActive()*/);
 }
 
 void MainWnd::OnFileImportGamesharksnapshot()
@@ -437,7 +437,7 @@ void MainWnd::OnFileImportGamesharksnapshot()
 
 void MainWnd::OnUpdateFileImportGamesharksnapshot(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(emulating /*&& !VBAMovieActive()*/);
+	pCmdUI->Enable(emulating /*&& !VBAMovieIsActive()*/);
 }
 
 void MainWnd::OnFileExportBatteryfile()

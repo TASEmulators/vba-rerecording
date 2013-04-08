@@ -416,6 +416,8 @@ ON_COMMAND(ID_MOVIE_PLAY, OnToolsPlayMovie)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_PLAY, OnUpdateToolsPlayMovie)
 ON_COMMAND(ID_MOVIE_READONLY, OnToolsPlayReadOnly)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_READONLY, OnUpdateToolsPlayReadOnly)
+ON_COMMAND(ID_MOVIE_XOR, OnToolsPlayXorInput)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_XOR, OnUpdateToolsPlayXorInput)
 ON_COMMAND(ID_MOVIE_ASSC_WITH_SAVESTATE, OnAsscWithSaveState)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_ASSC_WITH_SAVESTATE, OnUpdateAsscWithSaveState)
 ON_COMMAND(ID_MOVIE_RESUME_RECORD, OnToolsResumeRecord)
@@ -442,6 +444,14 @@ ON_COMMAND(ID_MOVIE_TOOL_AUTO_CONVERT, OnToolsMovieAutoConvert)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_AUTO_CONVERT, OnUpdateToolsMovieAutoConvert)
 ON_COMMAND(ID_MOVIE_TOOL_FIX_HEADER, OnToolsMovieFixHeader)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_FIX_HEADER, OnUpdateToolsMovieFixHeader)
+ON_COMMAND(ID_MOVIE_TOOL_INSERT_ONE_FRAME, OnToolsMovieInsertOneFrame)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_INSERT_ONE_FRAME, OnUpdateToolsMovieInsertOneFrame)
+ON_COMMAND(ID_MOVIE_TOOL_DELETE_ONE_FRAME, OnToolsMovieDeleteOneFrame)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_DELETE_ONE_FRAME, OnUpdateToolsMovieDeleteOneFrame)
+ON_COMMAND(ID_MOVIE_TOOL_INSERT_FRAMES, OnToolsMovieInsertFrames)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_INSERT_FRAMES, OnUpdateToolsMovieInsertFrames)
+ON_COMMAND(ID_MOVIE_TOOL_DELETE_FRAMES, OnToolsMovieDeleteFrames)
+ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_DELETE_FRAMES, OnUpdateToolsMovieDeleteFrames)
 ON_COMMAND(ID_MOVIE_TOOL_TRUNCATE, OnToolsMovieTruncateAtCurrent)
 ON_UPDATE_COMMAND_UI(ID_MOVIE_TOOL_TRUNCATE, OnUpdateToolsMovieTruncateAtCurrent)
 ON_COMMAND(ID_MOVIE_TOOL_EXTRACT_FROM_SAVEGAME, OnToolsMovieExtractFromSavegame)
@@ -1121,7 +1131,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					theApp.winCheckFullscreen();
 					if (winFileOpenSelect(cartType))
 					{
-						if (VBAMovieActive())
+						if (VBAMovieIsActive())
 							VBAMovieStop(false);  // will only get here on user selecting to play a ROM, canceling movie
 						if (!winFileRun())
 							return;
@@ -1291,7 +1301,7 @@ void MainWnd::winFileClose(bool reopening)
 		remoteCleanUp();
 	}
 
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		VBAMovieStop(false);  // will only get here on user selecting to open a ROM, canceling movie
 
 	theApp.frameSearching	   = false;
@@ -1456,7 +1466,7 @@ bool MainWnd::winFileRun(bool reopening)
 	if (theApp.autoHideMenu && theApp.videoOption > VIDEO_4X && theApp.menuToggle)
 		OnFileTogglemenu();
 
-	if (theApp.autoLoadMostRecent && !VBAMovieActive() && !VBAMovieLoading()) // would cause desync in movies...
+	if (theApp.autoLoadMostRecent && !VBAMovieIsActive() && !VBAMovieIsLoading()) // would cause desync in movies...
 		OnFileLoadgameMostrecent();
 
 	theApp.renderedFrames = 0;
