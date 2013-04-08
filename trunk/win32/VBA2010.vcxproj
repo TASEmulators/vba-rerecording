@@ -364,6 +364,21 @@
     <ClCompile Include="..\src\gba\RTC.cpp" />
     <ClCompile Include="..\src\gba\GBASound.cpp" />
     <ClCompile Include="..\src\gba\Sram.cpp" />
+    <ClCompile Include="lib\zlib\adler32.c" />
+    <ClCompile Include="lib\zlib\compress.c" />
+    <ClCompile Include="lib\zlib\crc32.c" />
+    <ClCompile Include="lib\zlib\deflate.c" />
+    <ClCompile Include="lib\zlib\gzclose.c" />
+    <ClCompile Include="lib\zlib\gzlib.c" />
+    <ClCompile Include="lib\zlib\gzread.c" />
+    <ClCompile Include="lib\zlib\gzwrite.c" />
+    <ClCompile Include="lib\zlib\infback.c" />
+    <ClCompile Include="lib\zlib\inffast.c" />
+    <ClCompile Include="lib\zlib\inflate.c" />
+    <ClCompile Include="lib\zlib\inftrees.c" />
+    <ClCompile Include="lib\zlib\trees.c" />
+    <ClCompile Include="lib\zlib\uncompr.c" />
+    <ClCompile Include="lib\zlib\zutil.c" />
     <ClInclude Include="..\src\gba\V7\arm-new.h" />
     <ClInclude Include="..\src\gba\V7\GBA-arm.h" />
     <ClInclude Include="..\src\gba\V7\GBA-thumb.h" />
@@ -696,66 +711,6 @@
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
     <ClCompile Include="lib\libpng\pngwutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\adler32.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\compress.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\crc32.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\deflate.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\example.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\gzio.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\infblock.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\infcodes.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\inffast.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\inflate.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\inftrees.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\infutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\trees.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\uncompr.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\zlib\zutil.c">
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
     </ClCompile>
