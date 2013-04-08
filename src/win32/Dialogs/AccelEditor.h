@@ -43,9 +43,9 @@ protected:
 	int m_timer;
 	int m_autoMode;
 	BOOL m_modified;
+	CMenu *m_pMenuSrc;
 	CAcceleratorManager m_mgr, m_result;
 	CAcceleratorManager *m_pExtMgr;
-	CMenu *m_pMenuSrc;
 	//}}AFX_DATA
 
 	// Overrides

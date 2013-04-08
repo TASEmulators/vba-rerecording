@@ -552,7 +552,7 @@ void CPUWriteHalfWordWrapped(u32 address, u16 value)
 		}
 		goto unwritable;
 	case 14:
-		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
+		if (!eepromInUse || cpuSramEnabled || cpuFlashEnabled)
 		{
 			(*cpuSaveGameFunc)(address, (u8)(value & 0xFF));
 			break;
@@ -685,7 +685,7 @@ void CPUWriteByteWrapped(u32 address, u8 b)
 		}
 		goto unwritable;
 	case 14:
-		if (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)
+		if (!eepromInUse || cpuSramEnabled || cpuFlashEnabled)
 		{
 			(*cpuSaveGameFunc)(address, b);
 			break;
