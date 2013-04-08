@@ -709,30 +709,15 @@ void MainWnd::OnToolsPlayReadOnly()
 		systemScreenMessage(theApp.movieReadOnly ? "Movie now read-only" : "Movie now editable");
 	}
 	else
+	{
 		VBAMovieToggleReadOnly();
+	}
 }
 
 void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(VBAMovieIsActive()); // TEMP
 	pCmdUI->SetCheck(VBAMovieIsActive() ? VBAMovieIsReadOnly() : theApp.movieReadOnly);
-}
-
-void MainWnd::OnToolsPlayXorInput()
-{
-	if (!VBAMovieIsActive())
-	{
-		theApp.movieXorInput = !theApp.movieXorInput;
-		systemScreenMessage(theApp ? "Movie now in xor mode" : "Movie now in overwrite mode");
-	}
-	else
-		VBAMovieToggleXorInput();
-}
-
-void MainWnd::OnUpdateToolsPlayXorInput(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable(VBAMovieIsActive()); // TEMP
-	pCmdUI->SetCheck(VBAMovieIsActive() ? VBAMovieIsXorInput() : theApp.movieXorInput);
 }
 
 void MainWnd::OnAsscWithSaveState()
@@ -774,6 +759,70 @@ void MainWnd::OnToolsPlayRestart()
 void MainWnd::OnUpdateToolsPlayRestart(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(VBAMovieIsActive());
+}
+
+void MainWnd::OnToolsEditModePrev()
+{
+	VBAMoviePrevEditMode();
+}
+
+void MainWnd::OnUpdateToolsEditModePrev(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+}
+
+void MainWnd::OnToolsEditModeNext()
+{
+	VBAMovieNextEditMode();
+}
+
+void MainWnd::OnUpdateToolsEditModeNext(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+}
+
+void MainWnd::OnToolsEditModeDiscard()
+{
+	VBAMovieSetEditMode(MOVIE_EDIT_MODE_DISCARD);
+}
+
+void MainWnd::OnUpdateToolsEditModeDiscard(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_DISCARD);
+}
+
+void MainWnd::OnToolsEditModeOverwrite()
+{
+	VBAMovieSetEditMode(MOVIE_EDIT_MODE_OVERWRITE);
+}
+
+void MainWnd::OnUpdateToolsEditModeOverwrite(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_OVERWRITE);
+}
+
+void MainWnd::OnToolsEditModeInsert()
+{
+	VBAMovieSetEditMode(MOVIE_EDIT_MODE_INSERT);
+}
+
+void MainWnd::OnUpdateToolsEditModeInsert(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(FALSE); // FIXME : Insert Mode UNIMPLEMENTED
+	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_INSERT);
+}
+
+void MainWnd::OnToolsEditModeXor()
+{
+	VBAMovieSetEditMode(MOVIE_EDIT_MODE_XOR);
+}
+
+void MainWnd::OnUpdateToolsEditModeXor(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_XOR);
 }
 
 void MainWnd::OnToolsOnMovieEndPause()

@@ -86,6 +86,14 @@ enum MovieState
 	MOVIE_STATE_END
 };
 
+enum MovieEditMode
+{
+	MOVIE_EDIT_MODE_DISCARD = 0,
+	MOVIE_EDIT_MODE_OVERWRITE,
+	MOVIE_EDIT_MODE_INSERT,
+	MOVIE_EDIT_MODE_XOR
+};
+
 struct SMovieFileHeader
 {
 	uint32 magic;       // VBM0x1a
@@ -113,6 +121,7 @@ struct SMovie
 {
 	enum   {MAX_FILENAME_LENGTH = 260};
 	enum   MovieState state;
+	enum   MovieEditMode editMode;
 	char   filename[MAX_FILENAME_LENGTH]; // FIXME: should use a string instead
 	FILE*  file;
 
@@ -185,7 +194,10 @@ void VBAMovieSignalReset();
 void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
 void VBAMovieToggleReadOnly();
-void VBAMovieToggleXorInput();
+void VBAMoviePrevEditMode();
+void VBAMovieNextEditMode();
+void VBAMovieSetEditMode(MovieEditMode mode);
+MovieEditMode VBAMovieGetEditMode();
 bool VBAMovieSwitchToPlaying();
 bool VBAMovieSwitchToRecording();
 int  VBAMovieGetPauseAt();

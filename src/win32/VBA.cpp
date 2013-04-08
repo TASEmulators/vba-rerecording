@@ -374,7 +374,7 @@ VBA::VBA() : emulator(::theEmulator)
 	painting				= false;
 	mouseCounter			= 0;
 	movieReadOnly			= true;
-	movieXorInput			= false;
+	movieEditMode			= false;
 	movieOnEndPause			= false;
 	movieOnEndBehavior		= 0;
 	wasPaused				= false;

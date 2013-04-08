@@ -332,6 +332,22 @@ static void preserve_movie_init_input()
 	}
 }
 
+static void preserve_movie_next_input()
+{
+	if (Movie.currentFrame < Movie.header.length_frames)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			u16 movieInput = 0;
+			if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
+			{
+				movieInput = Read16(Movie.inputBufferPtr);
+			}
+			nextButtons[i] = movieInput;
+		}
+	}
+}
+
 static void fix_movie_old_reset(bool8 reset_last_frame)
 {
 	// a compatibility burden
@@ -849,18 +865,8 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 		strcat(messageString, "(edit)");
 	systemScreenMessage(messageString);
 
-	if (Movie.currentFrame < Movie.header.length_frames)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			u16 movieInput = 0;
-			if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
-			{
-				movieInput = Read16(Movie.inputBufferPtr);
-			}
-			nextButtons[i] = movieInput;
-		}
-	}
+	preserve_movie_next_input();
+
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
 	systemRefreshScreen();
@@ -1109,7 +1115,7 @@ void VBAUpdateButtonPressDisplay()
 
 	int which = 0;
 	uint32 keys = currentButtons[which];
-	if (Movie.state != MOVIE_STATE_NONE && Movie.xorInput)
+	if (Movie.state != MOVIE_STATE_NONE)
 	{
 		for (int i = 0; i < KeyMaxCount; ++i)
 		{
@@ -1196,20 +1202,34 @@ void VBAUpdateFrameCountDisplay()
 		case MOVIE_STATE_PLAY:
 		case MOVIE_STATE_END:
 		{
-			sprintf(frameDisplayString, "%d / %d%s", Movie.currentFrame, Movie.header.length_frames, Movie.xorInput ? " X" : "");
+			sprintf(frameDisplayString, "%d / %d ", Movie.currentFrame, Movie.header.length_frames);
+			if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
+			{
+				strcat(frameDisplayString, "[W]");
+			}
+			else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
+			{
+				strcat(frameDisplayString, "[X]");
+			}
 			if (!Movie.readOnly)
-				strcat(frameDisplayString, " (load)");
+			{
+				strcat(frameDisplayString, "(edit)");
+			}
 			break;
 		}
 		case MOVIE_STATE_RECORD:
 		{
-			if (Movie.xorInput)
+			if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
+			{
+				sprintf(frameDisplayString, "%d / %d (overwrite)", Movie.currentFrame, Movie.header.length_frames);
+			}
+			else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 			{
 				sprintf(frameDisplayString, "%d / %d (invert)", Movie.currentFrame, Movie.header.length_frames);
 			}
 			else
 			{
-				sprintf(frameDisplayString, "%d (record)", Movie.currentFrame);
+				sprintf(frameDisplayString, "%d (discard)", Movie.currentFrame);
 			}
 			break;
 		}
@@ -1271,7 +1291,7 @@ void VBAMovieUpdateState()
 		// use first fseek?
 		fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
 		Movie.inputBufferPtr += Movie.bytesPerFrame;
-		if (Movie.xorInput && Movie.currentFrame < Movie.header.length_frames)
+		if (Movie.editMode != MOVIE_EDIT_MODE_DISCARD && Movie.currentFrame < Movie.header.length_frames)
 		{
 			long original = ftell(Movie.file);
 			fwrite(Movie.inputBufferPtr, 1, Movie.bytesPerFrame, Movie.file);
@@ -1313,7 +1333,7 @@ void VBAMovieRead(int i, bool /*sensor*/)
 	// backward compatibility kludge
 	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-resetSignaledLast & BUTTON_MASK_OLD_RESET);
 
-	if (Movie.xorInput)
+	if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 	{
 		currentButtons[i] ^= movieInput ^ (-resetSignaled & BUTTON_MASK_NEW_RESET);
 		resetSignaled = false;
@@ -1349,7 +1369,12 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		}
 
 		uint8 *ptr = Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i;
-		if (Movie.xorInput)
+		if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
+		{
+			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-resetSignaled & BUTTON_MASK_OLD_RESET);
+			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
+		}
+		else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 		{
 			u16 movieInput = Read16(ptr);
 			buttonData ^= movieInput;
@@ -1477,7 +1502,7 @@ bool VBAMovieIsReadOnly()
 
 bool VBAMovieIsXorInput()
 {
-	return VBAMovieIsActive() && Movie.xorInput;
+	return VBAMovieIsActive() && Movie.editMode == MOVIE_EDIT_MODE_XOR;
 }
 
 void VBAMovieToggleReadOnly()
@@ -1497,12 +1522,38 @@ void VBAMovieToggleReadOnly()
 	}
 }
 
-void VBAMovieToggleXorInput()
+void VBAMoviePrevEditMode()
 {
-	if (!VBAMovieIsActive())
-		return;
+	// FIXME: UNIMPLEMENTED
+}
 
-	Movie.xorInput = !Movie.xorInput;
+void VBAMovieNextEditMode()
+{
+	switch (Movie.editMode)
+	{
+	case MOVIE_EDIT_MODE_DISCARD:
+		Movie.editMode = MOVIE_EDIT_MODE_OVERWRITE;
+		break;
+	case MOVIE_EDIT_MODE_OVERWRITE:
+		Movie.editMode = MOVIE_EDIT_MODE_XOR;
+		break;
+	case MOVIE_EDIT_MODE_XOR:
+		Movie.editMode = MOVIE_EDIT_MODE_DISCARD;
+		break;
+	default:
+		Movie.editMode = MOVIE_EDIT_MODE_DISCARD;
+		break;
+	}
+}
+
+void VBAMovieSetEditMode(MovieEditMode mode)
+{
+	Movie.editMode = mode;
+}
+
+MovieEditMode VBAMovieGetEditMode()
+{
+	return Movie.editMode;
 }
 
 uint32 VBAMovieGetVersion()
@@ -1696,6 +1747,8 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		}
 	}
 
+	preserve_movie_next_input();
+
 	return MOVIE_SUCCESS;
 }
 
@@ -1795,12 +1848,12 @@ void VBAMovieRestart()
 		movieName[_MAX_PATH - 1] = '\0';
 
 		uint8 modified = Movie.RecordedThisSession;
-		uint8 xorInput = Movie.xorInput;
 		uint8 readOnly = Movie.readOnly;
+		MovieEditMode editMode = Movie.editMode;
 
 		VBAMovieStop(true);
 
-		Movie.xorInput = xorInput;
+		Movie.editMode = editMode;
 		Movie.RecordedThisSession = modified;
 
 		VBAMovieOpen(movieName, readOnly);
@@ -1919,6 +1972,8 @@ int VBAMovieInsertFrames(uint32 num)
 	flush_movie_header();
 	flush_movie_frames();
 
+	preserve_movie_next_input();
+
 	return MOVIE_SUCCESS;
 }
 
@@ -1944,6 +1999,8 @@ int VBAMovieDeleteFrames(uint32 num)
 
 	flush_movie_header();
 	flush_movie_frames();
+
+	preserve_movie_next_input();
 
 	return MOVIE_SUCCESS;
 }

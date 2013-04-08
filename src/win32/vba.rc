@@ -2149,7 +2149,15 @@ BEGIN
             MENUITEM "&Resume/Exit Recording",      ID_MOVIE_RESUME_RECORD
             MENUITEM SEPARATOR
             MENUITEM "Read-&Only Mode",             ID_MOVIE_READONLY
-            MENUITEM "&XOR-Input Mode",             ID_MOVIE_XOR
+            POPUP "Edit &Mode"
+            BEGIN
+                MENUITEM "&Next Mode",                  ID_MOVIE_TOOL_EDIT_MODE_NEXT
+                MENUITEM SEPARATOR
+                MENUITEM "&Discard Mode",               ID_MOVIE_TOOL_EDIT_MODE_DISCARD
+                MENUITEM "&Overwrite Mode",             ID_MOVIE_TOOL_EDIT_MODE_OVERWRITE
+                MENUITEM "&Insert Mode",                ID_MOVIE_TOOL_EDIT_MODE_INSERT
+                MENUITEM "&XOR-Input Mode",             ID_MOVIE_TOOL_EDIT_MODE_XOR
+            END
             POPUP "When Movie &Ends"
             BEGIN
                 MENUITEM "&Pause Emulator",             ID_MOVIE_END_PAUSE
