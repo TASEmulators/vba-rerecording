@@ -1393,7 +1393,7 @@ void debuggerMemory(int n, char **args)
 
 void debuggerQuit(int, char **)
 {
-  char buffer[10];
+  char buffer[1024];
   printf("Are you sure you want to quit (y/n)? ");
   fgets(buffer, 1024, stdin);
   

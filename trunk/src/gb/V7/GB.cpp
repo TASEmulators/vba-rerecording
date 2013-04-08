@@ -589,8 +589,6 @@ void gbDoHdma()
 	if (register_HDMA4 == 0x00)
 		register_HDMA3++;
 
-	if (gbHdmaDestination == 0x96b0)
-		gbHdmaBytes = gbHdmaBytes;
 	gbHdmaBytes -= 0x10;
 	register_HDMA5--;
 	if (register_HDMA5 == 0xff)
@@ -2186,7 +2184,6 @@ bool gbReadBatteryFile(const char *file)
 	if (gbBattery)
 	{
 		int type = gbRom[0x147];
-
 		switch (type)
 		{
 		case 0x03:
@@ -2235,6 +2232,7 @@ bool gbReadBatteryFile(const char *file)
 			break;
 		case 0x22:
 			res = gbReadSaveMBC7(file);
+			break;
 		case 0xff:
 			res = gbReadSaveMBC1(file);
 			break;
@@ -2951,7 +2949,9 @@ bool gbUpdateSizes()
 
 	if (gbRomSize < gbRomSizes[gbRom[0x148]])
 	{
-		gbRom = (u8 *)realloc(gbRom, gbRomSizes[gbRom[0x148]]);
+		void *tmp = realloc(gbRom, gbRomSizes[gbRom[0x148]]);
+		if (!tmp) free(gbRom);
+		gbRom = (u8 *)tmp;
 	}
 	gbRomSize	  = gbRomSizes[gbRom[0x148]];
 	gbRomSizeMask = gbRomSizesMasks[gbRom[0x148]];

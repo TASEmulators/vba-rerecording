@@ -976,8 +976,7 @@ void soundTimerOverflow(int timer)
 
 void soundMix()
 {
-	if (ioMem)
-		soundBalance = (ioMem[NR51] & soundEnableFlag);
+	soundBalance = (ioMem[NR51] & soundEnableFlag);
 
 	int cgbRatio = ioMem[0x82] & 3;
 	int dsaRatio = ioMem[0x82] & 4;

@@ -151,8 +151,8 @@ static void reserve_movie_buffer_space(uint32 space_needed)
 		uint32 old_size		= Movie.inputBufferSize;
 		Movie.inputBufferSize = BUFFER_GROWTH_SIZE * alloc_chunks;
 		void *tmp = realloc(Movie.inputBuffer, Movie.inputBufferSize);
-		if (!tmp) free(tmp);
-		Movie.inputBuffer = (uint8 *)tmp;
+		if (!tmp) free(Movie.inputBuffer);
+		Movie.inputBuffer = reinterpret_cast<uint8 *>(tmp);
 		// FIXME: this only fixes the random input problem during dma-frame-skip, but not the skip
 		memset(Movie.inputBuffer + old_size, 0, Movie.inputBufferSize - old_size);
 		Movie.inputBufferPtr = Movie.inputBuffer + ptr_offset;
@@ -646,7 +646,7 @@ static void HardResetAndSRAMClear()
 {
 #if (defined(WIN32) && !defined(SDL))
 	winEraseBatteryFile(); // delete the damn SRAM file and keep it from being resurrected from RAM
-	MainWnd *temp = ((MainWnd *)theApp.m_pMainWnd);
+	MainWnd *temp = static_cast<MainWnd *>(theApp.m_pMainWnd);
 	if (!temp->winFileRun(true)) // restart running the game
 	{
 		temp->winFileClose();

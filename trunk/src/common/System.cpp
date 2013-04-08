@@ -406,10 +406,7 @@ void systemSoundSetQuality(int quality)
 		if (!soundOffFlag)
 			systemSoundCleanInit();
 	}
-	else if (soundQuality != quality)
-	{
-		soundNextPosition = 0;
-	}
+
 	soundNextPosition = 0;
 	soundTickStep	  = USE_TICKS_AS * soundQuality;
 	soundIndex		  = 0;

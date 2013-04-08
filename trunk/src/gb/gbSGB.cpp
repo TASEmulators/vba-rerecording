@@ -66,7 +66,7 @@ void gbSgbReset()
 	gbSgbNextController	   = 0x0f;
 	gbSgbReadingController = 0;
 
-	memset(gbSgbSCPPalette, 0, 512 * 4);
+	memset(gbSgbSCPPalette, 0, 2048 * sizeof(u16));
 	memset(gbSgbATF, 0, 20 * 18);
 	memset(gbSgbATFList, 0, 45 * 20 * 18);
 	memset(gbSgbPacket, 0, 16 * 7);
@@ -354,14 +354,13 @@ void gbSgbPicture()
 void gbSgbSetPalette(int a, int b, u16 *p)
 {
 	u16 bit00 = READ16LE(p++);
-	int i;
 
-	for (i = 1; i < 4; i++)
+	for (int i = 1; i < 4; i++)
 	{
 		gbPalette[a * 4 + i] = READ16LE(p++);
 	}
 
-	for (i = 1; i < 4; i++)
+	for (int i = 1; i < 4; i++)
 	{
 		gbPalette[b * 4 + i] = READ16LE(p++);
 	}
