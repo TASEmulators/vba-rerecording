@@ -214,17 +214,34 @@ void ResetMemoryRegions()
 
 	if (nextVirtualIndex > MAX_RAM_SIZE)
 	{
-		s_prevValues = (unsigned char *)realloc(s_prevValues, sizeof(char) * (nextVirtualIndex + 4));
-		memset(s_prevValues, 0, sizeof(char) * (nextVirtualIndex + 4));
+		size_t size1 = sizeof(unsigned char) * (nextVirtualIndex + 4);
+		size_t size2 = sizeof(unsigned char) * (nextVirtualIndex + 4);
+		size_t size3 = sizeof(unsigned short) * (nextVirtualIndex + 4);
+		size_t size4 = sizeof(MemoryRegion *) * (nextVirtualIndex + 4);
 
-		s_curValues = (unsigned char *)realloc(s_curValues, sizeof(char) * (nextVirtualIndex + 4));
-		memset(s_curValues, 0, sizeof(char) * (nextVirtualIndex + 4));
+		void *tmp1 = realloc(s_prevValues, size1);
+		void *tmp2 = realloc(s_curValues, size2);
+		void *tmp3 = realloc(s_numChanges, size3);
+		void *tmp4 = realloc(s_itemIndexToRegionPointer, size4);
 
-		s_numChanges = (unsigned short *)realloc(s_numChanges, sizeof(short) * (nextVirtualIndex + 4));
-		memset(s_numChanges, 0, sizeof(short) * (nextVirtualIndex + 4));
-
-		s_itemIndexToRegionPointer = (MemoryRegion * *)realloc(s_itemIndexToRegionPointer, sizeof(MemoryRegion *) * (nextVirtualIndex + 4));
-		memset(s_itemIndexToRegionPointer, 0, sizeof(MemoryRegion *) * (nextVirtualIndex + 4));
+		if (tmp1 && tmp2 && tmp3 && tmp4)
+		{
+			memset(tmp1, 0, size1);
+			memset(tmp2, 0, size2);
+			memset(tmp3, 0, size3);
+			memset(tmp4, 0, size4);
+		}
+		else
+		{
+			free(s_prevValues);
+			free(s_curValues);
+			free(s_numChanges);
+			free(s_itemIndexToRegionPointer);
+		}
+		s_prevValues = (unsigned char *)tmp1;
+		s_curValues = (unsigned char *)tmp2;
+		s_numChanges = (unsigned short *)tmp3;
+		s_itemIndexToRegionPointer = (MemoryRegion **)tmp4;
 
 		MAX_RAM_SIZE = nextVirtualIndex;
 	}
