@@ -7,13 +7,13 @@ in the source file:
 
 Copyright for the modifications to the files mentioned above:
   VisualBoyAdvance-M GB/GBA emulator
-  Copyright (C) 2007-2008 VBA-M development team
+  Copyright (C) 2007-2008 the VBA-M development team
 
   VisualBoyAdvance ReL GB/GBA emulator
   Copyright (C) 2009-2010 aquanull
 
   VisualBoyAdvance Rerecording GB/GBA emulator
-  Copyright (C) 2005-2012 nitsuja and the VBA-rr development team
+  Copyright (C) 2005-2013 nitsuja and the VBA-rr development team
 
 All files excluding precompiled libraries or executables in win32,
 7-zip files under the restrictions of unRAR license, libjpeg, libpng,
