@@ -369,57 +369,6 @@
     <ClCompile Include="..\src\win32\WinResUtil.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="lib\libpng\png.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngerror.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pnggccrd.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngget.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngmem.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngpread.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngread.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngrio.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngrtran.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngrutil.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngset.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngtrans.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngvcrd.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwio.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwrite.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwtran.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwutil.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\win32\WinMiscUtil.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
@@ -665,6 +614,57 @@
     </ClCompile>
     <ClCompile Include="lib\zlib\uncompr.c">
       <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngset.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngtrans.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngvcrd.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwio.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwrite.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwtran.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngwutil.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\png.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngerror.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pnggccrd.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngget.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngmem.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngpread.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngread.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngrio.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngrtran.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libpng\pngrutil.c">
+      <Filter>Source Files\libpng</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
