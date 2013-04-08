@@ -803,7 +803,7 @@ void MainWnd::OnOptionsEmulatorRealtimeclock()
 void MainWnd::OnUpdateOptionsEmulatorRealtimeclock(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winRtcEnable);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorAutohidemenu()
@@ -911,7 +911,7 @@ void MainWnd::OnOptionsEmulatorSavetypeAutomatic()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeAutomatic(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winSaveType == 0);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeEeprom()
@@ -922,7 +922,7 @@ void MainWnd::OnOptionsEmulatorSavetypeEeprom()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeEeprom(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winSaveType == 1);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeSram()
@@ -933,7 +933,7 @@ void MainWnd::OnOptionsEmulatorSavetypeSram()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeSram(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winSaveType == 2);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeFlash()
@@ -944,7 +944,7 @@ void MainWnd::OnOptionsEmulatorSavetypeFlash()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeFlash(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winSaveType == 3);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeEepromsensor()
@@ -955,7 +955,7 @@ void MainWnd::OnOptionsEmulatorSavetypeEepromsensor()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeEepromsensor(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winSaveType == 4);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeNone()
@@ -966,7 +966,7 @@ void MainWnd::OnOptionsEmulatorSavetypeNone()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeNone(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winSaveType == 5);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeFlash512k()
@@ -978,7 +978,7 @@ void MainWnd::OnOptionsEmulatorSavetypeFlash512k()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeFlash512k(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winFlashSize == 0x10000);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorSavetypeFlash1m()
@@ -990,7 +990,7 @@ void MainWnd::OnOptionsEmulatorSavetypeFlash1m()
 void MainWnd::OnUpdateOptionsEmulatorSavetypeFlash1m(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.winFlashSize == 0x20000);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsEmulatorUsebiosfile()
@@ -1002,7 +1002,7 @@ void MainWnd::OnOptionsEmulatorUsebiosfile()
 void MainWnd::OnUpdateOptionsEmulatorUsebiosfile(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.useBiosFile);
-	pCmdUI->Enable(!theApp.biosFileName.IsEmpty() && (!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL)));
+	pCmdUI->Enable(!theApp.biosFileName.IsEmpty() && (!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL)));
 }
 
 void MainWnd::OnOptionsEmulatorSkipbios()
@@ -1013,7 +1013,7 @@ void MainWnd::OnOptionsEmulatorSkipbios()
 void MainWnd::OnUpdateOptionsEmulatorSkipbios(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(theApp.skipBiosFile);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 #ifdef USE_GBA_CORE_V7
@@ -1028,7 +1028,7 @@ void MainWnd::OnOptionsEmulatorGBALag()
 void MainWnd::OnUpdateOptionsEmulatorGBALag(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(!memLagTempEnabled);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 #endif
 
@@ -1040,13 +1040,13 @@ void MainWnd::OnOptionsEmulatorUseOldGBTiming()
 void MainWnd::OnUpdateOptionsEmulatorUseOldGBTiming(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(useOldFrameTiming);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 #ifdef USE_GB_CORE_V7
 void MainWnd::OnOptionsEmulatorUseGBNullInputHack()
 {
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		gbNullInputHackTempEnabled = !gbNullInputHackTempEnabled;
 	else
 		gbNullInputHackTempEnabled = gbNullInputHackEnabled = !gbNullInputHackEnabled;
@@ -1055,12 +1055,12 @@ void MainWnd::OnOptionsEmulatorUseGBNullInputHack()
 void MainWnd::OnUpdateOptionsEmulatorUseGBNullInputHack(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbNullInputHackTempEnabled);
-	pCmdUI->Enable((!VBAMovieActive() && !useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable((!VBAMovieIsActive() && !useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
 }
 #else
 void MainWnd::OnOptionsEmulatorUseV20GBFrameHack()
 {
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		gbV20GBFrameTimingHackTemp = !gbV20GBFrameTimingHackTemp;
 	else
 		gbV20GBFrameTimingHackTemp = gbV20GBFrameTimingHack = !gbV20GBFrameTimingHack;
@@ -1069,7 +1069,7 @@ void MainWnd::OnOptionsEmulatorUseV20GBFrameHack()
 void MainWnd::OnUpdateOptionsEmulatorUseV20GBFrameHack(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbV20GBFrameTimingHackTemp);
-	pCmdUI->Enable((!VBAMovieActive() && useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable((!VBAMovieIsActive() && useOldFrameTiming) || GetAsyncKeyState(VK_CONTROL));
 }
 #endif
 
@@ -1133,7 +1133,7 @@ void MainWnd::OnOptionsSoundDisable()
 void MainWnd::OnUpdateOptionsSoundDisable(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundOffFlag);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsSoundMute()
@@ -1239,7 +1239,7 @@ void MainWnd::OnOptionsSound11khz()
 void MainWnd::OnUpdateOptionsSound11khz(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundQuality == 4);
-	pCmdUI->Enable((!VBAMovieActive() ||
+	pCmdUI->Enable((!VBAMovieIsActive() ||
 	                GetAsyncKeyState(VK_CONTROL)) && !(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog));
 }
 
@@ -1251,7 +1251,7 @@ void MainWnd::OnOptionsSound22khz()
 void MainWnd::OnUpdateOptionsSound22khz(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(soundQuality == 2);
-	pCmdUI->Enable((!VBAMovieActive() ||
+	pCmdUI->Enable((!VBAMovieIsActive() ||
 	                GetAsyncKeyState(VK_CONTROL)) && !(theApp.soundRecording || theApp.aviRecording || theApp.nvAudioLog));
 }
 
@@ -1424,7 +1424,7 @@ void MainWnd::OnOptionsGameboyAutomatic()
 void MainWnd::OnUpdateOptionsGameboyAutomatic(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbEmulatorType == 0);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsGameboyGba()
@@ -1435,7 +1435,7 @@ void MainWnd::OnOptionsGameboyGba()
 void MainWnd::OnUpdateOptionsGameboyGba(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbEmulatorType == 4);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsGameboyCgb()
@@ -1446,7 +1446,7 @@ void MainWnd::OnOptionsGameboyCgb()
 void MainWnd::OnUpdateOptionsGameboyCgb(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbEmulatorType == 1);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsGameboySgb()
@@ -1457,7 +1457,7 @@ void MainWnd::OnOptionsGameboySgb()
 void MainWnd::OnUpdateOptionsGameboySgb(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbEmulatorType == 2);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsGameboySgb2()
@@ -1468,7 +1468,7 @@ void MainWnd::OnOptionsGameboySgb2()
 void MainWnd::OnUpdateOptionsGameboySgb2(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbEmulatorType == 5);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsGameboyGb()
@@ -1479,7 +1479,7 @@ void MainWnd::OnOptionsGameboyGb()
 void MainWnd::OnUpdateOptionsGameboyGb(CCmdUI*pCmdUI)
 {
 	pCmdUI->SetCheck(gbEmulatorType == 3);
-	pCmdUI->Enable(!VBAMovieActive() || GetAsyncKeyState(VK_CONTROL));
+	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 
 void MainWnd::OnOptionsGameboyRealcolors()

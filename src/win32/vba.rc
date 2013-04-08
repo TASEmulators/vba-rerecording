@@ -2149,6 +2149,7 @@ BEGIN
             MENUITEM "&Resume/Exit Recording",      ID_MOVIE_RESUME_RECORD
             MENUITEM SEPARATOR
             MENUITEM "Read-&Only Mode",             ID_MOVIE_READONLY
+            MENUITEM "&XOR-Input Mode",             ID_MOVIE_XOR
             POPUP "When Movie &Ends"
             BEGIN
                 MENUITEM "&Pause Emulator",             ID_MOVIE_END_PAUSE
@@ -2163,14 +2164,19 @@ BEGIN
             MENUITEM SEPARATOR
             POPUP "Advanced &Tools"
             BEGIN
-                MENUITEM "&Convert Current To VBM 1.1", ID_MOVIE_TOOL_CONVERT
+                MENUITEM "&Convert From VBM 1.0",       ID_MOVIE_TOOL_CONVERT
                 MENUITEM SEPARATOR
                 MENUITEM "&Auto Convert Opened Movie",  ID_MOVIE_TOOL_AUTO_CONVERT
                 MENUITEM SEPARATOR
                 MENUITEM "Fix &Header",                 ID_MOVIE_TOOL_FIX_HEADER
                 MENUITEM SEPARATOR
+                MENUITEM "&Insert 1 Frame",             ID_MOVIE_TOOL_INSERT_ONE_FRAME
+                MENUITEM "&Delete 1 Frame",             ID_MOVIE_TOOL_DELETE_ONE_FRAME
+                MENUITEM "I&nsert Frames...",           ID_MOVIE_TOOL_INSERT_FRAMES
+                MENUITEM "D&elete Frames...",           ID_MOVIE_TOOL_DELETE_FRAMES
                 MENUITEM "&Truncate At Current Frame",  ID_MOVIE_TOOL_TRUNCATE
             END
+            MENUITEM SEPARATOR
             MENUITEM "&Associate With Savestates",  ID_MOVIE_ASSC_WITH_SAVESTATE
         END
         MENUITEM "Pause/Resume AVI &Recording", ID_TOOLS_PAUSEAVIRECORDING
@@ -2352,21 +2358,52 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_SELECT_SAVE_DIR     "Select Save Directory:"
+    IDS_SELECT_CAPTURE_DIR  "Select Capture directory:"
+    IDS_SELECT_AVI_DIR      "Select AVI recording directory:"
+    IDS_SELECT_WAV_DIR      "Select Sound recording directory:"
+    IDS_SELECT_CHEAT_DIR    "Select Cheat list directory:"
+    IDS_SELECT_WATCH_DIR    "Select Memory watch file directory:"
+    IDS_SELECT_IPS_DIR      "Select IPS directory:"
+    IDS_SELECT_PLUGIN_DIR   "Select Plugin directory:"
+    IDS_FILTER_LUA          "Lua Script (.lua)_*.lua_All Files_*.*__"
+    IDS_SELECT_LUA_NAME     "Select Lua script file name"
+    IDS_SELECT_LUA_DIR      "Select Lua script file directory:"
     IDS_STARTAVIRECORDING   "Start &AVI Recording..."
     IDS_STOPAVIRECORDING    "Stop &AVI Recording"
     IDS_PAUSEAVIRECORDING   "Pause AVI &Recording"
     IDS_RESUMEAVIRECORDING  "Resume AVI &Recording"
+    IDS_STARTSOUNDRECORDING "Start &WAV Recording..."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_STARTSOUNDRECORDING "Start &WAV Recording..."
     IDS_STOPSOUNDRECORDING  "Stop &WAV Recording"
 END
 
 STRINGTABLE
 BEGIN
+    IDS_UNSUPPORTED_CHEAT_LIST_TYPE "Unsupported cheat list type %d"
+    IDS_INVALID_GSA_CODE    "Invalid GSA code. Format is XXXXXXXXYYYYYYYY."
+    IDS_CANNOT_IMPORT_SNAPSHOT_FOR 
+                            "Cannot import snapshot for %s. Current game is %s"
+    IDS_UNSUPPORTED_SNAPSHOT_FILE "Unsupported snapshot file %s"
+    IDS_UNSUPPORTED_ARM_MODE "Unsupported ARM mode %02x"
+    IDS_UNSUPPORTED_CODE_FILE "Unsupported code file %s"
+    IDS_GSA_CODE_WARNING    "Warning: cheats are for game %s. Current game is %s.\nCodes may not work correctly."
+    IDS_INVALID_CBA_CODE    "Invalid CBA code. Format is XXXXXXXX YYYY."
+    IDS_CBA_CODE_WARNING    "Warning: Codes seem to be for a different game.\nCodes may not work correctly."
+    IDS_OUT_OF_MEMORY       "Failed to allocate memory for %s"
     IDS_UNSUPPORTED_VBA_SGM "Unsupported VisualBoyAdvance save game version %d"
+    IDS_DIRECTX_7_REQUIRED  "DirectX 7.0 or greater is required to run.\nDownload at http://www.microsoft.com/directx.\n\nError found at: %s"
+    IDS_DISABLING_VIDEO_MEMORY "Disabling Use Video Memory setting"
+    IDS_SETTING_WILL_BE_EFFECTIVE 
+                            "Setting will be effective the next time you start the emulator"
+    IDS_DISABLING_EMULATION_ONLY "Disabling Emulation Only setting"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CANNOT_LOAD_SGM     "Cannot load save game for %s"
     IDS_SAVE_GAME_NOT_USING_BIOS "Save game is not using the BIOS file"
     IDS_SAVE_GAME_USING_BIOS "Save game is using the BIOS file"
@@ -2406,11 +2443,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_DIRECTX_7_REQUIRED  "DirectX 7.0 or greater is required to run.\nDownload at http://www.microsoft.com/directx.\n\nError found at: %s"
-    IDS_DISABLING_VIDEO_MEMORY "Disabling Use Video Memory setting"
-    IDS_SETTING_WILL_BE_EFFECTIVE 
-                            "Setting will be effective the next time you start the emulator"
-    IDS_DISABLING_EMULATION_ONLY "Disabling Emulation Only setting"
     IDS_FAILED_TO_OPEN_FILE "Failed to open file %s"
     IDS_FAILED_TO_READ_ZIP_DIR "Failed to read zip directory for file %s"
     IDS_UNSUPPORTED_FILE_TYPE "The file ""%s"" is an unsupported type."
@@ -2424,14 +2456,14 @@ BEGIN
                             "Search produced %d results.\nThey have been remembered, but are too many to display.\nPlease refine it better by performing additional searches."
     IDS_NUMBER_CANNOT_BE_EMPTY "Number cannot be empty"
     IDS_INVALID_ADDRESS     "Invalid address: %08x"
-END
-
-STRINGTABLE
-BEGIN
     IDS_MISALIGNED_HALFWORD "Misaligned half-word address: %08x"
     IDS_MISALIGNED_WORD     "Misaligned word address: %08x"
     IDS_VALUE_CANNOT_BE_EMPTY "Value cannot be empty"
     IDS_ERROR_ON_STARTDOC   "Error on StartDoc"
+END
+
+STRINGTABLE
+BEGIN
     IDS_ERROR_ON_STARTPAGE  "Error on StartPage"
     IDS_ERROR_PRINTING_ON_STRETCH "Error printing on StretchDIBits"
     IDS_ERROR_ON_ENDPAGE    "Error on EndPage"
@@ -2442,16 +2474,16 @@ BEGIN
     IDS_JOY_UP              "Joy %d Up"
     IDS_JOY_DOWN            "Joy %d Down"
     IDS_JOY_BUTTON          "Joy %d %s"
-END
-
-STRINGTABLE
-BEGIN
     IDS_SELECT_BIOS_FILE    "Select BIOS file"
     IDS_RESET               "Reset"
     IDS_AUTOFIRE_A_DISABLED "turbo A off"
     IDS_AUTOFIRE_A          "turbo A on"
     IDS_AUTOFIRE_B_DISABLED "turbo B off"
     IDS_AUTOFIRE_B          "turbo B on"
+END
+
+STRINGTABLE
+BEGIN
     IDS_AUTOFIRE_L_DISABLED "turbo L off"
     IDS_AUTOFIRE_L          "turbo L on"
     IDS_AUTOFIRE_R_DISABLED "turbo R off"
@@ -2460,10 +2492,6 @@ BEGIN
     IDS_SELECT_SAVE_GAME_NAME "Select save game name"
     IDS_LOADED_STATE        "Loaded state"
     IDS_LOADED_STATE_N      "Loaded %d"
-END
-
-STRINGTABLE
-BEGIN
     IDS_WROTE_STATE         "Saved state"
     IDS_WROTE_STATE_N       "Saved %d"
     IDS_LOADED_BATTERY      "Loaded battery"
@@ -2472,19 +2500,14 @@ BEGIN
     IDS_ADDRESS             "Address"
     IDS_OLD_VALUE           "Old Value"
     IDS_NEW_VALUE           "New Value"
-    IDS_ADD_CHEAT_CODE      "Add cheat code"
-    IDS_CODE                "Code"
-    IDS_DESCRIPTION         "Description"
-    IDS_STATUS              "Status"
-    IDS_ADD_GG_CODE         "Add GameGenie code"
-    IDS_ADD_GS_CODE         "Add GameShark code"
-    IDS_POCKET_PRINTER      "Pocket Printer"
-    IDS_UNKNOWN             "Unknown"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_NONE                "None"
+    IDS_ADD_CHEAT_CODE      "Add cheat code"
+    IDS_CODE                "Code"
+    IDS_DESCRIPTION         "Description"
+    IDS_STATUS              "Status"
     IDS_FAILED_TO_LOAD_LIBRARY "Failed to load library %s"
     IDS_FAILED_TO_GET_LOCINFO "Failed to get locale information"
     IDS_SELECT_CHEAT_LIST_NAME "Select cheat list name"
@@ -2493,9 +2516,6 @@ BEGIN
     IDS_FILTER_SGM          "VisualBoyAdvance Save Game_*.sgm_All Files_*.*__"
     IDS_FILTER_CHEAT_LIST   "VisualBoyAdvance Cheat List_*.clt_All Files_*.*__"
     IDS_FILTER_PNG          "PNG Image_*.png_BMP Image_*.bmp_All Files_*.*__"
-    IDS_LOADED_CHEATS       "Loaded cheats"
-    IDS_ERROR_DISP_COLOR    "Unsupported display setting for color depth: %d bits. \nWindows desktop must be in either 16-bit, 24-bit or 32-bit mode for this program to work in window mode."
-    IDS_ADD_GSA_CODE        "Add GamesharkAdvance code"
     IDS_FILTER_SPS          "Gameshark Snapshot_*.sps_All Files_*.*__"
     IDS_SELECT_SNAPSHOT_FILE "Select snapshot file"
     IDS_FILTER_SAV          "Battery file_*.sav_Flash save_*.dat_All Files_*.*__"
@@ -2504,17 +2524,22 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_UNSUPPORTED_CHEAT_LIST_TYPE "Unsupported cheat list type %d"
-    IDS_INVALID_GSA_CODE    "Invalid GSA code. Format is XXXXXXXXYYYYYYYY."
-    IDS_CANNOT_IMPORT_SNAPSHOT_FOR 
-                            "Cannot import snapshot for %s. Current game is %s"
-    IDS_UNSUPPORTED_SNAPSHOT_FILE "Unsupported snapshot file %s"
-    IDS_UNSUPPORTED_ARM_MODE "Unsupported ARM mode %02x"
-    IDS_UNSUPPORTED_CODE_FILE "Unsupported code file %s"
-    IDS_GSA_CODE_WARNING    "Warning: cheats are for game %s. Current game is %s.\nCodes may not work correctly."
-    IDS_INVALID_CBA_CODE    "Invalid CBA code. Format is XXXXXXXX YYYY."
-    IDS_CBA_CODE_WARNING    "Warning: Codes seem to be for a different game.\nCodes may not work correctly."
-    IDS_OUT_OF_MEMORY       "Failed to allocate memory for %s"
+    IDS_AUTOFIRE_RIGHT_DISABLED "turbo Right off"
+    IDS_AUTOFIRE_RIGHT      "turbo Right on"
+    IDS_RERECORDED_STATE_N  "Re-record from %d"
+    IDS_REPLAYED_STATE_N    "Rewind to %d"
+    IDS_LOADED_CHEATS       "Loaded cheats"
+    IDS_ADD_GG_CODE         "Add GameGenie code"
+    IDS_ADD_GS_CODE         "Add GameShark code"
+    IDS_ADD_GSA_CODE        "Add GamesharkAdvance code"
+    IDS_POCKET_PRINTER      "Pocket Printer"
+    IDS_UNKNOWN             "Unknown"
+    IDS_NONE                "None"
+    IDS_ERROR_DISP_COLOR    "Unsupported display setting for color depth: %d bits. \nWindows desktop must be in either 16-bit, 24-bit or 32-bit mode for this program to work in window mode."
+    IDS_SELECT_MOVIE_DIR    "Select movie directory:"
+    IDS_SELECT_ROM_DIR      "Select GBA ROM directory:"
+    IDS_SELECT_GBXROM_DIR   "Select GBx ROM directory:"
+    IDS_SELECT_BATTERY_DIR  "Select Battery directory:"
 END
 
 STRINGTABLE
@@ -2555,11 +2580,11 @@ BEGIN
     IDS_SELECT_MOVIE_NAME   "Select movie name"
     IDS_BUG_REPORT          "The bug report information is now available on the Windows Clipboard. Please paste it into any bug report made by email or on forums to help solve problems more easily."
     IDS_UNSUPPORTED_MOVIE_VERSION "Unsupported movie version %d."
-    IDS_END_OF_MOVIE        "end of movie"
 END
 
 STRINGTABLE
 BEGIN
+    IDS_END_OF_MOVIE        "end of movie"
     IDS_INVALID_INTERVAL_VALUE 
                             "Invalid rewind interval value. Please enter a number between 0 and 600 seconds."
     IDS_REGISTRY            "VisualBoyAdvance no longer uses the registry to store its settings. Your previous settings have been exported into the file: %s"
@@ -2576,37 +2601,6 @@ BEGIN
     IDS_AUTOFIRE_DOWN       "turbo Down on"
     IDS_AUTOFIRE_LEFT_DISABLED "turbo Left off"
     IDS_AUTOFIRE_LEFT       "turbo Left on"
-    IDS_AUTOFIRE_RIGHT_DISABLED "turbo Right off"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_AUTOFIRE_RIGHT      "turbo Right on"
-    IDS_RERECORDED_STATE_N  "Re-record from %d"
-    IDS_REPLAYED_STATE_N    "Rewind to %d"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_FILTER_LUA          "Lua Script (.lua)_*.lua_All Files_*.*__"
-    IDS_SELECT_LUA_NAME     "Select Lua script file name"
-    IDS_SELECT_LUA_DIR      "Select Lua script file directory:"
-    IDS_SELECT_MOVIE_DIR    "Select movie directory:"
-    IDS_SELECT_ROM_DIR      "Select GBA ROM directory:"
-    IDS_SELECT_GBXROM_DIR   "Select GBx ROM directory:"
-    IDS_SELECT_BATTERY_DIR  "Select Battery directory:"
-    IDS_SELECT_SAVE_DIR     "Select Save Directory:"
-    IDS_SELECT_CAPTURE_DIR  "Select Capture directory:"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_SELECT_AVI_DIR      "Select AVI recording directory:"
-    IDS_SELECT_WAV_DIR      "Select Sound recording directory:"
-    IDS_SELECT_CHEAT_DIR    "Select Cheat list directory:"
-    IDS_SELECT_WATCH_DIR    "Select Memory watch file directory:"
-    IDS_SELECT_IPS_DIR      "Select IPS directory:"
-    IDS_SELECT_PLUGIN_DIR   "Select Plugin directory:"
 END
 
 #endif    // English (United States) resources

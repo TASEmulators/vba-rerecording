@@ -65,7 +65,8 @@ extern u8 *bios;
 extern u8 *pix;
 
 extern u16 currentButtons[4];
-extern u16 lastKeys;
+extern u16 lastButtons[4];
+extern u16 nextButtons[4];
 
 extern int32 sensorX, sensorY;
 

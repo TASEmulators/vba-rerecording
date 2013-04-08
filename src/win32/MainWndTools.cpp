@@ -479,7 +479,7 @@ void MainWnd::OnToolsSoundStartrecording()
 
 	CString wavName = theApp.gameFilename;
 
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 	{
 		extern SMovie Movie;
 		wavName = Movie.filename;
@@ -546,7 +546,7 @@ void MainWnd::OnToolsStartAVIRecording()
 
 	CString aviName = theApp.gameFilename;
 
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 	{
 		extern SMovie Movie;
 		aviName = Movie.filename;
@@ -687,7 +687,7 @@ void MainWnd::OnToolsStopMovie()
 
 void MainWnd::OnUpdateToolsStopMovie(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(emulating && VBAMovieActive());
+	pCmdUI->Enable(emulating && VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsPlayMovie()
@@ -703,7 +703,7 @@ void MainWnd::OnUpdateToolsPlayMovie(CCmdUI *pCmdUI)
 
 void MainWnd::OnToolsPlayReadOnly()
 {
-	if (!VBAMovieActive())
+	if (!VBAMovieIsActive())
 	{
 		theApp.movieReadOnly = !theApp.movieReadOnly;
 		systemScreenMessage(theApp.movieReadOnly ? "Movie now read-only" : "Movie now editable");
@@ -714,11 +714,25 @@ void MainWnd::OnToolsPlayReadOnly()
 
 void MainWnd::OnUpdateToolsPlayReadOnly(CCmdUI *pCmdUI)
 {
-///  pCmdUI->Enable(VBAMovieActive()); // FIXME: this is right, but disabling menu items screws up accelerators until you view
-// the menu!
-///  pCmdUI->SetCheck(VBAMovieReadOnly());
-	pCmdUI->Enable(TRUE); // TEMP
-	pCmdUI->SetCheck(VBAMovieActive() ? VBAMovieReadOnly() : theApp.movieReadOnly);
+	pCmdUI->Enable(VBAMovieIsActive()); // TEMP
+	pCmdUI->SetCheck(VBAMovieIsActive() ? VBAMovieIsReadOnly() : theApp.movieReadOnly);
+}
+
+void MainWnd::OnToolsPlayXorInput()
+{
+	if (!VBAMovieIsActive())
+	{
+		theApp.movieXorInput = !theApp.movieXorInput;
+		systemScreenMessage(theApp ? "Movie now in xor mode" : "Movie now in overwrite mode");
+	}
+	else
+		VBAMovieToggleXorInput();
+}
+
+void MainWnd::OnUpdateToolsPlayXorInput(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive()); // TEMP
+	pCmdUI->SetCheck(VBAMovieIsActive() ? VBAMovieIsXorInput() : theApp.movieXorInput);
 }
 
 void MainWnd::OnAsscWithSaveState()
@@ -735,7 +749,7 @@ void MainWnd::OnUpdateAsscWithSaveState(CCmdUI *pCmdUI)
 void MainWnd::OnToolsResumeRecord()
 {
 	// toggle playing/recording
-	if (VBAMovieRecording())
+	if (VBAMovieIsRecording())
 	{
 		if (!VBAMovieSwitchToPlaying())
 			systemScreenMessage("Cannot continue playing");
@@ -749,7 +763,7 @@ void MainWnd::OnToolsResumeRecord()
 
 void MainWnd::OnUpdateToolsResumeRecord(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieActive());
+	pCmdUI->Enable(VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsPlayRestart()
@@ -759,7 +773,7 @@ void MainWnd::OnToolsPlayRestart()
 
 void MainWnd::OnUpdateToolsPlayRestart(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieActive());
+	pCmdUI->Enable(VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsOnMovieEndPause()
@@ -824,7 +838,7 @@ void MainWnd::OnUpdateToolsSetMoviePauseAt(CCmdUI *pCmdUI)
 {
 	// TODO
 	pCmdUI->SetCheck(VBAMovieGetPauseAt() >= 0);
-	pCmdUI->Enable(FALSE && VBAMovieActive());
+	pCmdUI->Enable(FALSE && VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsMovieConvertCurrent()
@@ -847,7 +861,7 @@ void MainWnd::OnToolsMovieConvertCurrent()
 
 void MainWnd::OnUpdateToolsMovieConvertCurrent(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieActive());
+	pCmdUI->Enable(VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsMovieAutoConvert()
@@ -878,19 +892,6 @@ void MainWnd::OnUpdateToolsMovieAutoConvert(CCmdUI *pCmdUI)
 	pCmdUI->SetCheck(autoConvertMovieWhenPlaying);
 }
 
-void MainWnd::OnToolsMovieTruncateAtCurrent()
-{
-	if (VBAMovieReadOnly())
-		systemScreenMessage("Cannot truncate movie in this mode");
-	else
-		VBAMovieTuncateAtCurrentFrame();
-}
-
-void MainWnd::OnUpdateToolsMovieTruncateAtCurrent(CCmdUI *pCmdUI)
-{
-	pCmdUI->Enable(VBAMovieActive());
-}
-
 void MainWnd::OnToolsMovieFixHeader()
 {
 	VBAMovieFixHeader();
@@ -898,7 +899,66 @@ void MainWnd::OnToolsMovieFixHeader()
 
 void MainWnd::OnUpdateToolsMovieFixHeader(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieActive());
+	pCmdUI->Enable(VBAMovieIsActive());
+}
+
+void MainWnd::OnToolsMovieInsertOneFrame()
+{
+	if (VBAMovieIsReadOnly())
+		systemScreenMessage("Cannot operate on this mode");
+	else if (VBAMovieInsertFrames(1) == MOVIE_WRONG_VERSION)
+		systemMessage(0, "Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+}
+
+void MainWnd::OnUpdateToolsMovieInsertOneFrame(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+}
+
+void MainWnd::OnToolsMovieDeleteOneFrame()
+{
+	if (VBAMovieIsReadOnly())
+		systemScreenMessage("Cannot operate on this mode");
+	else if (VBAMovieDeleteFrames(1) == MOVIE_WRONG_VERSION)
+		systemMessage(0, "Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+}
+
+void MainWnd::OnUpdateToolsMovieDeleteOneFrame(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
+}
+
+void MainWnd::OnToolsMovieInsertFrames()
+{
+	// FIXME
+}
+
+void MainWnd::OnUpdateToolsMovieInsertFrames(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(FALSE);
+}
+
+void MainWnd::OnToolsMovieDeleteFrames()
+{
+	// FIXME
+}
+
+void MainWnd::OnUpdateToolsMovieDeleteFrames(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(FALSE);
+}
+
+void MainWnd::OnToolsMovieTruncateAtCurrent()
+{
+	if (VBAMovieIsReadOnly())
+		systemScreenMessage("Cannot truncate movie on this mode");
+	else
+		VBAMovieTuncateAtCurrentFrame();
+}
+
+void MainWnd::OnUpdateToolsMovieTruncateAtCurrent(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(VBAMovieIsActive());
 }
 
 // TODO

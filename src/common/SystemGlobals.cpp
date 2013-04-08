@@ -22,8 +22,10 @@ int emulating = 0;
 u8 *bios = NULL;
 u8 *pix	 = NULL;
 
-u16	  currentButtons[4] = { 0, 0, 0, 0 };   // constrain: never contains hacked buttons, only the lower 16 bits of each are used
-u16	  lastKeys = 0;
+u16	  currentButtons[4] = { 0, 0, 0, 0 };
+u16	  lastButtons[4] = { 0, 0, 0, 0 };
+u16	  nextButtons[4] = { 0, 0, 0, 0 };
+
 int32 sensorX  = 0;
 int32 sensorY  = 0;
 

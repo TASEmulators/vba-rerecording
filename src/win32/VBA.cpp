@@ -374,6 +374,7 @@ VBA::VBA() : emulator(::theEmulator)
 	painting				= false;
 	mouseCounter			= 0;
 	movieReadOnly			= true;
+	movieXorInput			= false;
 	movieOnEndPause			= false;
 	movieOnEndBehavior		= 0;
 	wasPaused				= false;
@@ -426,7 +427,7 @@ VBA::VBA() : emulator(::theEmulator)
 
 VBA::~VBA()
 {
-	if (VBAMovieActive())
+	if (VBAMovieIsActive())
 		VBAMovieStop(true);
 
 	saveSettings();
@@ -1147,7 +1148,7 @@ BOOL VBA::OnIdle(LONG lCount)
 	}
 	else if (emulating) // this fixes display if resetting while paused
 	{
-//		VBAUpdateButtonPressDisplay();
+		VBAUpdateButtonPressDisplay();
 		VBAUpdateFrameCountDisplay();
 		systemRefreshScreen();
 	}

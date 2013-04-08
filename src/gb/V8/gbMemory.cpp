@@ -353,7 +353,7 @@ mapperMBC3 gbDataMBC3 = {
 void memoryUpdateMBC3Clock()
 {
 	time_t now;
-	if (VBAMovieActive() || VBAMovieLoading())
+	if (VBAMovieIsActive() || VBAMovieIsLoading())
 		now = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);  /// FIXME: is /60 the right factor?
 	else
 		now = time(NULL);
@@ -483,7 +483,7 @@ void mapperMBC3RAM(u16 address, u8 value)
 		}
 		else
 		{
-			if (VBAMovieActive() || VBAMovieLoading())
+			if (VBAMovieIsActive() || VBAMovieIsLoading())
 				gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / 60;
 			else
 				gbDataMBC3.mapperLastTime = u32(time(NULL));
@@ -1345,7 +1345,7 @@ void memoryUpdateTAMA5Clock()
 		gbDaysinMonth[1] = 28;
 
 	time_t now;
-	if (VBAMovieActive() || VBAMovieLoading())
+	if (VBAMovieIsActive() || VBAMovieIsLoading())
 		now = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);  /// FIXME: is /60 the right factor?
 	else
 		now = time_t(time(NULL));
@@ -1545,7 +1545,7 @@ void mapperTAMA5RAM(u16 address, u8 value)
 						gbTAMA5ram[0x84] = DaysH * 16 + DaysL; // incorrect ? (not used by the game) ?
 						gbTAMA5ram[0x94] = MonthsH * 16 + MonthsL; // incorrect ? (not used by the game) ?
 
-						if (VBAMovieActive() || VBAMovieLoading())
+						if (VBAMovieIsActive() || VBAMovieIsLoading())
 							gbDataTAMA5.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / 60;
 						else
 							gbDataTAMA5.mapperLastTime = u32(time(NULL));

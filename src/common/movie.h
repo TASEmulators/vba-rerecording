@@ -115,16 +115,15 @@ struct SMovie
 	enum   MovieState state;
 	char   filename[MAX_FILENAME_LENGTH]; // FIXME: should use a string instead
 	FILE*  file;
-	uint8  readOnly;
-	int32  pauseFrame;	// FIXME: byte size
 
 	SMovieFileHeader header;
 	char  authorInfo[MOVIE_METADATA_SIZE];
 
+	int32  pauseFrame;	// FIXME: byte size
 	uint32 currentFrame;    // should == length_frame when recording, and be < length_frames when playing
 	uint32 bytesPerFrame;
-	uint8* inputBuffer;
 	uint32 inputBufferSize;
+	uint8* inputBuffer;
 	uint8* inputBufferPtr;
 
 	// bool8 doesn't make much sense if it is meant to solve any portability problem,
@@ -133,8 +132,10 @@ struct SMovie
 	//   the more reliable (and faster!) way to maintain cross-platform I/O compatibility is
 	//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
 	//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
-	bool8 RecordedNewRerecord;
-	bool8 RecordedThisSession;
+	uint8 readOnly;
+	uint8 xorInput;
+	uint8 RecordedNewRerecord;
+	uint8 RecordedThisSession;
 };
 
 // methods used by the user-interface code
@@ -158,12 +159,15 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size);
 void VBAMovieRestart();
 
 // accessor functions
-bool8 VBAMovieActive();
-bool8 VBAMovieLoading();
-bool8 VBAMoviePlaying();
-bool8 VBAMovieRecording();
-// the following accessors return 0/false if !VBAMovieActive()
-uint8 VBAMovieReadOnly();
+bool VBAMovieIsActive();
+bool VBAMovieIsLoading();
+bool VBAMovieIsPlaying();
+bool VBAMovieIsRecording();
+// the following accessors return 0/false if !VBAMovieIsActive()
+bool VBAMovieIsReadOnly();
+bool VBAMovieIsXorInput();
+bool VBAMovieHasEnded();
+bool VBAMovieAllowsRerecording();
 uint32 VBAMovieGetVersion();
 uint32 VBAMovieGetMinorVersion();
 uint32 VBAMovieGetId();
@@ -175,18 +179,20 @@ uint32 VBAMovieSetRerecordCount (uint32 newRerecordCount);
 std::string VBAMovieGetAuthorInfo();
 std::string VBAMovieGetFilename();
 
-uint16 VBAMovieGetCurrentInputOf(int controllerNum, bool normalOnly = true);
+uint16 VBAMovieGetCurrentInputOf(int which, bool normalOnly = false);
+uint16 VBAMovieGetNextInputOf(int which, bool normalOnly = false);
 void VBAMovieSignalReset();
 void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
 void VBAMovieToggleReadOnly();
-bool VBAMovieEnded();
-bool VBAMovieAllowsRerecording();
+void VBAMovieToggleXorInput();
 bool VBAMovieSwitchToPlaying();
 bool VBAMovieSwitchToRecording();
 int  VBAMovieGetPauseAt();
 void VBAMovieSetPauseAt(int at);
 int  VBAMovieConvertCurrent();
+int VBAMovieInsertFrames(uint32 num);
+int VBAMovieDeleteFrames(uint32 num);
 bool VBAMovieTuncateAtCurrentFrame();
 bool VBAMovieFixHeader();
 

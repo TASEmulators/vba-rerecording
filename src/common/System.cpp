@@ -132,16 +132,19 @@ u32 systemGetJoypad(int i, bool sensor)
 	// therefore, lua is currently allowed to modify the extbuttons...
 	u32 extButtons = res & BUTTON_NONRECORDINGONLY_MASK;
 
+	nextButtons[i] = VBAMovieGetNextInputOf(i);
+
 	// movie input has the highest priority
-	if (VBAMoviePlaying())
+	if (VBAMovieIsPlaying())
 	{
+		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
 		// VBAMovieRead() overwrites currentButtons[i]
 		VBAMovieRead(i, sensor);
 	}
 	else
 	{
 		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-		if (VBAMovieRecording())
+		if (VBAMovieIsRecording())
 		{
 			// the "current buttons" input buffer will be read by the movie routine
 			VBAMovieWrite(i, sensor);
@@ -157,16 +160,16 @@ void systemSetJoypad(int which, u32 buttons)
 		which = 0;
 
 	currentButtons[which] = buttons;
-
-	lastKeys = 0;
+	//lastButtons[which] = 0;
 }
 
 void systemClearJoypads()
 {
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 4; ++i)
+	{
 		currentButtons[i] = 0;
-
-	lastKeys = 0;
+		lastButtons[i] = 0;
+	}
 }
 
 // emulation
@@ -209,7 +212,7 @@ void systemReset()
 
 	systemResetSensor();
 
-	if (!VBAMovieActive())
+	if (!VBAMovieIsActive())
 	{
 		systemCounters.frameCount = 0;
 		systemCounters.extraCount = 0;

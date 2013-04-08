@@ -981,7 +981,6 @@
 #define ID_MOVIE_TOOL_AUTO_CONVERT      40541
 #define ID_MOVIE_TOOL_EXTRACT_FROM_SAVEGAME 40560
 #define ID_MOVIE_TOOL_CONVERT_FILE      40561
-#define RAMMENU_FILE_RECENT             40653
 #define ID_WATCHES_MOVEUP               40664
 #define ID_WATCHES_MOVEDOWN             40665
 #define ID_WATCHES_EDITWATCH            40666
@@ -1030,6 +1029,7 @@
 #define RAMMENU_FILE_OPEN               42304
 #define RAMMENU_FILE_SAVE               42305
 #define RAMMENU_FILE_SAVEAS             42306
+#define RAMMENU_FILE_RECENT             42307
 #define RW_MENU_FIRST_RECENT_FILE       42350
 #define RW_MENU_LAST_RECENT_FILE        42370
 #define ID_OPTIONS_PREFER_ARCHIVE_NAME  42400
@@ -1048,6 +1048,11 @@
 #define ID_TOOLS_EXTRACOUNTER           42413
 #define ID_HEAD_EXTRACOUNTERRESET       42414
 #define ID_TOOLS_EXTRACOUNTERRESET      42415
+#define ID_MOVIE_XOR                    42450
+#define ID_MOVIE_TOOL_INSERT_ONE_FRAME  42451
+#define ID_MOVIE_TOOL_DELETE_ONE_FRAME  42452
+#define ID_MOVIE_TOOL_INSERT_FRAMES     42453
+#define ID_MOVIE_TOOL_DELETE_FRAMES     42454
 #define IDC_C_WATCH_DOWN                43400
 #define IDC_C_WATCH_DUPLICATE           43401
 #define IDC_C_WATCH_EDIT                43402
@@ -1059,11 +1064,11 @@
 #define IDC_PROMPT_EDIT                 43412
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        193
-#define _APS_NEXT_COMMAND_VALUE         42450
+#define _APS_NEXT_COMMAND_VALUE         42455
 #define _APS_NEXT_CONTROL_VALUE         1500
 #define _APS_NEXT_SYMED_VALUE           43513
 #endif
