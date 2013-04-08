@@ -443,14 +443,25 @@ protected:
 	afx_msg void OnUpdateToolsPlayMovie(CCmdUI*pCmdUI);
 	afx_msg void OnToolsPlayReadOnly();
 	afx_msg void OnUpdateToolsPlayReadOnly(CCmdUI*pCmdUI);
-	afx_msg void OnToolsPlayXorInput();
-	afx_msg void OnUpdateToolsPlayXorInput(CCmdUI*pCmdUI);
 	afx_msg void OnAsscWithSaveState();
 	afx_msg void OnUpdateAsscWithSaveState(CCmdUI*pCmdUI);
 	afx_msg void OnToolsResumeRecord();
 	afx_msg void OnUpdateToolsResumeRecord(CCmdUI*pCmdUI);
 	afx_msg void OnToolsPlayRestart();
 	afx_msg void OnUpdateToolsPlayRestart(CCmdUI*pCmdUI);
+
+	afx_msg void OnToolsEditModePrev();
+	afx_msg void OnUpdateToolsEditModePrev(CCmdUI*pCmdUI);
+	afx_msg void OnToolsEditModeNext();
+	afx_msg void OnUpdateToolsEditModeNext(CCmdUI*pCmdUI);
+	afx_msg void OnToolsEditModeDiscard();
+	afx_msg void OnUpdateToolsEditModeDiscard(CCmdUI*pCmdUI);
+	afx_msg void OnToolsEditModeOverwrite();
+	afx_msg void OnUpdateToolsEditModeOverwrite(CCmdUI*pCmdUI);
+	afx_msg void OnToolsEditModeInsert();
+	afx_msg void OnUpdateToolsEditModeInsert(CCmdUI*pCmdUI);
+	afx_msg void OnToolsEditModeXor();
+	afx_msg void OnUpdateToolsEditModeXor(CCmdUI*pCmdUI);
 
 	afx_msg void OnToolsOnMovieEndPause();
 	afx_msg void OnUpdateToolsOnMovieEndPause(CCmdUI*pCmdUI);
