@@ -364,6 +364,23 @@
     <ClCompile Include="..\src\gba\RTC.cpp" />
     <ClCompile Include="..\src\gba\GBASound.cpp" />
     <ClCompile Include="..\src\gba\Sram.cpp" />
+    <ClCompile Include="lib\libpng\png.c" />
+    <ClCompile Include="lib\libpng\pngerror.c" />
+    <ClCompile Include="lib\libpng\pnggccrd.c" />
+    <ClCompile Include="lib\libpng\pngget.c" />
+    <ClCompile Include="lib\libpng\pngmem.c" />
+    <ClCompile Include="lib\libpng\pngpread.c" />
+    <ClCompile Include="lib\libpng\pngread.c" />
+    <ClCompile Include="lib\libpng\pngrio.c" />
+    <ClCompile Include="lib\libpng\pngrtran.c" />
+    <ClCompile Include="lib\libpng\pngrutil.c" />
+    <ClCompile Include="lib\libpng\pngset.c" />
+    <ClCompile Include="lib\libpng\pngtrans.c" />
+    <ClCompile Include="lib\libpng\pngvcrd.c" />
+    <ClCompile Include="lib\libpng\pngwio.c" />
+    <ClCompile Include="lib\libpng\pngwrite.c" />
+    <ClCompile Include="lib\libpng\pngwtran.c" />
+    <ClCompile Include="lib\libpng\pngwutil.c" />
     <ClCompile Include="lib\zlib\adler32.c" />
     <ClCompile Include="lib\zlib\compress.c" />
     <ClCompile Include="lib\zlib\crc32.c" />
@@ -646,74 +663,6 @@
     <ClCompile Include="..\src\win32\Dialogs\VideoMode.cpp" />
     <ClCompile Include="..\src\win32\WinSystem.cpp" />
     <ClCompile Include="..\src\win32\WinMiscUtil.cpp" />
-    <ClCompile Include="lib\libpng\png.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngerror.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pnggccrd.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngget.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngmem.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngpread.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngread.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngrio.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngrtran.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngrutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngset.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngtrans.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngvcrd.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwio.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwrite.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwtran.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
-    <ClCompile Include="lib\libpng\pngwutil.c">
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V82XD|Win32'">false</SmallerTypeCheck>
-      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='V72XD|Win32'">false</SmallerTypeCheck>
-    </ClCompile>
     <ClCompile Include="..\src\filters\2xSaI.cpp" />
     <ClCompile Include="..\src\filters\admame.cpp" />
     <ClCompile Include="..\src\filters\bilinear.cpp" />
