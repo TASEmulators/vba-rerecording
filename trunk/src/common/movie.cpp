@@ -1106,47 +1106,42 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 
 void VBAUpdateButtonPressDisplay()
 {
-	const static char KeyMap[]	 =  { 'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^' };
-	const static int  KeyOrder[] = { 5, 6, 4, 7, 0, 1, 9, 8, 3, 2, 12, 15, 13, 14, 11, 10 }; // < ^ > v   A B  L R  S s  { = } _
-	                                                                                         // ? !
 	const static int  KeyMaxCount = 16;
-
-	char buffer[256] = "                    ";
+								  //  0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+	const static char KeyMap[]	 = { 'A', 'B', 's', 'S', '>', '<', '^', 'v', 'R', 'L', '!', '?', '{', '}', 'v', '^' };
+								  //  <   ^   >   v   A   B   L   R   S   s  M{  M^  M}  Mv  N?  O!
+	const static int  KeyOrder[] = {  5,  6,  4,  7,  0,  1,  9,  8,  3,  2, 12, 15, 13, 14, 11, 10 };
 
 	int which = 0;
-	uint32 keys = currentButtons[which];
-	if (Movie.state != MOVIE_STATE_NONE)
+	uint16 currKeys = currentButtons[which];
+	uint16 nextKeys = nextButtons[which];
+
+	const int  BufferSize = 64;
+	      char buffer[BufferSize] = "                    ";
+	const char whiteSpaces[] = "    ";
+	const int  whiteOffset = strlen(whiteSpaces);
+#ifdef WIN32
+	const bool eraseAll = !theApp.inputDisplay;
+	char grayList[BufferSize]; // FIXME: no grey available at the moment
+	char colorList[BufferSize];
+	memset(grayList, 4, strnlen(buffer, BufferSize));
+	memset(colorList, 1, strnlen(buffer, BufferSize));
+
+	uint16	autoHeldKeys = eraseAll ? 0 : theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
+	uint16	autoFireKeys = eraseAll ? 0 : (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
+	uint16	pressedKeys	 = eraseAll ? 0 : currKeys;
+	uint16 &lastKeys     = lastButtons[which];
+
+	if (!eraseAll && Movie.state != MOVIE_STATE_NONE)
 	{
 		for (int i = 0; i < KeyMaxCount; ++i)
 		{
 			int j	 = KeyOrder[i];
 			int mask = (1 << (j));
-			buffer[strlen("    ") + i] = ((nextButtons[which] & mask) != 0) ? KeyMap[j] : ' ';
+			buffer[whiteOffset + i] = ((nextKeys & mask) != 0) ? KeyMap[j] : ' ';
 		}
 	}
-#ifndef WIN32
-	systemScreenMessage(buffer, 3, -1);
-	// don't bother color-coding autofire and such
-	for (int i = 0; i < KeyMaxCount; ++i)
-	{
-		int j	 = KeyOrder[i];
-		int mask = (1 << (j));
-		buffer[strlen("    ") + i] = ((keys & mask) != 0) ? KeyMap[j] : ' ';
-	}
-	systemScreenMessage(buffer, 2, -1);
-#else
-	char grayList[64]; // FIXME: no grey available at the moment
-	memset(grayList, 4, strlen(buffer));
 	systemScreenMessage(buffer, 3, -1, grayList);
-
-	const bool eraseAll		= !theApp.inputDisplay;
-	uint32	   autoHeldKeys = eraseAll ? 0 : theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
-	uint32	   autoFireKeys = eraseAll ? 0 : (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
-	uint32	   pressedKeys	= eraseAll ? 0 : keys;
-	uint16    &lastKeys     = lastButtons[which];
-
-	char colorList[64];
-	memset(colorList, 1, strlen(buffer));
 
 	if (!eraseAll)
 	{
@@ -1157,7 +1152,7 @@ void VBAUpdateButtonPressDisplay()
 			bool	   pressed	 = (pressedKeys  & mask) != 0;
 			const bool autoHeld	 = (autoHeldKeys & mask) != 0;
 			const bool autoFired = (autoFireKeys & mask) != 0;
-			const bool erased	 = (lastButtons[which] & mask) != 0 && (!pressed && !autoHeld && !autoFired);
+			const bool erased	 = (lastKeys & mask) != 0 && (!pressed && !autoHeld && !autoFired);
 			extern int textMethod;
 			if (textMethod != 2 && (autoHeld || (autoFired && !pressed) || erased))
 			{
@@ -1169,18 +1164,36 @@ void VBAUpdateButtonPressDisplay()
 				else if (erased)
 					colorNum += 8;     // black on black
 
-				colorList[strlen("    ") + i] = colorNum;
+				colorList[whiteOffset + i] = colorNum;
 				pressed = true;
 			}
-			buffer[strlen("    ") + i] = pressed ? KeyMap[j] : ' ';
+			buffer[whiteOffset + i] = pressed ? KeyMap[j] : ' ';
 		}
 	}
+	systemScreenMessage(buffer, 2, -1, colorList);
 
-	lastKeys  = keys;
+	lastKeys  = currKeys;
 	lastKeys |= theApp.autoHold & BUTTON_REGULAR_RECORDING_MASK;
 	lastKeys |= (theApp.autoFire | theApp.autoFire2) & BUTTON_REGULAR_RECORDING_MASK;
-
-	systemScreenMessage(buffer, 2, -1, colorList);
+#else
+	// don't bother color-coding autofire and such
+	if (Movie.state != MOVIE_STATE_NONE)
+	{
+		for (int i = 0; i < KeyMaxCount; ++i)
+		{
+			int j	 = KeyOrder[i];
+			int mask = (1 << (j));
+			buffer[strlen(whiteOffset + i] = ((nextKeys & mask) != 0) ? KeyMap[j] : ' ';
+		}
+	}
+	systemScreenMessage(buffer, 3, -1);
+	for (int i = 0; i < KeyMaxCount; ++i)
+	{
+		int j	 = KeyOrder[i];
+		int mask = (1 << (j));
+		buffer[whiteOffset + i] = ((currKeys & mask) != 0) ? KeyMap[j] : ' ';
+	}
+	systemScreenMessage(buffer, 2, -1);
 #endif
 }
 
