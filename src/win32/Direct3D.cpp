@@ -1,8 +1,11 @@
 #include "stdafx.h"
 
-#define DIRECT3D_VERSION 0x0800
-#include "d3d8.h"
-#include "d3dx8.h"
+#pragma comment( lib, "d3d9" )
+#pragma comment( lib, "d3dx9" )
+#pragma comment( lib, "DxErr" )
+
+#include "d3d9.h"
+#include "d3dx9.h"
 
 #include "resource.h"
 #include "MainWnd.h"
@@ -66,9 +69,9 @@ public:
 
 private:
 	HINSTANCE             d3dDLL;
-	LPDIRECT3D8           pD3D;
-	LPDIRECT3DDEVICE8     pDevice;
-	LPDIRECT3DTEXTURE8    pTexture;
+	LPDIRECT3D9           pD3D;
+	LPDIRECT3DDEVICE9     pDevice;
+	LPDIRECT3DTEXTURE9    pTexture;
 	D3DSURFACE_DESC       dsdBackBuffer;
 	D3DPRESENT_PARAMETERS dpp;
 	D3DFORMAT             screenFormat;
@@ -76,6 +79,7 @@ private:
 	int  height;
 	bool filterDisabled;
 	ID3DXFont *pFont;
+	ID3DXSprite *pFontSprite;
 	bool       failed;
 	unsigned int textureSize;
 	D3DTLVERTEX verts[4];
@@ -95,6 +99,7 @@ Direct3DDisplay::Direct3DDisplay()
 	pDevice        = NULL;
 	pTexture       = NULL;
 	pFont          = NULL;
+	pFontSprite    = NULL;
 	screenFormat   = D3DFMT_R5G6B5;
 	width          = 0;
 	height         = 0;
@@ -116,6 +121,11 @@ void Direct3DDisplay::cleanup()
 		{
 			pFont->Release();
 			pFont = NULL;
+		}
+		if (pFontSprite)
+		{
+			pFontSprite->Release();
+			pFontSprite = NULL;
 		}
 
 		if (pTexture)
@@ -145,26 +155,14 @@ bool Direct3DDisplay::initialize()
 {
 	CWnd *pWnd = theApp.m_pMainWnd;
 
-	d3dDLL = LoadLibrary("D3D8.DLL");
-	LPDIRECT3D8 (WINAPI *D3DCreate)(UINT);
-	if (d3dDLL != NULL)
+	d3dDLL = LoadLibrary("D3D9.DLL");
+	if (d3dDLL == NULL)
 	{
-		D3DCreate = (LPDIRECT3D8 (WINAPI *)(UINT))
-		            GetProcAddress(d3dDLL, "Direct3DCreate8");
-
-		if (D3DCreate == NULL)
-		{
-			directXMessage("Direct3DCreate8");
-			return FALSE;
-		}
-	}
-	else
-	{
-		directXMessage("D3D8.DLL");
+		directXMessage("D3D9.DLL");
 		return FALSE;
 	}
 
-	pD3D = D3DCreate(120);
+	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 
 	if (pD3D == NULL)
 	{
@@ -338,15 +336,15 @@ void Direct3DDisplay::updateFiltering(int filter)
 	default:
 	case 0:
 		// point filtering
-		pDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_POINT);
-		pDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_POINT);
-		pDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_POINT);
+		pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+		pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
 		break;
 	case 1:
 		// bilinear
-		pDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
-		pDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
-		pDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_POINT);
+		pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+		pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
 		break;
 	}
 }
@@ -354,9 +352,9 @@ void Direct3DDisplay::updateFiltering(int filter)
 void Direct3DDisplay::restoreDeviceObjects()
 {
 	// Store render target surface desc
-	LPDIRECT3DSURFACE8 pBackBuffer;
+	LPDIRECT3DSURFACE9 pBackBuffer;
 	HRESULT hr;
-	if (SUCCEEDED(hr = pDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
+	if (SUCCEEDED(hr = pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
 	{
 		pBackBuffer->GetDesc(&dsdBackBuffer);
 		pBackBuffer->Release();
@@ -392,11 +390,19 @@ void Direct3DDisplay::restoreDeviceObjects()
 		pFont->Release();
 		pFont = NULL;
 	}
+	if (pFontSprite)
+	{
+		pFontSprite->Release();
+		pFontSprite = NULL;
+	}
 	// Create a D3D font using D3DX
-	HFONT hFont = CreateFont(14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
-	                         ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-	                         ANTIALIASED_QUALITY, FF_DONTCARE, "Arial");
-	D3DXCreateFont(pDevice, hFont, &pFont);
+	D3DXCreateFont(pDevice, 14, 0, FW_BOLD, 0, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Arial"), &pFont);
+	if (pFont != NULL)
+	{
+		pFont->OnResetDevice();
+	}
+	// Create a font sprite
+	D3DXCreateSprite(pDevice, &pFontSprite);
 }
 
 void Direct3DDisplay::clear()
@@ -580,7 +586,8 @@ gbaLoopEnd:
 			pDevice->SetTexture(0, pTexture);
 
 			// configure shader for vertex type
-			pDevice->SetVertexShader(D3DFVF_TLVERTEX);
+			pDevice->SetVertexShader(NULL);
+			pDevice->SetFVF(D3DFVF_TLVERTEX);
 
 #ifdef D3D_DRAW_SINGLE_RECTANGLE
 			// draw the rectangle
@@ -600,9 +607,10 @@ gbaLoopEnd:
 				{
 					if ((theApp.screenMessageDuration[slot] < 0 || 
 						(int)(GetTickCount() - theApp.screenMessageTime[slot]) < theApp.screenMessageDuration[slot]) &&
-					    (!theApp.disableStatusMessage || slot == 1 || slot == 2) && pFont)
+					    (!theApp.disableStatusMessage || slot == 1 || slot == 2) && pFont != NULL && pFontSprite != NULL)
 					{
-						pFont->Begin();
+						pFontSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
+
 						RECT     r;
 						D3DCOLOR color;
 
@@ -624,7 +632,7 @@ gbaLoopEnd:
 								r2.left += xd[i]; r2.right += xd[i];
 								r2.top  += yd[i]; r2.bottom += yd[i];
 
-								pFont->DrawText(theApp.screenMessageBuffer[slot], -1, &r2, 0, color);
+								pFont->DrawText(pFontSprite, theApp.screenMessageBuffer[slot], -1, &r2, 0, color);
 							}
 						}
 
@@ -648,9 +656,9 @@ gbaLoopEnd:
 						case 7:
 							color = D3DCOLOR_ARGB(255, 0, 0, 0); break;
 						}
-						pFont->DrawText(theApp.screenMessageBuffer[slot], -1, &r, 0, color);
+						pFont->DrawText(pFontSprite, theApp.screenMessageBuffer[slot], -1, &r, 0, color);
 
-						pFont->End();
+						pFontSprite->End();
 					}
 					else
 					{
@@ -668,8 +676,17 @@ gbaLoopEnd:
 
 void Direct3DDisplay::invalidateDeviceObjects()
 {
+	if (pFontSprite)
+	{
+		pFontSprite->Release();
+	}
+	pFontSprite = NULL;
+
 	if (pFont)
+	{
+		pFont->OnLostDevice();
 		pFont->Release();
+	}
 	pFont = NULL;
 }
 
