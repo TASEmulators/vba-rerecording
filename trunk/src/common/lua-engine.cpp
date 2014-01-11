@@ -1849,6 +1849,41 @@ static int savestate_gc(lua_State *L)
 	return 0;
 }
 
+static std::string get_savestate_filename(int which)
+{
+	if (which > 0)
+	{
+		// Find an appropriate filename. This is OS specific, unfortunately.
+#if (defined(WIN32) && !defined(SDL))
+		CString stateName = winGetSavestateFilename(theApp.gameFilename, which);
+		return std::string(static_cast<LPCSTR>(stateName));
+#else
+		extern char saveDir[2048];
+		extern char filename[2048];
+		extern char *sdlGetFilename(char *name);
+
+		char stateName[2048];
+
+		if (saveDir[0])
+			sprintf(stateName, "%s/%s%d.sgm", saveDir, sdlGetFilename(filename), which);
+		else
+			sprintf(stateName, "%s%d.sgm", filename, which);
+
+		return stateName;
+#endif
+	}
+	else
+	{
+		char *stateNameTemp = tempnam(NULL, "snlua");
+		std::string stateName = stateNameTemp;
+
+		if (stateNameTemp)
+			free(stateNameTemp);
+
+		return stateName;
+	}
+}
+
 // object savestate.create(int which = nil)
 //
 //  Creates an object used for savestates.
@@ -1867,31 +1902,7 @@ static int savestate_create(lua_State *L)
 		}
 	}
 
-	char stateName[2048];
-
-	if (which > 0)
-	{
-		// Find an appropriate filename. This is OS specific, unfortunately.
-#if (defined(WIN32) && !defined(SDL))
-		CString stateName = winGetSavestateFilename(theApp.gameFilename, which);
-#else
-		extern char saveDir[2048];
-		extern char filename[2048];
-		extern char *sdlGetFilename(char *name);
-
-		if (saveDir[0])
-			sprintf(stateName, "%s/%s%d.sgm", saveDir, sdlGetFilename(filename), which);
-		else
-			sprintf(stateName, "%s%d.sgm", filename, which);
-#endif
-	}
-	else
-	{
-		char *stateNameTemp = tempnam(NULL, "snlua");
-		strcpy(stateName, stateNameTemp);
-		if (stateNameTemp)
-			free(stateNameTemp);
-	}
+	std::string stateName = get_savestate_filename(which);
 
 	// Our "object". We don't care about the type, we just need the memory and GC services.
 	lua_newuserdata(L, 1);
@@ -1904,7 +1915,7 @@ static int savestate_create(lua_State *L)
 	lua_setfield(L, -2, "__metatable");
 
 	// Now we need to save the file itself.
-	lua_pushstring(L, stateName);
+	lua_pushstring(L, stateName.c_str());
 	lua_setfield(L, -2, "filename");
 
 	// If it's an anonymous savestate, we must delete the file from disk should it be gargage collected
