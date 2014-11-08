@@ -1533,10 +1533,10 @@ static int memory_writeword(lua_State *L)
 static int memory_writedword(lua_State *L)
 {
 	u32 addr;
-	int val;
+	u32 val;
 
 	addr = luaL_checkinteger(L, 1);
-	val	 = luaL_checkinteger(L, 2);
+	val	 = (s64)luaL_checknumber(L, 2);
 	if (systemIsRunningGBA())
 	{
 		CPUWriteMemoryQuick(addr, val);
