@@ -94,8 +94,10 @@ void _makepath(char *path, const char *drive, const char *dir,
 void _splitpath(const char *path, char *drive, char *dir, char *fname,
                 char *ext);
 #else /* WIN32 */
+#ifdef _MSC_VER
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
+#endif
 #endif
 
 typedef uint8  u8;

@@ -639,7 +639,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 			uint8 *movie_freeze_buf	 = NULL;
 			uint32 movie_freeze_size = 0;
 
-			VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
+			int code = VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
 			if (movie_freeze_buf)
 			{
 				utilGzWrite(gzFile, &movie_freeze_size, sizeof(movie_freeze_size));
@@ -648,7 +648,14 @@ bool CPUWriteStateToStream(gzFile gzFile)
 			}
 			else
 			{
-				systemMessage(0, N_("Failed to save movie snapshot."));
+				if (code == MOVIE_UNRECORDED_INPUT)
+				{
+					systemMessage(0, N_("Cannot make a movie snapshot as long as there are unrecorded input changes."));
+				}
+				else
+				{
+					systemMessage(0, N_("Failed to save movie snapshot."));
+				}
 				return false;
 			}
 		}

@@ -25,7 +25,9 @@
 #  define MOVIE_NOT_FROM_THIS_MOVIE (-4)
 #  define MOVIE_NOT_FROM_A_MOVIE (-5)
 #  define MOVIE_SNAPSHOT_INCONSISTENT (-6)
-#  define MOVIE_UNKNOWN_ERROR (-7)
+#  define MOVIE_UNRECORDED_INPUT (-7)
+#  define MOVIE_FATAL_ERROR (-32768)
+#  define MOVIE_UNKNOWN_ERROR (-2147483648)
 #endif
 
 #define VBM_MAGIC (0x1a4D4256) // VBM0x1a
@@ -142,7 +144,7 @@ struct SMovie
 	//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
 	//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
 	uint8 readOnly;
-	uint8 xorInput;
+	uint8 UrecorededInput;
 	uint8 RecordedNewRerecord;
 	uint8 RecordedThisSession;
 };
@@ -163,7 +165,7 @@ void VBAMovieWrite(int controllerNum = 0, bool sensor = false);
 void VBAUpdateButtonPressDisplay();
 void VBAUpdateFrameCountDisplay();
 //bool8 VBAMovieRewind (uint32 at_frame);
-void VBAMovieFreeze(uint8 **buf, uint32 *size);
+int VBAMovieFreeze(uint8 **buf, uint32 *size);
 int VBAMovieUnfreeze(const uint8 *buf, uint32 size);
 void VBAMovieRestart();
 
