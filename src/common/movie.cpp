@@ -1223,15 +1223,15 @@ void VBAUpdateFrameCountDisplay()
 			sprintf(frameDisplayString, "%u / %u ", Movie.currentFrame, Movie.header.length_frames);
 			if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
 			{
-				strcat(frameDisplayString, "[W](play)");
+				strcat(frameDisplayString, "[W]");
 			}
 			else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 			{
-				strcat(frameDisplayString, "[X](play)");
+				strcat(frameDisplayString, "[X]");
 			}
 			if (!Movie.readOnly)
 			{
-				strcat(frameDisplayString, "(play)");
+				strcat(frameDisplayString, "(editable)");
 			}
 			break;
 		}
@@ -1349,7 +1349,7 @@ void VBAMovieRead(int i, bool /*sensor*/)
 	}
 
 	// backward compatibility kludge
-	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-resetSignaledLast & BUTTON_MASK_OLD_RESET);
+	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
 
 #if 0
 	if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
@@ -1395,7 +1395,7 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		uint8 *ptr = Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i;
 		if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
 		{
-			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-resetSignaled & BUTTON_MASK_OLD_RESET);
+			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
 			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
 		}
 		else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
@@ -1403,14 +1403,14 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 			u16 movieInput = Read16(ptr);
 			buttonData ^= movieInput;
 			resetSignaled = ((buttonData & BUTTON_MASK_NEW_RESET) != 0);
-			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-resetSignaled & BUTTON_MASK_OLD_RESET);
+			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
 			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
 		}
 
 		resetSignaled = false;
 
 		// backward compatibility kludge
-		buttonData = (buttonData & ~BUTTON_MASK_OLD_RESET) | (-resetSignaledLast & BUTTON_MASK_OLD_RESET);
+		buttonData = (buttonData & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
 
 		Write16(buttonData, ptr);
 

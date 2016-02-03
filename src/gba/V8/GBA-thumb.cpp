@@ -145,7 +145,7 @@ static INSN_REGPARM void thumbBreakpoint(u32 opcode)
 	{ \
 		register int Flags;                 \
 		register int Result;                \
-		asm volatile ("mtspr 1, %4\n"        \       /* reg 1 is xer */
+		asm volatile ("mtspr 1, %4\n"               /* reg 1 is xer */\
 "addeo. %0, %2, %3\n"  \
 "mcrxr cr1\n"          \
 "mfcr	%1\n"            \

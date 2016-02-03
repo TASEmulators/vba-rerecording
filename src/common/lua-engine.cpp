@@ -2470,7 +2470,7 @@ static int hex2int(lua_State *L, char c)
 static const struct ColorMapping
 {
 	const char *name;
-	int			value;
+	uint32		value;
 }
 s_colorMapping[] =
 {

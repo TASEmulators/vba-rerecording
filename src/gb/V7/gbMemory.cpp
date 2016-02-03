@@ -199,7 +199,7 @@ mapperMBC3 gbDataMBC3 = {
 	0, // timer latched hours
 	0, // timer latched days
 	0, // timer latched control
-	time_t(-1) // last time
+	u32(time_t(-1)) // last time
 };
 
 void memoryUpdateMBC3Clock()

@@ -177,7 +177,7 @@ void ResetMemoryRegions()
 			// create the region
 			if (!discard)
 			{
-				MemoryRegion region = { hwRegionStart, regionSearchGranularity + (regionEnd - regionStart), regionStart };
+				MemoryRegion region = { hwRegionStart, unsigned(regionSearchGranularity + (regionEnd - regionStart)), regionStart };
 				s_activeMemoryRegions.push_back(region);
 			}
 
