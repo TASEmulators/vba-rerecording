@@ -1137,7 +1137,7 @@ void VBAUpdateButtonPressDisplay()
 	uint16	pressedKeys	 = eraseAll ? 0 : currKeys;
 	uint16 &lastKeys     = lastButtons[which];
 
-	if (!eraseAll && Movie.state != MOVIE_STATE_NONE)
+	if (theApp.nextInputDisplay && !eraseAll && Movie.state != MOVIE_STATE_NONE)
 	{
 		for (int i = 0; i < KeyMaxCount; ++i)
 		{

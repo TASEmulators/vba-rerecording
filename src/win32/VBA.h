@@ -155,6 +155,7 @@ public:
 	bool		 lagCounter;
 	bool		 extraCounter;
 	bool		 inputDisplay;
+	bool		 nextInputDisplay;
 	bool		 movieReadOnly;
 	bool		 movieEditMode;
 	bool		 movieOnEndPause;

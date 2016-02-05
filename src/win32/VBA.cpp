@@ -344,6 +344,7 @@ VBA::VBA() : emulator(::theEmulator)
 	lagCounter				= false;
 	extraCounter			= false;
 	inputDisplay			= false;
+	nextInputDisplay		= false;
 	speedupToggle			= false;
 	useOldSync				= false;
 	allowLeftRight			= false;
@@ -1938,6 +1939,7 @@ void VBA::loadSettings()
 	lagCounter			 = regQueryDwordValue("lagCounter", false) ? true : false;
 	extraCounter		 = regQueryDwordValue("extraCounter", false) ? true : false;
 	inputDisplay		 = regQueryDwordValue("inputDisplay", false) ? true : false;
+	nextInputDisplay	 = regQueryDwordValue("nextInputDisplay", false) ? true : false;
 	disableStatusMessage = regQueryDwordValue("disableStatus", 0) ? true : false;
 
 	// UI
@@ -2150,6 +2152,7 @@ void VBA::saveSettings()
 	regSetDwordValue("lagCounter", lagCounter);
 	regSetDwordValue("extraCounter", extraCounter);
 	regSetDwordValue("inputDisplay", inputDisplay);
+	regSetDwordValue("nextInputDisplay", nextInputDisplay);
 	regSetDwordValue("disableStatus", disableStatusMessage);
 
 	// UI

@@ -2048,7 +2048,8 @@ BEGIN
             MENUITEM "    &Lag Counter",            ID_TOOLS_LAGCOUNTER
             MENUITEM "    &Extra Counter",          ID_TOOLS_EXTRACOUNTER
             MENUITEM "    Extra Counter &Reset",    ID_TOOLS_EXTRACOUNTERRESET
-            MENUITEM "&Input Display",              ID_TOOLS_INPUTDISPLAY
+            MENUITEM "&Input",                      ID_TOOLS_INPUTDISPLAY
+            MENUITEM "    &Next-Frame Input",       ID_TOOLS_NEXTINPUTDISPLAY
             MENUITEM SEPARATOR
             MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
             MENUITEM "Disable Status &Messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
@@ -2152,7 +2153,7 @@ BEGIN
             MENUITEM "Read-&Only Mode",             ID_MOVIE_READONLY
             POPUP "Edit &Mode"
             BEGIN
-                MENUITEM "&Next Mode",                  ID_MOVIE_TOOL_EDIT_MODE_NEXT
+                MENUITEM "Select &Next Mode",           ID_MOVIE_TOOL_EDIT_MODE_NEXT
                 MENUITEM SEPARATOR
                 MENUITEM "&Discard Mode",               ID_MOVIE_TOOL_EDIT_MODE_DISCARD
                 MENUITEM "&Overwrite Mode [W]",         ID_MOVIE_TOOL_EDIT_MODE_OVERWRITE

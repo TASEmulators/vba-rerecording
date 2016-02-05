@@ -361,6 +361,18 @@ void MainWnd::OnUpdateToolsInputDisplay(CCmdUI *pCmdUI)
 	pCmdUI->SetCheck(theApp.inputDisplay);
 }
 
+void MainWnd::OnToolsNextInputDisplay()
+{
+	theApp.nextInputDisplay = !theApp.nextInputDisplay;
+	systemScreenMessage(theApp.nextInputDisplay ? "Incoming Input Display On" : "Incoming Input Display Off");
+	extern void VBAUpdateButtonPressDisplay(); VBAUpdateButtonPressDisplay();
+}
+
+void MainWnd::OnUpdateToolsNextInputDisplay(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.nextInputDisplay);
+}
+
 void MainWnd::OnToolsDebugGdb()
 {
 	theApp.winCheckFullscreen();
