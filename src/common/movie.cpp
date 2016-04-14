@@ -1205,11 +1205,14 @@ void VBAUpdateButtonPressDisplay()
 void VBAUpdateFrameCountDisplay()
 {
 	const int MAGICAL_NUMBER = 64;  // FIXME: this won't do any better, but only to remind you of sz issues
-	char	  frameDisplayString[MAGICAL_NUMBER];
+	char	  frameDisplayString[MAGICAL_NUMBER * 2];
 	char	  lagFrameDisplayString[MAGICAL_NUMBER];
 	char	  extraCountDisplayString[MAGICAL_NUMBER];
 
 #if (defined(WIN32) && !defined(SDL))
+	char colorList[MAGICAL_NUMBER * 2];
+	memset(colorList, 1, MAGICAL_NUMBER * 2);
+
 	if (theApp.frameCounter)
 #else
 	/// SDL FIXME
@@ -1220,18 +1223,21 @@ void VBAUpdateFrameCountDisplay()
 		case MOVIE_STATE_PLAY:
 		case MOVIE_STATE_END:
 		{
-			sprintf(frameDisplayString, "%u / %u ", Movie.currentFrame, Movie.header.length_frames);
+			int offset = sprintf(frameDisplayString, "%u / ", Movie.currentFrame);
+			int length = sprintf(frameDisplayString + offset, "%u", Movie.header.length_frames);
+			if (Movie.state == MOVIE_STATE_END)
+				memset(colorList + offset, 2, length);
 			if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
 			{
-				strcat(frameDisplayString, "[W]");
+				strcat(frameDisplayString, " [W]");
 			}
 			else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 			{
-				strcat(frameDisplayString, "[X]");
+				strcat(frameDisplayString, " [X]");
 			}
 			if (!Movie.readOnly)
 			{
-				strcat(frameDisplayString, "(editable)");
+				strcat(frameDisplayString, " (editable)");
 			}
 			break;
 		}
@@ -1284,10 +1290,11 @@ void VBAUpdateFrameCountDisplay()
 	{
 		frameDisplayString[0] = '\0';
 	}
+	systemScreenMessage(frameDisplayString, 1, -1, colorList);
 #else
 	/// SDL FIXME
-#endif
 	systemScreenMessage(frameDisplayString, 1, -1);
+#endif
 }
 
 // this function should only be called once every frame
