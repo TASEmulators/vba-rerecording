@@ -2529,8 +2529,8 @@ STRINGTABLE
 BEGIN
     IDS_AUTOFIRE_RIGHT_DISABLED "turbo Right off"
     IDS_AUTOFIRE_RIGHT      "turbo Right on"
-    IDS_RERECORDED_STATE_N  "Re-record from %d"
-    IDS_REPLAYED_STATE_N    "Rewind to %d"
+    IDS_RERECORDED_STATE_N  "Re-record from Slot %d"
+    IDS_REPLAYED_STATE_N    "Rewind to Slot %d"
     IDS_LOADED_CHEATS       "Loaded cheats"
     IDS_ADD_GG_CODE         "Add GameGenie code"
     IDS_ADD_GS_CODE         "Add GameShark code"

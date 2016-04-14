@@ -760,6 +760,7 @@ void MainWnd::OnToolsResumeRecord()
 
 void MainWnd::OnUpdateToolsResumeRecord(CCmdUI *pCmdUI)
 {
+	pCmdUI->SetCheck(VBAMovieIsRecording());
 	pCmdUI->Enable(VBAMovieIsActive());
 }
 

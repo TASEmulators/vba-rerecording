@@ -382,7 +382,7 @@ static void change_movie_state(MovieState new_state)
 		fclose(Movie.file);
 		Movie.file = NULL;
 		Movie.currentFrame		  = 0;
-		Movie.UrecorededInput	  = false;
+		Movie.unused			  = false;
 		Movie.RecordedNewRerecord = false;
 		Movie.RecordedThisSession = false;
 #if (defined(WIN32) && !defined(SDL))
@@ -439,7 +439,7 @@ static void change_movie_state(MovieState new_state)
 	{
 		assert(Movie.file);
 
-		Movie.UrecorededInput = false;
+		Movie.unused = false;
 
 		VBAMovieConvertCurrent(); // force conversion for safety
 
@@ -572,7 +572,7 @@ void VBAMovieInit()
 	resetSignaled	  = false;
 	resetSignaledLast = false;
 
-	Movie.UrecorededInput	  = false;
+	Movie.unused	  = false;
 	Movie.RecordedNewRerecord = false;
 	Movie.RecordedThisSession = false;
 }
@@ -865,9 +865,9 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	else
 		strcat(messageString, "finished ");
 	if (Movie.readOnly)
-		strcat(messageString, "(read)");
+		strcat(messageString, "(read only)");
 	else
-		strcat(messageString, "(edit)");
+		strcat(messageString, "(editable)");
 	systemScreenMessage(messageString);
 
 	preserve_movie_next_input();
@@ -1350,22 +1350,7 @@ void VBAMovieRead(int i, bool /*sensor*/)
 
 	// backward compatibility kludge
 	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
-
-#if 0
-	if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
-	{
-		currentButtons[i] ^= movieInput ^ (-resetSignaled & BUTTON_MASK_NEW_RESET);
-		resetSignaled = false;
-		if (movieInput != 0)
-		{
-			Movie.UrecorededInput = true;
-		}
-	}
-	else
-#endif
-	{
-		currentButtons[i] = movieInput;
-	}
+	currentButtons[i] = movieInput;
 }
 
 void VBAMovieWrite(int i, bool /*sensor*/)
@@ -1663,13 +1648,6 @@ int VBAMovieFreeze(uint8 * *buf, uint32 *size)
 		return MOVIE_NOTHING;
 	}
 
-#if 0
-	if (Movie.UrecorededInput)
-	{
-		return MOVIE_UNRECORDED_INPUT;
-	}
-#endif
-
 	*buf  = NULL;
 	*size = 0;
 
@@ -1810,12 +1788,7 @@ bool VBAMovieSwitchToRecording()
 		VBAMovieToggleReadOnly();
 	}
 
-	if (Movie.UrecorededInput)
-		return false;
-
 	change_movie_state(MOVIE_STATE_RECORD);
-
-	//truncate_movie(Movie.currentFrame);
 
 	return true;
 }

@@ -218,7 +218,7 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 		CString format;
 		if (VBAMovieIsActive())
 		{
-			if (VBAMovieIsReadOnly())
+			if (!VBAMovieIsRecording())
 			{
 				format = winResLoadString(IDS_REPLAYED_STATE_N);
 			}

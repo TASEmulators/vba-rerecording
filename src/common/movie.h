@@ -144,7 +144,7 @@ struct SMovie
 	//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
 	//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
 	uint8 readOnly;
-	uint8 UrecorededInput;
+	uint8 unused;
 	uint8 RecordedNewRerecord;
 	uint8 RecordedThisSession;
 };
@@ -155,7 +155,6 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 int VBAMovieGetInfo(const char *filename, SMovie*info);
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle[12], uint32 &romGameCode, uint16 &checksum, uint8 &crc);
 void VBAMovieStop(bool8 suppress_message);
-const char *VBAChooseMovieFilename(bool8 read_only);
 
 // methods used by the emulation
 void VBAMovieInit();
