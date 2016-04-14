@@ -565,6 +565,8 @@ static void change_movie_state(MovieState new_state)
 
 void VBAMovieInit()
 {
+	MovieEditMode editMode = Movie.editMode;
+
 	memset(&Movie, 0, sizeof(Movie));
 	Movie.state		 = MOVIE_STATE_NONE;
 	Movie.pauseFrame = -1;
@@ -575,6 +577,8 @@ void VBAMovieInit()
 	Movie.unused	  = false;
 	Movie.RecordedNewRerecord = false;
 	Movie.RecordedThisSession = false;
+
+	Movie.editMode = editMode;
 }
 
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
@@ -1865,11 +1869,9 @@ void VBAMovieRestart()
 
 		uint8 modified = Movie.RecordedThisSession;
 		uint8 readOnly = Movie.readOnly;
-		MovieEditMode editMode = Movie.editMode;
 
 		VBAMovieStop(true);
 
-		Movie.editMode = editMode;
 		Movie.RecordedThisSession = modified;
 
 		VBAMovieOpen(movieName, readOnly);

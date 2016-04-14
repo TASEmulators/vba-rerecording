@@ -791,7 +791,6 @@ void MainWnd::OnToolsEditModeNext()
 
 void MainWnd::OnUpdateToolsEditModeNext(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsEditModeDiscard()
@@ -801,7 +800,6 @@ void MainWnd::OnToolsEditModeDiscard()
 
 void MainWnd::OnUpdateToolsEditModeDiscard(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_DISCARD);
 }
 
@@ -812,7 +810,6 @@ void MainWnd::OnToolsEditModeOverwrite()
 
 void MainWnd::OnUpdateToolsEditModeOverwrite(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_OVERWRITE);
 }
 
@@ -834,7 +831,6 @@ void MainWnd::OnToolsEditModeXor()
 
 void MainWnd::OnUpdateToolsEditModeXor(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_XOR);
 }
 
