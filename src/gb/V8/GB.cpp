@@ -4027,18 +4027,29 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 	{
 		systemMessage(MSG_UNSUPPORTED_VB_SGM,
 		              N_("Unsupported VisualBoy save game version %d"), version);
-		return false;
+		goto failedLoadGB;
 	}
 
-	u8 romname[20];
+	u8 romname[16];
 	utilGzRead(gzFile, romname, 15);
-
 	if (memcmp(&gbRom[0x134], romname, 15) != 0)
 	{
+		u8 curname[16];
+		for (int i = 0; i < 15; ++i)
+		{
+			if (!romname[i])
+			{
+				romname[i] = ' ';
+			}
+			u8 c = gbRom[0x134 + i];
+			curname[i] = c ? c : ' ';
+		}
+		romname[15] = 0;
+		curname[15] = 0;
 		systemMessage(MSG_CANNOT_LOAD_SGM_FOR,
-		              N_("Cannot load save game for %s. Playing %s"),
-		              romname, &gbRom[0x134]);
-		return false;
+		              N_("Cannot load save game for '%s'\nPlaying '%s'"),
+		              romname, curname);
+		goto failedLoadGB;
 	}
 
 	bool8 ub = false;
@@ -4056,7 +4067,7 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 			else
 				systemMessage(MSG_SAVE_GAME_USING_BIOS,
 				              N_("Save game is using the BIOS file"));
-			return false;
+			goto failedLoadGB;
 		}
 	}
 
