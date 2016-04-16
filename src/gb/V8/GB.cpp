@@ -4432,6 +4432,7 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+	bool wasPlayingMovie = VBAMovieIsActive() && VBAMovieIsPlaying();
 	if (version >= GBSAVE_GAME_VERSION_11) // new to re-recording version:
 	{
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
@@ -4513,6 +4514,10 @@ failedLoadGB:
 		if (tempSaveAttempts < 3) // fail no more than 2 times in a row
 			gbReadSaveState(tempBackupName);
 		remove(tempBackupName);
+	}
+	if (wasPlayingMovie && VBAMovieIsRecording())
+	{
+		VBAMovieSwitchToPlaying();
 	}
 	return false;
 }
