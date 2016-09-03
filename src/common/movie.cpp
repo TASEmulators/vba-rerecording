@@ -441,7 +441,7 @@ static void change_movie_state(MovieState new_state)
 
 		Movie.unused = false;
 
-		VBAMovieConvertCurrent(); // force conversion for safety
+		VBAMovieConvertCurrent(false); // conversion for safety
 
 		// this would cause problems if not dealt with
 		if (Movie.currentFrame > Movie.header.length_frames)
@@ -857,7 +857,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	bool converted		   = false;
 	if (autoConvertMovieWhenPlaying)
 	{
-		int result = VBAMovieConvertCurrent();
+		int result = VBAMovieConvertCurrent(false);
 		if (result == MOVIE_SUCCESS)
 			strcat(messageString, "converted and ");
 		else if (result == MOVIE_WRONG_VERSION)
@@ -1894,7 +1894,7 @@ void VBAMovieSetPauseAt(int at)
 // movie tools
 
 // FIXME: is it safe to convert/flush a movie while recording it (considering fseek() problem)?
-int VBAMovieConvertCurrent()
+int VBAMovieConvertCurrent(bool force)
 {
 	if (!VBAMovieIsActive())
 	{
@@ -1906,12 +1906,10 @@ int VBAMovieConvertCurrent()
 		return MOVIE_WRONG_VERSION;
 	}
 
-#if 1
-	if (Movie.header.minorVersion == VBM_REVISION)
+	if (!force && Movie.header.minorVersion == VBM_REVISION)
 	{
-		return MOVIE_NOTHING;
+		return MOVIE_SAME_VERSION;
 	}
-#endif
 
 	Movie.header.minorVersion = VBM_REVISION;
 
@@ -1973,8 +1971,8 @@ int VBAMovieInsertFrames(uint32 num)
 	if (Movie.header.minorVersion > VBM_REVISION)
 		return MOVIE_WRONG_VERSION;
 
-	// force conversion
-	VBAMovieConvertCurrent();
+	// conversion for safty
+	VBAMovieConvertCurrent(false);
 
 	uint32 newLength = (uint32)(Movie.header.length_frames + num);
 	reserve_movie_buffer_space(newLength * Movie.bytesPerFrame);
@@ -2003,8 +2001,8 @@ int VBAMovieDeleteFrames(uint32 num)
 	if (Movie.header.minorVersion > VBM_REVISION)
 		return MOVIE_WRONG_VERSION;
 
-	// force conversion
-	VBAMovieConvertCurrent();
+	// conversion for safty
+	VBAMovieConvertCurrent(false);
 
 	uint32 numRemaining = Movie.header.length_frames - Movie.currentFrame;
 	if (num > numRemaining)

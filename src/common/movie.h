@@ -26,6 +26,7 @@
 #  define MOVIE_NOT_FROM_A_MOVIE (-5)
 #  define MOVIE_SNAPSHOT_INCONSISTENT (-6)
 #  define MOVIE_UNRECORDED_INPUT (-7)
+#  define MOVIE_SAME_VERSION (-8)
 #  define MOVIE_FATAL_ERROR (-32768)
 #  define MOVIE_UNKNOWN_ERROR (-2147483647 - 1)
 #endif
@@ -203,7 +204,7 @@ bool VBAMovieSwitchToPlaying();
 bool VBAMovieSwitchToRecording();
 int  VBAMovieGetPauseAt();
 void VBAMovieSetPauseAt(int at);
-int  VBAMovieConvertCurrent();
+int  VBAMovieConvertCurrent(bool force = false);
 int VBAMovieInsertFrames(uint32 num);
 int VBAMovieDeleteFrames(uint32 num);
 bool VBAMovieTuncateAtCurrentFrame();

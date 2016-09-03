@@ -902,7 +902,7 @@ void MainWnd::OnUpdateToolsSetMoviePauseAt(CCmdUI *pCmdUI)
 void MainWnd::OnToolsMovieConvertCurrent()
 {
 	// temporary
-	int result = VBAMovieConvertCurrent();
+	int result = VBAMovieConvertCurrent(false);
 	switch (result)
 	{
 	case MOVIE_SUCCESS:
@@ -910,7 +910,13 @@ void MainWnd::OnToolsMovieConvertCurrent()
 		break;
 	case MOVIE_WRONG_VERSION:
 		systemMessage(0, "Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+	case MOVIE_SAME_VERSION:
+	{
+		int answer = MessageBox(NULL, "VBA", MB_YESNO | MB_ICONQUESTION);
+		if (answer == IDYES)
+			VBAMovieConvertCurrent(true);
 		break;
+	}
 	default:
 		systemScreenMessage("Nothing to convert");
 		break;
@@ -928,7 +934,7 @@ void MainWnd::OnToolsMovieAutoConvert()
 	autoConvertMovieWhenPlaying = !autoConvertMovieWhenPlaying;
 	if (autoConvertMovieWhenPlaying)
 	{
-		int result = VBAMovieConvertCurrent();
+		int result = VBAMovieConvertCurrent(false);
 		switch (result)
 		{
 		case MOVIE_SUCCESS:
