@@ -23,7 +23,9 @@
 #include "System.h"
 
 bool outlinedText = true, transparentText = false;
-int  textColor    = 0, textMethod = 1;
+// textMethod:
+// 0 - "in-game"; 1 - "on-game"; 2 - "on-screen"
+int  textColor = 0, textMethod = 1;
 
 extern u32 RGB_LOW_BITS_MASK;
 

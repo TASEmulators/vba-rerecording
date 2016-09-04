@@ -393,7 +393,6 @@ VBA::VBA() : emulator(::theEmulator)
 	nvVideoLog				= false;
 	nvAudioLog				= false;
 	LoggingEnabled			= 0;
-///  FPS = 60;
 
 	updateCount = 0;
 

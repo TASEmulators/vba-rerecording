@@ -112,8 +112,8 @@ bool AVIWrite::Open(const char *filename)
 	// setup the video stream information
 	ZeroMemory(&m_header, sizeof(AVISTREAMINFO));
 	m_header.fccType = streamtypeVIDEO;
-	m_header.dwScale = 1;
-	m_header.dwRate  = m_fps;
+	m_header.dwScale = systemGetFrameRateDivisor();
+	m_header.dwRate  = systemGetFrameRateDividend();
 	m_header.dwSuggestedBufferSize = m_bitmap.biSizeImage;
 
 	// create the video stream
@@ -177,7 +177,7 @@ bool AVIWrite::Open(const char *filename)
 	return true;
 }
 
-bool AVIWrite::AddSound(const u8 *sound, int len)
+bool AVIWrite::AddSound(const u8 *sound, u32 len)
 {
 	LONG byteBuffer;
 
@@ -258,11 +258,6 @@ bool AVIWrite::AddFrame(const u8 *bmp)
 bool AVIWrite::IsSoundAdded()
 {
 	return m_streamSound != NULL;
-}
-
-void AVIWrite::SetFPS(int f)
-{
-	m_fps = f;
 }
 
 int AVIWrite::videoFrames()

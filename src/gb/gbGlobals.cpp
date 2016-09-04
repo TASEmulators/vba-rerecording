@@ -46,3 +46,7 @@ int32 gbDmaTicks		 = 0;
 
 u8 (*gbSerialFunction)(u8) = NULL;
 
+// FPS of GB = approx. 4194304 / 70224 = 59.727500569605832763727500569606...
+extern const u32 gbFrameRateDividend = 262144; // 4194304;
+extern const u32 gbFrameRateDivisor  = 4389;   // 70224;
+extern const double gbFrameRate = double(gbFrameRateDividend) / double(gbFrameRateDivisor);

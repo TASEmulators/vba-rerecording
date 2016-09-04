@@ -2201,7 +2201,7 @@ bool gbReadBatteryFile(const char *file)
 				time_t tmp; //64 bit kludge
 				if (VBAMovieIsActive() || VBAMovieIsLoading())
 				{
-					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);
+					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate());
 					lt  = gmtime(&tmp);
 				}
 				else

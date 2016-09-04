@@ -332,24 +332,21 @@ void DirectSound::resume()
 	}
 }
 
-long linearFrameCount	   = 0;
-long linearSoundByteCount  = 0;
-long linearSoundFrameCount = 0;
+u32 linearFrameCount	  = 0;
+u32 linearSoundByteCount  = 0;
+u32 linearSoundFrameCount = 0;
 
 void DirectSound::write()
 {
-	int	   len = soundBufferLen;
+	u32	   len = soundBufferLen;
 	LPVOID lpvPtr1;
 	DWORD  dwBytes1;
 	LPVOID lpvPtr2;
 	DWORD  dwBytes2;
 
+	double frameRate = systemGetFrameRate();
 	do
 	{
-		linearSoundByteCount += len;
-		if (wfx.nAvgBytesPerSec)
-			linearSoundFrameCount = 60 * linearSoundByteCount / wfx.nAvgBytesPerSec;
-
 		if (pDirectSound != NULL)
 		{
 			if (theApp.soundRecording)
@@ -397,15 +394,19 @@ void DirectSound::write()
 				}
 			}
 		}
+
+		linearSoundByteCount += len;
+		linearSoundFrameCount = u32(frameRate * double(linearSoundByteCount) / double(wfx.nAvgBytesPerSec));
 	}
 	while (linearSoundFrameCount <= linearFrameCount);
 
-	// arbitrarily wrap counters at 10000 frames to avoid mismatching wrap-around freeze
-	if (linearSoundFrameCount > 10000 && linearFrameCount > 10000)
+	// arbitrarily wrap counters at systemGetFrameRateDividend() frames to avoid mismatching wrap-around freeze
+	u32 wrap = systemGetFrameRateDividend();
+	if (linearSoundFrameCount >= wrap && linearFrameCount >= wrap)
 	{
-		linearFrameCount	 -= 10000;
-		linearSoundByteCount -= wfx.nAvgBytesPerSec * 10000 / 60;
-		linearSoundFrameCount = 60 * linearSoundByteCount / wfx.nAvgBytesPerSec;
+		linearFrameCount	  -= wrap;
+		linearSoundByteCount  -= wfx.nAvgBytesPerSec * systemGetFrameRateDivisor();
+		linearSoundFrameCount -= wrap;
 	}
 
 	if (!pDirectSound)

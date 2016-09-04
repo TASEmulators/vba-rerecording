@@ -14,17 +14,15 @@ class AVIWrite {
 
   bool Open(const char *filename);
   virtual bool AddFrame(const u8 *bmp);
-  void SetFPS(int fps);
   void SetVideoFormat(BITMAPINFOHEADER *);
   bool IsSoundAdded();
   void SetSoundFormat(WAVEFORMATEX *);
-  bool AddSound(const u8 *sound, int len);
+  bool AddSound(const u8 *sound, u32 len);
   int videoFrames();
   void Pause(bool pause);
   bool IsPaused();
 
  private:
-  int m_fps;
   WAVEFORMATEX m_soundFormat;
   BITMAPINFOHEADER m_bitmap;
   AVISTREAMINFO m_header;

@@ -591,7 +591,6 @@ void MainWnd::OnToolsStartAVIRecording()
 	if (theApp.aviRecorder == NULL)
 	{
 		theApp.aviRecorder = new AVIWrite();
-		theApp.aviRecorder->SetFPS(60);
 
 		int width, height;
 		systemGetLCDResolution(width, height);

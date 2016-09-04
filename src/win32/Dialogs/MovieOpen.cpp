@@ -246,14 +246,15 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				*p = '\0';
 			GetDlgItem(IDC_LABEL_DATE)->SetWindowText(buffer);
 
-			uint32 div	   = 60;
-			uint32 l	   = (movieInfo.header.length_frames + (div >> 1)) / div;
-			uint32 seconds = l % 60;
-			l /= 60;
-			uint32 minutes = l % 60;
-			l /= 60;
-			uint32 hours = l % 60;
-			sprintf(buffer, "%02u:%02u:%02u", hours, minutes, seconds);
+			double div	   = systemGetFrameRate();
+			double l;
+			uint32 frac    = uint32(modf(double(movieInfo.header.length_frames) / div, &l) * 100.0);
+			uint32 seconds = uint32(fmod(l, 60));
+			l /= 60.0;
+			uint32 minutes = uint32(fmod(l, 60));
+			l /= 60.0;
+			uint32 hours   = uint32(fmod(l, 60));
+			sprintf(buffer, "%02u:%02u:%02u.%02u", hours, minutes, seconds, frac);
 			GetDlgItem(IDC_LABEL_LENGTH)->SetWindowText(buffer);
 			sprintf(buffer, "%ld", movieInfo.header.length_frames);
 			GetDlgItem(IDC_LABEL_FRAMES)->SetWindowText(buffer);

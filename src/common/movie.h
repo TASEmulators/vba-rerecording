@@ -53,6 +53,7 @@
 #define MOVIE_TYPE_GBC              (1<<1)
 #define MOVIE_TYPE_SGB              (1<<2)
 
+// using BIOS/RTC should have been made movie start flags
 #define MOVIE_SETTING_USEBIOSFILE   (1<<0)
 #define MOVIE_SETTING_SKIPBIOSFILE  (1<<1)
 #define MOVIE_SETTING_RTCENABLE     (1<<2)
@@ -111,7 +112,7 @@ struct SMovieFileHeader
 	uint32 saveType;        // emulator setting value
 	uint32 flashSize;       // emulator setting value
 	uint32 gbEmulatorType;  // emulator setting value
-	char   romTitle [12];
+	char   romTitle[12];
 	uint8  minorVersion;	// minor version/revision of the current movie version
 	uint8  romCRC;						// the CRC of the ROM used while recording
 	uint16 romOrBiosChecksum;			// the Checksum of the ROM used while recording, or a CRC of the BIOS if GBA
@@ -154,6 +155,7 @@ struct SMovie
 int VBAMovieOpen(const char *filename, bool8 read_only);
 int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags);
 int VBAMovieGetInfo(const char *filename, SMovie*info);
+double VBAMovieGetFrameRate();
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle[12], uint32 &romGameCode, uint16 &checksum, uint8 &crc);
 void VBAMovieStop(bool8 suppress_message);
 

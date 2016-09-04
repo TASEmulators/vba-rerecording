@@ -1483,6 +1483,11 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 	return MOVIE_SUCCESS;
 }
 
+double VBAMovieGetFrameRate()
+{
+	return systemGetFrameRate();
+}
+
 bool VBAMovieHasEnded()
 {
 	return (Movie.state == MOVIE_STATE_END);

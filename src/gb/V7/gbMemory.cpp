@@ -206,7 +206,7 @@ void memoryUpdateMBC3Clock()
 {
 	time_t now;
 	if (VBAMovieIsActive() || VBAMovieIsLoading())
-		now = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);  /// FIXME: is /60 the right factor?
+		now = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate());
 	else
 		now = time(NULL);
 
@@ -336,7 +336,7 @@ void mapperMBC3RAM(u16 address, u8 value)
 		else
 		{
 			if (VBAMovieIsActive() || VBAMovieIsLoading())
-				gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / 60;
+				gbDataMBC3.mapperLastTime = VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate();
 			else
 				gbDataMBC3.mapperLastTime = u32(time(NULL));
 			time_t tmp = time_t(gbDataMBC3.mapperLastTime); //64 bit kludge
