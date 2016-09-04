@@ -3278,6 +3278,7 @@ void gbEmulate(int ticksToStop)
 
 	int gbClockTicks = 0;
 	gbDmaTicks = 0;
+	bool newVideoFrame = false;
 
 	for (;;)
 	{
@@ -3427,7 +3428,7 @@ void gbEmulate(int ticksToStop)
 								gbInterrupt |= 2;
 						}
 
-						gbFrameBoundaryWork();
+						newVideoFrame = true;
 					}
 					else
 					{
@@ -3680,6 +3681,12 @@ void gbEmulate(int ticksToStop)
 				if (gbInterruptWait < 0)
 					gbInterruptWait = 0;
 			}
+		}
+
+		if (newVideoFrame)
+		{
+			newVideoFrame = false;
+			gbFrameBoundaryWork();
 		}
 
 		if (useOldFrameTiming)

@@ -5091,6 +5091,7 @@ void gbEmulate(int ticksToStop)
 	int	 opcode1 = 0;
 	int	 opcode2 = 0;
 	bool execute = false;
+	bool newVideoFrame = false;
 
 	for (;;)
 	{
@@ -5505,7 +5506,7 @@ gbRedoLoop:
 							gbLcdTicksDelayed += GBLCD_MODE_1_CLOCK_TICKS;
 							gbLcdModeDelayed   = 1;
 
-							gbFrameBoundaryWork();
+							newVideoFrame = true;
 						}
 						else
 						{
@@ -5655,6 +5656,14 @@ gbRedoLoop:
 
 				while (gbLcdLYIncrementTicks <= 0)
 				{
+					if (newVideoFrame)
+					{
+						// FIXME: this doesn't seem right for old frame timing
+						newVideoFrame = false;
+						gbFrameBoundaryWork();
+						gbBeforeEmulation();
+					}
+
 					register_LY = ((register_LY + 1) % 154);
 					gbLcdLYIncrementTicks += GBLY_INCREMENT_CLOCK_TICKS;
 					if (register_LY < 144)
@@ -5671,8 +5680,7 @@ gbRedoLoop:
 					}
 					else if (register_LY == 144)
 					{
-						gbBeforeEmulation();
-						gbFrameBoundaryWork();
+						newVideoFrame = true;
 					}
 				}
 			}
@@ -5817,6 +5825,12 @@ gbRedoLoop:
 			}
 		}
 
+		if (newVideoFrame)
+		{
+			newVideoFrame = false;
+			gbFrameBoundaryWork();
+		}
+
 		if (gbDmaTicks)
 		{
 			gbClockTicks = gbGetNextEvent(gbDmaTicks);
@@ -5896,8 +5910,9 @@ gbRedoLoop:
 				++stopCounter;
 				if (gbV20GBFrameTimingHackTemp && stopCounter % 64 == 0)
 				{
-					gbBeforeEmulation();
+					newVideoFrame = false;
 					gbFrameBoundaryWork();
+					gbBeforeEmulation();
 				}
 			}
 

@@ -3822,6 +3822,7 @@ void CPULoop(int _ticks)
 	int32 ticks = _ticks;
 	int32 clockTicks;
 	int32 timerOverflow = 0;
+	bool newVideoFrame = false;
 
 	// variable used by the CPU core
 	cpuTotalTicks = 0;
@@ -4001,7 +4002,7 @@ updateLoop:
 							}
 							CPUCheckDMA(1, 0x0f);
 
-							CPUFrameBoundaryWork();
+							newVideoFrame = true;
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);
@@ -4201,6 +4202,12 @@ updateLoop:
 			}
 #endif
 
+			if (newVideoFrame)
+			{
+				newVideoFrame = false;
+				CPUFrameBoundaryWork();
+			}
+
 			ticks -= clockTicks;
 			cpuNextEvent = CPUUpdateTicks();
 
@@ -4211,8 +4218,6 @@ updateLoop:
 				else
 					clockTicks = cpuDmaTicksToUpdate;
 				cpuDmaTicksToUpdate -= clockTicks;
-				if (cpuDmaTicksToUpdate < 0)
-					cpuDmaTicksToUpdate = 0;
 				cpuDmaHack = true;
 				goto updateLoop;	// this is evil
 			}
@@ -4267,8 +4272,6 @@ updateLoop:
 				else
 					clockTicks = remainingTicks;
 				remainingTicks -= clockTicks;
-				if (remainingTicks < 0)
-					remainingTicks = 0;
 				goto updateLoop;	// this is evil, too
 			}
 
