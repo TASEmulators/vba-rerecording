@@ -213,16 +213,11 @@ void MovieCreate::OnBnClickedOk()
 	CString movieName;
 	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(movieName);
 
-	bool oldUseBiosFile = theApp.useBiosFile;
-	bool oldSkipBiosFile = theApp.skipBiosIntro;
 	theApp.useBiosFile = useBiosFile;
 	theApp.skipBiosIntro = skipBiosIntro;
 
 	// actually make the movie file:
 	int code = VBAMovieCreate(movieName, info, startFlags, controllerFlags, typeFlags);
-
-	theApp.useBiosFile = oldUseBiosFile;
-	theApp.skipBiosIntro = oldSkipBiosFile;
 
 	if (code != MOVIE_SUCCESS)
 	{

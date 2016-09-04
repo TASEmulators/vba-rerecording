@@ -403,15 +403,10 @@ void MovieOpen::OnBnClickedOk()
 		}
 	}
 
-	bool oldUseBiosFile = theApp.useBiosFile;
-	bool oldSkipBiosFile = theApp.skipBiosIntro;
 	theApp.useBiosFile = useBiosFile;
 	theApp.skipBiosIntro = (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
 
 	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
-
-	theApp.useBiosFile = oldUseBiosFile;
-	theApp.skipBiosIntro = oldSkipBiosFile;
 
 	if (code != MOVIE_SUCCESS)
 	{
