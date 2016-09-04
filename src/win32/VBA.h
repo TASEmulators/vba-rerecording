@@ -83,7 +83,7 @@ public:
 	IDisplay *display;
 	bool	  soundInitialized;
 	bool	  useBiosFile;
-	bool	  skipBiosFile;
+	bool	  skipBiosIntro;
 	CString	  biosFileName;
 	bool	  allowLeftRight;
 	bool	  autofireAccountForLag;

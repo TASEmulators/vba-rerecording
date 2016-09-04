@@ -55,7 +55,7 @@
 
 // using BIOS/RTC should have been made movie start flags
 #define MOVIE_SETTING_USEBIOSFILE   (1<<0)
-#define MOVIE_SETTING_SKIPBIOSFILE  (1<<1)
+#define MOVIE_SETTING_SKIPBIOSINTRO (1<<1)
 #define MOVIE_SETTING_RTCENABLE     (1<<2)
 #define MOVIE_SETTING_GBINPUTHACK   (1<<3)
 #define MOVIE_SETTING_LAGHACK       (1<<4)

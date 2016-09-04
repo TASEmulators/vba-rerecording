@@ -224,7 +224,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		{
 			if (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)
 			{
-				if (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE)
+				if (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO)
 					option = 2;
 				else
 					option = 3;
@@ -387,15 +387,15 @@ HBRUSH MovieOpen::OnCtlColor(CDC *pDC, CWnd *pWnd, UINT nCtlColor)
 
 void MovieOpen::OnBnClickedOk()
 {
-	bool useBIOSFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	if (useBIOSFile)
+	bool useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+	extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+	if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 	{
-		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
-		if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
+		if (useBiosFile)
 		{
 			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 			((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-			if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
+			if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 			{
 				systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 				return;
@@ -403,7 +403,15 @@ void MovieOpen::OnBnClickedOk()
 		}
 	}
 
+	bool oldUseBiosFile = theApp.useBiosFile;
+	bool oldSkipBiosFile = theApp.skipBiosIntro;
+	theApp.useBiosFile = useBiosFile;
+	theApp.skipBiosIntro = (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
+
 	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
+
+	theApp.useBiosFile = oldUseBiosFile;
+	theApp.skipBiosIntro = oldSkipBiosFile;
 
 	if (code != MOVIE_SUCCESS)
 	{

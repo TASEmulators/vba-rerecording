@@ -292,7 +292,7 @@ VBA::VBA() : emulator(::theEmulator)
 	popup			 = NULL;
 	soundInitialized = false;
 	useBiosFile		 = false;
-	skipBiosFile	 = false;
+	skipBiosIntro	 = false;
 	active			 = true;
 	paused			 = false;
 	recentFreeze	 = false;
@@ -1880,9 +1880,9 @@ void VBA::loadSettings()
 	useOldSync		  = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 	useOldFrameTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
 
-	useBiosFile	 = regQueryDwordValue("useBios", 0) ? true : false;
-	skipBiosFile = regQueryDwordValue("skipBios", 0) ? true : false;
-	buffer		 = regQueryStringValue("biosFile", "");
+	useBiosFile	  = regQueryDwordValue("useBios", 0) ? true : false;
+	skipBiosIntro = regQueryDwordValue("skipBios", 0) ? true : false;
+	buffer		  = regQueryStringValue("biosFile", "");
 	if (!buffer.IsEmpty())
 	{
 		biosFileName = buffer;
@@ -2102,7 +2102,7 @@ void VBA::saveSettings()
 
 	// emulation
 	regSetDwordValue("useBios", useBiosFile);
-	regSetDwordValue("skipBios", skipBiosFile);
+	regSetDwordValue("skipBios", skipBiosIntro);
 	if (!biosFileName.IsEmpty())
 		regSetStringValue("biosFile", biosFileName);
 //	regSetDwordValue("removeIntros", removeIntros);

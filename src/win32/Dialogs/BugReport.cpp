@@ -199,7 +199,7 @@ AppendFormat(report, "Emu type     : %s\r\n", VBA_BUILDTYPE_STRING);
 	}
 
 	AppendFormat(report, "Using BIOS   : %d\r\n", useBios);
-	AppendFormat(report, "Skip BIOS    : %d\r\n", theApp.skipBiosFile);
+	AppendFormat(report, "Skip BIOS    : %d\r\n", theApp.skipBiosIntro);
 	AppendFormat(report, "Disable SFX  : %d\r\n", cpuDisableSfx);
 ///  AppendFormat(report, "Skip intro   : %d\r\n", theApp.removeIntros);
 	AppendFormat(report, "Throttle     : %d\r\n", theApp.throttle);

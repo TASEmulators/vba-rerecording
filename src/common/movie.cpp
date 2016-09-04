@@ -625,13 +625,13 @@ static void SetPlayEmuSettings()
 
 #if (defined(WIN32) && !defined(SDL))
 //    theApp.removeIntros   = false;
-	theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	theApp.skipBiosIntro = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
 	theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
 #else
 	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
 	extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
 	useBios		 = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
 	removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
 #endif
 
@@ -804,9 +804,13 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	}
 	else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
 	{
+#if 1
 		// 'soft' reset:
 		theEmulator.emuReset();
-
+#else
+		// 'harder' reset as if just booted with SRAM
+		HardReset();
+#endif
 		// load the SRAM
 		result = theEmulator.emuReadBatteryFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
 	}
@@ -889,8 +893,8 @@ static void SetRecordEmuSettings()
 #if (defined(WIN32) && !defined(SDL))
 	if (theApp.useBiosFile)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
-	if (theApp.skipBiosFile)
-		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSFILE;
+	if (theApp.skipBiosIntro)
+		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSINTRO;
 	if (rtcIsEnabled())
 		Movie.header.optionFlags |= MOVIE_SETTING_RTCENABLE;
 	Movie.header.saveType  = theApp.winSaveType;
@@ -901,7 +905,7 @@ static void SetRecordEmuSettings()
 	if (useBios)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
 	if (skipBios)
-		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSFILE;
+		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSINTRO;
 	if (sdlRtcEnable)
 		Movie.header.optionFlags |= MOVIE_SETTING_RTCENABLE;
 	Movie.header.saveType  = saveType;
@@ -1048,8 +1052,8 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	fwrite(Movie.authorInfo, 1, MOVIE_METADATA_SIZE, file);
 
 	// write snapshot or SRAM if applicable
-	if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT
-	    || Movie.header.startFlags & MOVIE_START_FROM_SRAM)
+	if ((Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
+	    || (Movie.header.startFlags & MOVIE_START_FROM_SRAM))
 	{
 		Movie.header.offset_to_savestate = (uint32)ftell(file);
 
@@ -1080,8 +1084,13 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 				{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
 			}
 
+#if 1
 			// 'soft' reset:
 			theEmulator.emuReset();
+#else
+			// 'harder' reset as if just booted with SRAM
+			HardReset();
+#endif
 		}
 
 		utilGzClose(stream);

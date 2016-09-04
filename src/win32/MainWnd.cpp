@@ -1159,14 +1159,14 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 			}
 romcheck_exit:
 
-			bool useBIOSFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-			if (useBIOSFile)
+			bool useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+			if (useBiosFile)
 			{
-				if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
+				if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 				{
 					systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 					((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-					if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
+					if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 					{
 						systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 						return;
@@ -1445,7 +1445,7 @@ bool MainWnd::winFileRun(bool reopening)
 			utilApplyIPS(ipsname, &rom, &size);
 		}
 
-		skipBios = theApp.skipBiosFile ? true : false;
+		skipBios = theApp.skipBiosIntro ? true : false;
 		CPUInit();
 		systemLoadBIOS(theApp.biosFileName, theApp.useBiosFile ? true : false);
 		CPUReset();
