@@ -980,7 +980,7 @@ uint16 VBAMovieGetNextInputOf(int which, bool normalOnly)
 		return 0;
 
 	u16 movieInput = 0;
-	if (Movie.currentFrame < Movie.header.length_frames && (Movie.header.controllerFlags & MOVIE_CONTROLLER(which)))
+	if (Movie.currentFrame + 1u < Movie.header.length_frames && (Movie.header.controllerFlags & MOVIE_CONTROLLER(which)))
 	{
 		movieInput = Read16(Movie.inputBufferPtr + Movie.bytesPerFrame + CONTROLLER_DATA_SIZE * which);
 	}
@@ -1381,7 +1381,7 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
 		return;      // not a controller we're recognizing
 
-	reserve_movie_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
+	reserve_movie_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame * 2));
 
 	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 	{
