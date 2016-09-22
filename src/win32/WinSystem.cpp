@@ -610,17 +610,12 @@ int systemFramesToSkip()
 
 	bool fastForward = speedup;
 
-#if (defined(WIN32) && !defined(SDL))
 	fastForward = (fastForward || theApp.frameSearchSkipping);
 	int throttle = theApp.throttle;
 	if (theApp.frameSearching && throttle < 100)
 		throttle = 100;
-#else
-	extern int throttle;
-#endif
 
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.aviRecording || theApp.nvVideoLog)
+	if (theApp.aviRecording || theApp.nvVideoLog || systemPausesNextFrame())
 	{
 		framesToSkip = 0; // render all frames
 	}
@@ -631,7 +626,6 @@ int systemFramesToSkip()
 		else if (throttle != 100)
 			framesToSkip = (framesToSkip * throttle) / 100;
 	}
-#endif
 
 	return framesToSkip;
 }
@@ -755,17 +749,7 @@ void systemSetPause(bool pause)
 	}
 }
 
-// aka. frame advance
-bool systemPauseOnFrame()
+__forceinline bool systemPausesNextFrame()
 {
-	if (theApp.winPauseNextFrame)
-	{
-		if (!theApp.nextframeAccountForLag || !systemCounters.laggedLast)
-		{
-			theApp.winPauseNextFrame   = false;
-			return true;
-		}
-	}
-
-	return false;
+	return theApp.winPauseNextFrame && (!theApp.nextframeAccountForLag || !systemCounters.laggedLast);
 }

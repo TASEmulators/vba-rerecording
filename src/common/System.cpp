@@ -17,7 +17,6 @@
 static u32	 lastFrameTime	= 0;
 static int32 frameSkipCount	= 0;
 static int32 frameCount		= 0;
-static bool	 pauseAfterFrameAdvance = false;
 
 static s16	 soundFilter[4000];
 static s16	 soundRight[5]  = { 0, 0, 0, 0, 0 };
@@ -220,7 +219,6 @@ void systemCleanUp()
 	frameCount	   = 0;
 	frameSkipCount = systemFramesToSkip();
 	lastFrameTime  = systemGetClock();
-	pauseAfterFrameAdvance = false;
 
 	extButtons = 0;
 	newFrame   = true;
@@ -244,7 +242,6 @@ void systemReset()
 	frameCount	   = 0;
 	frameSkipCount = systemFramesToSkip();
 	lastFrameTime  = systemGetClock();
-	pauseAfterFrameAdvance = false;
 
 	extButtons = 0;
 	newFrame   = true;
@@ -265,7 +262,7 @@ void systemReset()
 
 bool systemFrameDrawingRequired()
 {
-	return frameSkipCount >= systemFramesToSkip() || pauseAfterFrameAdvance;
+	return frameSkipCount >= systemFramesToSkip();
 }
 
 void systemFrameBoundaryWork()
@@ -291,8 +288,6 @@ void systemFrameBoundaryWork()
 	systemCounters.laggedLast = systemCounters.lagged;
 	systemCounters.lagged	 = true;
 
-	pauseAfterFrameAdvance = systemPauseOnFrame();
-
 	if (systemFrameDrawingRequired())
 	{
 		systemRenderFrame();
@@ -303,7 +298,7 @@ void systemFrameBoundaryWork()
 		{
 			captureNumber = systemScreenCapture(captureNumber);
 		}
-		capturePrevious = capturePressed && !pauseAfterFrameAdvance;
+		capturePrevious = capturePressed && !systemPausesNextFrame();
 	}
 	else
 	{
@@ -319,7 +314,7 @@ void systemFrameBoundaryWork()
 
 	VBAMovieUpdateState();
 
-	if (pauseAfterFrameAdvance)
+	if (systemPausesNextFrame())
 	{
 		systemSetPause(true);
 	}
