@@ -1419,7 +1419,7 @@ void cheatsAdd(const char *codeStr,
                int code,
                int size)
 {
-	if (cheatsNumber < 100)
+	if (cheatsNumber < MAX_CHEATS)
 	{
 		int x = cheatsNumber;
 		cheatsList[x].code		 = code;
@@ -1516,12 +1516,12 @@ void cheatsDelete(int number, bool restore)
 				break;
 			}
 		}
-		if ((x + 1) <  cheatsNumber)
+		cheatsNumber--;
+		if (x <  cheatsNumber)
 		{
 			memcpy(&cheatsList[x], &cheatsList[x + 1], sizeof(CheatsData) *
-			       (cheatsNumber - x - 1));
+			       (cheatsNumber - x));
 		}
-		cheatsNumber--;
 	}
 }
 
@@ -2816,6 +2816,10 @@ void cheatsReadGame(gzFile file, int version)
 	cheatsNumber = 0;
 
 	cheatsNumber = utilReadInt(file);
+	if (cheatsNumber > MAX_CHEATS)
+	{
+		cheatsNumber = MAX_CHEATS;
+	}
 
 	if (version > 8)
 		utilGzRead(file, cheatsList, sizeof(cheatsList));

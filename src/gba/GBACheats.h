@@ -55,8 +55,12 @@ void cheatsSaveCheatList(const char *file);
 bool cheatsLoadCheatList(const char *file);
 int	 cheatsCheckKeys(u32 keys, u32 extended);
 
+#if !defined (MAX_CHEATS)
+#define MAX_CHEATS 100
+#endif
+
 extern int        cheatsNumber;
-extern CheatsData cheatsList[100];
+extern CheatsData cheatsList[MAX_CHEATS];
 
 #define CHEAT_IS_HEX(a) (((a) >= 'A' && (a) <= 'F') || ((a) >= '0' && (a) <= '9'))
 

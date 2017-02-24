@@ -72,6 +72,10 @@ void gbCheatsReadGame(gzFile gzFile, int version)
 	else
 	{
 		gbCheatNumber = utilReadInt(gzFile);
+		if (gbCheatNumber > MAX_CHEATS)
+		{
+			gbCheatNumber = MAX_CHEATS;
+		}
 
 		if (gbCheatNumber > 0)
 		{
@@ -226,7 +230,7 @@ bool gbVerifyGsCode(const char *code)
 
 bool gbAddGsCheat(const char *code, const char *desc)
 {
-	if (gbCheatNumber > 99)
+	if (gbCheatNumber >= MAX_CHEATS)
 	{
 		systemMessage(MSG_MAXIMUM_NUMBER_OF_CHEATS,
 		              N_("Maximum number of cheats reached."));
@@ -348,7 +352,7 @@ bool gbVerifyGgCode(const char *code)
 
 bool gbAddGgCheat(const char *code, const char *desc)
 {
-	if (gbCheatNumber > 99)
+	if (gbCheatNumber >= MAX_CHEATS)
 	{
 		systemMessage(MSG_MAXIMUM_NUMBER_OF_CHEATS,
 		              N_("Maximum number of cheats reached."));

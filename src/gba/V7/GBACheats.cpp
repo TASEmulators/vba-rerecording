@@ -643,12 +643,12 @@ void cheatsDelete(int number, bool restore)
 				break;
 			}
 		}
-		if ((x+1) <  cheatsNumber)
-		{
-			memcpy(&cheatsList[x], &cheatsList[x+1], sizeof(CheatsData)*
-			       (cheatsNumber-x-1));
-		}
 		cheatsNumber--;
+		if (x <  cheatsNumber)
+		{
+			memcpy(&cheatsList[x], &cheatsList[x + 1], sizeof(CheatsData) *
+			       (cheatsNumber - x));
+		}
 	}
 }
 
@@ -1589,6 +1589,10 @@ void cheatsSaveGame(gzFile file)
 void cheatsReadGame(gzFile file, int version)
 {
 	cheatsNumber = utilReadInt(file);
+	if (cheatsNumber > MAX_CHEATS)
+	{
+		cheatsNumber = MAX_CHEATS;
+	}
 
 	utilGzRead(file, cheatsList, sizeof(cheatsList));
 
