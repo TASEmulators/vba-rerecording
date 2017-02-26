@@ -133,7 +133,7 @@ void MovieCreate::OnBnClickedOk()
 {
 	// has to be done before creating the movie
 	bool useBiosFile  = false;
-	bool skipBiosFile = false;
+	bool skipBiosIntro = false;
 
 	if (m_biosOption == 1)
 	{
@@ -142,28 +142,23 @@ void MovieCreate::OnBnClickedOk()
 	else if (m_biosOption == 2)
 	{
 		useBiosFile	 = true;
-		skipBiosFile = true;
+		skipBiosIntro = true;
 	}
 	else if (m_biosOption == 3)
 	{
 		useBiosFile	 = true;
-		skipBiosFile = false;
+		skipBiosIntro = false;
 	}
 
-	if (m_biosOption > 1)
+	extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+	if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 	{
-		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
-		if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
+		if (useBiosFile)
 		{
 			systemMessage(0, "Invalid GBA BIOS file!");
 			return;
 		}
 	}
-	
-
-	theApp.useBiosFile = useBiosFile;
-	if (useBiosFile)
-		theApp.skipBiosFile = skipBiosFile;
 
 	int startFlags = 0, controllerFlags = 0, typeFlags = 0;
 
@@ -217,6 +212,9 @@ void MovieCreate::OnBnClickedOk()
 
 	CString movieName;
 	GetDlgItem(IDC_MOVIE_FILENAME)->GetWindowText(movieName);
+
+	theApp.useBiosFile = useBiosFile;
+	theApp.skipBiosIntro = skipBiosIntro;
 
 	// actually make the movie file:
 	int code = VBAMovieCreate(movieName, info, startFlags, controllerFlags, typeFlags);

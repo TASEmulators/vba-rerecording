@@ -65,7 +65,7 @@ void utilPutWord(u8 *p, u16 value)
 	*p	 = (value >> 8) & 255;
 }
 
-void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
+void utilWriteBMP(u8 *b, int w, int h, int dstDepth, const u8 *pix)
 {
 	int sizeX = w;
 	int sizeY = h;
@@ -74,7 +74,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 	{
 	case 16:
 	{
-		u16 *p = (u16 *)(pix + (w + 2) * (h) * 2); // skip first black line
+		const u16 *p = (const u16 *)(pix + (w + 2) * (h) * 2); // skip first black line
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -93,7 +93,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 	}
 	case 24:
 	{
-		u8 *pixU8 = (u8 *)pix + 3 * w * (h - 1);
+		const u8 *pixU8 = (const u8 *)pix + 3 * w * (h - 1);
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -121,7 +121,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 	}
 	case 32:
 	{
-		u32 *pixU32 = (u32 *)(pix + 4 * (w + 1) * (h));
+		const u32 *pixU32 = (const u32 *)(pix + 4 * (w + 1) * (h));
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -140,7 +140,7 @@ void utilWriteBMP(u8 *b, int w, int h, int dstDepth, u8 *pix)
 	}
 }
 
-bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
+bool utilWriteBMPFile(const char *fileName, int w, int h, const u8 *pix)
 {
 	u8 writeBuffer[256 * 3];
 
@@ -201,7 +201,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	{
 	case 16:
 	{
-		u16 *p = (u16 *)(pix + (w + 2) * (h) * 2); // skip first black line
+		const u16 *p = (const u16 *)(pix + (w + 2) * (h) * 2); // skip first black line
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -223,7 +223,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 24:
 	{
-		u8 *pixU8 = (u8 *)pix + 3 * w * (h - 1);
+		const u8 *pixU8 = (const u8 *)pix + 3 * w * (h - 1);
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -254,7 +254,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 32:
 	{
-		u32 *pixU32 = (u32 *)(pix + 4 * (w + 1) * (h));
+		const u32 *pixU32 = (const u32 *)(pix + 4 * (w + 1) * (h));
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -282,7 +282,7 @@ bool utilWriteBMPFile(const char *fileName, int w, int h, u8 *pix)
 	return true;
 }
 
-bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
+bool utilWritePNGFile(const char *fileName, int w, int h, const u8 *pix)
 {
 	u8 writeBuffer[256 * 3];
 
@@ -343,7 +343,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 	{
 	case 16:
 	{
-		u16 *p = (u16 *)(pix + (w + 2) * 2); // skip first black line
+		const u16 *p = (const u16 *)(pix + (w + 2) * 2); // skip first black line
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -364,7 +364,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 24:
 	{
-		u8 *pixU8 = (u8 *)pix;
+		const u8 *pixU8 = (const u8 *)pix;
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)
@@ -394,7 +394,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 	}
 	case 32:
 	{
-		u32 *pixU32 = (u32 *)(pix + 4 * (w + 1));
+		const u32 *pixU32 = (const u32 *)(pix + 4 * (w + 1));
 		for (int y = 0; y < sizeY; y++)
 		{
 			for (int x = 0; x < sizeX; x++)

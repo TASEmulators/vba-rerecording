@@ -411,7 +411,7 @@ unreadable:
 
 u16 CPUReadHalfWordSignedWrapped(u32 address)
 {
-	u16 value = CPUReadHalfWord(address);
+	u16 value = CPUReadHalfWordWrapped(address);
 	if ((address & 1))
 		value = (s8)value;
 	return value;
@@ -929,7 +929,7 @@ u32 CPUReadMemory(u32 address)
 u32 CPUReadHalfWord(u32 address)
 {
 	u32 value = CPUReadHalfWordWrapped(address);
-	CallRegisteredLuaMemHook(address, 4, value, LUAMEMHOOK_READ);
+	CallRegisteredLuaMemHook(address, 2, value, LUAMEMHOOK_READ);
 	return value;
 }
 

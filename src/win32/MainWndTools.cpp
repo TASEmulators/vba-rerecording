@@ -361,6 +361,18 @@ void MainWnd::OnUpdateToolsInputDisplay(CCmdUI *pCmdUI)
 	pCmdUI->SetCheck(theApp.inputDisplay);
 }
 
+void MainWnd::OnToolsNextInputDisplay()
+{
+	theApp.nextInputDisplay = !theApp.nextInputDisplay;
+	systemScreenMessage(theApp.nextInputDisplay ? "Incoming Input Display On" : "Incoming Input Display Off");
+	extern void VBAUpdateButtonPressDisplay(); VBAUpdateButtonPressDisplay();
+}
+
+void MainWnd::OnUpdateToolsNextInputDisplay(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(theApp.nextInputDisplay);
+}
+
 void MainWnd::OnToolsDebugGdb()
 {
 	theApp.winCheckFullscreen();
@@ -579,7 +591,6 @@ void MainWnd::OnToolsStartAVIRecording()
 	if (theApp.aviRecorder == NULL)
 	{
 		theApp.aviRecorder = new AVIWrite();
-		theApp.aviRecorder->SetFPS(60);
 
 		int width, height;
 		systemGetLCDResolution(width, height);
@@ -748,6 +759,7 @@ void MainWnd::OnToolsResumeRecord()
 
 void MainWnd::OnUpdateToolsResumeRecord(CCmdUI *pCmdUI)
 {
+	pCmdUI->SetCheck(VBAMovieIsRecording());
 	pCmdUI->Enable(VBAMovieIsActive());
 }
 
@@ -778,7 +790,6 @@ void MainWnd::OnToolsEditModeNext()
 
 void MainWnd::OnUpdateToolsEditModeNext(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 }
 
 void MainWnd::OnToolsEditModeDiscard()
@@ -788,7 +799,6 @@ void MainWnd::OnToolsEditModeDiscard()
 
 void MainWnd::OnUpdateToolsEditModeDiscard(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_DISCARD);
 }
 
@@ -799,7 +809,6 @@ void MainWnd::OnToolsEditModeOverwrite()
 
 void MainWnd::OnUpdateToolsEditModeOverwrite(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_OVERWRITE);
 }
 
@@ -821,7 +830,6 @@ void MainWnd::OnToolsEditModeXor()
 
 void MainWnd::OnUpdateToolsEditModeXor(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(VBAMovieIsActive());
 	pCmdUI->SetCheck(VBAMovieGetEditMode() == MOVIE_EDIT_MODE_XOR);
 }
 
@@ -893,7 +901,7 @@ void MainWnd::OnUpdateToolsSetMoviePauseAt(CCmdUI *pCmdUI)
 void MainWnd::OnToolsMovieConvertCurrent()
 {
 	// temporary
-	int result = VBAMovieConvertCurrent();
+	int result = VBAMovieConvertCurrent(false);
 	switch (result)
 	{
 	case MOVIE_SUCCESS:
@@ -901,7 +909,13 @@ void MainWnd::OnToolsMovieConvertCurrent()
 		break;
 	case MOVIE_WRONG_VERSION:
 		systemMessage(0, "Cannot convert from VBM revision %u", VBAMovieGetMinorVersion());
+	case MOVIE_SAME_VERSION:
+	{
+		int answer = MessageBox(NULL, "VBA", MB_YESNO | MB_ICONQUESTION);
+		if (answer == IDYES)
+			VBAMovieConvertCurrent(true);
 		break;
+	}
 	default:
 		systemScreenMessage("Nothing to convert");
 		break;
@@ -919,7 +933,7 @@ void MainWnd::OnToolsMovieAutoConvert()
 	autoConvertMovieWhenPlaying = !autoConvertMovieWhenPlaying;
 	if (autoConvertMovieWhenPlaying)
 	{
-		int result = VBAMovieConvertCurrent();
+		int result = VBAMovieConvertCurrent(false);
 		switch (result)
 		{
 		case MOVIE_SUCCESS:

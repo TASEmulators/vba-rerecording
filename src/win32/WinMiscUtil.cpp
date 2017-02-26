@@ -8,6 +8,7 @@
 #include "../common/SystemGlobals.h"
 #include "../common/movie.h"
 #include <direct.h>
+#include <algorithm>
 
 #include "Dialogs/GSACodeSelect.h"
 #include "../gba/GBACheats.h"

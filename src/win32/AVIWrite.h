@@ -14,17 +14,15 @@ class AVIWrite {
 
   bool Open(const char *filename);
   virtual bool AddFrame(const u8 *bmp);
-  void SetFPS(int fps);
   void SetVideoFormat(BITMAPINFOHEADER *);
   bool IsSoundAdded();
   void SetSoundFormat(WAVEFORMATEX *);
-  bool AddSound(const u8 *sound, int len);
+  bool AddSound(const u8 *sound, u32 len);
   int videoFrames();
   void Pause(bool pause);
   bool IsPaused();
 
  private:
-  int m_fps;
   WAVEFORMATEX m_soundFormat;
   BITMAPINFOHEADER m_bitmap;
   AVISTREAMINFO m_header;
@@ -35,10 +33,10 @@ class AVIWrite {
   PAVISTREAM m_streamSound;
   AVICOMPRESSOPTIONS m_options;
   AVICOMPRESSOPTIONS *m_arrayOptions[1];
-  int m_videoFrames;
-  int m_samplesSound;
-  int m_videoFramesTotal;
-  int m_samplesSoundTotal;
+  LONG m_videoFrames;
+  LONG m_samplesSound;
+  LONG m_videoFramesTotal;
+  LONG m_samplesSoundTotal;
   LONG m_totalBytes;
   bool m_failed;
   int m_segmentNumber;

@@ -16,6 +16,7 @@ extern void systemGetLCDResolution(int32 &width, int32 &height);
 extern void systemGetLCDBaseSize(int32 &width, int32 &height);
 extern void systemGetLCDBaseOffset(int32 &xofs, int32 &yofs);
 extern int  systemScreenCapture(int);
+extern void systemRenderLua();
 extern void systemRefreshScreen();
 extern void systemRenderFrame();
 extern void systemRedrawScreen();
@@ -59,6 +60,9 @@ extern void systemSoundMixSilence();
 extern void systemSoundMix(int resL, int resR);
 extern void systemSoundNext();
 // speed-related stuff
+extern u32 systemGetFrameRateDividend();
+extern u32 systemGetFrameRateDivisor();
+extern double systemGetFrameRate();
 extern u32  systemGetClock();
 extern void systemSetTitle(const char *);
 extern void systemShowSpeed(int);
@@ -78,7 +82,7 @@ extern bool systemIsRunningGBA();
 extern bool systemIsSpedUp();
 extern bool systemIsPaused();
 extern void systemSetPause(bool pause);
-extern bool systemPauseOnFrame();
+extern bool systemPausesNextFrame();
 extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
 
 extern int	systemCartridgeType;

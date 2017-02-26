@@ -83,7 +83,7 @@ public:
 	IDisplay *display;
 	bool	  soundInitialized;
 	bool	  useBiosFile;
-	bool	  skipBiosFile;
+	bool	  skipBiosIntro;
 	CString	  biosFileName;
 	bool	  allowLeftRight;
 	bool	  autofireAccountForLag;
@@ -155,6 +155,7 @@ public:
 	bool		 lagCounter;
 	bool		 extraCounter;
 	bool		 inputDisplay;
+	bool		 nextInputDisplay;
 	bool		 movieReadOnly;
 	bool		 movieEditMode;
 	bool		 movieOnEndPause;

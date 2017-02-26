@@ -525,7 +525,6 @@ void remoteReadRegisters(char *p)
 void remoteWriteRegister(char *p)
 {
 	int r;
-
 	sscanf(p, "%x=", &r);
 
 	p = strchr(p, '=');
@@ -533,13 +532,9 @@ void remoteWriteRegister(char *p)
 
 	char c = *p++;
 
-	u32 v = 0;
-
 	u8 data[4] = { 0, 0, 0, 0 };
-
 	int i = 0;
-
-	while (c != '#')
+	while (i < 4)
 	{
 		u8 b = 0;
 		if (c <= '9')
@@ -555,7 +550,7 @@ void remoteWriteRegister(char *p)
 		c		  = *p++;
 	}
 
-	v = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
+	u32 v = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 
 	//  printf("Write register %d=%08x\n", r, v);
 	reg[r].I = v;

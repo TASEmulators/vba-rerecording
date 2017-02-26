@@ -36,10 +36,10 @@ extern int thumbExecute();
 	}
 
 #define ARM_PREFETCH_NEXT \
-    cpuPrefetch[1] = CPUReadMemoryQuick(armNextPC + 4);
+	cpuPrefetch[1] = CPUReadMemoryQuick(armNextPC + 4);
 
 #define THUMB_PREFETCH_NEXT \
-    cpuPrefetch[1] = CPUReadHalfWordQuick(armNextPC + 2);
+	cpuPrefetch[1] = CPUReadHalfWordQuick(armNextPC + 2);
 
 extern int32 SWITicks;
 extern u32	 mastercode;

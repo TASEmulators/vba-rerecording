@@ -40,8 +40,12 @@ void gbCheatWrite(bool);
 bool gbVerifyGsCode(const char *code);
 bool gbVerifyGgCode(const char *code);
 
+#if !defined (MAX_CHEATS)
+#define MAX_CHEATS 100
+#endif
+
 extern int	   gbCheatNumber;
-extern gbCheat gbCheatList[100];
+extern gbCheat gbCheatList[MAX_CHEATS];
 extern bool	   gbCheatMap[0x10000];
 
 #endif // VBA_GB_CHEATS_H

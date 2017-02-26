@@ -6,6 +6,8 @@
 #include "../common/movie.h"
 #include "../common/vbalua.h"
 
+// systemABC stuff are core-related
+
 // evil macros
 #ifndef countof
 #define countof(a)  (sizeof(a) / sizeof(a[0]))
@@ -15,14 +17,11 @@
 static u32	 lastFrameTime	= 0;
 static int32 frameSkipCount	= 0;
 static int32 frameCount		= 0;
-static bool	 pauseAfterFrameAdvance = false;
 
 static s16	 soundFilter[4000];
 static s16	 soundRight[5]  = { 0, 0, 0, 0, 0 };
 static s16	 soundLeft[5]   = { 0, 0, 0, 0, 0 };
 static int32 soundEchoIndex = 0;
-
-// systemABC stuff are core-related
 
 // motion sensor
 void systemSetSensorX(int32 x)
@@ -173,13 +172,53 @@ void systemClearJoypads()
 }
 
 // emulation
+u32 systemGetFrameRateDividend()
+{
+	extern const u32 frameRateDividend;
+#if 0
+	extern const u32 gbFrameRateDividend;
+	if (systemCartridgeType == IMAGE_GBA)
+		return frameRateDividend;
+	else
+		return gbFrameRateDividend;
+#endif
+	return frameRateDividend;
+}
+
+u32 systemGetFrameRateDivisor()
+{
+	extern const u32 frameRateDivisor;
+#if 0
+	extern const u32 gbFrameRateDivisor;
+	if (systemCartridgeType == IMAGE_GBA)
+		return frameRateDivisor;
+	else
+		return gbFrameRateDivisor;
+#else
+	return frameRateDivisor;
+#endif
+}
+
+double systemGetFrameRate()
+{
+	extern const double frameRate;
+#if 0
+	extern const double gbFrameRate;
+	if (systemCartridgeType == IMAGE_GBA)
+		return frameRate;
+	else
+		return gbFrameRate;
+#else
+	return frameRate;
+#endif
+}
+
 void systemCleanUp()
 {
 	// frame counting
 	frameCount	   = 0;
 	frameSkipCount = systemFramesToSkip();
 	lastFrameTime  = systemGetClock();
-	pauseAfterFrameAdvance = false;
 
 	extButtons = 0;
 	newFrame   = true;
@@ -203,7 +242,6 @@ void systemReset()
 	frameCount	   = 0;
 	frameSkipCount = systemFramesToSkip();
 	lastFrameTime  = systemGetClock();
-	pauseAfterFrameAdvance = false;
 
 	extButtons = 0;
 	newFrame   = true;
@@ -224,7 +262,7 @@ void systemReset()
 
 bool systemFrameDrawingRequired()
 {
-	return frameSkipCount >= systemFramesToSkip() || pauseAfterFrameAdvance;
+	return frameSkipCount >= systemFramesToSkip();
 }
 
 void systemFrameBoundaryWork()
@@ -237,7 +275,7 @@ void systemFrameBoundaryWork()
 	u32 currentTime = systemGetClock();
 	if (currentTime - lastFrameTime >= 1000)
 	{
-		systemShowSpeed(int(float(frameCount) * 100000 / (float(currentTime - lastFrameTime) * 60) + .5f));
+		systemShowSpeed(int(float(frameCount) * 100000 / (float(currentTime - lastFrameTime) * systemGetFrameRate()) + .5f));
 		lastFrameTime = currentTime;
 		frameCount = 0;
 	}
@@ -250,8 +288,6 @@ void systemFrameBoundaryWork()
 	systemCounters.laggedLast = systemCounters.lagged;
 	systemCounters.lagged	 = true;
 
-	pauseAfterFrameAdvance = systemPauseOnFrame();
-
 	if (systemFrameDrawingRequired())
 	{
 		systemRenderFrame();
@@ -262,7 +298,7 @@ void systemFrameBoundaryWork()
 		{
 			captureNumber = systemScreenCapture(captureNumber);
 		}
-		capturePrevious = capturePressed && !pauseAfterFrameAdvance;
+		capturePrevious = capturePressed && !systemPausesNextFrame();
 	}
 	else
 	{
@@ -278,7 +314,7 @@ void systemFrameBoundaryWork()
 
 	VBAMovieUpdateState();
 
-	if (pauseAfterFrameAdvance)
+	if (systemPausesNextFrame())
 	{
 		systemSetPause(true);
 	}

@@ -681,7 +681,7 @@ bool CPUWriteStateToStream(gzFile gzFile)
 			uint8 *movie_freeze_buf	 = NULL;
 			uint32 movie_freeze_size = 0;
 
-			VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
+			int code = VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
 			if (movie_freeze_buf)
 			{
 				utilGzWrite(gzFile, &movie_freeze_size, sizeof(movie_freeze_size));
@@ -690,7 +690,14 @@ bool CPUWriteStateToStream(gzFile gzFile)
 			}
 			else
 			{
-				systemMessage(0, N_("Failed to save movie snapshot."));
+				if (code == MOVIE_UNRECORDED_INPUT)
+				{
+					systemMessage(0, N_("Cannot make a movie snapshot as long as there are unrecorded input changes."));
+				}
+				else
+				{
+					systemMessage(0, N_("Failed to save movie snapshot."));
+				}
 				return false;
 			}
 		}
@@ -915,6 +922,7 @@ bool CPUReadStateFromStream(gzFile gzFile)
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+	bool wasPlayingMovie = VBAMovieIsActive() && VBAMovieIsPlaying();
 	if (version >= SAVE_GAME_VERSION_9) // new to re-recording version:
 	{
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
@@ -1013,6 +1021,10 @@ failedLoad:
 		if (tempSaveAttempts < 3) // fail no more than 2 times in a row
 			CPUReadState(tempBackupName);
 		remove(tempBackupName);
+	}
+	if (wasPlayingMovie && VBAMovieIsRecording())
+	{
+		VBAMovieSwitchToPlaying();
 	}
 	return false;
 }
@@ -3678,6 +3690,7 @@ void CPULoop(int _ticks)
 	int32 clockTicks;
 	int32 cpuNextEvent	= 0;
 	int32 timerOverflow = 0;
+	bool newVideoFrame = false;
 
 	// variables used by the CPU core
 	extCpuNextEvent = &cpuNextEvent;
@@ -3848,7 +3861,7 @@ updateLoop:
 							}
 							CPUCheckDMA(1, 0x0f);
 
-							CPUFrameBoundaryWork();
+							newVideoFrame = true;
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);
@@ -4140,6 +4153,12 @@ updateLoop:
 			}
 #endif
 
+			if (newVideoFrame)
+			{
+				newVideoFrame = false;
+				CPUFrameBoundaryWork();
+			}
+
 			ticks		-= clockTicks;
 			cpuNextEvent = CPUUpdateTicks();
 
@@ -4149,8 +4168,6 @@ updateLoop:
 				if (clockTicks > cpuDmaTicksToUpdate)
 					clockTicks = cpuDmaTicksToUpdate;
 				cpuDmaTicksToUpdate -= clockTicks;
-				if (cpuDmaTicksToUpdate < 0)
-					cpuDmaTicksToUpdate = 0;
 				goto updateLoop;    // this is evil
 			}
 

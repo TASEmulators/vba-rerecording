@@ -224,7 +224,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 		{
 			if (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE)
 			{
-				if (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE)
+				if (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO)
 					option = 2;
 				else
 					option = 3;
@@ -246,14 +246,15 @@ void MovieOpen::OnBnClickedMovieRefresh()
 				*p = '\0';
 			GetDlgItem(IDC_LABEL_DATE)->SetWindowText(buffer);
 
-			uint32 div	   = 60;
-			uint32 l	   = (movieInfo.header.length_frames + (div >> 1)) / div;
-			uint32 seconds = l % 60;
-			l /= 60;
-			uint32 minutes = l % 60;
-			l /= 60;
-			uint32 hours = l % 60;
-			sprintf(buffer, "%02u:%02u:%02u", hours, minutes, seconds);
+			double div	   = systemGetFrameRate();
+			double l;
+			uint32 frac    = uint32(modf(double(movieInfo.header.length_frames) / div, &l) * 100.0);
+			uint32 seconds = uint32(fmod(l, 60));
+			l /= 60.0;
+			uint32 minutes = uint32(fmod(l, 60));
+			l /= 60.0;
+			uint32 hours   = uint32(fmod(l, 60));
+			sprintf(buffer, "%02u:%02u:%02u.%02u", hours, minutes, seconds, frac);
 			GetDlgItem(IDC_LABEL_LENGTH)->SetWindowText(buffer);
 			sprintf(buffer, "%ld", movieInfo.header.length_frames);
 			GetDlgItem(IDC_LABEL_FRAMES)->SetWindowText(buffer);
@@ -386,21 +387,24 @@ HBRUSH MovieOpen::OnCtlColor(CDC *pDC, CWnd *pWnd, UINT nCtlColor)
 
 void MovieOpen::OnBnClickedOk()
 {
-	bool useBIOSFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	if (useBIOSFile)
+	bool useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+	extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+	if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 	{
-		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
-		if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
+		if (useBiosFile)
 		{
 			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
 			((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-			if (!systemLoadBIOS(theApp.biosFileName, useBIOSFile))
+			if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 			{
 				systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
 				return;
 			}
 		}
 	}
+
+	theApp.useBiosFile = useBiosFile;
+	theApp.skipBiosIntro = (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
 
 	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
 

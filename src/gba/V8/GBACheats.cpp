@@ -178,6 +178,11 @@
 #define CHEATS_16_BIT_WRITE           114
 #define CHEATS_32_BIT_WRITE           115
 
+// evil macros
+#ifndef countof
+#define countof(a)  (sizeof(a) / sizeof(a[0]))
+#endif
+
 CheatsData cheatsList[100];
 int		   cheatsNumber = 0;
 u32		   rompatch2addr [4];
@@ -1414,7 +1419,7 @@ void cheatsAdd(const char *codeStr,
                int code,
                int size)
 {
-	if (cheatsNumber < 100)
+	if (cheatsNumber < MAX_CHEATS)
 	{
 		int x = cheatsNumber;
 		cheatsList[x].code		 = code;
@@ -1511,12 +1516,12 @@ void cheatsDelete(int number, bool restore)
 				break;
 			}
 		}
-		if ((x + 1) <  cheatsNumber)
+		cheatsNumber--;
+		if (x <  cheatsNumber)
 		{
 			memcpy(&cheatsList[x], &cheatsList[x + 1], sizeof(CheatsData) *
-			       (cheatsNumber - x - 1));
+			       (cheatsNumber - x));
 		}
-		cheatsNumber--;
 	}
 }
 
@@ -2263,6 +2268,8 @@ bool cheatsImportGSACodeFile(const char *name, int game, bool v3)
 		while (codes > 0)
 		{
 			fread(&len, 1, 4, f);
+			if (len < 0 || len >= sizeof(desc))
+				goto error;
 			fread(desc, 1, len, f);
 			desc[len] = 0;
 			desc[31]  = 0;
@@ -2270,7 +2277,7 @@ bool cheatsImportGSACodeFile(const char *name, int game, bool v3)
 			fseek(f, len, SEEK_CUR);
 			fseek(f, 4, SEEK_CUR);
 			fread(&len, 1, 4, f);
-			while (len)
+			while (len > 0)
 			{
 				fseek(f, 4, SEEK_CUR);
 				fread(code, 1, 8, f);
@@ -2283,6 +2290,7 @@ bool cheatsImportGSACodeFile(const char *name, int game, bool v3)
 			codes--;
 		}
 	}
+error:
 	fclose(f);
 	return false;
 }
@@ -2808,6 +2816,10 @@ void cheatsReadGame(gzFile file, int version)
 	cheatsNumber = 0;
 
 	cheatsNumber = utilReadInt(file);
+	if (cheatsNumber > MAX_CHEATS)
+	{
+		cheatsNumber = MAX_CHEATS;
+	}
 
 	if (version > 8)
 		utilGzRead(file, cheatsList, sizeof(cheatsList));
@@ -2958,6 +2970,15 @@ bool cheatsLoadCheatList(const char *file)
 	{
 		fclose(f);
 		return false;
+	}
+	if (count < 0)
+	{
+		fclose(f);
+		return false;
+	}
+	if (count > countof(cheatsList))
+	{
+		count = countof(cheatsList);
 	}
 	if (type == 1)
 	{

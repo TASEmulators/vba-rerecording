@@ -292,7 +292,7 @@ VBA::VBA() : emulator(::theEmulator)
 	popup			 = NULL;
 	soundInitialized = false;
 	useBiosFile		 = false;
-	skipBiosFile	 = false;
+	skipBiosIntro	 = false;
 	active			 = true;
 	paused			 = false;
 	recentFreeze	 = false;
@@ -344,6 +344,7 @@ VBA::VBA() : emulator(::theEmulator)
 	lagCounter				= false;
 	extraCounter			= false;
 	inputDisplay			= false;
+	nextInputDisplay		= false;
 	speedupToggle			= false;
 	useOldSync				= false;
 	allowLeftRight			= false;
@@ -392,7 +393,6 @@ VBA::VBA() : emulator(::theEmulator)
 	nvVideoLog				= false;
 	nvAudioLog				= false;
 	LoggingEnabled			= 0;
-///  FPS = 60;
 
 	updateCount = 0;
 
@@ -1880,9 +1880,9 @@ void VBA::loadSettings()
 	useOldSync		  = regQueryDwordValue("useOldSync", 0) ? TRUE : FALSE;
 	useOldFrameTiming = regQueryDwordValue("useOldGBTiming", false) ? true : false;
 
-	useBiosFile	 = regQueryDwordValue("useBios", 0) ? true : false;
-	skipBiosFile = regQueryDwordValue("skipBios", 0) ? true : false;
-	buffer		 = regQueryStringValue("biosFile", "");
+	useBiosFile	  = regQueryDwordValue("useBios", 0) ? true : false;
+	skipBiosIntro = regQueryDwordValue("skipBios", 0) ? true : false;
+	buffer		  = regQueryStringValue("biosFile", "");
 	if (!buffer.IsEmpty())
 	{
 		biosFileName = buffer;
@@ -1938,6 +1938,7 @@ void VBA::loadSettings()
 	lagCounter			 = regQueryDwordValue("lagCounter", false) ? true : false;
 	extraCounter		 = regQueryDwordValue("extraCounter", false) ? true : false;
 	inputDisplay		 = regQueryDwordValue("inputDisplay", false) ? true : false;
+	nextInputDisplay	 = regQueryDwordValue("nextInputDisplay", false) ? true : false;
 	disableStatusMessage = regQueryDwordValue("disableStatus", 0) ? true : false;
 
 	// UI
@@ -2101,7 +2102,7 @@ void VBA::saveSettings()
 
 	// emulation
 	regSetDwordValue("useBios", useBiosFile);
-	regSetDwordValue("skipBios", skipBiosFile);
+	regSetDwordValue("skipBios", skipBiosIntro);
 	if (!biosFileName.IsEmpty())
 		regSetStringValue("biosFile", biosFileName);
 //	regSetDwordValue("removeIntros", removeIntros);
@@ -2150,6 +2151,7 @@ void VBA::saveSettings()
 	regSetDwordValue("lagCounter", lagCounter);
 	regSetDwordValue("extraCounter", extraCounter);
 	regSetDwordValue("inputDisplay", inputDisplay);
+	regSetDwordValue("nextInputDisplay", nextInputDisplay);
 	regSetDwordValue("disableStatus", disableStatusMessage);
 
 	// UI

@@ -23,6 +23,10 @@ extern u8 * gbTAMA5ram;
 
 extern u8 *gbMemoryMap[16];
 
+extern const u32 gbFrameRateDividend;
+extern const u32 gbFrameRateDivisor;
+extern const double gbFrameRate;
+
 #ifdef USE_GB_CORE_V7
 extern bool gbEchoRAMFixOn;
 extern bool gbDMASpeedVersion;

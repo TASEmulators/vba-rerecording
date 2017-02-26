@@ -202,6 +202,33 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 
 // screen
 
+void systemRenderLua()
+{
+	int copyX, copyY;
+	int screenX, screenY;
+	int copyOffsetX, copyOffsetY;
+	systemGetLCDResolution(copyX, copyY);
+	systemGetLCDBaseSize(screenX, screenY);
+	systemGetLCDBaseOffset(copyOffsetX, copyOffsetY);
+
+	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);  // FIXME: sure?
+	++copyOffsetY; // FIXME: don't know why it's needed
+
+				   // "in-game" text rendering
+	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
+	{
+		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
+		VBALuaClearGui();
+		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
+	}
+
+	if (textMethod != 0) // do not draw Lua HUD to a video dump
+	{
+		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
+		VBALuaClearGui();
+	}
+}
+
 // delayed repaint
 void systemRefreshScreen()
 {
@@ -213,14 +240,15 @@ void systemRefreshScreen()
 
 static void systemRecordAviFrame(int width, int height)
 {
-	extern long linearSoundFrameCount;
-	extern long linearFrameCount;
+	extern u32 linearSoundFrameCount;
+	extern u32 linearFrameCount;
 
 	++linearFrameCount;
 	if (!theApp.sound)
 	{
-		if (linearFrameCount > 10000)
-			linearFrameCount -= 10000;
+		u32 wrap = systemGetFrameRateDividend();
+		if (linearFrameCount > wrap)
+			linearFrameCount -= wrap;
 		linearSoundFrameCount = linearFrameCount;
 	}
 
@@ -231,14 +259,12 @@ static void systemRecordAviFrame(int width, int height)
 	{
 		++linearFrameCount;
 
-		if (theApp.aviRecording && (!theApp.altAviRecordMethod || (theApp.altAviRecordMethod && !firstFrameLogged)))
+		if (theApp.aviRecording && (!theApp.altAviRecordMethod || !firstFrameLogged))
 		{
 			// usually aviRecorder is created when vba starts avi recording, though
 			if (theApp.aviRecorder == NULL)
 			{
 				theApp.aviRecorder = new AVIWrite();
-
-				theApp.aviRecorder->SetFPS(60);
 
 				BITMAPINFOHEADER bi;
 				memset(&bi, 0, sizeof(bi));
@@ -282,39 +308,21 @@ static void systemRecordAviFrame(int width, int height)
 
 void systemRenderFrame()
 {
-	if (vbaShuttingDown)
-		return;
-
 	++theApp.renderedFrames;
+
+	if (textMethod == 0)
+		systemRenderLua();
 
 	VBAUpdateFrameCountDisplay();
 	VBAUpdateButtonPressDisplay();
 
+	// avi dump
 	int copyX, copyY;
-	int screenX, screenY;
-	int copyOffsetX, copyOffsetY;
 	systemGetLCDResolution(copyX, copyY);
-	systemGetLCDBaseSize(screenX, screenY);
-	systemGetLCDBaseOffset(copyOffsetX, copyOffsetY);
-
-	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);  // FIXME: sure?
-	++copyOffsetY; // FIXME: don't know why it's needed
-
-	// "in-game" text rendering
-	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
-	{
-		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
-		VBALuaClearGui();
-		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
-	}
-
 	systemRecordAviFrame(copyX, copyY);
 
-	if (textMethod != 0) // do not draw Lua HUD to a video dump
-	{
-		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
-		VBALuaClearGui();
-	}
+	if (textMethod != 0)
+		systemRenderLua();
 
 	// interframe blending
 	if (theApp.ifbFunction)
@@ -549,7 +557,7 @@ void systemFrame()
 			if (theApp.wasPaused)
 				diff = 0;
 
-			int target = (100000 / (60 * theApp.throttle));
+			int target = (100000 / (systemGetFrameRate() * theApp.throttle));
 			int d	   = (target - diff);
 
 			if (d > 1000) // added to avoid 500-day waits for vba to start emulating.
@@ -602,17 +610,12 @@ int systemFramesToSkip()
 
 	bool fastForward = speedup;
 
-#if (defined(WIN32) && !defined(SDL))
 	fastForward = (fastForward || theApp.frameSearchSkipping);
 	int throttle = theApp.throttle;
 	if (theApp.frameSearching && throttle < 100)
 		throttle = 100;
-#else
-	extern int throttle;
-#endif
 
-#if (defined(WIN32) && !defined(SDL))
-	if (theApp.aviRecording || theApp.nvVideoLog)
+	if (theApp.aviRecording || theApp.nvVideoLog || systemPausesNextFrame())
 	{
 		framesToSkip = 0; // render all frames
 	}
@@ -623,7 +626,6 @@ int systemFramesToSkip()
 		else if (throttle != 100)
 			framesToSkip = (framesToSkip * throttle) / 100;
 	}
-#endif
 
 	return framesToSkip;
 }
@@ -747,17 +749,7 @@ void systemSetPause(bool pause)
 	}
 }
 
-// aka. frame advance
-bool systemPauseOnFrame()
+__forceinline bool systemPausesNextFrame()
 {
-	if (theApp.winPauseNextFrame)
-	{
-		if (!theApp.nextframeAccountForLag || !systemCounters.laggedLast)
-		{
-			theApp.winPauseNextFrame   = false;
-			return true;
-		}
-	}
-
-	return false;
+	return theApp.winPauseNextFrame && (!theApp.nextframeAccountForLag || !systemCounters.laggedLast);
 }

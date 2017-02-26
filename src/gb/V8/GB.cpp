@@ -3470,6 +3470,7 @@ bool gbWriteBatteryFile(const char *file, bool extendedSave)
 		case 0x13:
 		case 0xfc:
 			gbWriteSaveMBC3(file, false);
+			break;
 		case 0x1b:
 		case 0x1e:
 			gbWriteSaveMBC5(file);
@@ -3522,7 +3523,7 @@ bool gbReadBatteryFile(const char *file)
 				time_t tmp; //64 bit kludge
 				if (VBAMovieIsActive() || VBAMovieIsLoading())
 				{
-					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);
+					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate());
 					lt  = gmtime(&tmp);
 				}
 				else
@@ -3563,7 +3564,7 @@ bool gbReadBatteryFile(const char *file)
 				time_t tmp; //64 bit kludge
 				if (VBAMovieIsActive() || VBAMovieIsLoading())
 				{
-					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / 60);
+					tmp = time_t(VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate());
 					lt  = gmtime(&tmp);
 				}
 				else
@@ -3945,7 +3946,7 @@ static bool gbWriteSaveStateToStream(gzFile gzFile)
 			uint8 *movie_freeze_buf	 = NULL;
 			uint32 movie_freeze_size = 0;
 
-			VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
+			int code = VBAMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
 			if (movie_freeze_buf)
 			{
 				utilGzWrite(gzFile, &movie_freeze_size, sizeof(movie_freeze_size));
@@ -3954,7 +3955,14 @@ static bool gbWriteSaveStateToStream(gzFile gzFile)
 			}
 			else
 			{
-				systemMessage(0, N_("Failed to save movie snapshot."));
+				if (code == MOVIE_UNRECORDED_INPUT)
+				{
+					systemMessage(0, N_("Cannot make a movie snapshot as long as there are unrecorded input changes."));
+				}
+				else
+				{
+					systemMessage(0, N_("Failed to save movie snapshot."));
+				}
 				return false;
 			}
 		}
@@ -4019,18 +4027,29 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 	{
 		systemMessage(MSG_UNSUPPORTED_VB_SGM,
 		              N_("Unsupported VisualBoy save game version %d"), version);
-		return false;
+		goto failedLoadGB;
 	}
 
-	u8 romname[20];
+	u8 romname[16];
 	utilGzRead(gzFile, romname, 15);
-
 	if (memcmp(&gbRom[0x134], romname, 15) != 0)
 	{
+		u8 curname[16];
+		for (int i = 0; i < 15; ++i)
+		{
+			if (!romname[i])
+			{
+				romname[i] = ' ';
+			}
+			u8 c = gbRom[0x134 + i];
+			curname[i] = c ? c : ' ';
+		}
+		romname[15] = 0;
+		curname[15] = 0;
 		systemMessage(MSG_CANNOT_LOAD_SGM_FOR,
-		              N_("Cannot load save game for %s. Playing %s"),
-		              romname, &gbRom[0x134]);
-		return false;
+		              N_("Cannot load save game for '%s'\nPlaying '%s'"),
+		              romname, curname);
+		goto failedLoadGB;
 	}
 
 	bool8 ub = false;
@@ -4048,7 +4067,7 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 			else
 				systemMessage(MSG_SAVE_GAME_USING_BIOS,
 				              N_("Save game is using the BIOS file"));
-			return false;
+			goto failedLoadGB;
 		}
 	}
 
@@ -4413,6 +4432,7 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
+	bool wasPlayingMovie = VBAMovieIsActive() && VBAMovieIsPlaying();
 	if (version >= GBSAVE_GAME_VERSION_11) // new to re-recording version:
 	{
 		utilGzRead(gzFile, &sensorX, sizeof(sensorX));
@@ -4494,6 +4514,10 @@ failedLoadGB:
 		if (tempSaveAttempts < 3) // fail no more than 2 times in a row
 			gbReadSaveState(tempBackupName);
 		remove(tempBackupName);
+	}
+	if (wasPlayingMovie && VBAMovieIsRecording())
+	{
+		VBAMovieSwitchToPlaying();
 	}
 	return false;
 }
@@ -5067,6 +5091,7 @@ void gbEmulate(int ticksToStop)
 	int	 opcode1 = 0;
 	int	 opcode2 = 0;
 	bool execute = false;
+	bool newVideoFrame = false;
 
 	for (;;)
 	{
@@ -5481,7 +5506,7 @@ gbRedoLoop:
 							gbLcdTicksDelayed += GBLCD_MODE_1_CLOCK_TICKS;
 							gbLcdModeDelayed   = 1;
 
-							gbFrameBoundaryWork();
+							newVideoFrame = true;
 						}
 						else
 						{
@@ -5631,6 +5656,14 @@ gbRedoLoop:
 
 				while (gbLcdLYIncrementTicks <= 0)
 				{
+					if (newVideoFrame)
+					{
+						// FIXME: this doesn't seem right for old frame timing
+						newVideoFrame = false;
+						gbFrameBoundaryWork();
+						gbBeforeEmulation();
+					}
+
 					register_LY = ((register_LY + 1) % 154);
 					gbLcdLYIncrementTicks += GBLY_INCREMENT_CLOCK_TICKS;
 					if (register_LY < 144)
@@ -5647,8 +5680,7 @@ gbRedoLoop:
 					}
 					else if (register_LY == 144)
 					{
-						gbBeforeEmulation();
-						gbFrameBoundaryWork();
+						newVideoFrame = true;
 					}
 				}
 			}
@@ -5793,6 +5825,12 @@ gbRedoLoop:
 			}
 		}
 
+		if (newVideoFrame)
+		{
+			newVideoFrame = false;
+			gbFrameBoundaryWork();
+		}
+
 		if (gbDmaTicks)
 		{
 			gbClockTicks = gbGetNextEvent(gbDmaTicks);
@@ -5872,8 +5910,9 @@ gbRedoLoop:
 				++stopCounter;
 				if (gbV20GBFrameTimingHackTemp && stopCounter % 64 == 0)
 				{
-					gbBeforeEmulation();
+					newVideoFrame = false;
 					gbFrameBoundaryWork();
+					gbBeforeEmulation();
 				}
 			}
 

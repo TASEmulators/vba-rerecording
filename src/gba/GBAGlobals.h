@@ -170,4 +170,8 @@ extern u16 IE;
 extern u16 IF;
 extern u16 IME;
 
+extern const u32 frameRateDividend;
+extern const u32 frameRateDivisor;
+extern const double frameRate;
+
 #endif // VBA_GBA_GLOBALS_H

@@ -1007,12 +1007,12 @@ void MainWnd::OnUpdateOptionsEmulatorUsebiosfile(CCmdUI*pCmdUI)
 
 void MainWnd::OnOptionsEmulatorSkipbios()
 {
-	theApp.skipBiosFile = !theApp.skipBiosFile;
+	theApp.skipBiosIntro = !theApp.skipBiosIntro;
 }
 
 void MainWnd::OnUpdateOptionsEmulatorSkipbios(CCmdUI*pCmdUI)
 {
-	pCmdUI->SetCheck(theApp.skipBiosFile);
+	pCmdUI->SetCheck(theApp.skipBiosIntro);
 	pCmdUI->Enable(!VBAMovieIsActive() || GetAsyncKeyState(VK_CONTROL));
 }
 

@@ -12,11 +12,11 @@ AVIWrite::AVIWrite()
 	m_stream = NULL;
 	m_streamCompressed = NULL;
 	m_streamSound      = NULL;
-	m_videoFrames      = 0;
-	m_samplesSound     = 0;
-	m_videoFramesTotal = 0;
-	m_samplesSoundTotal= 0;
-	m_totalBytes       = 0;
+	m_videoFrames      = 0L;
+	m_samplesSound     = 0L;
+	m_videoFramesTotal = 0L;
+	m_samplesSoundTotal= 0L;
+	m_totalBytes       = 0L;
 	m_segmentNumber    = 0;
 	m_usePrevOptions   = false;
 	m_pauseRecording   = false;
@@ -112,8 +112,8 @@ bool AVIWrite::Open(const char *filename)
 	// setup the video stream information
 	ZeroMemory(&m_header, sizeof(AVISTREAMINFO));
 	m_header.fccType = streamtypeVIDEO;
-	m_header.dwScale = 1;
-	m_header.dwRate  = m_fps;
+	m_header.dwScale = systemGetFrameRateDivisor();
+	m_header.dwRate  = systemGetFrameRateDividend();
 	m_header.dwSuggestedBufferSize = m_bitmap.biSizeImage;
 
 	// create the video stream
@@ -146,7 +146,7 @@ bool AVIWrite::Open(const char *filename)
 	}
 
 	// setup the video stream format
-	if (FAILED(AVIStreamSetFormat(m_streamCompressed, 0,
+	if (FAILED(AVIStreamSetFormat(m_streamCompressed, 0L,
 	                              &m_bitmap,
 	                              m_bitmap.biSize +
 	                              m_bitmap.biClrUsed * sizeof(RGBQUAD))))
@@ -155,12 +155,13 @@ bool AVIWrite::Open(const char *filename)
 		return false;
 	}
 
-	m_videoFrames  = 0;
-	m_samplesSound = 0;
-	m_totalBytes   = 0;
-	if (!m_usePrevOptions) {
-		m_videoFramesTotal  = 0;
-		m_samplesSoundTotal = 0;
+	m_videoFrames  = 0L;
+	m_samplesSound = 0L;
+	m_totalBytes   = 0L;
+	if (!m_usePrevOptions)
+	{
+		m_videoFramesTotal  = 0L;
+		m_samplesSoundTotal = 0L;
 	}
 
 	strncpy(m_aviFileName, filename, MAX_PATH);
@@ -177,16 +178,17 @@ bool AVIWrite::Open(const char *filename)
 	return true;
 }
 
-bool AVIWrite::AddSound(const u8 *sound, int len)
+bool AVIWrite::AddSound(const u8 *sound, u32 len)
 {
-	LONG byteBuffer;
+	LONG samplesWritten = 0L;
+	LONG bytesWritten = 0L;
 
 	// return if we failed somewhere already
 	if (m_failed)
 		return false;
 
 	assert(len % m_soundFormat.nBlockAlign == 0);
-	int samples = len / m_soundFormat.nBlockAlign;
+	LONG samples = LONG(len / m_soundFormat.nBlockAlign);
 
 	if (FAILED(AVIStreamWrite(m_streamSound,
 	                          m_samplesSound,
@@ -194,15 +196,15 @@ bool AVIWrite::AddSound(const u8 *sound, int len)
 	                          (LPVOID)sound,
 	                          len,
 	                          0,
-	                          NULL,
-	                          &byteBuffer)))
+	                          &samplesWritten,
+	                          &bytesWritten)))
 	{
 		m_failed = true;
 		return false;
 	}
-	m_samplesSound += samples;
-	m_samplesSoundTotal += samples;
-	m_totalBytes   += byteBuffer;
+	m_samplesSound      += samplesWritten;
+	m_samplesSoundTotal += samplesWritten;
+	m_totalBytes        += bytesWritten;
 	return true;
 }
 
@@ -211,7 +213,7 @@ bool AVIWrite::NextSegment()
 	char avi_fname[MAX_PATH];
 	strcpy(avi_fname, m_aviBaseName);
 	char avi_fname_temp[MAX_PATH];
-	sprintf(avi_fname_temp, "%s_part%d%s", avi_fname, m_segmentNumber+2, m_aviExtension);
+	sprintf(avi_fname_temp, "%s_part%d%s", avi_fname, m_segmentNumber + 2, m_aviExtension);
 	m_segmentNumber++;
 
 	CleanUp();
@@ -226,7 +228,7 @@ bool AVIWrite::NextSegment()
 
 bool AVIWrite::AddFrame(const u8 *bmp)
 {
-	LONG byteBuffer;
+	LONG bytesWritten = 0L;
 
 	if (m_failed)
 		return false;
@@ -234,22 +236,22 @@ bool AVIWrite::AddFrame(const u8 *bmp)
 	// write the frame to the video stream
 	if (FAILED(AVIStreamWrite(m_streamCompressed,
 	                          m_videoFrames,
-	                          1,
+	                          1L,
 	                          (LPVOID)bmp,
 	                          m_bitmap.biSizeImage,
 	                          AVIIF_KEYFRAME,
 	                          NULL,
-	                          &byteBuffer)))
+	                          &bytesWritten)))
 	{
 		m_failed = true;
 		return false;
 	}
 	m_videoFrames++;
 	m_videoFramesTotal++;
-	m_totalBytes += byteBuffer;
+	m_totalBytes += bytesWritten;
 
 	// segment / split AVI when it's almost 2 GB (2000MB, to be precise)
-	if (!(m_videoFrames % 60) && m_totalBytes > 2097152000)
+	if (!(m_videoFrames % 60L) && m_totalBytes > 2097152000L)
 		return NextSegment();
 	else
 		return true;
@@ -258,11 +260,6 @@ bool AVIWrite::AddFrame(const u8 *bmp)
 bool AVIWrite::IsSoundAdded()
 {
 	return m_streamSound != NULL;
-}
-
-void AVIWrite::SetFPS(int f)
-{
-	m_fps = f;
 }
 
 int AVIWrite::videoFrames()

@@ -416,6 +416,8 @@ protected:
 	afx_msg void OnToolsExtraCounterReset();
 	afx_msg void OnToolsInputDisplay();
 	afx_msg void OnUpdateToolsInputDisplay(CCmdUI*pCmdUI);
+	afx_msg void OnToolsNextInputDisplay();
+	afx_msg void OnUpdateToolsNextInputDisplay(CCmdUI*pCmdUI);
 	afx_msg void OnToolsDebugGdb();
 	afx_msg void OnUpdateToolsDebugGdb(CCmdUI*pCmdUI);
 	afx_msg void OnToolsDebugLoadandwait();

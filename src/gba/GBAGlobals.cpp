@@ -112,3 +112,8 @@ u16 P1		 = 0xFFFF;
 u16 IE		 = 0x0000;
 u16 IF		 = 0x0000;
 u16 IME		 = 0x0000;
+
+// exact FPS of GBA = 16777216 / 280896 = 59.727500569605832763727500569606...
+extern const u32 frameRateDividend = 262144; // 16777216;
+extern const u32 frameRateDivisor = 4389;    // 280896;
+extern const double frameRate = double(frameRateDividend) / double(frameRateDivisor);

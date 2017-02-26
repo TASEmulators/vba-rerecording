@@ -25,7 +25,7 @@ struct AddressWatcher
 	char Size;
 	char Type;
 	char* comment; // NULL means no comment, non-NULL means allocated comment
-	bool WrongEndian;
+	int WrongEndian;
 	unsigned int CurValue;
 };
 #define MAX_WATCH_COUNT 256

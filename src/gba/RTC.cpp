@@ -127,7 +127,7 @@ bool rtcWrite(u32 address, u16 value)
 
 							if (VBAMovieIsActive() || VBAMovieIsLoading())
 							{
-								long_time = VBAMovieGetId() + VBAMovieGetFrameCounter()/60;
+								long_time = VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate();
 								newtime   = gmtime(&long_time);
 							}
 							else
@@ -154,7 +154,7 @@ bool rtcWrite(u32 address, u16 value)
 
 							if (VBAMovieIsActive() || VBAMovieIsLoading())
 							{
-								long_time = VBAMovieGetId() + VBAMovieGetFrameCounter()/60;
+								long_time = VBAMovieGetId() + VBAMovieGetFrameCounter() / VBAMovieGetFrameRate();
 								newtime   = gmtime(&long_time);
 							}
 							else

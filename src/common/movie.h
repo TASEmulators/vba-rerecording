@@ -25,7 +25,10 @@
 #  define MOVIE_NOT_FROM_THIS_MOVIE (-4)
 #  define MOVIE_NOT_FROM_A_MOVIE (-5)
 #  define MOVIE_SNAPSHOT_INCONSISTENT (-6)
-#  define MOVIE_UNKNOWN_ERROR (-7)
+#  define MOVIE_UNRECORDED_INPUT (-7)
+#  define MOVIE_SAME_VERSION (-8)
+#  define MOVIE_FATAL_ERROR (-32768)
+#  define MOVIE_UNKNOWN_ERROR (-2147483647 - 1)
 #endif
 
 #define VBM_MAGIC (0x1a4D4256) // VBM0x1a
@@ -50,8 +53,9 @@
 #define MOVIE_TYPE_GBC              (1<<1)
 #define MOVIE_TYPE_SGB              (1<<2)
 
+// using BIOS/RTC should have been made movie start flags
 #define MOVIE_SETTING_USEBIOSFILE   (1<<0)
-#define MOVIE_SETTING_SKIPBIOSFILE  (1<<1)
+#define MOVIE_SETTING_SKIPBIOSINTRO (1<<1)
 #define MOVIE_SETTING_RTCENABLE     (1<<2)
 #define MOVIE_SETTING_GBINPUTHACK   (1<<3)
 #define MOVIE_SETTING_LAGHACK       (1<<4)
@@ -108,7 +112,7 @@ struct SMovieFileHeader
 	uint32 saveType;        // emulator setting value
 	uint32 flashSize;       // emulator setting value
 	uint32 gbEmulatorType;  // emulator setting value
-	char   romTitle [12];
+	char   romTitle[12];
 	uint8  minorVersion;	// minor version/revision of the current movie version
 	uint8  romCRC;						// the CRC of the ROM used while recording
 	uint16 romOrBiosChecksum;			// the Checksum of the ROM used while recording, or a CRC of the BIOS if GBA
@@ -142,7 +146,7 @@ struct SMovie
 	//   to manually map from/to built-in boolean types to/from fixed-sized types value by value ONLY when doing I/O
 	//   e.g. bool(true) <-> u8(1) and <-> bool(false) <-> u8(0), BOOL(TRUE) <-> s32(-1) and BOOL(FALSE) <-> s32(0) etc.
 	uint8 readOnly;
-	uint8 xorInput;
+	uint8 unused;
 	uint8 RecordedNewRerecord;
 	uint8 RecordedThisSession;
 };
@@ -151,9 +155,9 @@ struct SMovie
 int VBAMovieOpen(const char *filename, bool8 read_only);
 int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlags, uint8 controllerFlags, uint8 typeFlags);
 int VBAMovieGetInfo(const char *filename, SMovie*info);
+double VBAMovieGetFrameRate();
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle[12], uint32 &romGameCode, uint16 &checksum, uint8 &crc);
 void VBAMovieStop(bool8 suppress_message);
-const char *VBAChooseMovieFilename(bool8 read_only);
 
 // methods used by the emulation
 void VBAMovieInit();
@@ -163,7 +167,7 @@ void VBAMovieWrite(int controllerNum = 0, bool sensor = false);
 void VBAUpdateButtonPressDisplay();
 void VBAUpdateFrameCountDisplay();
 //bool8 VBAMovieRewind (uint32 at_frame);
-void VBAMovieFreeze(uint8 **buf, uint32 *size);
+int VBAMovieFreeze(uint8 **buf, uint32 *size);
 int VBAMovieUnfreeze(const uint8 *buf, uint32 size);
 void VBAMovieRestart();
 
@@ -202,7 +206,7 @@ bool VBAMovieSwitchToPlaying();
 bool VBAMovieSwitchToRecording();
 int  VBAMovieGetPauseAt();
 void VBAMovieSetPauseAt(int at);
-int  VBAMovieConvertCurrent();
+int  VBAMovieConvertCurrent(bool force = false);
 int VBAMovieInsertFrames(uint32 num);
 int VBAMovieDeleteFrames(uint32 num);
 bool VBAMovieTuncateAtCurrentFrame();

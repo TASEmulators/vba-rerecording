@@ -54,6 +54,7 @@ END
 // remains consistent on all systems.
 IDI_ICON                ICON                    "gbadvance.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -2047,7 +2048,8 @@ BEGIN
             MENUITEM "    &Lag Counter",            ID_TOOLS_LAGCOUNTER
             MENUITEM "    &Extra Counter",          ID_TOOLS_EXTRACOUNTER
             MENUITEM "    Extra Counter &Reset",    ID_TOOLS_EXTRACOUNTERRESET
-            MENUITEM "&Input Display",              ID_TOOLS_INPUTDISPLAY
+            MENUITEM "&Input",                      ID_TOOLS_INPUTDISPLAY
+            MENUITEM "    &Next-Frame Input",       ID_TOOLS_NEXTINPUTDISPLAY
             MENUITEM SEPARATOR
             MENUITEM "&Text Display Options...",    ID_OPTIONS_VIDEO_TEXTDISPLAYOPTIONS
             MENUITEM "Disable Status &Messages",    ID_OPTIONS_VIDEO_DISABLESTATUSMESSAGES
@@ -2151,12 +2153,12 @@ BEGIN
             MENUITEM "Read-&Only Mode",             ID_MOVIE_READONLY
             POPUP "Edit &Mode"
             BEGIN
-                MENUITEM "&Next Mode",                  ID_MOVIE_TOOL_EDIT_MODE_NEXT
+                MENUITEM "Select &Next Mode",           ID_MOVIE_TOOL_EDIT_MODE_NEXT
                 MENUITEM SEPARATOR
                 MENUITEM "&Discard Mode",               ID_MOVIE_TOOL_EDIT_MODE_DISCARD
-                MENUITEM "&Overwrite Mode",             ID_MOVIE_TOOL_EDIT_MODE_OVERWRITE
-                MENUITEM "&Insert Mode",                ID_MOVIE_TOOL_EDIT_MODE_INSERT
-                MENUITEM "&XOR-Input Mode",             ID_MOVIE_TOOL_EDIT_MODE_XOR
+                MENUITEM "&Overwrite Mode [W]",         ID_MOVIE_TOOL_EDIT_MODE_OVERWRITE
+                MENUITEM "&Insert Mode [I]",            ID_MOVIE_TOOL_EDIT_MODE_INSERT
+                MENUITEM "&XOR-Input Mode [X]",         ID_MOVIE_TOOL_EDIT_MODE_XOR
             END
             POPUP "When Movie &Ends"
             BEGIN
@@ -2354,13 +2356,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// RT_MANIFEST
-//
-
-1                       RT_MANIFEST             "VisualBoyAdvance.exe.manifest"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // String Table
 //
 
@@ -2435,7 +2430,7 @@ BEGIN
     IDS_FAILED_TO_READ_SGM  "Failed to read complete save game %s (%d)"
     IDS_FAILED_TO_READ_RTC  "Failed to read RTC from save game %s (continuing)"
     IDS_UNSUPPORTED_VB_SGM  "Unsupported VisualBoy save game version %d"
-    IDS_CANNOT_LOAD_SGM_FOR "Cannot load save game for %s. Playing %s"
+    IDS_CANNOT_LOAD_SGM_FOR "Cannot load save game for '%s'\nPlaying '%s'"
     IDS_ERROR_OPENING_IMAGE_FROM "Error opening image %s from zip file %s"
     IDS_ERROR_READING_IMAGE_FROM "Error reading image %s from zip file %s"
     IDS_UNSUPPORTED_ROM_SIZE "Unsupported rom size %02x"
@@ -2534,8 +2529,8 @@ STRINGTABLE
 BEGIN
     IDS_AUTOFIRE_RIGHT_DISABLED "turbo Right off"
     IDS_AUTOFIRE_RIGHT      "turbo Right on"
-    IDS_RERECORDED_STATE_N  "Re-record from %d"
-    IDS_REPLAYED_STATE_N    "Rewind to %d"
+    IDS_RERECORDED_STATE_N  "Re-record from Slot %d"
+    IDS_REPLAYED_STATE_N    "Rewind to Slot %d"
     IDS_LOADED_CHEATS       "Loaded cheats"
     IDS_ADD_GG_CODE         "Add GameGenie code"
     IDS_ADD_GS_CODE         "Add GameShark code"

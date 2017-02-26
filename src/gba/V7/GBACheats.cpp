@@ -89,6 +89,16 @@
 #define CBA_GT                 35
 #define CBA_SUPER              36
 
+ // evil macros
+#ifndef countof
+#define countof(a)  (sizeof(a) / sizeof(a[0]))
+#endif
+
+#define CHEAT_IS_HEX(a) (((a) >= 'A' && (a) <= 'F') || ((a) >= '0' && (a) <= '9'))
+
+#define CHEAT_PATCH_ROM_16BIT(a, v) \
+    WRITE16LE(((u16 *)&rom[(a) & 0x1ffffff]), v);
+
 CheatsData cheatsList[100];
 int        cheatsNumber = 0;
 
@@ -103,11 +113,6 @@ u8 cheatsCBACurrentSeed[12] = {
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00
 };
-
-#define CHEAT_IS_HEX(a) (((a) >= 'A' && (a) <= 'F') || ((a) >= '0' && (a) <= '9'))
-
-#define CHEAT_PATCH_ROM_16BIT(a, v) \
-    WRITE16LE(((u16 *)&rom[(a) & 0x1ffffff]), v);
 
 static bool isMultilineWithData(int i)
 {
@@ -638,12 +643,12 @@ void cheatsDelete(int number, bool restore)
 				break;
 			}
 		}
-		if ((x+1) <  cheatsNumber)
-		{
-			memcpy(&cheatsList[x], &cheatsList[x+1], sizeof(CheatsData)*
-			       (cheatsNumber-x-1));
-		}
 		cheatsNumber--;
+		if (x <  cheatsNumber)
+		{
+			memcpy(&cheatsList[x], &cheatsList[x + 1], sizeof(CheatsData) *
+			       (cheatsNumber - x));
+		}
 	}
 }
 
@@ -1048,6 +1053,8 @@ bool cheatsImportGSACodeFile(const char *name, int game, bool v3)
 		while (codes > 0)
 		{
 			fread(&len, 1, 4, f);
+			if (len < 0 || len >= sizeof(desc))
+				goto error;
 			fread(desc, 1, len, f);
 			desc[len] = 0;
 			desc[31]  = 0;
@@ -1055,7 +1062,7 @@ bool cheatsImportGSACodeFile(const char *name, int game, bool v3)
 			fseek(f, len, SEEK_CUR);
 			fseek(f, 4, SEEK_CUR);
 			fread(&len, 1, 4, f);
-			while (len)
+			while (len > 0)
 			{
 				fseek(f, 4, SEEK_CUR);
 				fread(code, 1, 8, f);
@@ -1068,6 +1075,7 @@ bool cheatsImportGSACodeFile(const char *name, int game, bool v3)
 			codes--;
 		}
 	}
+error:
 	fclose(f);
 	return false;
 }
@@ -1581,6 +1589,10 @@ void cheatsSaveGame(gzFile file)
 void cheatsReadGame(gzFile file, int version)
 {
 	cheatsNumber = utilReadInt(file);
+	if (cheatsNumber > MAX_CHEATS)
+	{
+		cheatsNumber = MAX_CHEATS;
+	}
 
 	utilGzRead(file, cheatsList, sizeof(cheatsList));
 
@@ -1705,6 +1717,18 @@ bool cheatsLoadCheatList(const char *file)
 	{
 		fclose(f);
 		return false;
+	}
+	if (count > countof(cheatsList))
+	{
+		count = countof(cheatsList);
+	}
+	if (type == 1)
+	{
+		if (fread(cheatsList, 1, sizeof(cheatsList), f) != sizeof(cheatsList))
+		{
+			fclose(f);
+			return false;
+		}
 	}
 
 	if (fread(cheatsList, 1, sizeof(cheatsList), f) != sizeof(cheatsList))

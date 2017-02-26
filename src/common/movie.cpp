@@ -39,6 +39,7 @@
 #include "../gb/gbGlobals.h"
 #include "inputGlobal.h"
 #include "Util.h"
+#include <algorithm>
 
 #include "vbalua.h"
 
@@ -381,6 +382,7 @@ static void change_movie_state(MovieState new_state)
 		fclose(Movie.file);
 		Movie.file = NULL;
 		Movie.currentFrame		  = 0;
+		Movie.unused			  = false;
 		Movie.RecordedNewRerecord = false;
 		Movie.RecordedThisSession = false;
 #if (defined(WIN32) && !defined(SDL))
@@ -437,7 +439,9 @@ static void change_movie_state(MovieState new_state)
 	{
 		assert(Movie.file);
 
-		VBAMovieConvertCurrent(); // force conversion for safety
+		Movie.unused = false;
+
+		VBAMovieConvertCurrent(false); // conversion for safety
 
 		// this would cause problems if not dealt with
 		if (Movie.currentFrame > Movie.header.length_frames)
@@ -561,6 +565,8 @@ static void change_movie_state(MovieState new_state)
 
 void VBAMovieInit()
 {
+	MovieEditMode editMode = Movie.editMode;
+
 	memset(&Movie, 0, sizeof(Movie));
 	Movie.state		 = MOVIE_STATE_NONE;
 	Movie.pauseFrame = -1;
@@ -568,8 +574,11 @@ void VBAMovieInit()
 	resetSignaled	  = false;
 	resetSignaledLast = false;
 
+	Movie.unused	  = false;
 	Movie.RecordedNewRerecord = false;
 	Movie.RecordedThisSession = false;
+
+	Movie.editMode = editMode;
 }
 
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
@@ -616,13 +625,13 @@ static void SetPlayEmuSettings()
 
 #if (defined(WIN32) && !defined(SDL))
 //    theApp.removeIntros   = false;
-	theApp.skipBiosFile = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	theApp.skipBiosIntro = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
 	theApp.useBiosFile	= (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
 #else
 	extern int	 saveType, sdlRtcEnable, sdlFlashSize;   // from SDL.cpp
 	extern bool8 useBios, skipBios, removeIntros;     // from SDL.cpp
 	useBios		 = (Movie.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSFILE) != 0;
+	skipBios	 = (Movie.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
 	removeIntros = false /*(Movie.header.optionFlags & MOVIE_SETTING_REMOVEINTROS) != 0*/;
 #endif
 
@@ -795,9 +804,13 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	}
 	else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
 	{
+#if 1
 		// 'soft' reset:
 		theEmulator.emuReset();
-
+#else
+		// 'harder' reset as if just booted with SRAM
+		HardReset();
+#endif
 		// load the SRAM
 		result = theEmulator.emuReadBatteryFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
 	}
@@ -848,7 +861,7 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	bool converted		   = false;
 	if (autoConvertMovieWhenPlaying)
 	{
-		int result = VBAMovieConvertCurrent();
+		int result = VBAMovieConvertCurrent(false);
 		if (result == MOVIE_SUCCESS)
 			strcat(messageString, "converted and ");
 		else if (result == MOVIE_WRONG_VERSION)
@@ -860,9 +873,9 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 	else
 		strcat(messageString, "finished ");
 	if (Movie.readOnly)
-		strcat(messageString, "(read)");
+		strcat(messageString, "(read only)");
 	else
-		strcat(messageString, "(edit)");
+		strcat(messageString, "(editable)");
 	systemScreenMessage(messageString);
 
 	preserve_movie_next_input();
@@ -880,8 +893,8 @@ static void SetRecordEmuSettings()
 #if (defined(WIN32) && !defined(SDL))
 	if (theApp.useBiosFile)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
-	if (theApp.skipBiosFile)
-		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSFILE;
+	if (theApp.skipBiosIntro)
+		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSINTRO;
 	if (rtcIsEnabled())
 		Movie.header.optionFlags |= MOVIE_SETTING_RTCENABLE;
 	Movie.header.saveType  = theApp.winSaveType;
@@ -892,7 +905,7 @@ static void SetRecordEmuSettings()
 	if (useBios)
 		Movie.header.optionFlags |= MOVIE_SETTING_USEBIOSFILE;
 	if (skipBios)
-		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSFILE;
+		Movie.header.optionFlags |= MOVIE_SETTING_SKIPBIOSINTRO;
 	if (sdlRtcEnable)
 		Movie.header.optionFlags |= MOVIE_SETTING_RTCENABLE;
 	Movie.header.saveType  = saveType;
@@ -967,7 +980,7 @@ uint16 VBAMovieGetNextInputOf(int which, bool normalOnly)
 		return 0;
 
 	u16 movieInput = 0;
-	if (Movie.currentFrame < Movie.header.length_frames && (Movie.header.controllerFlags & MOVIE_CONTROLLER(which)))
+	if (Movie.currentFrame + 1u < Movie.header.length_frames && (Movie.header.controllerFlags & MOVIE_CONTROLLER(which)))
 	{
 		movieInput = Read16(Movie.inputBufferPtr + Movie.bytesPerFrame + CONTROLLER_DATA_SIZE * which);
 	}
@@ -1039,8 +1052,8 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 	fwrite(Movie.authorInfo, 1, MOVIE_METADATA_SIZE, file);
 
 	// write snapshot or SRAM if applicable
-	if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT
-	    || Movie.header.startFlags & MOVIE_START_FROM_SRAM)
+	if ((Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
+	    || (Movie.header.startFlags & MOVIE_START_FROM_SRAM))
 	{
 		Movie.header.offset_to_savestate = (uint32)ftell(file);
 
@@ -1071,8 +1084,13 @@ int VBAMovieCreate(const char *filename, const char *authorInfo, uint8 startFlag
 				{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
 			}
 
+#if 1
 			// 'soft' reset:
 			theEmulator.emuReset();
+#else
+			// 'harder' reset as if just booted with SRAM
+			HardReset();
+#endif
 		}
 
 		utilGzClose(stream);
@@ -1132,7 +1150,7 @@ void VBAUpdateButtonPressDisplay()
 	uint16	pressedKeys	 = eraseAll ? 0 : currKeys;
 	uint16 &lastKeys     = lastButtons[which];
 
-	if (!eraseAll && Movie.state != MOVIE_STATE_NONE)
+	if (theApp.nextInputDisplay && !eraseAll && Movie.state != MOVIE_STATE_NONE)
 	{
 		for (int i = 0; i < KeyMaxCount; ++i)
 		{
@@ -1183,7 +1201,7 @@ void VBAUpdateButtonPressDisplay()
 		{
 			int j	 = KeyOrder[i];
 			int mask = (1 << (j));
-			buffer[strlen(whiteOffset + i] = ((nextKeys & mask) != 0) ? KeyMap[j] : ' ';
+			buffer[whiteOffset + i] = ((nextKeys & mask) != 0) ? KeyMap[j] : ' ';
 		}
 	}
 	systemScreenMessage(buffer, 3, -1);
@@ -1200,11 +1218,14 @@ void VBAUpdateButtonPressDisplay()
 void VBAUpdateFrameCountDisplay()
 {
 	const int MAGICAL_NUMBER = 64;  // FIXME: this won't do any better, but only to remind you of sz issues
-	char	  frameDisplayString[MAGICAL_NUMBER];
+	char	  frameDisplayString[MAGICAL_NUMBER * 2];
 	char	  lagFrameDisplayString[MAGICAL_NUMBER];
 	char	  extraCountDisplayString[MAGICAL_NUMBER];
 
 #if (defined(WIN32) && !defined(SDL))
+	char colorList[MAGICAL_NUMBER * 2];
+	memset(colorList, 1, MAGICAL_NUMBER * 2);
+
 	if (theApp.frameCounter)
 #else
 	/// SDL FIXME
@@ -1215,18 +1236,21 @@ void VBAUpdateFrameCountDisplay()
 		case MOVIE_STATE_PLAY:
 		case MOVIE_STATE_END:
 		{
-			sprintf(frameDisplayString, "%d / %d ", Movie.currentFrame, Movie.header.length_frames);
+			int offset = sprintf(frameDisplayString, "%u / ", Movie.currentFrame);
+			int length = sprintf(frameDisplayString + offset, "%u", Movie.header.length_frames);
+			if (Movie.state == MOVIE_STATE_END)
+				memset(colorList + offset, 2, length);
 			if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
 			{
-				strcat(frameDisplayString, "[W]");
+				strcat(frameDisplayString, " [W]");
 			}
 			else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 			{
-				strcat(frameDisplayString, "[X]");
+				strcat(frameDisplayString, " [X]");
 			}
 			if (!Movie.readOnly)
 			{
-				strcat(frameDisplayString, "(edit)");
+				strcat(frameDisplayString, " (editable)");
 			}
 			break;
 		}
@@ -1234,21 +1258,21 @@ void VBAUpdateFrameCountDisplay()
 		{
 			if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
 			{
-				sprintf(frameDisplayString, "%d / %d (overwrite)", Movie.currentFrame, Movie.header.length_frames);
+				sprintf(frameDisplayString, "%u / %u [W](record)", Movie.currentFrame, Movie.header.length_frames);
 			}
 			else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 			{
-				sprintf(frameDisplayString, "%d / %d (invert)", Movie.currentFrame, Movie.header.length_frames);
+				sprintf(frameDisplayString, "%u / %u [X](record)", Movie.currentFrame, Movie.header.length_frames);
 			}
 			else
 			{
-				sprintf(frameDisplayString, "%d (discard)", Movie.currentFrame);
+				sprintf(frameDisplayString, "%u (record)", Movie.currentFrame);
 			}
 			break;
 		}
 		default:
 		{
-			sprintf(frameDisplayString, "%d (no movie)", systemCounters.frameCount);
+			sprintf(frameDisplayString, "%u (no movie)", systemCounters.frameCount);
 			break;
 		}
 		}
@@ -1259,8 +1283,8 @@ void VBAUpdateFrameCountDisplay()
 		/// SDL FIXME
 #endif
 		{
-//			sprintf(lagFrameDisplayString, " %c %d", systemCounters.laggedLast ? '*' : '|', systemCounters.lagCount);
-			sprintf(lagFrameDisplayString, " | %d%s", systemCounters.lagCount, systemCounters.laggedLast ? " *" : "");
+//			sprintf(lagFrameDisplayString, " %c %u", systemCounters.laggedLast ? '*' : '|', systemCounters.lagCount);
+			sprintf(lagFrameDisplayString, " | %u%s", systemCounters.lagCount, systemCounters.laggedLast ? " *" : "");
 			strcat(frameDisplayString, lagFrameDisplayString);
 		}
 
@@ -1270,7 +1294,7 @@ void VBAUpdateFrameCountDisplay()
 		/// SDL FIXME
 #endif
 		{
-			sprintf(extraCountDisplayString, " | %d", systemCounters.frameCount - systemCounters.extraCount);
+			sprintf(extraCountDisplayString, " | %u", systemCounters.frameCount - systemCounters.extraCount);
 			strcat(frameDisplayString, extraCountDisplayString);
 		}
 	}
@@ -1279,10 +1303,11 @@ void VBAUpdateFrameCountDisplay()
 	{
 		frameDisplayString[0] = '\0';
 	}
+	systemScreenMessage(frameDisplayString, 1, -1, colorList);
 #else
 	/// SDL FIXME
-#endif
 	systemScreenMessage(frameDisplayString, 1, -1);
+#endif
 }
 
 // this function should only be called once every frame
@@ -1344,17 +1369,8 @@ void VBAMovieRead(int i, bool /*sensor*/)
 	}
 
 	// backward compatibility kludge
-	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-resetSignaledLast & BUTTON_MASK_OLD_RESET);
-
-	if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
-	{
-		currentButtons[i] ^= movieInput ^ (-resetSignaled & BUTTON_MASK_NEW_RESET);
-		resetSignaled = false;
-	}
-	else
-	{
-		currentButtons[i] = movieInput;
-	}
+	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
+	currentButtons[i] = movieInput;
 }
 
 void VBAMovieWrite(int i, bool /*sensor*/)
@@ -1365,7 +1381,7 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
 		return;      // not a controller we're recognizing
 
-	reserve_movie_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame));
+	reserve_movie_buffer_space((uint32)((Movie.inputBufferPtr - Movie.inputBuffer) + Movie.bytesPerFrame * 2));
 
 	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
 	{
@@ -1384,7 +1400,7 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		uint8 *ptr = Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i;
 		if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
 		{
-			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-resetSignaled & BUTTON_MASK_OLD_RESET);
+			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
 			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
 		}
 		else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
@@ -1392,14 +1408,14 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 			u16 movieInput = Read16(ptr);
 			buttonData ^= movieInput;
 			resetSignaled = ((buttonData & BUTTON_MASK_NEW_RESET) != 0);
-			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-resetSignaled & BUTTON_MASK_OLD_RESET);
+			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
 			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
 		}
 
 		resetSignaled = false;
 
 		// backward compatibility kludge
-		buttonData = (buttonData & ~BUTTON_MASK_OLD_RESET) | (-resetSignaledLast & BUTTON_MASK_OLD_RESET);
+		buttonData = (buttonData & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
 
 		Write16(buttonData, ptr);
 
@@ -1474,6 +1490,11 @@ int VBAMovieGetInfo(const char *filename, SMovie *info)
 		info->readOnly = true;
 
 	return MOVIE_SUCCESS;
+}
+
+double VBAMovieGetFrameRate()
+{
+	return systemGetFrameRate();
 }
 
 bool VBAMovieHasEnded()
@@ -1644,12 +1665,12 @@ std::string VBAMovieGetFilename()
 	return Movie.filename;
 }
 
-void VBAMovieFreeze(uint8 * *buf, uint32 *size)
+int VBAMovieFreeze(uint8 * *buf, uint32 *size)
 {
 	// sanity check
 	if (!VBAMovieIsActive())
 	{
-		return;
+		return MOVIE_NOTHING;
 	}
 
 	*buf  = NULL;
@@ -1665,7 +1686,7 @@ void VBAMovieFreeze(uint8 * *buf, uint32 *size)
 	uint8 *ptr = *buf;
 	if (!ptr)
 	{
-		return;
+		return MOVIE_FATAL_ERROR;
 	}
 
 	Push32(Movie.header.uid, ptr);
@@ -1673,6 +1694,8 @@ void VBAMovieFreeze(uint8 * *buf, uint32 *size)
 	Push32(Movie.header.length_frames - 1, ptr);   // HACK: shorten the length by 1 for backward compatibility
 
 	memcpy(ptr, Movie.inputBuffer, Movie.bytesPerFrame * Movie.header.length_frames);
+
+	return MOVIE_SUCCESS;
 }
 
 int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
@@ -1792,8 +1815,6 @@ bool VBAMovieSwitchToRecording()
 
 	change_movie_state(MOVIE_STATE_RECORD);
 
-	//truncate_movie(Movie.currentFrame);
-
 	return true;
 }
 
@@ -1862,11 +1883,9 @@ void VBAMovieRestart()
 
 		uint8 modified = Movie.RecordedThisSession;
 		uint8 readOnly = Movie.readOnly;
-		MovieEditMode editMode = Movie.editMode;
 
 		VBAMovieStop(true);
 
-		Movie.editMode = editMode;
 		Movie.RecordedThisSession = modified;
 
 		VBAMovieOpen(movieName, readOnly);
@@ -1889,7 +1908,7 @@ void VBAMovieSetPauseAt(int at)
 // movie tools
 
 // FIXME: is it safe to convert/flush a movie while recording it (considering fseek() problem)?
-int VBAMovieConvertCurrent()
+int VBAMovieConvertCurrent(bool force)
 {
 	if (!VBAMovieIsActive())
 	{
@@ -1901,12 +1920,10 @@ int VBAMovieConvertCurrent()
 		return MOVIE_WRONG_VERSION;
 	}
 
-#if 1
-	if (Movie.header.minorVersion == VBM_REVISION)
+	if (!force && Movie.header.minorVersion == VBM_REVISION)
 	{
-		return MOVIE_NOTHING;
+		return MOVIE_SAME_VERSION;
 	}
-#endif
 
 	Movie.header.minorVersion = VBM_REVISION;
 
@@ -1968,8 +1985,8 @@ int VBAMovieInsertFrames(uint32 num)
 	if (Movie.header.minorVersion > VBM_REVISION)
 		return MOVIE_WRONG_VERSION;
 
-	// force conversion
-	VBAMovieConvertCurrent();
+	// conversion for safty
+	VBAMovieConvertCurrent(false);
 
 	uint32 newLength = (uint32)(Movie.header.length_frames + num);
 	reserve_movie_buffer_space(newLength * Movie.bytesPerFrame);
@@ -1998,8 +2015,8 @@ int VBAMovieDeleteFrames(uint32 num)
 	if (Movie.header.minorVersion > VBM_REVISION)
 		return MOVIE_WRONG_VERSION;
 
-	// force conversion
-	VBAMovieConvertCurrent();
+	// conversion for safty
+	VBAMovieConvertCurrent(false);
 
 	uint32 numRemaining = Movie.header.length_frames - Movie.currentFrame;
 	if (num > numRemaining)

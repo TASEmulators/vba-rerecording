@@ -88,7 +88,7 @@ void GBDisassemble::OnGo()
 {
 	CString buffer;
 	m_address.GetWindowText(buffer);
-	sscanf(buffer, "%x", &address);
+	sscanf(buffer, "%hx", &address);
 	refresh();
 }
 
