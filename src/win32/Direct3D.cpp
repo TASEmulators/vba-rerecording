@@ -467,6 +467,16 @@ void Direct3DDisplay::render()
 	}
 	pDevice->Clear(0L, NULL, D3DCLEAR_TARGET, 0x000000ff, 1.0f, 0L);
 
+	u8 *data = pix;
+	int dataPitch = theApp.filterWidth * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
+
+	if (textMethod != 0) // do not draw Lua HUD to a video dump
+	{
+		systemClonePixBuffer(osd);
+		data = osd;
+		systemRenderLua((u8 *)data, dataPitch);
+	}
+
 	if (SUCCEEDED(pDevice->BeginScene()))
 	{
 		D3DLOCKED_RECT locked;
@@ -474,17 +484,8 @@ void Direct3DDisplay::render()
 		{
 			if (theApp.filterFunction)
 			{
-				if (systemColorDepth == 16)
-					theApp.filterFunction(pix + theApp.filterWidth * 2 + 4,
-					                      theApp.filterWidth*2 + 4,
-					                      (u8 *)theApp.delta,
-					                      (u8 *)locked.pBits,
-					                      locked.Pitch,
-					                      theApp.filterWidth,
-					                      theApp.filterHeight);
-				else
-					theApp.filterFunction(pix + theApp.filterWidth * 4 + 4,
-					                      theApp.filterWidth * 4 + 4,
+					theApp.filterFunction(data + dataPitch,
+					                      dataPitch,
 					                      (u8 *)theApp.delta,
 					                      (u8 *)locked.pBits,
 					                      locked.Pitch,
@@ -501,7 +502,7 @@ void Direct3DDisplay::render()
 					mov eax, copyX;
 					mov ebx, copyY;
 
-					mov esi, pix;
+					mov esi, data;
 					mov edi, locked.pBits;
 					mov edx, locked.Pitch;
 					cmp systemColorDepth, 16;

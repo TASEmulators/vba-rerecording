@@ -320,7 +320,7 @@ static void preserve_movie_init_input()
 {
 	for (int i = 0; i < MOVIE_NUM_OF_POSSIBLE_CONTROLLERS; ++i)
 	{
-		if (systemCartridgeType == 0)
+		if (systemCartridgeType == IMAGE_GBA)
 		{
 			initialInputs[i] = u16(~P1 & 0x03FF);
 		}
@@ -583,7 +583,7 @@ void VBAMovieInit()
 
 void VBAMovieGetRomInfo(const SMovie &movieInfo, char romTitle [12], uint32 &romGameCode, uint16 &checksum, uint8 &crc)
 {
-	if (systemCartridgeType == 0) // GBA
+	if (systemCartridgeType == IMAGE_GBA) // GBA
 	{
 		extern u8 *rom;
 		memcpy(romTitle, &rom[0xa0], 12); // GBA TITLE
@@ -637,7 +637,7 @@ static void SetPlayEmuSettings()
 
 #ifdef USE_GBA_CORE_V7
 	extern void SetPrefetchHack(bool);
-	if (systemCartridgeType == 0)   // lag disablement applies only to GBA
+	if (systemCartridgeType == IMAGE_GBA)   // lag disablement applies only to GBA
 		SetPrefetchHack((Movie.header.optionFlags & MOVIE_SETTING_LAGHACK) != 0);
 
 	sramInitFix = (Movie.header.optionFlags & MOVIE_SETTING_SRAMINITFIX) != 0;
@@ -775,10 +775,6 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 	// set emulator settings that make the movie more likely to stay synchronized
 	SetPlayEmuSettings();
-
-//	extern bool systemLoadBIOS();
-//	if (!systemLoadBIOS())
-//	{ loadingMovie = false; return MOVIE_UNKNOWN_ERROR; }
 
 	// read the metadata / author info from file
 	fread(Movie.authorInfo, 1, MOVIE_METADATA_SIZE, file);

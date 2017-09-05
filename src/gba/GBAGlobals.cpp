@@ -117,3 +117,5 @@ u16 IME		 = 0x0000;
 extern const u32 frameRateDividend = 262144; // 16777216;
 extern const u32 frameRateDivisor = 4389;    // 280896;
 extern const double frameRate = double(frameRateDividend) / double(frameRateDivisor);
+
+extern const u32 pixBufferSize = 4 * 241 * 162;

@@ -30,8 +30,8 @@ MovieCreate::MovieCreate(CWnd *pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(MovieCreate)
 	m_startOption  = 2; // "from start" as default
-	m_systemOption = systemCartridgeType == 0 ? 0 : (GBC_CAPABLE ? 1 : (SGB_CAPABLE ? 2 : 3)); // GBA, GBC, SGB, or GB
-	m_biosOption   = systemCartridgeType == 0 ? (useBios ? 2 : 1) : 0; // none for non-GBA, or introless and based on settings
+	m_systemOption = systemCartridgeType == IMAGE_GBA ? 0 : (GBC_CAPABLE ? 1 : (SGB_CAPABLE ? 2 : 3)); // GBA, GBC, SGB, or GB
+	m_biosOption   = systemCartridgeType == IMAGE_GBA ? (useBios ? 2 : 1) : 0; // none for non-GBA, or introless and based on settings
 	//}}AFX_DATA_INIT
 }
 
@@ -42,15 +42,15 @@ BOOL MovieCreate::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	GetDlgItem(IDC_REC_GBA)->EnableWindow(systemCartridgeType == 0);
-	GetDlgItem(IDC_REC_GBC)->EnableWindow(systemCartridgeType != 0 && GBC_CAPABLE);
-	GetDlgItem(IDC_REC_SGB)->EnableWindow(systemCartridgeType != 0 && SGB_CAPABLE);
-	GetDlgItem(IDC_REC_GB)->EnableWindow(systemCartridgeType != 0);
+	GetDlgItem(IDC_REC_GBA)->EnableWindow(systemCartridgeType == IMAGE_GBA);
+	GetDlgItem(IDC_REC_GBC)->EnableWindow(systemCartridgeType != IMAGE_GBA && GBC_CAPABLE);
+	GetDlgItem(IDC_REC_SGB)->EnableWindow(systemCartridgeType != IMAGE_GBA && SGB_CAPABLE);
+	GetDlgItem(IDC_REC_GB)->EnableWindow(systemCartridgeType != IMAGE_GBA);
 
-	GetDlgItem(IDC_REC_NOBIOS)->EnableWindow(systemCartridgeType != 0);
-	GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(systemCartridgeType == 0);
-	GetDlgItem(IDC_REC_GBABIOS)->EnableWindow(systemCartridgeType == 0);
-	GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(systemCartridgeType == 0);
+	GetDlgItem(IDC_REC_NOBIOS)->EnableWindow(systemCartridgeType != IMAGE_GBA);
+	GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(systemCartridgeType == IMAGE_GBA);
+	GetDlgItem(IDC_REC_GBABIOS)->EnableWindow(systemCartridgeType == IMAGE_GBA);
+	GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(systemCartridgeType == IMAGE_GBA);
 
 	CheckRadioButton(IDC_REC_NOBIOS, IDC_REC_GBABIOSINTRO, IDC_REC_NOBIOS + m_biosOption);
 
@@ -236,7 +236,7 @@ void MovieCreate::OnBnClickedCancel()
 void MovieCreate::OnBnClickedRecstart()
 {
 	m_startOption = 2;
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(TRUE);
 		GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(TRUE);
@@ -252,7 +252,7 @@ void MovieCreate::OnBnClickedRecstart()
 void MovieCreate::OnBnClickedRecreset()
 {
 	m_startOption = 1;
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		GetDlgItem(IDC_REC_EMUBIOS)->EnableWindow(TRUE);
 		GetDlgItem(IDC_REC_GBABIOSINTRO)->EnableWindow(TRUE);
@@ -270,7 +270,7 @@ void MovieCreate::OnBnClickedRecnow()
 	m_startOption = 0;
 
 	// starting from emulator bios file from a snapshot made while playing with GBA bios file won't work
-	if (systemCartridgeType == 0 && useBios)
+	if (systemCartridgeType == IMAGE_GBA && useBios)
 	{
 		if (m_biosOption == 1)
 		{
@@ -281,7 +281,7 @@ void MovieCreate::OnBnClickedRecnow()
 	}
 
 	// "with intro" distinction makes no sense when continuing from snapshot
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		if (m_biosOption == 3)
 		{
@@ -292,7 +292,7 @@ void MovieCreate::OnBnClickedRecnow()
 	}
 
 	// can't switch systems while recording from snapshot!
-	if (systemCartridgeType != 0)
+	if (systemCartridgeType != IMAGE_GBA)
 	{
 		int curSystemOption = (gbCgbMode == 1 ? 1 : (gbSgbMode == 1 ? 2 : 3)); // GBC, SGB, or GB
 		GetDlgItem(IDC_REC_GBC)->EnableWindow(curSystemOption == 1);

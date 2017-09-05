@@ -63,6 +63,7 @@ extern int emulating;
 
 extern u8 *bios;
 extern u8 *pix;
+extern u8 osd[];
 
 extern u16 currentButtons[4];
 extern u16 lastButtons[4];

@@ -20,6 +20,16 @@ EmulatedSystemCounters systemCounters =
 int emulating = 0;
 
 u8 *bios = NULL;
+
+struct Pix
+{
+	u8 *data;
+	int pitch;
+	int bpp;
+	int width;
+	int height;
+};
+
 u8 *pix	 = NULL;
 
 u16	  currentButtons[4] = { 0, 0, 0, 0 };
@@ -96,3 +106,6 @@ bool8 soundLowPass	  = false;
 bool8 soundReverse	  = false;
 int32 soundEnableFlag = 0x3ff;
 bool8 soundOffFlag	  = false;
+
+// I am just too lazy...
+u8 osd[4 * 257 * 226];

@@ -67,6 +67,7 @@ public:
 	int		  sizeY;
 	int		  surfaceSizeX;
 	int		  surfaceSizeY;
+	double	  scale;
 	int		  videoOption;
 	bool	  fullScreenStretch;
 	bool	  disableStatusMessage;

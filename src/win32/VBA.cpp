@@ -274,6 +274,7 @@ VBA::VBA() : emulator(::theEmulator)
 	surfaceSizeY		 = 0;
 	sizeX				 = 0;
 	sizeY				 = 0;
+	scale				 = 1.0;
 	videoOption			 = 0;
 	fullScreenStretch	 = false;
 	disableStatusMessage = false;
@@ -1004,6 +1005,7 @@ void VBA::updateFilter()
 			case 0: // normal -> 1x texture
 				rect.right	= sizeX;
 				rect.bottom = sizeY;
+				memset(delta, 255, sizeof(delta));
 				break;
 			default: // other -> 2x texture
 				rect.right	= sizeX * 2;
@@ -1054,8 +1056,8 @@ void VBA::recreateMenuBar()
 
 void VBA::updateMenuBar()
 {
-	if (flagHideMenu)
-		return;
+	//if (flagHideMenu)
+	//	return;
 
 	recreateMenuBar();
 
@@ -1293,18 +1295,22 @@ void VBA::updateWindowSize(int value)
 	switch (videoOption)
 	{
 	case VIDEO_1X:
+		scale = 1;
 		surfaceSizeX = sizeX;
 		surfaceSizeY = sizeY;
 		break;
 	case VIDEO_2X:
+		scale = 2;
 		surfaceSizeX = sizeX * 2;
 		surfaceSizeY = sizeY * 2;
 		break;
 	case VIDEO_3X:
+		scale = 3;
 		surfaceSizeX = sizeX * 3;
 		surfaceSizeY = sizeY * 3;
 		break;
 	case VIDEO_4X:
+		scale = 4;
 		surfaceSizeX = sizeX * 4;
 		surfaceSizeY = sizeY * 4;
 		break;
@@ -1325,6 +1331,7 @@ void VBA::updateWindowSize(int value)
 			double scaleMin = scaleX < scaleY ? scaleX : scaleY;
 			if (fsMaxScale)
 				scaleMin = scaleMin > fsMaxScale ? fsMaxScale : scaleMin;
+			scale = scaleMin;
 			surfaceSizeX = (int)(scaleMin * sizeX);
 			surfaceSizeY = (int)(scaleMin * sizeY);
 		}
@@ -1390,15 +1397,31 @@ void VBA::updateWindowSize(int value)
 	else
 	{
 		m_pMainWnd->SetWindowPos(0, //HWND_TOPMOST,
-		                         x,
-		                         y,
-		                         winSizeX,
-		                         winSizeY,
-		                         SWP_NOMOVE | SWP_SHOWWINDOW);
+								 x,
+								 y,
+								 winSizeX,
+								 winSizeY,
+								 SWP_NOMOVE | SWP_SHOWWINDOW);
 	}
 
 	updateMenuBar(); // add menubar first of all, or winGetMenuBarHeight() will get random height.
 	winAccelMgr.UpdateMenu(menu);
+
+	if (videoOption <= VIDEO_4X)
+	{
+		RECT clientRect;
+		m_pMainWnd->GetClientRect(&clientRect);
+		winSizeX += int(sizeX * scale) - clientRect.right;
+		winSizeY += int(sizeY * scale) - clientRect.bottom;
+	}
+
+	m_pMainWnd->SetWindowPos(0, //HWND_TOPMOST,
+							x,
+							y,
+							winSizeX,
+							winSizeY,
+							SWP_NOMOVE | SWP_SHOWWINDOW);
+
 	adjustDestRect();
 
 	updateIFB();

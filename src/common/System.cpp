@@ -2,6 +2,7 @@
 #include "SystemGlobals.h"
 #include "inputGlobal.h"
 #include "../gb/gbGlobals.h"
+#include "../gba/GBAGlobals.h"
 #include "../gba/GBA.h"
 #include "../common/movie.h"
 #include "../common/vbalua.h"
@@ -323,6 +324,8 @@ void systemFrameBoundaryWork()
 // BIOS, only GBA BIOS supported at present
 bool systemLoadBIOS(const char *biosFileName, bool useBiosFile)
 {
+	if (systemCartridgeType != IMAGE_GBA) return false;
+
 	useBios = false;
 	if (useBiosFile)
 	{
@@ -398,6 +401,11 @@ void systemGetLCDBaseOffset(int32 &xofs, int32 &yofs)
 		yofs = 40;
 		break;
 	}
+}
+
+void systemClonePixBuffer(u8 *dst)
+{
+	memcpy(dst, pix, systemIsRunningGBA() ? pixBufferSize : gbPixBufferSize);
 }
 
 // sound

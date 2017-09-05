@@ -637,26 +637,27 @@ void DirectDrawDisplay::render()
 		}
 	}
 
+	u8 *data = pix;
+	int dataPitch = theApp.filterWidth * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
+
+	if (textMethod != 0) // do not draw Lua HUD to a video dump
+	{
+		systemClonePixBuffer(osd);
+		data = osd;
+		systemRenderLua((u8 *)data, dataPitch);
+	}
+
 	if (hret == DD_OK)
 	{
 		if (theApp.filterFunction)
 		{
-			if (systemColorDepth == 16)
-				(*theApp.filterFunction)(pix + theApp.filterWidth * 2 + 4,
-				                         theApp.filterWidth * 2 + 4,
-				                         (u8 *)theApp.delta,
-				                         (u8 *)ddsDesc.lpSurface,
-				                         ddsDesc.lPitch,
-				                         theApp.filterWidth,
-				                         theApp.filterHeight);
-			else
-				(*theApp.filterFunction)(pix + theApp.filterWidth * 4 + 4,
-				                         theApp.filterWidth * 4 + 4,
-				                         (u8 *)theApp.delta,
-				                         (u8 *)ddsDesc.lpSurface,
-				                         ddsDesc.lPitch,
-				                         theApp.filterWidth,
-				                         theApp.filterHeight);
+			(*theApp.filterFunction)(data + dataPitch,
+			                         dataPitch,
+			                         (u8 *)theApp.delta,
+			                         (u8 *)ddsDesc.lpSurface,
+			                         ddsDesc.lPitch,
+			                         theApp.filterWidth,
+			                         theApp.filterHeight);
 		}
 		else
 		{
@@ -668,7 +669,7 @@ void DirectDrawDisplay::render()
 				mov eax, copyX;
 				mov ebx, copyY;
 
-				mov esi, pix;
+				mov esi, data;
 				mov edi, ddsDesc.lpSurface;
 				mov edx, ddsDesc.lPitch;
 				cmp systemColorDepth, 16;

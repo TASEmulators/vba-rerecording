@@ -307,7 +307,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 					code[4] = '\0';
 					p1 += sprintf(p1, "code=%s  ", code);
 				}
-				if (systemCartridgeType == 0)
+				if (systemCartridgeType == IMAGE_GBA)
 				{
 					memcpy(code, &romGameCode, 4);
 					code[4] = '\0';
@@ -322,7 +322,7 @@ void MovieOpen::OnBnClickedMovieRefresh()
 						"(bios=none)  " : "(bios=%04x)  ") : "check=%04x  ",
 				        movieInfo.header.romOrBiosChecksum);
 				p2 += sprintf(p2,
-				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? 
+				        checksum == 0 ? "(bios=none)  " : systemCartridgeType == IMAGE_GBA ? 
 						"(bios=%04x)  " : "check=%04x  ",
 				        checksum);
 			}
@@ -387,24 +387,27 @@ HBRUSH MovieOpen::OnCtlColor(CDC *pDC, CWnd *pWnd, UINT nCtlColor)
 
 void MovieOpen::OnBnClickedOk()
 {
-	bool useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
-	extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
-	if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
+	if (movieInfo.header.typeFlags & MOVIE_TYPE_GBA)
 	{
-		if (useBiosFile)
+		bool useBiosFile = (movieInfo.header.optionFlags & MOVIE_SETTING_USEBIOSFILE) != 0;
+		extern bool systemLoadBIOS(const char *biosFileName, bool useBiosFile);
+		if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
 		{
-			systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
-			((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
-			if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
+			if (useBiosFile)
 			{
-				systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
-				return;
+				systemMessage(0, "This movie requires a valid GBA BIOS file to play.\nPlease locate a BIOS file.");
+				((MainWnd *)theApp.m_pMainWnd)->OnOptionsEmulatorSelectbiosfile();
+				if (!systemLoadBIOS(theApp.biosFileName, useBiosFile))
+				{
+					systemMessage(0, "\"%s\" is not a valid BIOS file; cannot play movie without one.", theApp.biosFileName);
+					return;
+				}
 			}
 		}
-	}
 
-	theApp.useBiosFile = useBiosFile;
-	theApp.skipBiosIntro = (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
+		theApp.useBiosFile = useBiosFile;
+		theApp.skipBiosIntro = (movieInfo.header.optionFlags & MOVIE_SETTING_SKIPBIOSINTRO) != 0;
+	}
 
 	int code = VBAMovieOpen(moviePhysicalName, IsDlgButtonChecked(IDC_READONLY) != FALSE);
 

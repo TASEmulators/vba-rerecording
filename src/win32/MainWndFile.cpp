@@ -182,15 +182,23 @@ void MainWnd::OnFileLoad()
 
 	if (dlg.DoModal() == IDOK)
 	{
+		CallRegisteredLuaFunctions(LUACALL_BEFORESTATELOAD);
+
 		bool res = winReadSaveGame(dlg.GetPathName());
 
-		theApp.rewindCount		= 0;
-		theApp.rewindCounter	= 0;
-		theApp.rewindSaveNeeded = false;
+		// deleting rewinds because you loaded a save state is stupid
+		///  theApp.rewindCount = 0;
+		///  theApp.rewindCounter = 0;
+		///  theApp.rewindSaveNeeded = false;
 
 		if (res)
 		{
 			systemScreenMessage(winResLoadString(IDS_LOADED_STATE));
+
+			theApp.frameSearching = false;
+			theApp.frameSearchSkipping = false;
+
+			CallRegisteredLuaFunctions(LUACALL_AFTERSTATELOAD);
 		}
 	}
 }
@@ -205,6 +213,8 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 	nID = nID + 1 - ID_FILE_LOADGAME_SLOT1;
 
 	CString filename = winGetSavestateFilename(theApp.gameFilename, nID);
+
+	CallRegisteredLuaFunctions(LUACALL_BEFORESTATELOAD);
 
 	bool res = winReadSaveGame(filename);
 
@@ -263,6 +273,8 @@ BOOL MainWnd::OnFileLoadSlot(UINT nID)
 
 		theApp.frameSearching	   = false;
 		theApp.frameSearchSkipping = false;
+
+		CallRegisteredLuaFunctions(LUACALL_AFTERSTATELOAD);
 	}
 
 	return res;
@@ -283,9 +295,15 @@ void MainWnd::OnFileSave()
 
 	if (dlg.DoModal() == IDOK)
 	{
+		CallRegisteredLuaFunctions(LUACALL_BEFORESTATESAVE);
+
 		bool res = winWriteSaveGame(dlg.GetPathName());
 		if (res)
+		{
 			systemScreenMessage(winResLoadString(IDS_WROTE_STATE));
+
+			CallRegisteredLuaFunctions(LUACALL_AFTERSTATESAVE);
+		}
 	}
 }
 
@@ -303,13 +321,20 @@ BOOL MainWnd::OnFileSaveSlot(UINT nID)
 
 	CString filename = winGetSavestateFilename(theApp.gameFilename, nID);
 
+	CallRegisteredLuaFunctions(LUACALL_BEFORESTATESAVE);
+
 	bool res = winWriteSaveGame(filename);
 
-	CString format = winResLoadString(IDS_WROTE_STATE_N);
-	CString buffer;
-	buffer.Format(format, nID);
+	if (res)
+	{
+		CString format = winResLoadString(IDS_WROTE_STATE_N);
+		CString buffer;
+		buffer.Format(format, nID);
 
-	systemScreenMessage(buffer);
+		systemScreenMessage(buffer);
+
+		CallRegisteredLuaFunctions(LUACALL_AFTERSTATESAVE);
+	}
 
 	return res;
 }
@@ -381,7 +406,7 @@ void MainWnd::OnFileImportGamesharkcodefile()
 	theApp.winCheckFullscreen();
 
 	LPCTSTR exts[] = { NULL };
-	CString filter = systemCartridgeType == 0 ? winResLoadFilter(IDS_FILTER_SPC) : winResLoadFilter(IDS_FILTER_GCF);
+	CString filter = systemCartridgeType == IMAGE_GBA ? winResLoadFilter(IDS_FILTER_SPC) : winResLoadFilter(IDS_FILTER_GCF);
 	CString title  = winResLoadString(IDS_SELECT_CODE_FILE);
 
 	FileDlg dlg(this, "", filter, 0, "", exts, "", title, false, true);
@@ -508,7 +533,7 @@ void MainWnd::OnFileExportGamesharksnapshot()
 
 void MainWnd::OnUpdateFileExportGamesharksnapshot(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(emulating && systemCartridgeType == 0);
+	pCmdUI->Enable(emulating && systemCartridgeType == IMAGE_GBA);
 }
 
 void MainWnd::OnFileQuickScreencapture()
@@ -565,7 +590,7 @@ void MainWnd::OnUpdateFileScreencapture(CCmdUI *pCmdUI)
 void MainWnd::OnFileRominformation()
 {
 	theApp.winCheckFullscreen();
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		RomInfoGBA dlg(rom);
 		dlg.DoModal();
@@ -589,7 +614,7 @@ void MainWnd::OnFileTogglemenu()
 	if (theApp.menuToggle)
 	{
 		SetMenu(&theApp.m_menu);
-		if (theApp.tripleBuffering)
+		if (theApp.videoOption > VIDEO_4X && theApp.tripleBuffering)
 		{
 			if (theApp.display)
 				theApp.display->renderMenu();
@@ -605,7 +630,7 @@ void MainWnd::OnFileTogglemenu()
 
 void MainWnd::OnUpdateFileTogglemenu(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(theApp.videoOption > VIDEO_4X);
+	pCmdUI->SetCheck(theApp.menuToggle);
 }
 
 void MainWnd::OnFileSavegameOldestslot()
@@ -938,12 +963,10 @@ void MainWnd::OnFileLuaOpen()
 {
 	theApp.winCheckFullscreen();
 
-	if (!LuaConsoleHWnd)
-	{
-		LuaConsoleHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_LUA), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) DlgLuaScriptDialog);
-	}
-	else
-		::SetForegroundWindow(LuaConsoleHWnd);
+	if (LuaConsoleHWnd)
+		::PostMessage(LuaConsoleHWnd, WM_CLOSE, 0, 0);
+
+	LuaConsoleHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_LUA), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC)DlgLuaScriptDialog);
 }
 
 void MainWnd::OnUpdateFileLuaOpen(CCmdUI *pCmdUI)

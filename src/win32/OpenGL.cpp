@@ -257,44 +257,32 @@ void OpenGLDisplay::render()
 {
 	void (*filterFunction)(u8 *, u32, u8 *, u8 *, u32, int, int) = theApp.filterFunction;
 	int  filterWidth = theApp.filterWidth, filterHeight = theApp.filterHeight;
-/*
-    if(textMethod == 1)
-    {
-        int copyX, copyY;
-        systemGetLCDResolution(copyX, copyY);
 
-        extern void Simple1x(u8*,u32,u8*,u8*,u32,int,int);
-        filterFunction = Simple1x;
-        filterWidth = copyX;
-        filterHeight = copyY;
-    }
- */
-	int pitch = filterWidth * 4 + 4;
-	u8 *data  = pix + (theApp.sizeX+1)*4;
+	int rectWidth = theApp.rect.right - theApp.rect.left, dataHeight = theApp.rect.bottom - theApp.rect.top;
+	int filterPitch = rectWidth * 4;
 
-	int filterPitch = theApp.rect.right*4;
+	u8 *data = pix;
+	int dataPitch = filterWidth * 4 + 4;
 
-/*
-	// HACK: see below
-	if (textMethod == 1 && !filterFunction)
+	if (textMethod != 0) // do not draw Lua HUD to a video dump
 	{
-		textMethod = 0; // must not be after systemMessage!
-		systemMessage(
-		    0,
-		    "The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
+		systemClonePixBuffer(osd);
+		data = osd;
+		systemRenderLua((u8 *)data, dataPitch);
 	}
-*/
 
 	if (filterFunction)
 	{
-		data = filterData;
-		filterFunction(pix + pitch,
-		               pitch,
+		filterFunction(data + dataPitch,
+		               dataPitch,
 		               (u8 *)theApp.delta,
 		               (u8 *)filterData,
 		               filterPitch,
 		               filterWidth,
 		               filterHeight);
+
+		data = filterData;
+		dataPitch = filterPitch;
 	}
 
 	if (theApp.showSpeed && theApp.videoOption > VIDEO_4X)
@@ -307,80 +295,62 @@ void OpenGLDisplay::render()
 			        systemFrameSkip,
 			        theApp.showRenderedFrames);
 
-		if (filterFunction)
-		{
-			if (theApp.showSpeedTransparent)
-				drawTextTransp((u8 *)filterData,
-				               filterPitch,
-				               theApp.rect.left+10,
-				               theApp.rect.bottom-10,
-				               buffer);
-			else
-				drawText((u8 *)filterData,
-				         filterPitch,
-			             theApp.rect.left+10,
-			             theApp.rect.bottom-10,
-				         buffer);
-		}
+		if (theApp.showSpeedTransparent)
+			drawTextTransp(data,
+				dataPitch,
+				theApp.rect.left + 10,
+				theApp.rect.bottom - 10,
+				buffer);
 		else
-		{
-			if (theApp.showSpeedTransparent)
-				drawTextTransp((u8 *)pix,
-				               pitch,
-				               theApp.rect.left+10,
-				               theApp.rect.bottom-10,
-				               buffer);
-			else
-				drawText((u8 *)pix,
-				         pitch,
-			             theApp.rect.left+10,
-			             theApp.rect.bottom-10,
-				         buffer);
-		}
+			drawText(data,
+				dataPitch,
+				theApp.rect.left + 10,
+				theApp.rect.bottom - 10,
+				buffer);
 	}
 
-	if (textMethod == 1 && filterFunction)
+	if (textMethod == 1)
 	{
-		DrawTextMessages((u8 *)filterData, filterPitch, theApp.rect.left, theApp.rect.bottom);
+		DrawTextMessages((u8 *)data, dataPitch, theApp.rect.left, theApp.rect.bottom);
 	}
 
 	// Texturemap complete texture to surface so we have free scaling
 	// and antialiasing
 	if (filterFunction)
 	{
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, theApp.rect.right);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, rectWidth);
 	}
 	else
 	{
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, theApp.sizeX+1);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, theApp.sizeX + 1);
 	}
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0,
-					0, 0, theApp.rect.right, theApp.rect.bottom,
+					theApp.rect.left, theApp.rect.top, rectWidth, dataHeight,
 	                GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	if (theApp.glType == 0)
 	{
 		glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
-		glTexCoord2f(theApp.rect.right/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
-		glTexCoord2f(0.0, theApp.rect.bottom/size); glVertex3i(0, theApp.surfaceSizeY, 0);
-		glTexCoord2f(theApp.rect.right/size, theApp.rect.bottom/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.left / size, theApp.rect.top / size); glVertex3i(0, 0, 0);
+		glTexCoord2f(theApp.rect.right / size, theApp.rect.top / size); glVertex3i(theApp.surfaceSizeX, 0, 0);
+		glTexCoord2f(theApp.rect.left / size, theApp.rect.bottom / size); glVertex3i(0, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.right / size, theApp.rect.bottom / size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
 		glEnd();
 	}
 	else
 	{
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3i(0, 0, 0);
-		glTexCoord2f(theApp.rect.right/size, 0.0); glVertex3i(theApp.surfaceSizeX, 0, 0);
-		glTexCoord2f(theApp.rect.right/size, theApp.rect.bottom/size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
-		glTexCoord2f(0.0, theApp.rect.bottom/size); glVertex3i(0, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.left / size, theApp.rect.top / size); glVertex3i(0, 0, 0);
+		glTexCoord2f(theApp.rect.right / size, theApp.rect.top / size); glVertex3i(theApp.surfaceSizeX, 0, 0);
+		glTexCoord2f(theApp.rect.right / size, theApp.rect.bottom / size); glVertex3i(theApp.surfaceSizeX, theApp.surfaceSizeY, 0);
+		glTexCoord2f(theApp.rect.left / size, theApp.rect.bottom / size); glVertex3i(0, theApp.surfaceSizeY, 0);
 		glEnd();
 	}
 
 	CDC *dc = theApp.m_pMainWnd->GetDC();
 
-	if (textMethod == 2 || (textMethod == 1 && !filterFunction)) // HACK: so that textMethod isn't changed
+	if (textMethod == 2)
 	{
 		for (int slot = 0; slot < SCREEN_MESSAGE_SLOTS; slot++)
 		{

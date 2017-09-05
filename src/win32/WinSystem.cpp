@@ -25,7 +25,7 @@
 #include <cassert>
 
 u32	 RGB_LOW_BITS_MASK		 = 0;
-int	 systemCartridgeType	 = 0;
+int	 systemCartridgeType	 = IMAGE_GBA;
 int	 systemSpeed			 = 0;
 bool systemSoundOn			 = false;
 u32	 systemColorMap32[0x10000];
@@ -191,7 +191,7 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 			res &= ~BUTTON_MOTION_MASK;
 	}
 
-	if (systemCartridgeType != 0 && !gbSgbMode) // regular GB has no L/R buttons
+	if (systemCartridgeType != IMAGE_GBA && !gbSgbMode) // regular GB has no L/R buttons
 	{
 		if (res & (BUTTON_GBA_ONLY))
 			res &= ~BUTTON_GBA_ONLY;
@@ -202,31 +202,27 @@ u32 systemGetOriginalJoypad(int i, bool sensor)
 
 // screen
 
-void systemRenderLua()
+void systemRenderLua(u8 *data, int pitch)
 {
-	int copyX, copyY;
-	int screenX, screenY;
+	int copyW, copyH;
+	int screenW, screenH;
 	int copyOffsetX, copyOffsetY;
-	systemGetLCDResolution(copyX, copyY);
-	systemGetLCDBaseSize(screenX, screenY);
+	systemGetLCDResolution(copyW, copyH);
+	systemGetLCDBaseSize(screenW, screenH);
 	systemGetLCDBaseOffset(copyOffsetX, copyOffsetY);
 
-	int pitch = copyX * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);  // FIXME: sure?
-	++copyOffsetY; // FIXME: don't know why it's needed
+	//int displayW = right - left;
+	//int displayH = bottom - top;
+	//screenW = screenW * displayW / copyW;
+	//screenH = screenH * displayH / copyH;
+	//copyOffsetX = left + copyOffsetX * displayW / copyW;
+	//copyOffsetY = top  + copyOffsetY * displayH / copyH;
 
-				   // "in-game" text rendering
-	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
-	{
-		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
-		VBALuaClearGui();
-		DrawTextMessages((u8 *)pix, pitch, 0, copyY);
-	}
+	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
+	//int pitch = ppl * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
-	if (textMethod != 0) // do not draw Lua HUD to a video dump
-	{
-		VBALuaGui(&pix[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], copyX, screenX, screenY);
-		VBALuaClearGui();
-	}
+	VBALuaGui(&data[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], pitch, screenW, screenH);
+	VBALuaClearGui();
 }
 
 // delayed repaint
@@ -310,8 +306,15 @@ void systemRenderFrame()
 {
 	++theApp.renderedFrames;
 
-	if (textMethod == 0)
-		systemRenderLua();
+	// "in-game" text rendering
+	if (textMethod == 0) // transparent text can only be painted once, so timed messages will not be updated
+	{
+		int pitch = theApp.filterWidth * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
+		int copyW, copyH;
+		systemGetLCDResolution(copyW, copyH);
+		systemRenderLua(&pix[pitch], pitch);
+		DrawTextMessages(&pix[pitch], pitch, 0, copyH);
+	}
 
 	VBAUpdateFrameCountDisplay();
 	VBAUpdateButtonPressDisplay();
@@ -320,9 +323,6 @@ void systemRenderFrame()
 	int copyX, copyY;
 	systemGetLCDResolution(copyX, copyY);
 	systemRecordAviFrame(copyX, copyY);
-
-	if (textMethod != 0)
-		systemRenderLua();
 
 	// interframe blending
 	if (theApp.ifbFunction)
@@ -717,7 +717,7 @@ void systemGbBorderOn()
 
 bool systemIsRunningGBA()
 {
-	return (systemCartridgeType == 0);
+	return (systemCartridgeType == IMAGE_GBA);
 }
 
 bool systemIsSpedUp()

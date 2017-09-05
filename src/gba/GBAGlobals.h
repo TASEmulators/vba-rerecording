@@ -174,4 +174,6 @@ extern const u32 frameRateDividend;
 extern const u32 frameRateDivisor;
 extern const double frameRate;
 
+extern const u32 pixBufferSize;
+
 #endif // VBA_GBA_GLOBALS_H

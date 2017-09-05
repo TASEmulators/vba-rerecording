@@ -155,11 +155,11 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 			layoutState.valid = false;
 		}
 
-		DragAcceptFiles(hDlg, true);
+		DragAcceptFiles(hDlg, TRUE);
 		SetDlgItemText(hDlg, IDC_EDIT_LUAPATH, VBAGetLuaScriptName());
 
 		SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &LuaConsoleLogFont, 0); // reset with an acceptable font
-		return true;
+		return TRUE;
 	}	break;
 
 	case WM_SIZE:
@@ -235,7 +235,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 		switch (LOWORD(wParam)) {
 			case IDOK:
 			case IDCANCEL: {
-				EndDialog(hDlg, true); // goto case WM_CLOSE;
+				DestroyWindow(hDlg);
 			}	break;
 
 			case IDC_BUTTON_LUARUN:
@@ -295,7 +295,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 				{
 					SetWindowText(GetDlgItem(hDlg, IDC_EDIT_LUAPATH), luaName);
 				}
-				return true;
+				return TRUE;
 			}	break;
 
 			case IDC_EDIT_LUAPATH:
@@ -362,11 +362,11 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_LUAPATH), filename);
 		}
 		DragFinish(hDrop);
-		return true;
+		return TRUE;
 	}	break;
 
 	}
 
-	return false;
+	return FALSE;
 
 }

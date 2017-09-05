@@ -28,7 +28,7 @@ void MainWnd::OnCheatsSearchforcheats()
 		theApp.modelessCheatDialogIsOpen = false;
 	}
 
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		if (theApp.pauseDuringCheatSearch)
 		{
@@ -68,7 +68,7 @@ void MainWnd::OnUpdateCheatsSearchforcheats(CCmdUI*pCmdUI)
 void MainWnd::OnCheatsCheatlist()
 {
 	theApp.winCheckFullscreen();
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		GBACheatList dlg;
 		dlg.DoModal();

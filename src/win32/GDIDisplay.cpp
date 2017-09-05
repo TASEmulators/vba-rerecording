@@ -178,61 +178,32 @@ void GDIDisplay::render()
 {
 	void (*filterFunction)(u8 *, u32, u8 *, u8 *, u32, int, int) = theApp.filterFunction;
 	int  filterWidth = theApp.filterWidth, filterHeight = theApp.filterHeight;
-/*
-    if(textMethod == 1)
-    {
-        int copyX = 240, copyY = 160;
-        if(systemCartridgeType == 1)
-            if(gbBorderOn) copyX = 256, copyY = 224;
-            else           copyX = 160, copyY = 144;
 
-        extern void Simple1x(u8*,u32,u8*,u8*,u32,int,int);
-        filterFunction = Simple1x;
-        filterWidth = copyX*2;
-        filterHeight = copyY*2;
-    }
- */
-	BITMAPINFO *bi = (BITMAPINFO *)info;
-	bi->bmiHeader.biWidth  = filterWidth+1;
-	bi->bmiHeader.biHeight = -filterHeight;
+	int rectWidth = theApp.rect.right - theApp.rect.left, rectHeight = theApp.rect.bottom - theApp.rect.top;
+	int filterPitch = rectWidth * (systemColorDepth / 8);
 
-	int pitch = filterWidth * 2 + 4;
-	if (systemColorDepth == 32)
-		pitch = filterWidth * 4 + 4;
-	// FIXME: is the 24bit color depth still being used nowadays?
-	else if (systemColorDepth == 24)
-		pitch = filterWidth * 3;
+	u8 *data = pix;
+	int dataPitch = theApp.filterWidth * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
-	// FIXME: is this working if systemColorDepth == 24?
-	int filterPitch = theApp.rect.right*2;
-	if (systemColorDepth == 32)
-		filterPitch = theApp.rect.right*4;
-	else if (systemColorDepth == 24)
-		filterPitch = theApp.rect.right*3;
-
-/*
-	// HACK: see below
-	if (textMethod == 1 && !filterFunction)
+	if (textMethod != 0) // do not draw Lua HUD to a video dump
 	{
-		textMethod = 0; // must not be after systemMessage!
-		systemMessage(
-		    0,
-		    "The \"On Game\" text display mode does not work with this combination of renderers and filters.\nThe display mode is automatically being changed to \"In Game\" instead,\nbut this may cause message text to go into AVI recordings and screenshots.\nThis can be reconfigured by choosing \"Options->Video->Text Display Options...\"");
+		systemClonePixBuffer(osd);
+		data = osd;
+		systemRenderLua((u8 *)data, dataPitch);
 	}
-*/
 
 	if (filterFunction)
 	{
-		bi->bmiHeader.biWidth  = theApp.rect.right;
-		bi->bmiHeader.biHeight = -theApp.rect.bottom;
-
-		(*filterFunction)(pix + pitch,
-						  pitch,
+		(*filterFunction)(data + dataPitch,
+						  dataPitch,
 						  (u8 *)theApp.delta,
 						  (u8 *)filterData,
 						  filterPitch,
 						  filterWidth,
 						  filterHeight);
+
+		data = filterData;
+		dataPitch = filterPitch;
 	}
 
 	if (theApp.showSpeed && theApp.videoOption > VIDEO_4X)
@@ -245,39 +216,21 @@ void GDIDisplay::render()
 			        systemFrameSkip,
 			        theApp.showRenderedFrames);
 
-		if (filterFunction)
-		{
-			if (theApp.showSpeedTransparent)
-				drawTextTransp((u8 *)filterData,
-				               filterPitch,
-				               theApp.rect.left+10,
-				               theApp.rect.bottom-10,
-				               buffer);
-			else
-				drawText((u8 *)filterData,
-				         filterPitch,
-			             theApp.rect.left+10,
-			             theApp.rect.bottom-10,
-				         buffer);
-		}
+		if (theApp.showSpeedTransparent)
+			drawTextTransp((u8 *)data,
+				           dataPitch,
+				           theApp.rect.left + 10,
+				           theApp.rect.bottom - 10,
+				           buffer);
 		else
-		{
-			if (theApp.showSpeedTransparent)
-				drawTextTransp((u8 *)pix,
-				               pitch,
-				               theApp.rect.left+10,
-				               theApp.rect.bottom-10,
-				               buffer);
-			else
-				drawText((u8 *)pix,
-				         pitch,
-			             theApp.rect.left+10,
-			             theApp.rect.bottom-10,
-				         buffer);
-		}
+			drawText((u8 *)data,
+				     dataPitch,
+			         theApp.rect.left + 10,
+			         theApp.rect.bottom - 10,
+				     buffer);
 	}
 
-	if (textMethod == 1 && filterFunction)
+	if (textMethod == 1)
 	{
 		DrawTextMessages((u8 *)filterData, filterPitch, theApp.rect.left, theApp.rect.bottom);
 	}
@@ -294,6 +247,10 @@ void GDIDisplay::render()
 
 	CDC *dc = pWnd->GetDC();
 
+	BITMAPINFO *bi = (BITMAPINFO *)info;
+	bi->bmiHeader.biWidth = rectWidth;
+	bi->bmiHeader.biHeight = -rectHeight;
+
 	StretchDIBits((HDC)*dc,
 	              p.x,
 	              p.y,
@@ -303,12 +260,12 @@ void GDIDisplay::render()
 	              0,
 	              theApp.rect.right,
 	              theApp.rect.bottom,
-	              filterFunction ? filterData : pix+pitch,
+	              filterData,
 	              bi,
 	              DIB_RGB_COLORS,
 	              SRCCOPY);
 
-	if (textMethod == 2 || (textMethod == 1 && !filterFunction)) // HACK: so that textMethod isn't changed
+	if (textMethod == 2)
 		for (int slot = 0; slot < SCREEN_MESSAGE_SLOTS; slot++)
 		{
 			if (theApp.screenMessage[slot])

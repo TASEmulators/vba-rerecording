@@ -181,8 +181,13 @@ void SimpleNx(u8 *srcPtr, u32 srcPitch, u8 * /* deltaPtr */,
 
 #endif
 
-typedef void (*SimpleNxFP)(u8 *, u32, u8 *, u8 *, u32, int, int);
+typedef void(*SimpleNxFP)(u8 *, u32, u8 *, u8 *, u32, int, int);
 
+SimpleNxFP SimpleNx16[5] = { NULL, SimpleNx<1, u16>, SimpleNx<2, u16>, SimpleNx<3, u16>, SimpleNx<4, u16> };
+SimpleNxFP SimpleNx32[5] = { NULL, SimpleNx<1, u32>, SimpleNx<2, u32>, SimpleNx<3, u32>, SimpleNx<4, u32> };
+
+SimpleNxFP Simple1x16 = SimpleNx<1, u16>;
+SimpleNxFP Simple1x32 = SimpleNx<1, u32>;
 SimpleNxFP Simple3x16 = SimpleNx<3, u16>;
 SimpleNxFP Simple3x32 = SimpleNx<3, u32>;
 SimpleNxFP Simple4x16 = SimpleNx<4, u16>;

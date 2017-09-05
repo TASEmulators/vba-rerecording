@@ -11,6 +11,7 @@
 #include <cassert>
 #include <windows.h>
 #include <string>
+#include "../../common/Util.h"
 
 /*
 #include <commctrl.h>
@@ -1179,7 +1180,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 						else if(rswatches[watchIndex].Type == 'h')
 							numberType = 2;
 
-						if(systemCartridgeType == 0)
+						if(systemCartridgeType == IMAGE_GBA)
 						{
 							AddCheat dlg (address/*, hDlg*/);
 							if(sizeType != -1) dlg.sizeType = sizeType;

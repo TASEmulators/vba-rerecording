@@ -5,6 +5,7 @@
 #include "../resource.h"
 #include "Disassemble.h"
 #include "../VBA.h"
+#include "../../common/Util.h"
 
 #include "../../gba/armdis.h"
 #include "../../gba/GBA.h"
@@ -281,7 +282,7 @@ void Disassemble::refresh()
 	count = (r.bottom - r.top+1)/h;
 
 	m_list.ResetContent();
-	if (!systemIsEmulating() && systemCartridgeType == 0)
+	if (!systemIsEmulating() && systemCartridgeType == IMAGE_GBA)
 		return;
 
 	char buffer[80];

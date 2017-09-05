@@ -43,7 +43,7 @@ extern void toolsLogging();
 
 void MainWnd::OnToolsDisassemble()
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		Disassemble *dlg = new Disassemble();
 		dlg->Create(IDD_DISASSEMBLE, this);
@@ -81,12 +81,12 @@ void MainWnd::OnToolsIoviewer()
 
 void MainWnd::OnUpdateToolsIoviewer(CCmdUI *pCmdUI)
 {
-	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && systemCartridgeType == 0);
+	pCmdUI->Enable(theApp.videoOption <= VIDEO_4X && systemCartridgeType == IMAGE_GBA);
 }
 
 void MainWnd::OnToolsMapview()
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		MapView *dlg = new MapView;
 		dlg->Create(IDD_MAP_VIEW, this);
@@ -107,7 +107,7 @@ void MainWnd::OnUpdateToolsMapview(CCmdUI *pCmdUI)
 
 void MainWnd::OnToolsMemoryviewer()
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		MemoryViewerDlg *dlg = new MemoryViewerDlg;
 		dlg->Create(IDD_MEM_VIEWER, this);
@@ -128,7 +128,7 @@ void MainWnd::OnUpdateToolsMemoryviewer(CCmdUI *pCmdUI)
 
 void MainWnd::OnToolsOamviewer()
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		OamView *dlg = new OamView;
 		dlg->Create(IDD_OAM_VIEW, this);
@@ -149,7 +149,7 @@ void MainWnd::OnUpdateToolsOamviewer(CCmdUI *pCmdUI)
 
 void MainWnd::OnToolsPaletteview()
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		PaletteView *dlg = new PaletteView;
 		dlg->Create(IDD_PALETTE_VIEW, this);
@@ -170,7 +170,7 @@ void MainWnd::OnUpdateToolsPaletteview(CCmdUI *pCmdUI)
 
 void MainWnd::OnToolsTileviewer()
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		TileView *dlg = new TileView;
 		dlg->Create(IDD_TILE_VIEWER, this);
@@ -386,7 +386,7 @@ void MainWnd::OnToolsDebugGdb()
 			remoteSetSockets(wait.getListenSocket(), wait.getSocket());
 			debugger  = true;
 			emulating = 1;
-			systemCartridgeType = 0;
+			systemCartridgeType = IMAGE_GBA;
 			theApp.gameFilename = "\\gnu_stub";
 			rom					= (u8 *)malloc(0x2000000 + 4);
 			workRAM				= (u8 *)calloc(1, 0x40000 + 4);
@@ -395,7 +395,7 @@ void MainWnd::OnToolsDebugGdb()
 			paletteRAM			= (u8 *)calloc(1, 0x400 + 4);
 			vram				= (u8 *)calloc(1, 0x20000 + 4);
 			oam					= (u8 *)calloc(1, 0x400 + 4);
-			pix					= (u8 *)calloc(1, 4 * 240 * 160);
+			pix					= (u8 *)PIX_CALLOC(4 * 241 * 162);
 			ioMem				= (u8 *)calloc(1, 0x400 + 4);
 
 			theApp.emulator = GBASystem;
@@ -419,7 +419,7 @@ void MainWnd::OnToolsDebugLoadandwait()
 	{
 		if (winFileRun())
 		{
-			if (systemCartridgeType != 0)
+			if (systemCartridgeType != IMAGE_GBA)
 			{
 				systemMessage(IDS_ERROR_NOT_GBA_IMAGE, "Error: not a GBA image");
 				OnFileClose();

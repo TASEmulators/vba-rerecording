@@ -58,7 +58,7 @@ static inline u8 *HardwareToSoftwareAddress(HWAddressType address)
 	// note: this currently follows the "quick" memory rules,
 	// meaning it will miss whatever special cases aren't handled by read/writeMemoryQuick.
 	// if this is made more accurate, it may be necessary to reduce regionSearchGranularity.
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 	{
 		// GBA
 		HWAddressType mask = memoryMap[address >> 24].mask;
@@ -1843,7 +1843,7 @@ LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				else if (rs_t == 'h')
 					numberType = 2;
 
-				if (systemCartridgeType == 0)
+				if (systemCartridgeType == IMAGE_GBA)
 				{
 					AddCheat dlg(address /*, hDlg*/);
 					if (sizeType != -1) dlg.sizeType = sizeType;

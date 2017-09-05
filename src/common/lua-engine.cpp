@@ -148,7 +148,13 @@ static const char *luaCallIDStrings[] =
 {
 	"CALL_BEFOREEMULATION",
 	"CALL_AFTEREMULATION",
-	"CALL_BEFOREEXIT"
+	"CALL_BEFOREEXIT",
+	"CALL_AFTERPOWERON",
+	"CALL_BEFOREPOWEROFF",
+	"CALL_BEFORESTATELOAD",
+	"CALL_AFTERSTATELOAD",
+	"CALL_BEFORESTATESAVE",
+	"CALL_AFTERSTATESAVE",
 };
 
 //make sure we have the right number of strings
@@ -387,6 +393,84 @@ static int vba_pause(lua_State *L)
 	// If it's on a frame boundary, we also yield.
 	frameAdvanceWaiting = true;
 	return lua_yield(L, 0);
+}
+
+static int vba_registerpoweron(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTERPOWERON]);
+	lua_insert(L, 1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTERPOWERON]);
+
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registerpoweroff(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREPOWEROFF]);
+	lua_insert(L, 1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFOREPOWEROFF]);
+
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registerloading(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFORESTATELOAD]);
+	lua_insert(L, 1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFORESTATELOAD]);
+
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registerloaded(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTERSTATELOAD]);
+	lua_insert(L, 1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTERSTATELOAD]);
+
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registersaving(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFORESTATESAVE]);
+	lua_insert(L, 1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_BEFORESTATESAVE]);
+
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
+}
+
+static int vba_registersaved(lua_State *L)
+{
+	if (!lua_isnil(L, 1))
+		luaL_checktype(L, 1, LUA_TFUNCTION);
+	lua_settop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTERSTATESAVE]);
+	lua_insert(L, 1);
+	lua_setfield(L, LUA_REGISTRYINDEX, luaCallIDStrings[LUACALL_AFTERSTATESAVE]);
+
+	//StopScriptIfFinished(luaStateToUIDMap[L]);
+	return 1;
 }
 
 static int vba_registerbefore(lua_State *L)
@@ -4424,18 +4508,24 @@ static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg)
 
 static const struct luaL_reg vbalib[] = {
 	//	{"speedmode", vba_speedmode},	// TODO: NYI
-	{ "frameadvance",	vba_frameadvance	  },
-	{ "pause",			vba_pause			  },
-	{ "framecount",		vba_framecount		  },
-	{ "lagcount",		vba_getlagcount		  },
-	{ "lagged",			vba_lagged			  },
-	{ "emulating",		vba_emulating		  },
-	{ "registerbefore", vba_registerbefore	  },
-	{ "registerafter",	vba_registerafter	  },
-	{ "registerexit",	vba_registerexit	  },
-	{ "message",		vba_message			  },
-	{ "print",			print				  }, // sure, why not
-	{ NULL,				NULL				  }
+	{ "frameadvance",	vba_frameadvance	 },
+	{ "pause",			vba_pause			 },
+	{ "framecount",		vba_framecount		 },
+	{ "lagcount",		vba_getlagcount		 },
+	{ "lagged",			vba_lagged			 },
+	{ "emulating",		vba_emulating		 },
+	{ "registerbefore", vba_registerbefore	 },
+	{ "registerafter",	vba_registerafter	 },
+	{ "registerexit",	vba_registerexit	 },
+	{ "registerrun",	vba_registerpoweron	 },
+	{ "registerclose",	vba_registerpoweroff },
+	{ "registerloading",vba_registerloading	 },
+	{ "registerloaded",	vba_registerloaded	 },
+	{ "registersaving",	vba_registersaving	 },
+	{ "registersaved",	vba_registersaved	 },
+	{ "message",		vba_message			 },
+	{ "print",			print				 }, // sure, why not
+	{ NULL,				NULL				 }
 };
 
 static const struct luaL_reg memorylib[] = {
@@ -4711,7 +4801,7 @@ int VBALoadLuaCode(const char *filename)
 	char  dir[_MAX_PATH];
 	char *slash, *backslash;
 	strcpy(dir, filename);
-	slash	  = strrchr(dir, '/');
+	slash = strrchr(dir, '/');
 	backslash = strrchr(dir, '\\');
 	if (!slash || (backslash && backslash < slash))
 		slash = backslash;
@@ -4779,12 +4869,12 @@ int VBALoadLuaCode(const char *filename)
 
 	if (result)
 	{
-//#if (defined(WIN32) && !defined(SDL))
-//		info_print(info_uid, lua_tostring(LUA, -1)); //Clear_Sound_Buffer();
-// AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua load error", MB_OK | MB_ICONSTOP);
-//#else
-//		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA, -1));
-//#endif
+		//#if (defined(WIN32) && !defined(SDL))
+		//		info_print(info_uid, lua_tostring(LUA, -1)); //Clear_Sound_Buffer();
+		// AfxGetApp()->m_pMainWnd->MessageBox(lua_tostring(LUA, -1), "Lua load error", MB_OK | MB_ICONSTOP);
+		//#else
+		//		fprintf(stderr, "Failed to compile file: %s\n", lua_tostring(LUA, -1));
+		//#endif
 		printerror(LUA, -1);
 
 		// Wipe the stack. Our thread
@@ -4800,10 +4890,10 @@ int VBALoadLuaCode(const char *filename)
 
 	// Initialize settings
 	luaRunning = true;
-	skipRerecords		 = false;
-	numMemHooks			 = 0;
+	skipRerecords = false;
+	numMemHooks = 0;
 	transparencyModifier = 255; // opaque
-	lua_joypads_used	 = 0; // not used
+	lua_joypads_used = 0; // not used
 	//wasPaused = systemIsPaused();
 	//systemSetPause(false);
 
@@ -4811,24 +4901,29 @@ int VBALoadLuaCode(const char *filename)
 	lua_sethook(thread, VBALuaHookFunction, LUA_MASKCOUNT, 10000);
 
 #ifdef WIN32
-	info_print	 = PrintToWindowConsole;
+	info_print = PrintToWindowConsole;
 	info_onstart = WinLuaOnStart;
-	info_onstop	 = WinLuaOnStop;
+	info_onstop = WinLuaOnStop;
 	if (!LuaConsoleHWnd)
 		LuaConsoleHWnd = CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_LUA),
-										AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) DlgLuaScriptDialog);
+			AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC)DlgLuaScriptDialog);
 	info_uid = (int)LuaConsoleHWnd;
 #else
-	info_print	 = NULL;
+	info_print = NULL;
 	info_onstart = NULL;
-	info_onstop	 = NULL;
+	info_onstop = NULL;
 #endif
 	if (info_onstart)
 		info_onstart(info_uid);
 
 	// And run it right now. :)
 	VBALuaFrameBoundary();
-	systemRenderLua();
+	extern int textMethod;
+	if (textMethod == 0)
+	{
+		int pitch = theApp.filterWidth * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
+		systemRenderLua(&pix[pitch], pitch);
+	}
 
 	// We're done.
 	return 1;
@@ -4939,7 +5034,7 @@ bool8 VBALuaRerecordCountSkip(void)
 * Given a screen with the indicated resolution,
 * draw the current GUI onto it.
 */
-void VBALuaGui(uint8 *screen, int ppl, int width, int height)
+void VBALuaGui(uint8 *screen, int pitch, int width, int height)
 {
 	if (!LUA /* || !luaRunning*/)
 		return;
@@ -4981,13 +5076,10 @@ void VBALuaGui(uint8 *screen, int ppl, int width, int height)
 
 	gui_used = false;
 
-	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
-	int pitch = ppl * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
-
-	if (width > LUA_SCREEN_WIDTH)
-		width = LUA_SCREEN_WIDTH;
-	if (height > LUA_SCREEN_HEIGHT)
-		height = LUA_SCREEN_HEIGHT;
+	//if (width > LUA_SCREEN_WIDTH)
+	//	width = LUA_SCREEN_WIDTH;
+	//if (height > LUA_SCREEN_HEIGHT)
+	//	height = LUA_SCREEN_HEIGHT;
 
 	GetColorFunc getColor;
 	SetColorFunc setColor;

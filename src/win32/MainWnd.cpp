@@ -1086,7 +1086,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					strcat(warning1, buffer);
 
 					sprintf(buffer, "type=%s  ", systemCartridgeType ==
-					        0 ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
+					        IMAGE_GBA ? "GBA" : (gbRom[0x143] & 0x80 ? "GBC" : (gbRom[0x146] == 0x03 ? "SGB" : "GB")));
 					strcat(warning2, buffer);
 				}
 				{
@@ -1106,7 +1106,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 						strcat(warning1, buffer);
 					}
 
-					if (systemCartridgeType == 0)
+					if (systemCartridgeType == IMAGE_GBA)
 					{
 						memcpy(code, &romGameCode, 4);
 						code[4] = '\0';
@@ -1123,7 +1123,7 @@ void MainWnd::OnDropFiles(HDROP hDropInfo)
 					strcat(warning1, buffer);
 
 					sprintf(buffer,
-					        checksum == 0 ? "(bios=none)  " : systemCartridgeType == 0 ? "(bios=%04x)  " : "check=%04x  ",
+					        checksum == 0 ? "(bios=none)  " : systemCartridgeType == IMAGE_GBA ? "(bios=%04x)  " : "check=%04x  ",
 					        checksum);
 					strcat(warning2, buffer);
 				}
@@ -1294,6 +1294,11 @@ static const char *s_romIgnoreExtensions[] = {
 
 void MainWnd::winFileClose(bool reopening)
 {
+	if (emulating)
+	{
+		CallRegisteredLuaFunctions(LUACALL_BEFOREPOWEROFF);
+	}
+
 	if (rom != NULL || gbRom != NULL)
 	{
 		if (theApp.autoSaveLoadCheatList)
@@ -1544,6 +1549,9 @@ bool MainWnd::winFileRun(bool reopening)
 
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
+
+	CallRegisteredLuaFunctions(LUACALL_AFTERPOWERON);
+
 	systemRefreshScreen();
 
 	return true;

@@ -124,7 +124,7 @@ AppendFormat(report, "Emu type     : %s\r\n", VBA_BUILDTYPE_STRING);
 		AppendFormat(report, "Game         : %s\r\n", theApp.gameFilename);
 
 		char buffer[20];
-		if (systemCartridgeType == 0)
+		if (systemCartridgeType == IMAGE_GBA)
 		{
 			u32 check = 0;
 			for (int i = 0; i < 0x4000; i += 4)
@@ -190,7 +190,7 @@ AppendFormat(report, "Emu type     : %s\r\n", VBA_BUILDTYPE_STRING);
 			if (res.GetLength() > 0)
 				AppendFormat(report, "Cart Save    : %s\r\n", res);
 		}
-		else if (systemCartridgeType == 1)
+		else if (systemCartridgeType == IMAGE_GB)
 		{
 			strncpy(buffer, (const char *)&gbRom[0x134], 15);
 			buffer[15] = 0;

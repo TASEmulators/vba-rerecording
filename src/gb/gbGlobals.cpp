@@ -50,3 +50,5 @@ u8 (*gbSerialFunction)(u8) = NULL;
 extern const u32 gbFrameRateDividend = 262144; // 4194304;
 extern const u32 gbFrameRateDivisor  = 4389;   // 70224;
 extern const double gbFrameRate = double(gbFrameRateDividend) / double(gbFrameRateDivisor);
+
+extern const u32 gbPixBufferSize = 4 * 257 * 226;

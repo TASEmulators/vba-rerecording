@@ -417,7 +417,7 @@ void winLoadCheatList(const char *name)
 {
 	bool res = false;
 
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 		res = cheatsLoadCheatList(name);
 	else
 		res = gbCheatsLoadCheatList(name);
@@ -428,7 +428,7 @@ void winLoadCheatList(const char *name)
 
 void winSaveCheatList(const char *name)
 {
-	if (systemCartridgeType == 0)
+	if (systemCartridgeType == IMAGE_GBA)
 		cheatsSaveCheatList(name);
 	else
 		gbCheatsSaveCheatList(name);

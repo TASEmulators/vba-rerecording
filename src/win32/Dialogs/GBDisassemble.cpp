@@ -5,6 +5,7 @@
 #include "../resource.h"
 #include "GBDisassemble.h"
 #include "../VBA.h"
+#include "../../common/Util.h"
 
 #include "../../gb/GB.h"
 #include "../../gb/gbGlobals.h"
@@ -188,7 +189,7 @@ void GBDisassemble::refresh()
 	count = (r.bottom - r.top+1)/h;
 
 	m_list.ResetContent();
-	if (!systemIsEmulating() || systemCartridgeType != 1)
+	if (!systemIsEmulating() || systemCartridgeType != IMAGE_GB)
 		return;
 
 	char buffer[80];
