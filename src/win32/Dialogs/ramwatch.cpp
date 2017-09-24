@@ -910,7 +910,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			UpdateRW_RMenu(rwrecentmenu, RAMMENU_FILE_RECENT, RW_MENU_FIRST_RECENT_FILE);
 			
 			const char* names[3] = {"Address","Value","Notes"};
-			int widths[3] = {62,64,64+51+53};
+			int widths[3] = {70,70,64+51+53};
 			init_list_box(GetDlgItem(hDlg,IDC_WATCHLIST),names,3,widths);
 			if (!ResultCount)
 				reset_address_info();

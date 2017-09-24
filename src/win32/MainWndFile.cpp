@@ -963,10 +963,16 @@ void MainWnd::OnFileLuaOpen()
 {
 	theApp.winCheckFullscreen();
 
-	if (LuaConsoleHWnd)
-		::PostMessage(LuaConsoleHWnd, WM_CLOSE, 0, 0);
-
-	LuaConsoleHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_LUA), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC)DlgLuaScriptDialog);
+	if (!LuaConsoleHWnd)
+	{
+		LuaConsoleHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_LUA), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC)DlgLuaScriptDialog);
+	}
+	else
+	{
+		if (::IsIconic(LuaConsoleHWnd))
+			::ShowWindow(LuaConsoleHWnd, SW_RESTORE);
+		::SetForegroundWindow(LuaConsoleHWnd);
+	}
 }
 
 void MainWnd::OnUpdateFileLuaOpen(CCmdUI *pCmdUI)
@@ -1002,7 +1008,11 @@ void MainWnd::OnFileRamSearch()
 		::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMSEARCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamSearchProc);
 	}
 	else
+	{
+		if (::IsIconic(RamSearchHWnd))
+			::ShowWindow(RamSearchHWnd, SW_RESTORE);
 		::SetForegroundWindow(RamSearchHWnd);
+	}
 }
 
 void MainWnd::OnUpdateFileRamSearch(CCmdUI *pCmdUI)
@@ -1020,7 +1030,11 @@ void MainWnd::OnFileRamWatch()
 		RamWatchHWnd = ::CreateDialog(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDD_RAMWATCH), AfxGetMainWnd()->GetSafeHwnd(), (DLGPROC) RamWatchProc);
 	}
 	else
+	{
+		if (::IsIconic(RamWatchHWnd))
+			::ShowWindow(RamWatchHWnd, SW_RESTORE);
 		::SetForegroundWindow(RamWatchHWnd);
+	}
 }
 
 void MainWnd::OnUpdateFileRamWatch(CCmdUI *pCmdUI)

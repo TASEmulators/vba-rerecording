@@ -336,7 +336,7 @@ INT_PTR CALLBACK DlgLuaScriptDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 		break;
 
 	case WM_CLOSE: {
-		SendMessage(hDlg, WM_DESTROY, 0, 0);
+		PostMessage(hDlg, WM_DESTROY, 0, 0);
 	}	break;
 
 	case WM_DESTROY: {
