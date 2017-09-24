@@ -2038,6 +2038,11 @@ void VBA::loadSettings()
 	autoSaveLoadCheatList  = regQueryDwordValue("autoSaveCheatList", 0) ? true : false;
 	pauseDuringCheatSearch = regQueryDwordValue("pauseDuringCheatSearch2", 0) ? true : false;
 
+	int movieEditMode  = regQueryDwordValue("movieEditMode", 0);
+	if (movieEditMode < MovieEditMode::MOVIE_EDIT_MODE_DISCARD || movieEditMode >= MovieEditMode::MOVIE_EDIT_MODE_COUNT)
+		movieEditMode = MovieEditMode::MOVIE_EDIT_MODE_DISCARD;
+	VBAMovieSetEditMode(MovieEditMode(movieEditMode));
+
 	movieOnEndBehavior = regQueryDwordValue("movieOnEndBehavior", 0);
 	movieOnEndPause	   = regQueryDwordValue("movieOnEndPause", 0) ? true : false;
 
@@ -2105,7 +2110,6 @@ void VBA::saveSettings()
 	regSetDwordValue("autofireAccountforLag", autofireAccountForLag);
 	regSetDwordValue("nextframeAccountforLag", nextframeAccountForLag);
 	regSetDwordValue("AsscWithSaveState", theApp.AsscWithSaveState);
-
 
 	// speed
 	regSetDwordValue("throttle", throttle);
@@ -2218,6 +2222,7 @@ void VBA::saveSettings()
 	regSetDwordValue("currentSlot", currentSlot);
 	regSetDwordValue("showSlotTime", showSlotTime);
 
+	regSetDwordValue("movieEditMode", VBAMovieGetEditMode());
 	regSetDwordValue("movieOnEndBehavior", movieOnEndBehavior);
 	regSetDwordValue("movieOnEndPause", movieOnEndPause);
 
