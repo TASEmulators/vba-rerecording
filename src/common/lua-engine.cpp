@@ -4466,24 +4466,29 @@ static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg)
 		theApp.winCheckFullscreen();
 		systemSoundClearBuffer();
 		int ret = AfxGetApp()->m_pMainWnd->MessageBox(
-			"The Lua script running has been running a long time. It may have gone crazy. Kill it?\n\n(No = don't check anymore either)",
+			"The Lua script running has been running a long time. It may have gone crazy. Keep it running?\n\n"
+			"(Abort = Kill; Retry = Wait for a moment; Ignore = Keep running and don't prompt anymore)",
 			"Lua Script Gone Nuts?",
-			MB_YESNO);
+			MB_ABORTRETRYIGNORE);
 
-		if (ret == IDYES)
+		if (ret == IDABORT)
 		{
 			kill = 1;
+		}
+		else if (ret == IDRETRY)
+		{
+			numTries = 3000;
 		}
 
 #else
 		fprintf(
 			stderr,
-			"The Lua script running has been running a long time.\nIt may have gone crazy. Kill it? (I won't ask again if you say No)\n");
+			"The Lua script running has been running a long time.\nIt may have gone crazy. Kill it?\n");
 
 		char buffer[64];
 		while (true)
 		{
-			fprintf(stderr, "(y/n): ");
+			fprintf(stderr, "('Y' = Yes, 'L' = Ask again later, 'N' = No, no more asking): ");
 			fgets(buffer, sizeof(buffer), stdin);
 			if (buffer[0] == 'y' || buffer[0] == 'Y')
 			{
@@ -4491,18 +4496,25 @@ static void VBALuaHookFunction(lua_State *L, lua_Debug *dbg)
 				break;
 			}
 
+			if (buffer[0] == 'l' || buffer[0] == 'L')
+			{
+				numTries = 3000;
+				break;
+			}
+
 			if (buffer[0] == 'n' || buffer[0] == 'N')
 				break;
 		}
 #endif
-		if (kill)
+		if (kill == 1)
 		{
 			luaL_error(L, "Killed by user request.");
 			VBALuaOnStop();
 		}
 
-		// else, kill the debug hook.
-		lua_sethook(L, NULL, 0, 0);
+		// kill the debug hook if answered no.
+		if (numTries <= 0)
+			lua_sethook(L, NULL, 0, 0);
 	}
 }
 
