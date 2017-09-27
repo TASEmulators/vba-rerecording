@@ -1360,6 +1360,13 @@ void VBA::updateWindowSize(int value)
 		dest.right	= surfaceSizeX;
 		dest.bottom = surfaceSizeY;
 
+		RECT workAreaRect;
+		SystemParametersInfo(SPI_GETWORKAREA, 0, &workAreaRect, 0);
+		if (windowPositionX + surfaceSizeX < workAreaRect.left || windowPositionX > workAreaRect.right)
+			windowPositionX = (workAreaRect.left + workAreaRect.right - surfaceSizeX) / 2;
+		if (windowPositionY + surfaceSizeY < workAreaRect.top || windowPositionY > workAreaRect.bottom)
+			windowPositionY = (workAreaRect.top + workAreaRect.bottom - surfaceSizeY) / 2;
+
 		x = windowPositionX;
 		y = windowPositionY;
 	}
@@ -1965,12 +1972,8 @@ void VBA::loadSettings()
 	disableStatusMessage = regQueryDwordValue("disableStatus", 0) ? true : false;
 
 	// UI
-	windowPositionX = regQueryDwordValue("windowX", 0);
-	if (windowPositionX < 0)
-		windowPositionX = 0;
-	windowPositionY = regQueryDwordValue("windowY", 0);
-	if (windowPositionY < 0)
-		windowPositionY = 0;
+	windowPositionX = regQueryDwordValue("windowX", -32000);
+	windowPositionY = regQueryDwordValue("windowY", -32000);
 
 	autoHideMenu = regQueryDwordValue("autoHideMenu", 0) ? true : false;
 
