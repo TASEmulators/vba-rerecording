@@ -792,11 +792,15 @@ int VBAMovieOpen(const char *filename, bool8 read_only)
 
 	if (Movie.header.startFlags & MOVIE_START_FROM_SNAPSHOT)
 	{
+		CallRegisteredLuaFunctions(LUACALL_BEFORESTATELOAD);
+
 		// load the snapshot
 		result = theEmulator.emuReadStateFromStream(stream) ? MOVIE_SUCCESS : MOVIE_WRONG_FORMAT;
 
 		// FIXME: Kludge for conversion
 		preserve_movie_init_input();
+
+		CallRegisteredLuaFunctions(LUACALL_AFTERSTATELOAD);
 	}
 	else if (Movie.header.startFlags & MOVIE_START_FROM_SRAM)
 	{
