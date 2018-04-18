@@ -99,6 +99,8 @@ static BOOL s_itemIndicesInvalid   = true; // if true, the link from listbox ite
                                            // (MemoryRegion::itemIndex) both need to be recalculated
 static BOOL s_prevValuesNeedUpdate = true; // if true, the "prev" values should be updated using the "cur" values on the next
                                            // frame update signaled
+static BOOL s_prevValuesNeedRefresh = false; // if true, all items in the ListView should be refreshed
+
 static unsigned int s_maxItemIndex = 0; // max currently valid item index, the listbox sometimes tries to update things past the
                                         // end of the list so we need to know this to ignore those attempts
 static int			s_prevSelCount = -1;
@@ -208,16 +210,16 @@ void ResetMemoryRegions()
 		MemoryRegion &region = *iter;
 		region.virtualIndex = nextVirtualIndex;
 		assert(((intptr_t)region.softwareAddress & 1) == 0 && "somebody needs to reimplement ReadValueAtSoftwareAddress()");
-		nextVirtualIndex = region.virtualIndex + region.size;
+		nextVirtualIndex = region.virtualIndex + region.size + 4; // fix for checking misaligned values
 	}
 	//assert(nextVirtualIndex <= MAX_RAM_SIZE);
 
 	if (nextVirtualIndex > MAX_RAM_SIZE)
 	{
-		size_t size1 = sizeof(unsigned char) * (nextVirtualIndex + 4);
-		size_t size2 = sizeof(unsigned char) * (nextVirtualIndex + 4);
-		size_t size3 = sizeof(unsigned short) * (nextVirtualIndex + 4);
-		size_t size4 = sizeof(MemoryRegion *) * (nextVirtualIndex + 4);
+		size_t size1 = sizeof(unsigned char) * nextVirtualIndex;
+		size_t size2 = sizeof(unsigned char) * nextVirtualIndex;
+		size_t size3 = sizeof(unsigned short) * nextVirtualIndex;
+		size_t size4 = sizeof(MemoryRegion *) * nextVirtualIndex;
 
 		void *tmp1 = realloc(s_prevValues, size1);
 		void *tmp2 = realloc(s_curValues, size2);
@@ -421,8 +423,6 @@ void UpdateRegionsT()
 
 		UpdateRegionT<stepType, compareType>(region, nextRegion);
 	}
-
-	s_prevValuesNeedUpdate = false;
 }
 
 template<typename stepType, typename compareType>
@@ -1146,6 +1146,10 @@ void signal_new_frame()
 	EnterCriticalSection(&s_activeMemoryRegionsCS);
 	CALL_WITH_T_SIZE_TYPES_0(UpdateRegionsT, rs_type_size, rs_t == 's', noMisalign);
 	LeaveCriticalSection(&s_activeMemoryRegionsCS);
+
+	s_prevValuesNeedRefresh = s_prevValuesNeedUpdate;
+	if (s_prevValuesNeedUpdate)
+		s_prevValuesNeedUpdate = false;
 }
 
 bool RamSearchClosed = false;
@@ -1354,43 +1358,14 @@ LRESULT CustomDraw(LPARAM lParam)
 	return CDRF_DODEFAULT;
 }
 
-void Update_RAM_Search() //keeps RAM values up to date in the search and watch windows
+void Signal_RAM_Search_New_Frame()
 {
 	if (disableRamSearchUpdate)
 		return;
 
-	int prevValuesNeededUpdate;
-	if (AutoSearch && !ResultCount)
+	if (RamSearchHWnd && AutoSearch)
 	{
-		if (!AutoSearchAutoRetry)
-		{
-			systemSoundClearBuffer();
-			int answer = MessageBox(
-			    RamSearchHWnd,
-			    "Choosing Retry will reset the search once and continue autosearching.\nChoose Ignore will reset the search whenever necessary and continue autosearching.\nChoosing Abort will reset the search once and stop autosearching.",
-			    "Autosearch - out of results.",
-			    MB_ABORTRETRYIGNORE | MB_DEFBUTTON2 | MB_ICONINFORMATION);
-			if (answer == IDABORT)
-			{
-				SendDlgItemMessage(RamSearchHWnd, IDC_C_AUTOSEARCH, BM_SETCHECK, BST_UNCHECKED, 0);
-				SendMessage(RamSearchHWnd, WM_COMMAND, IDC_C_AUTOSEARCH, 0);
-			}
-			if (answer == IDIGNORE)
-				AutoSearchAutoRetry = true;
-		}
-		reset_address_info();
-		prevValuesNeededUpdate = s_prevValuesNeedUpdate;
-	}
-	else
-	{
-		prevValuesNeededUpdate = s_prevValuesNeedUpdate;
-		if (RamSearchHWnd)
-		{
-			// update active RAM values
-			signal_new_frame();
-		}
-
-		if (AutoSearch && ResultCount)
+		if (ResultCount)
 		{
 			systemSoundClearBuffer();
 			if (!rs_val_valid)
@@ -1398,15 +1373,48 @@ void Update_RAM_Search() //keeps RAM values up to date in the search and watch w
 			if (rs_val_valid)
 				prune(rs_c, rs_o, rs_t == 's', rs_val, rs_param);
 		}
+		else
+		{
+			if (!AutoSearchAutoRetry)
+			{
+				systemSoundClearBuffer();
+				int answer = MessageBox(
+					RamSearchHWnd,
+					"Choosing Retry will reset the search once and continue autosearching.\n"
+					"Choose Ignore will reset the search whenever necessary and continue autosearching.\n"
+					"Choosing Abort will reset the search once and stop autosearching.",
+					"Autosearch - out of results.",
+					MB_ABORTRETRYIGNORE | MB_DEFBUTTON2 | MB_ICONINFORMATION);
+				if (answer == IDABORT)
+				{
+					SendDlgItemMessage(RamSearchHWnd, IDC_C_AUTOSEARCH, BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage(RamSearchHWnd, WM_COMMAND, IDC_C_AUTOSEARCH, 0);
+				}
+				if (answer == IDIGNORE)
+					AutoSearchAutoRetry = true;
+			}
+			reset_address_info();
+			s_prevValuesNeedRefresh = false;
+		}
 	}
+}
+
+void Update_RAM_Search() //keeps RAM values up to date in the search and watch windows
+{
+	if (disableRamSearchUpdate)
+		return;
 
 	if (RamSearchHWnd)
 	{
+		// update active RAM values
+		signal_new_frame();
+
 		HWND lv = GetDlgItem(RamSearchHWnd, IDC_RAMLIST);
-		if (prevValuesNeededUpdate != s_prevValuesNeedUpdate)
+		if (s_prevValuesNeedRefresh)
 		{
 			// previous values got updated, refresh everything visible
 			ListView_Update(lv, -1);
+			s_prevValuesNeedRefresh = false;
 		}
 		else
 		{

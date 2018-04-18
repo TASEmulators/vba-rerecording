@@ -2099,7 +2099,7 @@ void gbInit()
 	gbLineBuffer = (u16 *)malloc(160 * sizeof(u16));
 
 	free(bios);
-	bios = (u8 *)calloc(1, 0x100);
+	bios = (u8 *)RAM_MALLOC(0x100);
 
 	memset(gbMemory, 0, 0x10000);
 	memset(gbPalette, 0, 2 * 128);

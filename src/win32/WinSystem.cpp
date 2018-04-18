@@ -336,6 +336,8 @@ void systemRenderFrame()
 	}
 
 	systemRedrawScreen();
+
+	Signal_RAM_Search_New_Frame(); // updates RAM search regions
 }
 
 void systemRedrawScreen()

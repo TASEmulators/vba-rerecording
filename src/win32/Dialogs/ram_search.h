@@ -27,7 +27,7 @@ void ResetResults();
 void CloseRamWindows(); //Close the Ram Search & Watch windows when rom closes
 void ReopenRamWindows(); //Reopen them when a new Rom is loaded
 void Update_RAM_Search(); //keeps RAM values up to date in the search and watch windows
-
+void Signal_RAM_Search_New_Frame(); //update memory regions at a new frame
 
 
 #endif
