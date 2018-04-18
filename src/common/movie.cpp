@@ -1665,6 +1665,11 @@ std::string VBAMovieGetFilename()
 	return Movie.filename;
 }
 
+uint32 VBAMovieGetLastErrorInfo()
+{
+	return Movie.errorInfo;
+}
+
 int VBAMovieFreeze(uint8 * *buf, uint32 *size)
 {
 	// sanity check
@@ -1707,20 +1712,21 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 	}
 
 	const uint8 *ptr = buf;
-	if (size < sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames))
+	const uint32 headerSize = sizeof(Movie.header.uid) + sizeof(Movie.currentFrame) + sizeof(Movie.header.length_frames);
+	if (size < headerSize)
 	{
 		return MOVIE_WRONG_FORMAT;
 	}
 
 	uint32 movie_id		 = Pop32(ptr);
 	uint32 current_frame = Pop32(ptr);
-	uint32 end_frame	 = Pop32(ptr) + 1;     // HACK: restore the length for backward compatibility
-	uint32 space_needed	 = Movie.bytesPerFrame * end_frame;
+	uint32 input_frames	 = Pop32(ptr) + 1;     // HACK: restore the length for backward compatibility
+	uint32 space_needed	 = Movie.bytesPerFrame * input_frames;
 
 	if (movie_id != Movie.header.uid)
 		return MOVIE_NOT_FROM_THIS_MOVIE;
 
-	if (space_needed > size)
+	if (space_needed > size - headerSize)
 		return MOVIE_WRONG_FORMAT;
 
 	if (Movie.readOnly)
@@ -1733,12 +1739,20 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 
 		// don't allow loading a state inconsistent with the current movie
 		uint32 length_history = min(current_frame, Movie.header.length_frames);
-		if (end_frame < length_history)
-			return MOVIE_SNAPSHOT_INCONSISTENT;
+		if (input_frames < length_history)
+		{
+			Movie.errorInfo = input_frames;
+			return MOVIE_UNVERIFIABLE_POST_END;
+		}
 
-		uint32 space_shared = Movie.bytesPerFrame * length_history;
-		if (memcmp(Movie.inputBuffer, ptr, space_shared))
-			return MOVIE_SNAPSHOT_INCONSISTENT;
+		for (uint32 i = 0; i < length_history; ++i)
+		{
+			if (memcmp(Movie.inputBuffer + i * Movie.bytesPerFrame, ptr + i * Movie.bytesPerFrame, Movie.bytesPerFrame))
+			{
+				Movie.errorInfo = i;
+				return MOVIE_TIMELINE_INCONSISTENT_AT;
+			}
+		}
 
 		Movie.currentFrame	 = current_frame;
 		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);
@@ -1751,7 +1765,7 @@ int VBAMovieUnfreeze(const uint8 *buf, uint32 size)
 		// and make it the input data for the current movie, then continue
 		// writing new input data at the currentFrame pointer
 		Movie.currentFrame		   = current_frame;
-		Movie.header.length_frames = end_frame;
+		Movie.header.length_frames = input_frames;
 
 		// do this before calling reserve_movie_buffer_space()
 		Movie.inputBufferPtr = Movie.inputBuffer + Movie.bytesPerFrame * min(current_frame, Movie.header.length_frames);

@@ -4473,8 +4473,10 @@ static bool gbReadSaveStateFromStream(gzFile gzFile)
 					strcat(errStr, ";\nSnapshot not from this movie"); break;
 				case MOVIE_NOT_FROM_A_MOVIE:
 					strcat(errStr, ";\nNot a movie snapshot"); break;                    // shouldn't get here...
-				case MOVIE_SNAPSHOT_INCONSISTENT:
-					strcat(errStr, ";\nSnapshot inconsistent with movie"); break;
+				case MOVIE_UNVERIFIABLE_POST_END:
+					sprintf(errStr, "%s;\nSnapshot unverifiable with movie after End Frame %u", errStr, VBAMovieGetLastErrorInfo()); break;
+				case MOVIE_TIMELINE_INCONSISTENT_AT:
+					sprintf(errStr, "%s;\nSnapshot inconsistent with movie at Frame %u", errStr, VBAMovieGetLastErrorInfo()); break;
 				case MOVIE_WRONG_FORMAT:
 					strcat(errStr, ";\nWrong format"); break;
 				}

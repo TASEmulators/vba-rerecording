@@ -24,9 +24,10 @@
 #  define MOVIE_FILE_NOT_FOUND (-3)
 #  define MOVIE_NOT_FROM_THIS_MOVIE (-4)
 #  define MOVIE_NOT_FROM_A_MOVIE (-5)
-#  define MOVIE_SNAPSHOT_INCONSISTENT (-6)
+#  define MOVIE_UNVERIFIABLE_POST_END (-6)
 #  define MOVIE_UNRECORDED_INPUT (-7)
 #  define MOVIE_SAME_VERSION (-8)
+#  define MOVIE_TIMELINE_INCONSISTENT_AT (-9)
 #  define MOVIE_FATAL_ERROR (-32768)
 #  define MOVIE_UNKNOWN_ERROR (-2147483647 - 1)
 #endif
@@ -151,6 +152,8 @@ struct SMovie
 	uint8 unused;
 	uint8 RecordedNewRerecord;
 	uint8 RecordedThisSession;
+
+	uint32 errorInfo;
 };
 
 // methods used by the user-interface code
@@ -193,6 +196,7 @@ uint32 VBAMovieGetRerecordCount ();
 uint32 VBAMovieSetRerecordCount (uint32 newRerecordCount);
 std::string VBAMovieGetAuthorInfo();
 std::string VBAMovieGetFilename();
+uint32 VBAMovieGetLastErrorInfo();
 
 uint16 VBAMovieGetCurrentInputOf(int which, bool normalOnly = false);
 uint16 VBAMovieGetNextInputOf(int which, bool normalOnly = false);
