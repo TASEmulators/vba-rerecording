@@ -3906,13 +3906,11 @@ void CPULoop(int _ticks)
 		{
 			if (armState)
 			{
-				CallRegisteredLuaMemHook(armNextPC, 4, CPUReadMemoryQuick(armNextPC), LUAMEMHOOK_EXEC);
 				if (!armExecute())
 					return;
 			}
 			else
 			{
-				CallRegisteredLuaMemHook(armNextPC, 2, CPUReadHalfWordQuick(armNextPC), LUAMEMHOOK_EXEC);
 				if (!thumbExecute())
 					return;
 			}

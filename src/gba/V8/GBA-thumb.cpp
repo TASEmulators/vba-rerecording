@@ -5,6 +5,7 @@
 #include "GBAGlobals.h"
 #include "GBAinline.h"
 #include "GBACpu.h"
+#include "../../common/vbalua.h"
 
 #ifdef PROFILING
 #include "../prof/prof.h"
@@ -2349,6 +2350,8 @@ int thumbExecute()
 			armNextPC++;
 		}
 #endif
+
+		CallRegisteredLuaMemHook(armNextPC, 2, CPUReadHalfWordQuick(armNextPC), LUAMEMHOOK_EXEC);
 
 		armNextPC  = reg[15].I;
 		reg[15].I += 2;

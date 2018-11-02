@@ -2182,7 +2182,7 @@ static int movie_stop(lua_State *L)
 }
 
 #define LUA_SCREEN_WIDTH	256
-#define LUA_SCREEN_HEIGHT	239
+#define LUA_SCREEN_HEIGHT	224
 
 // Common code by the gui library: make sure the screen array is ready
 static void gui_prepare(void)

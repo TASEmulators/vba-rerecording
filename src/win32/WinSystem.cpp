@@ -221,7 +221,7 @@ void systemRenderLua(u8 *data, int pitch)
 	//int pitch = (((ppl * systemColorDepth + 7)>>3)+3)&~3;
 	//int pitch = ppl * (systemColorDepth / 8) + (systemColorDepth == 24 ? 0 : 4);
 
-	VBALuaGui(&data[copyOffsetY * pitch + copyOffsetX * (systemColorDepth / 8)], pitch, screenW, screenH);
+	VBALuaGui(&data[(copyOffsetY + 1) * pitch + copyOffsetX * (systemColorDepth / 8)], pitch, screenW, screenH);
 	VBALuaClearGui();
 }
 
