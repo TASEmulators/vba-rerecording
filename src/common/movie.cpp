@@ -1294,7 +1294,7 @@ void VBAUpdateFrameCountDisplay()
 		/// SDL FIXME
 #endif
 		{
-			sprintf(extraCountDisplayString, " | %u", systemCounters.frameCount - systemCounters.extraCount);
+			sprintf(extraCountDisplayString, " | %d", systemCounters.frameCount - systemCounters.extraCount);
 			strcat(frameDisplayString, extraCountDisplayString);
 		}
 	}
