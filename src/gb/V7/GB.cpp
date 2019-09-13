@@ -3208,24 +3208,26 @@ static inline void gbGetUserInput()
 	systemReadJoypads();
 
 	bool sensor = (gbRom[0x147] == 0x22);
+	systemUpdateJoypads(sensor);
+
 	if (gbSgbMode && gbSgbMultiplayer)
 	{
 		if (gbSgbFourPlayers)
 		{
-			gbJoymask[0] = systemGetJoypad(0, sensor);
-			gbJoymask[1] = systemGetJoypad(1, false);
-			gbJoymask[2] = systemGetJoypad(2, false);
-			gbJoymask[3] = systemGetJoypad(3, false);
+			gbJoymask[0] = systemGetJoypad(0);
+			gbJoymask[1] = systemGetJoypad(1);
+			gbJoymask[2] = systemGetJoypad(2);
+			gbJoymask[3] = systemGetJoypad(3);
 		}
 		else
 		{
-			gbJoymask[0] = systemGetJoypad(0, sensor);
-			gbJoymask[1] = systemGetJoypad(1, false);
+			gbJoymask[0] = systemGetJoypad(0);
+			gbJoymask[1] = systemGetJoypad(1);
 		}
 	}
 	else
 	{
-		gbJoymask[0] = systemGetJoypad(0, sensor);
+		gbJoymask[0] = systemGetJoypad(0);
 	}
 
 	// FIXME: horrible kludge
@@ -3244,8 +3246,6 @@ static inline void gbBeforeEmulation()
 {
 	if (newFrame)
 	{
-		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-
 		gbGetUserInput();
 
 		if (gbRom[0x147] == 0x22)

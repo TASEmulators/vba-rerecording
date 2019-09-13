@@ -1606,7 +1606,7 @@ void CPUMasterCodeCheck()
 		{
 			u32 joy = 0;
 			if (systemReadJoypads())
-				joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
+				joy = systemGetJoypad(0);
 			u32 ext = (joy >> 10);
 			cpuTotalTicks += cheatsCheckKeys(P1 ^ 0x3FF, ext);
 		}
@@ -3752,8 +3752,9 @@ static inline u32 CPUGetUserInput()
 {
 	// update joystick information
 	systemReadJoypads();
+	systemUpdateJoypads(cpuEEPROMSensorEnabled);
 
-	u32 joy = systemGetJoypad(0, cpuEEPROMSensorEnabled);
+	u32 joy = systemGetJoypad(0);
 
 	P1 = 0x03FF ^ (joy & 0x3FF);
 	UPDATE_REG(0x130, P1);
@@ -3769,8 +3770,6 @@ static inline void CPUBeforeEmulation()
 {
 	if (newFrame)
 	{
-		CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
-
 		u32 joy = CPUGetUserInput();
 
 		// this seems wrong, but there are cases where the game

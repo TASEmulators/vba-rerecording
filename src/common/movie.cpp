@@ -971,7 +971,7 @@ uint16 VBAMovieGetCurrentInputOf(int which, bool normalOnly)
 	if (which < 0 || which >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
 		return 0;
 
-	return normalOnly ? (currentButtons[which] & BUTTON_REGULAR_MASK) : currentButtons[which];
+	return normalOnly ? (movieButtons[which] & BUTTON_REGULAR_MASK) : movieButtons[which];
 }
 
 uint16 VBAMovieGetNextInputOf(int which, bool normalOnly)
@@ -1356,21 +1356,21 @@ void VBAMovieUpdateState()
 
 void VBAMovieRead(int i, bool /*sensor*/)
 {
-	if (Movie.state != MOVIE_STATE_PLAY)
+	if (Movie.state != MOVIE_STATE_PLAY && Movie.state != MOVIE_STATE_RECORD)
 		return;
 
 	if (i < 0 || i >= MOVIE_NUM_OF_POSSIBLE_CONTROLLERS)
 		return;      // not a controller we're recognizing
 
 	u16 movieInput = 0;
-	if (Movie.header.controllerFlags & MOVIE_CONTROLLER(i))
+	if (Movie.currentFrame < Movie.header.length_frames && (Movie.header.controllerFlags & MOVIE_CONTROLLER(i)))
 	{
 		movieInput = Read16(Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i);
 	}
 
 	// backward compatibility kludge
 	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
-	currentButtons[i] = movieInput;
+	movieButtons[i] = movieInput;
 }
 
 void VBAMovieWrite(int i, bool /*sensor*/)
@@ -1405,8 +1405,8 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		}
 		else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
 		{
-			u16 movieInput = Read16(ptr);
-			buttonData ^= movieInput;
+			buttonData ^= movieButtons[i];
+			currentButtons[i] = buttonData;
 			resetSignaled = ((buttonData & BUTTON_MASK_NEW_RESET) != 0);
 			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
 			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
@@ -1418,15 +1418,11 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		buttonData = (buttonData & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
 
 		Write16(buttonData, ptr);
-
-		// and for display
-		currentButtons[i] = buttonData;
 	}
 	else
 	{
 		// pretend the controller is disconnected (otherwise input it gives could cause desync
 		// since we're not writing it to the movie)
-		currentButtons[i] = 0;
 	}
 }
 

@@ -1797,7 +1797,6 @@ static int memory_gbromreadbyterange(lua_State *L)
 // table joypad.get(int which = 1)
 // 
 //  Reads the joypads as inputted by the user.
-// FIXME: what's the meaning of joypad.get(0)? 
 static int joy_get_internal(lua_State *L, bool reportUp, bool reportDown)
 {
 	// Reads the joypads as inputted by the user
@@ -1808,22 +1807,15 @@ static int joy_get_internal(lua_State *L, bool reportUp, bool reportDown)
 		luaL_error(L, "Invalid input port (valid range 0-4, specified %d)", which);
 	}
 
-	uint32 buttons = 0;
 	if (which > 0)
 	{
-		buttons = systemGetJoypad(which - 1, false);
+		which -= 1;
 	}
 	else
 	{
-#if 0
-		for (int i = 0; i < 4; ++i)
-		{
-			buttons |= systemGetJoypad(which - 1, false);
-		}
-#else
-		buttons = systemGetJoypad(systemGetDefaultJoypad(), false);
-#endif
+		which = systemGetDefaultJoypad();
 	}
+	uint32 buttons = systemGetJoypad(which);
 
 	lua_newtable(L);
 

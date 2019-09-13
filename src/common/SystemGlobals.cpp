@@ -32,6 +32,8 @@ struct Pix
 
 u8 *pix	 = NULL;
 
+u16	  joypadButtons[4] = { 0, 0, 0, 0 };
+u16	  movieButtons[4] = { 0, 0, 0, 0 };
 u16	  currentButtons[4] = { 0, 0, 0, 0 };
 u16	  lastButtons[4] = { 0, 0, 0, 0 };
 u16	  nextButtons[4] = { 0, 0, 0, 0 };

@@ -1547,10 +1547,10 @@ bool MainWnd::winFileRun(bool reopening)
 		// soft_reset_address_info();
 	}
 
+	CallRegisteredLuaFunctions(LUACALL_AFTERPOWERON);
+
 	VBAUpdateButtonPressDisplay();
 	VBAUpdateFrameCountDisplay();
-
-	CallRegisteredLuaFunctions(LUACALL_AFTERPOWERON);
 
 	systemRefreshScreen();
 

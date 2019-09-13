@@ -115,43 +115,67 @@ void systemUpdateMotionSensor(int i)
 }
 
 // joypads
-u32 systemGetJoypad(int i, bool sensor)
+static void systemUpdateMovieJoypads(bool sensor)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (VBAMovieIsPlaying())
+		{
+			// VBAMovieRead() writes to movieButtons[i]
+			VBAMovieRead(i, sensor);
+
+			// then, movie input has higher priority
+			currentButtons[i] = movieButtons[i];
+		}
+		else if (VBAMovieIsRecording())
+		{
+			VBAMovieRead(i, sensor);
+		}
+
+		nextButtons[i] = VBAMovieGetNextInputOf(i);
+	}
+}
+
+// input priority: original = raw+auto < movie < Lua, correct this if wrong
+void systemUpdateJoypads(bool sensor)
+{
+	extButtons = 0;
+	
+	for (int i = 0; i < 4; ++i)
+	{
+		// get original+auto input
+		u32 res = systemGetOriginalJoypad(i, sensor);
+
+		joypadButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
+		currentButtons[i] = joypadButtons[i];
+
+		// lua is now disallowed to modify the extbuttons
+		extButtons = res & BUTTON_NONRECORDINGONLY_MASK;
+	}
+
+	// get movie input first so that the Lua script engine can use them
+	systemUpdateMovieJoypads(sensor);
+
+	// this allows the lua engine to read and write the input before the game does
+	CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
+
+	// in case the Lua script engine might load a save state during a movie,
+	// re-load the movie input that could be different now
+	systemUpdateMovieJoypads(sensor);
+}
+
+u32 systemGetJoypad(int i)
 {
 	if (i < 0 || i > 3)
-		i = 0;
+		i = systemGetDefaultJoypad();
 
-	// input priority: original = raw+auto < Lua < movie, correct this if wrong
-
-	// get original+auto input
-	u32 res = systemGetOriginalJoypad(i, sensor);
+	u32 res = currentButtons[i];
 
 	// Lua input, shouldn't have any side effect within it
 	if (VBALuaUsingJoypad(i))
 		res = VBALuaReadJoypad(i);
 
-	// therefore, lua is currently allowed to modify the extbuttons...
-	u32 extButtons = res & BUTTON_NONRECORDINGONLY_MASK;
-
-	nextButtons[i] = VBAMovieGetNextInputOf(i);
-
-	// movie input has the highest priority
-	if (VBAMovieIsPlaying())
-	{
-		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-		// VBAMovieRead() overwrites currentButtons[i]
-		VBAMovieRead(i, sensor);
-	}
-	else
-	{
-		currentButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-		if (VBAMovieIsRecording())
-		{
-			// the "current buttons" input buffer will be read by the movie routine
-			VBAMovieWrite(i, sensor);
-		}
-	}
-
-	return currentButtons[i] | extButtons;
+	return res | extButtons;
 }
 
 void systemSetJoypad(int which, u32 buttons)
@@ -167,6 +191,8 @@ void systemClearJoypads()
 {
 	for (int i = 0; i < 4; ++i)
 	{
+		joypadButtons[i] = 0;
+		movieButtons[i] = 0;
 		currentButtons[i] = 0;
 		lastButtons[i] = 0;
 	}
@@ -287,7 +313,7 @@ void systemFrameBoundaryWork()
 		++systemCounters.lagCount;
 	}
 	systemCounters.laggedLast = systemCounters.lagged;
-	systemCounters.lagged	 = true;
+	systemCounters.lagged	  = true;
 
 	if (systemFrameDrawingRequired())
 	{
@@ -306,18 +332,28 @@ void systemFrameBoundaryWork()
 		++frameSkipCount;
 	}
 
-	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
-
-	if (VBALuaRunning())
+	// write the input to the movie so that the modification by Lua script may be recorded
+	if (VBAMovieIsRecording())
 	{
-		VBALuaFrameBoundary();
+		for (int i = 0; i < 4; ++i)
+		{
+			// the "current buttons" input buffer will be read by the movie routine
+			VBAMovieWrite(i, false);
+		}
 	}
+
+	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 
 	VBAMovieUpdateState();
 
 	if (systemPausesNextFrame())
 	{
 		systemSetPause(true);
+	}
+
+	if (VBALuaRunning())
+	{
+		VBALuaFrameBoundary();
 	}
 }
 
