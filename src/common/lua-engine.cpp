@@ -1880,7 +1880,7 @@ static int joypad_set(lua_State *L)
 	}
 
 	if (which == 0)
-		which = systemGetDefaultJoypad();
+		which = systemGetDefaultJoypad() + 1;
 
 	// And the table of buttons.
 	luaL_checktype(L, 2, LUA_TTABLE);
