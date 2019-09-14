@@ -1134,6 +1134,12 @@ void VBAUpdateButtonPressDisplay()
 	uint16 currKeys = currentButtons[which];
 	uint16 nextKeys = nextButtons[which];
 
+	if (VBALuaRemappingInputDisplay(which))
+	{
+		currKeys = VBALuaRemapInputDisplay(which, currKeys, LuaJoypadType::LUAJOYPAD_RECORD);
+		nextKeys = VBALuaRemapInputDisplay(which, nextKeys, LuaJoypadType::LUAJOYPAD_PLAYBACK);
+	}
+
 	const int  BufferSize = 64;
 	      char buffer[BufferSize] = "                    ";
 	const char whiteSpaces[] = "    ";
@@ -1369,7 +1375,8 @@ void VBAMovieRead(int i, bool /*sensor*/)
 	}
 
 	// backward compatibility kludge
-	movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
+	//movieInput = (movieInput & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
+
 	movieButtons[i] = movieInput;
 }
 
@@ -1389,33 +1396,16 @@ void VBAMovieWrite(int i, bool /*sensor*/)
 		uint16 buttonData = currentButtons[i];
 
 		// mask away the irrelevent bits
-		buttonData &= BUTTON_REGULAR_MASK | BUTTON_MOTION_MASK;
-
-		// soft-reset "button" for 1 frame if the game is reset while recording
-		if (resetSignaled)
-		{
-			buttonData |= BUTTON_MASK_NEW_RESET;
-		}
+		buttonData &= BUTTON_REGULAR_RECORDING_MASK;
 
 		uint8 *ptr = Movie.inputBufferPtr + CONTROLLER_DATA_SIZE * i;
-		if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE)
+		if (Movie.editMode == MOVIE_EDIT_MODE_OVERWRITE || Movie.editMode == MOVIE_EDIT_MODE_XOR)
 		{
-			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
+			nextButtons[i] &= ~BUTTON_MASK_OLD_RESET;
+			if ((buttonData & BUTTON_MASK_NEW_RESET) != 0)
+				nextButtons[i] |= BUTTON_MASK_OLD_RESET;
 			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
 		}
-		else if (Movie.editMode == MOVIE_EDIT_MODE_XOR)
-		{
-			buttonData ^= movieButtons[i];
-			currentButtons[i] = buttonData;
-			resetSignaled = ((buttonData & BUTTON_MASK_NEW_RESET) != 0);
-			nextButtons[i] = (nextButtons[i] & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaled) & BUTTON_MASK_OLD_RESET);
-			Write16(nextButtons[i], ptr + Movie.bytesPerFrame);
-		}
-
-		resetSignaled = false;
-
-		// backward compatibility kludge
-		buttonData = (buttonData & ~BUTTON_MASK_OLD_RESET) | (-int(resetSignaledLast) & BUTTON_MASK_OLD_RESET);
 
 		Write16(buttonData, ptr);
 	}
@@ -1841,8 +1831,13 @@ void VBAMovieSignalReset()
 {
 	if (VBAMovieIsActive())
 	{
-		resetSignaled = true;
+		resetSignaled = !resetSignaled;
 	}
+}
+
+bool VBAMovieIsResetSignaled()
+{
+	return VBAMovieIsActive() && resetSignaled;
 }
 
 void VBAMovieResetIfRequested()
@@ -1850,8 +1845,18 @@ void VBAMovieResetIfRequested()
 	if (BUTTON_MASK_NEW_RESET & 
 		(currentButtons[0] | currentButtons[1] | currentButtons[2] | currentButtons[3]))
 	{
+		// backward compatibility kludge
+		if (resetSignaledLast)
+		{
+			currentButtons[0] |= BUTTON_MASK_OLD_RESET;
+			currentButtons[1] |= BUTTON_MASK_OLD_RESET;
+			currentButtons[2] |= BUTTON_MASK_OLD_RESET;
+			currentButtons[3] |= BUTTON_MASK_OLD_RESET;
+		}
+
 		theEmulator.emuReset();
 		resetSignaledLast = true;
+		resetSignaled = false;
 	}
 	else
 	{

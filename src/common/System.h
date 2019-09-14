@@ -37,6 +37,7 @@ extern bool systemReadJoypads();
 // the bool is for if motion sensor should be handled too
 extern u32  systemGetOriginalJoypad(int, bool);
 extern void systemUpdateJoypads(bool sensor);
+extern void systemMixJoypadInput(int which, int type);
 extern u32  systemGetJoypad(int);
 extern void systemSetJoypad(int, u32);
 extern void systemClearJoypads();

@@ -201,6 +201,7 @@ uint32 VBAMovieGetLastErrorInfo();
 uint16 VBAMovieGetCurrentInputOf(int which, bool normalOnly = false);
 uint16 VBAMovieGetNextInputOf(int which, bool normalOnly = false);
 void VBAMovieSignalReset();
+bool VBAMovieIsResetSignaled();
 void VBAMovieResetIfRequested();
 void VBAMovieSetMetadata(const char *info);
 void VBAMovieToggleReadOnly();

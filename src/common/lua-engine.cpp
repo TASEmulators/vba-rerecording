@@ -116,11 +116,19 @@ static bool8 frameAdvanceWaiting = false;
 static int transparencyModifier = 255;
 
 // Our joypads.
-static uint32 lua_joypads[4];
+static uint16 lua_joypads[4];
 static uint8  lua_joypads_used = 0;
 
 static bool8  gui_used = false;
 static uint8 *gui_data = NULL;		  // BGRA
+
+// Remap input display
+struct LuaInputDisplayRemap
+{
+	uint32 from;
+	uint32 to[10];
+};
+static LuaInputDisplayRemap lua_input_display_remap[4], lua_next_input_display_remap[4];
 
 // Protects Lua calls from going nuts.
 // We set this to a big number like 1000 and decrement it
@@ -173,6 +181,18 @@ static const char *luaMemHookTypeStrings [] =
 
 //make sure we have the right number of strings
 CTASSERT(sizeof(luaMemHookTypeStrings) / sizeof(*luaMemHookTypeStrings) ==  LUAMEMHOOK_COUNT)
+
+static const char* luaJoypadTypeStrings[] =
+{
+	"JOYPAD_USER",
+	"JOYPAD_PLAYBACK",
+	"JOYPAD_RECORD",
+	"JOYPAD_LUA",
+	"JOYPAD_GAME",
+};
+
+//make sure we have the right number of strings
+CTASSERT(sizeof(luaJoypadTypeStrings) / sizeof(*luaJoypadTypeStrings) == LUAJOYPAD_COUNT)
 
 static char *rawToCString(lua_State * L, int idx = 0);
 static const char *toCString(lua_State *L, int idx = 0);
@@ -267,6 +287,11 @@ static void VBALuaOnStop(void)
 	luaRunning		 = false;
 	lua_joypads_used = 0;
 	gui_used		 = false;
+	for (int i = 0; i < 4; ++i)
+	{
+		lua_input_display_remap[i].from = 0;
+		lua_next_input_display_remap[i].from = 0;
+	}
 	//if (wasPaused)
 	//	systemSetPause(true);
 }
@@ -1794,28 +1819,71 @@ static int memory_gbromreadbyterange(lua_State *L)
 	return 1;
 }
 
-// table joypad.get(int which = 1)
-// 
-//  Reads the joypads as inputted by the user.
-static int joy_get_internal(lua_State *L, bool reportUp, bool reportDown)
+// parse the joypad input type string to get the internal type ID
+//
+static enum LuaJoypadType joypad_parse_type(lua_State* L, int numArg)
 {
-	// Reads the joypads as inputted by the user
-	int which = luaL_checkinteger(L, 1);
+	const char* str = luaL_optlstring(L, numArg, 0, 0);
+	if (str == 0)
+		return LuaJoypadType::LUAJOYPAD_COUNT;
 
+	for (int i = 0; i < LuaJoypadType::LUAJOYPAD_COUNT; ++i)
+	{
+		if (strcmp(luaJoypadTypeStrings[i], str) == 0)
+		{
+			return (enum LuaJoypadType)i;
+		}
+	}
+
+	luaL_error(L, "Invalid input type '%s')", str);
+
+	return LuaJoypadType::LUAJOYPAD_COUNT;
+}
+
+// table joypad.get(int which = 0, string padtype = "JOYPAD_GAME")
+// 
+//  Reads the joypad input that comes from the specified source.
+static int joy_get_internal(lua_State *L, bool reportUp, bool reportDown, enum LuaJoypadType type)
+{
+	int which = luaL_checkinteger(L, 1);
+	
 	if (which < 0 || which > 4)
 	{
 		luaL_error(L, "Invalid input port (valid range 0-4, specified %d)", which);
 	}
 
-	if (which > 0)
-	{
+	if (which == 0)
+		which = systemGetDefaultJoypad();
+	else
 		which -= 1;
+
+	uint32 buttons = 0;
+
+	if (type == LuaJoypadType::LUAJOYPAD_USER)
+	{
+		// Reads the joypad input by the user
+		buttons = joypadButtons[which];
+	}
+	else if (type == LuaJoypadType::LUAJOYPAD_PLAYBACK)
+	{
+		// Reads the joypad input from the currently active movie
+		buttons = movieButtons[which];
+	}
+	else if (type == LuaJoypadType::LUAJOYPAD_RECORD)
+	{
+		// Reads the mixed input that is supposed to be recorded in a movie
+		buttons = currentButtons[which];
+	}
+	else if (type == LuaJoypadType::LUAJOYPAD_LUA)
+	{
+		// Reads the overriding joypad input set by the lua engine
+		buttons = lua_joypads[which];
 	}
 	else
 	{
-		which = systemGetDefaultJoypad();
+		// Reads the mixed input that the game actually receives and reacts to
+		buttons = systemGetJoypad(which);
 	}
-	uint32 buttons = systemGetJoypad(which);
 
 	lua_newtable(L);
 
@@ -1832,37 +1900,39 @@ static int joy_get_internal(lua_State *L, bool reportUp, bool reportDown)
 	return 1;
 }
 
-// joypad.get(which)
-// returns a table of every game button,
-// true meaning currently-held and false meaning not-currently-held
-// (as of last frame boundary)
-// this WILL read input from a currently-playing movie
+// joypad.get(which = 0, padtype = "JOYPAD_GAME")
+//   returns a table of every game button,
+//   true meaning currently-held and false meaning not-currently-held
+//   (as of last frame boundary)
+//   by default this WILL read input from a currently-playing movie
 static int joypad_get(lua_State *L)
 {
-	return joy_get_internal(L, true, true);
+	enum LuaJoypadType type = joypad_parse_type(L, 2);
+	return joy_get_internal(L, true, true, type);
 }
 
-// joypad.getdown(which)
+// joypad.getdown(which = 0, padtype = "JOYPAD_GAME")
 // returns a table of every game button that is currently held
 static int joypad_getdown(lua_State *L)
 {
-	return joy_get_internal(L, false, true);
+	enum LuaJoypadType type = joypad_parse_type(L, 2);
+	return joy_get_internal(L, false, true, type);
 }
 
-// joypad.getup(which)
-// returns a table of every game button that is not currently held
+// joypad.getup(which = 0, padtype = "JOYPAD_GAME")
+//   returns a table of every game button that is not currently held
 static int joypad_getup(lua_State *L)
 {
-	return joy_get_internal(L, true, false);
+	enum LuaJoypadType type = joypad_parse_type(L, 2);
+	return joy_get_internal(L, true, false, type);
 }
 
-// joypad.set(int which, table buttons)
+// joypad.set(int which = 0, table buttons, string padtype = "JOYPAD_GAME")
 //
-//   Sets the given buttons to be pressed during the next
-//   frame advance. The table should have the right
-
-//   keys (no pun intended) set.
-static int joypad_set(lua_State *L)
+//   Sets the given buttons to be pressed during the next frame
+//   when the game may receive them via the specified input source.
+//   The table should have the right keys (no pun intended) set.
+static int joy_set_internal(lua_State *L, enum LuaJoypadType type)
 {
 	// Which joypad we're tampering with
 	int which = luaL_checkinteger(L, 1);
@@ -1872,16 +1942,40 @@ static int joypad_set(lua_State *L)
 	}
 
 	if (which == 0)
-		which = systemGetDefaultJoypad() + 1;
+		which = systemGetDefaultJoypad();
+	else
+		which -= 1;
 
 	// And the table of buttons.
 	luaL_checktype(L, 2, LUA_TTABLE);
 
-	// Set up for taking control of the indicated controller
-	lua_joypads_used	  |= 1 << (which - 1);
-	lua_joypads[which - 1] = 0;
+	u16 *buttons = NULL;
+	if (type == LuaJoypadType::LUAJOYPAD_USER)
+	{
+		// Overwrites the joypad input by the user
+		buttons = &joypadButtons[which];
+	}
+	else if (type == LuaJoypadType::LUAJOYPAD_PLAYBACK)
+	{
+		// Overwrites the joypad input from the currently active movie
+		buttons = &movieButtons[which];
+	}
+	else if (type == LuaJoypadType::LUAJOYPAD_RECORD)
+	{
+		// Overwrites the mixed input that is supposed to be recorded in a movie
+		buttons = &currentButtons[which];
+	}
+	else //if (type == LuaJoypadType::LUAJOYPAD_LUA)
+	{
+		// Overwrites the overriding joypad input set by the lua engine
+		lua_joypads_used |= 1 << (which);
+		buttons = &lua_joypads[which];
+	}
 
-	for (int i = 0; i < 10; i++)
+	// Set up for taking control of the indicated controller
+	*buttons = 0;
+
+	for (int i = 0; i < 10; ++i)
 	{
 		const char *name = button_mappings[i];
 		lua_getfield(L, 2, name);
@@ -1889,14 +1983,25 @@ static int joypad_set(lua_State *L)
 		{
 			bool pressed = lua_toboolean(L, -1) != 0;
 			if (pressed)
-				lua_joypads[which - 1] |= 1 << i;
+				*buttons |= 1 << i;
 			else
-				lua_joypads[which - 1] &= ~(1 << i);
+				*buttons &= ~(1 << i);
 		}
 		lua_pop(L, 1);
 	}
 
+	// re-mix the input
+	systemMixJoypadInput(which, type);
+
 	return 0;
+}
+
+// joypad.set(which, padtype = "JOYPAD_GAME")
+//   returns a table of every game button that is not currently held
+static int joypad_set(lua_State* L)
+{
+	enum LuaJoypadType type = joypad_parse_type(L, 3);
+	return joy_set_internal(L, type);
 }
 
 // Helper function to convert a savestate object to the filename it represents.
@@ -2082,6 +2187,64 @@ int vba_framecount(lua_State *L)
 	}
 
 	return 1;
+}
+
+// vba.remapinputdisplay(int which, table new_input_mapping)
+//
+
+//
+int vba_remapinputdisplay(lua_State* L)
+{
+	// Reads the joypads as inputted by the user
+	int which = luaL_checkinteger(L, 1);
+
+	if (which < 0 || which > 4)
+	{
+		luaL_error(L, "Invalid input port (valid range 0-4, specified %d)", which);
+	}
+
+	if (which > 0)
+		which -= 1;
+	else
+		which = systemGetDefaultJoypad();
+
+	// Prepair the remapping
+	LuaInputDisplayRemap *remap = lua_input_display_remap;
+
+	// If we are remapping the "next frame input display" instead
+	if (!lua_isnoneornil(L, 3) && joypad_parse_type(L, 3) == LuaJoypadType::LUAJOYPAD_PLAYBACK)
+		remap = lua_next_input_display_remap;
+
+	remap[which].from = 0;
+
+	// Either clear it
+	if (lua_isnoneornil(L, 2))
+		return 0;
+
+	// Or then get the table of buttons
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		const char* from = button_mappings[i];
+		lua_getfield(L, 2, from);
+		if (!lua_isnil(L, -1))
+		{
+			const char* to = lua_tostring(L, -1);
+			for (int j = 0; j < 10; ++j)
+			{
+				if (strcmp(to, button_mappings[j]) == 0)
+				{
+					remap[which].from |= 1 << i;
+					remap[which].to[i] = 1 << j;
+					break;
+				}
+			}
+		}
+		lua_pop(L, 1);
+	}
+
+	return 0;
 }
 
 //string movie.getauthor
@@ -4528,6 +4691,7 @@ static const struct luaL_reg vbalib[] = {
 	{ "registersaving",	vba_registersaving	 },
 	{ "registersaved",	vba_registersaved	 },
 	{ "message",		vba_message			 },
+	{ "remapinputdisplay",	vba_remapinputdisplay	},
 	{ "print",			print				 }, // sure, why not
 	{ NULL,				NULL				 }
 };
@@ -4898,6 +5062,11 @@ int VBALoadLuaCode(const char *filename)
 	numMemHooks = 0;
 	transparencyModifier = 255; // opaque
 	lua_joypads_used = 0; // not used
+	for (int i = 0; i < 4; ++i)
+	{
+		lua_input_display_remap[i].from = 0;
+		lua_next_input_display_remap[i].from = 0;
+	}
 	//wasPaused = systemIsPaused();
 	//systemSetPause(false);
 
@@ -5020,6 +5189,46 @@ int VBALuaReadJoypad(int which)
 
 	//lua_joypads_used &= ~(1 << which);
 	return lua_joypads[which];
+}
+
+/**
+* Returns true if Lua would like to remap input display.
+*
+* Range is 0 through 3
+*/
+int VBALuaRemappingInputDisplay(int which)
+{
+	if (which < 0 || which > 3)
+		which = systemGetDefaultJoypad();
+	return LUA && (lua_input_display_remap[which].from || lua_next_input_display_remap[which].from);
+}
+
+/**
+* Return remapped input display.
+*
+* Range is 0 through 3
+* Input/returned values are in the platform-specific raw format
+*/
+int VBALuaRemapInputDisplay(int which, int input, enum LuaJoypadType padtype)
+{
+	int output = 0;
+
+	if (which < 0 || which > 3)
+		which = systemGetDefaultJoypad();
+
+	LuaInputDisplayRemap *remap = lua_input_display_remap;
+	if (padtype == LuaJoypadType::LUAJOYPAD_PLAYBACK)
+		remap = lua_next_input_display_remap;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		if ((input & remap[which].from & (1 << i)) != 0)
+			output |= remap[which].to[i];
+		else
+			output |= input & (1 << i);
+	}
+
+	return output;
 }
 
 /**

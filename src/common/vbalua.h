@@ -34,6 +34,17 @@ enum LuaMemHookType
 };
 void CallRegisteredLuaMemHook(unsigned int address, int size, unsigned int value, LuaMemHookType hookType);
 
+enum LuaJoypadType
+{
+	LUAJOYPAD_USER,
+	LUAJOYPAD_PLAYBACK,
+	LUAJOYPAD_RECORD,
+	LUAJOYPAD_LUA,
+	LUAJOYPAD_GAME,
+
+	LUAJOYPAD_COUNT
+};
+
 // Just forward function declarations
 
 void VBALuaFrameBoundary();
@@ -44,6 +55,8 @@ int VBALuaRunning();
 
 int VBALuaUsingJoypad(int);
 int VBALuaReadJoypad(int);
+int VBALuaRemappingInputDisplay(int);
+int VBALuaRemapInputDisplay(int, int, enum LuaJoypadType);
 int VBALuaSpeed();
 bool8 VBALuaRerecordCountSkip();
 

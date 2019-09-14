@@ -115,27 +115,32 @@ void systemUpdateMotionSensor(int i)
 }
 
 // joypads
+
 static void systemUpdateMovieJoypads(bool sensor)
 {
+	int type = LuaJoypadType::LUAJOYPAD_USER;
+
+	if (VBAMovieIsPlaying() || VBAMovieIsRecording())
+	{
+		type = LuaJoypadType::LUAJOYPAD_PLAYBACK;
+	}
+
 	for (int i = 0; i < 4; ++i)
 	{
-		if (VBAMovieIsPlaying())
+		if (VBAMovieIsPlaying() || VBAMovieIsRecording())
 		{
-			// VBAMovieRead() writes to movieButtons[i]
-			VBAMovieRead(i, sensor);
-
-			// then, movie input has higher priority
-			currentButtons[i] = movieButtons[i];
-		}
-		else if (VBAMovieIsRecording())
-		{
+			// VBAMovieRead() modifies movieButtons[i]
 			VBAMovieRead(i, sensor);
 		}
 
 		nextButtons[i] = VBAMovieGetNextInputOf(i);
+
+		systemMixJoypadInput(i, type);
 	}
 }
 
+// poll input and run lua hook registered with vba.registerbefore()
+// this is supposed to be run only once every frame
 // input priority: original = raw+auto < movie < Lua, correct this if wrong
 void systemUpdateJoypads(bool sensor)
 {
@@ -145,11 +150,9 @@ void systemUpdateJoypads(bool sensor)
 	{
 		// get original+auto input
 		u32 res = systemGetOriginalJoypad(i, sensor);
-
 		joypadButtons[i] = res & BUTTON_REGULAR_RECORDING_MASK;
-		currentButtons[i] = joypadButtons[i];
 
-		// lua is now disallowed to modify the extbuttons
+		// lua has been disallowed to modify the extbuttons
 		extButtons = res & BUTTON_NONRECORDINGONLY_MASK;
 	}
 
@@ -164,6 +167,38 @@ void systemUpdateJoypads(bool sensor)
 	systemUpdateMovieJoypads(sensor);
 }
 
+// mix the joypad input from various sources
+void systemMixJoypadInput(int i, int type)
+{
+	// we only need to mix the input if it is not set directly
+	if (type < LuaJoypadType::LUAJOYPAD_RECORD)
+	{
+		// soft-reset "button" for 1 frame if the game is reset while recording
+		if (VBAMovieIsResetSignaled())
+		{
+			joypadButtons[i] |= BUTTON_MASK_NEW_RESET;
+		}
+
+		if (VBAMovieIsPlaying())
+		{
+			// movie playback input has higher priority than user input has
+			currentButtons[i] = movieButtons[i];
+		}
+		else if (VBAMovieIsRecording() && VBAMovieIsXorInput())
+		{
+			// movie recording in this mode XORs its existing input with user input
+			currentButtons[i] = movieButtons[i] ^ joypadButtons[i];
+		}
+		else
+		{
+			// by default, the user input takes place at first
+			currentButtons[i] = joypadButtons[i];
+		}
+	}
+}
+
+// get currently mixed joypad input for the game to receive
+// this WILL include the lua-overriding input
 u32 systemGetJoypad(int i)
 {
 	if (i < 0 || i > 3)
@@ -171,13 +206,15 @@ u32 systemGetJoypad(int i)
 
 	u32 res = currentButtons[i];
 
-	// Lua input, shouldn't have any side effect within it
+	// lua-overriding input
 	if (VBALuaUsingJoypad(i))
 		res = VBALuaReadJoypad(i);
 
 	return res | extButtons;
 }
 
+// set currently mixed joypad input for the game to receive
+// this WILL NOT include the lua-overriding input
 void systemSetJoypad(int which, u32 buttons)
 {
 	if (which < 0 || which > 3)
@@ -191,10 +228,11 @@ void systemClearJoypads()
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		joypadButtons[i] = 0;
-		movieButtons[i] = 0;
+		joypadButtons[i]  = 0;
+		movieButtons[i]   = 0;
 		currentButtons[i] = 0;
-		lastButtons[i] = 0;
+		lastButtons[i]    = 0;
+		nextButtons[i]    = 0;
 	}
 }
 
