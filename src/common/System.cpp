@@ -380,6 +380,8 @@ void systemFrameBoundaryWork()
 		}
 	}
 
+	VBAMovieAfterEmulation();
+
 	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 
 	VBAMovieUpdateState();

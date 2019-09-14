@@ -1317,18 +1317,12 @@ void VBAUpdateFrameCountDisplay()
 }
 
 // this function should only be called once every frame
-void VBAMovieUpdateState()
+void VBAMovieAfterEmulation()
 {
 	++Movie.currentFrame;
-
 	if (Movie.state == MOVIE_STATE_PLAY)
 	{
 		Movie.inputBufferPtr += Movie.bytesPerFrame;
-		if (Movie.currentFrame >= Movie.header.length_frames)
-		{
-			// the movie ends anyway; what to do next depends on the settings
-			change_movie_state(MOVIE_STATE_END);
-		}
 	}
 	else if (Movie.state == MOVIE_STATE_RECORD)
 	{
@@ -1345,13 +1339,29 @@ void VBAMovieUpdateState()
 		{
 			Movie.header.length_frames = Movie.currentFrame;
 		}
+	}
+}
+
+// this function should only be called once every frame
+void VBAMovieUpdateState()
+{
+	if (Movie.state == MOVIE_STATE_PLAY)
+	{
+		if (Movie.currentFrame >= Movie.header.length_frames)
+		{
+			// the movie ends anyway; what to do next depends on the settings
+			change_movie_state(MOVIE_STATE_END);
+		}
+	}
+	else if (Movie.state == MOVIE_STATE_RECORD)
+	{
 		if (Movie.RecordedNewRerecord)
 		{
 			if (!VBALuaRerecordCountSkip())
 				++Movie.header.rerecord_count;
 			Movie.RecordedNewRerecord = false;
 		}
-		Movie.RecordedThisSession  = true;
+		Movie.RecordedThisSession = true;
 		flush_movie_header();
 	}
 	else if (Movie.state == MOVIE_STATE_END)

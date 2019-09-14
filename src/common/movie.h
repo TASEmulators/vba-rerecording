@@ -166,6 +166,7 @@ void VBAMovieStop(bool8 suppress_message);
 
 // methods used by the emulation
 void VBAMovieInit();
+void VBAMovieAfterEmulation();
 void VBAMovieUpdateState();
 void VBAMovieRead(int controllerNum = 0, bool sensor = false);
 void VBAMovieWrite(int controllerNum = 0, bool sensor = false);
