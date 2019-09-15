@@ -750,10 +750,14 @@ void MainWnd::OnToolsResumeRecord()
 		if (!VBAMovieSwitchToPlaying())
 			systemScreenMessage("Cannot continue playing");
 	}
-	else
+	else if (VBAMovieAllowsRerecording())
 	{
 		if (!VBAMovieSwitchToRecording())
 			systemScreenMessage("Cannot resume recording now");
+	}
+	else
+	{
+		VBAMovieToggleReadOnly();
 	}
 }
 

@@ -1818,7 +1818,7 @@ bool VBAMovieSwitchToPlaying()
 
 bool VBAMovieSwitchToRecording()
 {
-	if (!VBAMovieAllowsRerecording())
+	if (!VBAMovieIsActive())
 		return false;
 
 	if (Movie.readOnly)
